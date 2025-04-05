@@ -1,0 +1,76 @@
+@import url(https://fonts.googleapis.com/css?family=Irish+Grover:regular);
+@import url(https://fonts.googleapis.com/css?family=Acme:regular);
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: #000000;
+  border-bottom: 1px solid #ddd;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #fff;
+  font-family: 'Irish Grover', sans-serif;
+  text-decoration: none;
+}
+
+.nav-with-inputs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Inputs styled nicely */
+.nav-input {
+  display: none;
+  padding: 6px 10px;
+  border-radius: 0px;
+  border: none;
+  font-size: 0.95rem;
+  outline: none;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.disabled-link {
+  pointer-events: none;
+  opacity: 0.5;
+}
+/* Disabled link appearance - only applies on desktop */
+@media (min-width: 768px) {
+  .conditionally-disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+}
+
+
+/* Show inputs only on larger screens */
+@media (min-width: 768px) {
+  .nav-input {
+    display: block;
+  }
+}
+
+.nav {
+  display: flex;
+  gap: 16px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #fff;
+  font-weight: 500;
+  font-size: 1.1rem;
+  transition: color 0.2s;
+  font-family: 'acme', serif;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.nav-link:hover {
+  color: #e7e2e2;
+}

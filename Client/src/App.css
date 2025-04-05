@@ -1,0 +1,44 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+
+  .page {
+    min-height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+
+    &.home {
+      background-color: #f8f9fa;
+    }
+
+    &.about {
+      background-color: #e9ecef;
+    }
+
+    &.contact {
+      background-color: #dee2e6;
+    }
+  }
+}
+
+/* Responsive design */
+@media (min-width: 768px) {
+  .app {
+    flex-direction: row;
+    overflow-y: hidden;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+
+    .page {
+      min-height: 100%;
+      min-width: 100vw;
+      scroll-snap-align: start;
+    }
+  }
+}

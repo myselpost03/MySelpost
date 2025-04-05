@@ -1,0 +1,145 @@
+@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
+
+/* Hide scrollbar but keep scroll functionality */
+body {
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-y: scroll;
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE and Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;               /* Chrome, Safari, Opera */
+}
+
+
+.center-wrapper {
+  height: calc(100vh - 250px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 30px;
+}
+
+.sketchy-button {
+  font-family: 'Patrick Hand', cursive;
+  font-size: 1.9rem;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  width: 200px;
+  padding: 10px 20px;
+  color: #333;
+  background: #fefefe;
+  border: 3px solid #222;
+  border-radius: 18px;
+  box-shadow: -3px 3px 0px #222;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  white-space: nowrap;
+}
+
+/* hand-drawn look */
+.sketchy-button::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 100%;
+  height: 100%;
+  border: 3px dashed #222;
+  border-radius: 18px;
+  z-index: -1;
+  transform: rotate(-1deg);
+}
+
+.sketchy-button:hover {
+  transform: translateY(-2px);
+  box-shadow: -1px 1px 0px #000;
+}
+
+.or-text {
+  font-family: 'Patrick Hand', cursive;
+  font-size: 1.8rem;
+  color: #666;
+}
+
+/* Blur background when modal is active */
+.blurred {
+  filter: blur(4px);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Full-screen modal overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(30, 30, 30, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* Centered modal box */
+.modal {
+  background-color: #fefefe;
+  color: #333;
+  border: 4px solid #333;
+  padding: 20px 25px;
+  border-radius: 12px;
+  font-family: 'Segoe UI', sans-serif;
+  width: 250px;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.modal .register-link {
+  color: #0077cc;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.modal .register-link:hover {
+  text-decoration: underline;
+}
+
+.close-alert {
+  margin-top: 15px;
+  background-color: #333;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #fff;
+  padding: 1rem;
+  transition: background-color 0.2s;
+}
+
+.close-alert:hover {
+  background-color: #fefefe;
+}
