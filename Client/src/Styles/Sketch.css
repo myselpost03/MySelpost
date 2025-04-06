@@ -1,0 +1,139 @@
+@import url("https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap");
+
+.counter-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 100px);
+  padding: 20px;
+  text-align: center;
+  background-color: #fff;
+}
+
+.sketchy-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  margin-top: -20%;
+}
+
+.sketchy-text {
+  font-family: "Patrick Hand", cursive;
+  font-size: 1.9rem;
+  color: #222;
+  max-width: 700px;
+  line-height: 1.6;
+  border: 4px dotted #333;
+  padding: 20px;
+  border-radius: 16px;
+  background-color: #fefefe;
+}
+
+.sketchy-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #000;
+  text-shadow: 1px 1px #aaa;
+}
+
+.example-link {
+  font-family: "Patrick Hand", cursive;
+  font-size: 1.3rem;
+  color: #333;
+  text-decoration: none;
+  border: 2px dashed #333;
+  padding: 10px 16px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  background-color: #fefefe;
+}
+
+.example-link:hover {
+  background-color: #333;
+  color: #fff;
+  border-style: solid;
+}
+
+.sketch-img-1 {
+  width: 100%;
+  max-width: 300px;
+  height: 60%;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.sketch-img-2 {
+  width: 100%;
+  max-width: 140px;
+  height: 20%;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 767px) {
+  .sketch-img-2 {
+    width: 90%;
+    max-width: 300px;
+    height: auto; /* Keep aspect ratio */
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.sketch-image-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: auto;
+}
+
+.sketch-label {
+  font-family: "Patrick Hand", cursive;
+  font-size: 1.8rem;
+  color: #333;
+  border: 3px dashed #444;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background-color: #fffbe6;
+  box-shadow: 2px 2px 0 #ccc;
+}
+
+.sketch-image-row {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* For screens wider than 768px (i.e., tablets and desktops) */
+@media (min-width: 768px) {
+  .sketch-image-row {
+    flex-direction: row;
+    align-items: flex-start;
+    transform: scale(1.3);
+    margin-top: 5%;
+  }
+}
+
+.arrow-animation-desktop {
+  display: none;
+  margin: 150px 20px;
+}
+
+@media (min-width: 768px) {
+  .arrow-animation-desktop {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1440px) {
+  .sketch-image-row {
+    transform: scale(2);
+    margin-top: 10%;
+  }
+}
