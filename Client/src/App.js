@@ -5,6 +5,7 @@ import Register from "./Pages/Register";
 import Login from "./Pages/Login";
 import Sketch from "./Pages/Sketch";
 import Example from "./Pages/Example";
+import Prompt from "./Pages/Prompt";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/prompt" element={<Prompt />} />
         <Route path="/sketch" element={<Sketch />} />
         <Route path="/examples" element={<Example />} />
       </Routes>

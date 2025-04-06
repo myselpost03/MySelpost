@@ -13,7 +13,12 @@ const Home = () => {
   };
 
   const handlePromptClick = () => {
-    setShowAlert(true);
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      navigate("/prompt"); // ✅ Navigate if user is logged in
+    } else {
+      setShowAlert(true); // 🔒 Show alert if not logged in
+    }
   };
 
   const closeAlert = () => {
@@ -22,7 +27,6 @@ const Home = () => {
 
   return (
     <div>
-      {/* Only this content will blur when modal is shown */}
       <div className={showAlert ? "blurred" : ""}>
         <Header />
         <main className="center-wrapper">
@@ -39,7 +43,6 @@ const Home = () => {
         <Footer />
       </div>
 
-      {/* Modal shown on top of blurred background */}
       {showAlert && (
         <div className="modal-overlay">
           <div className="alert-box modal">
