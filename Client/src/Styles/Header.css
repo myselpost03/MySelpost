@@ -14,7 +14,7 @@
   font-size: 1.8rem;
   font-weight: bold;
   color: #fff;
-  font-family: 'Irish Grover', sans-serif;
+  font-family: "Irish Grover", sans-serif;
   text-decoration: none;
 }
 
@@ -32,7 +32,7 @@
   border: none;
   font-size: 0.95rem;
   outline: none;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: "Segoe UI", sans-serif;
 }
 
 .disabled-link {
@@ -46,7 +46,6 @@
     opacity: 0.5;
   }
 }
-
 
 /* Show inputs only on larger screens */
 @media (min-width: 768px) {
@@ -64,13 +63,30 @@
   text-decoration: none;
   color: #fff;
   font-weight: 500;
+  background-color: #333;
+  border: none;
+  outline: none;
   font-size: 1.1rem;
   transition: color 0.2s;
-  font-family: 'acme', serif;
+  font-family: "acme", serif;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  cursor: pointer; /* 🔥 This fixes the issue */
 }
 
-.nav-link:hover {
-  color: #e7e2e2;
+.nav-logged-in {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logout-button {
+  padding: 6px 12px;
+  border: none;
+  font-size: 1.3rem;
+  color: white;
+  cursor: pointer;
+  font-family: "acme", serif;
+  background-color: #333;
+  outline: none;
 }

@@ -60,3 +60,22 @@
     font-weight: bold;
     font-family: 'underdog', serif;
   }
+
+  .login-form button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+  
+
+  .login-form .error-msg {
+    color: red;
+    font-size: 0.85rem;
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+    text-align: left;
+  }
+  
+  .login-form input.invalid {
+    border-color: red;
+  }
+  

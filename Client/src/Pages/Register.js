@@ -1,19 +1,110 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../Components/Header';
 import '../Styles/Register.css';
+import { supabase } from '../Utils/supabaseClient';
+import bcrypt from 'bcryptjs';
 
 const Register = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+  const [emailValid, setEmailValid] = useState(true);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const isEmailValid = (email) => {
+    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return pattern.test(email);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name === 'email') {
+      setEmailValid(isEmailValid(value));
+    }
+
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  const isFormValid =
+    formData.name && formData.email && formData.password && emailValid;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const { name, email, password } = formData;
+
+    try {
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Insert into 'users' table
+      const { data, error } = await supabase
+        .from('users')
+        .insert([{ name, email, password: hashedPassword }]);
+
+      if (error) throw error;
+
+      //alert('Registration successful!');
+      navigate('/login');
+    } catch (err) {
+      setError(err.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <Header />
       <div className="register-container">
-        <form className="register-form">
+        <form className="register-form" onSubmit={handleSubmit}>
           <h2>Create an Account</h2>
-          <input type="text" placeholder="Name" required />
-          <input type="email" placeholder="Email" required />
-          <input type="password" placeholder="Password" required />
-          <button type="submit">Register</button>
-          <p>Already have an account? <a href="/login">Login</a></p>
+          <input
+            type="text"
+            name="name"
+            placeholder="Name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            className={!emailValid ? 'invalid' : ''}
+          />
+          {!emailValid && (
+            <p className="error-msg">Please enter a valid email address.</p>
+          )}
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+          {error && <p className="error-msg">{error}</p>}
+          <button type="submit" disabled={!isFormValid || loading}>
+            {loading ? 'Registering...' : 'Register'}
+          </button>
+          <p>
+            Already have an account? <Link to="/login">Login</Link>
+          </p>
         </form>
       </div>
     </div>
