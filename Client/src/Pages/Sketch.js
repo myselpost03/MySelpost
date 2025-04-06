@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import first from "../Assets/1.jpg";
 import second from "../Assets/2.jpg";
 import Lottie from "lottie-react";
-
 import arrow from "../Assets/arrow.json"; 
 import "../Styles/Sketch.css";
 

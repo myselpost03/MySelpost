@@ -1,19 +1,18 @@
 import React from 'react';
 import Header from '../Components/Header';
-import '../Styles/Register.css';
+import '../Styles/Login.css';
 
 const Register = () => {
   return (
     <div>
       <Header />
-      <div className="register-container">
-        <form className="register-form">
-          <h2>Create an Account</h2>
-          <input type="text" placeholder="Name" required />
+      <div className="login-container">
+        <form className="login-form">
+          <h2>Log In</h2>
           <input type="email" placeholder="Email" required />
           <input type="password" placeholder="Password" required />
-          <button type="submit">Register</button>
-          <p>Already have an account? <a href="/login">Login</a></p>
+          <button type="submit">Login</button>
+          <p>Don't have an account? <a href="/register">Register</a></p>
         </form>
       </div>
     </div>

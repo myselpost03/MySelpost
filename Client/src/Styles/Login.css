@@ -1,0 +1,62 @@
+@import url(https://fonts.googleapis.com/css?family=Underdog:regular);
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem 1rem;
+  min-height: 100vh;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  padding: 3rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 50%;
+}
+
+.login-form h2 {
+    font-family: 'underdog', serif;
+    margin-bottom: 3rem;
+    white-space: nowrap;
+    color: #333;
+    font-size: 1.8rem;
+  }
+  
+  .login-form input {
+    width: 100%;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    border: 1px solid #19191a;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  
+  .login-form input:focus {
+    outline: none;
+    border-color: #1b1b1b;
+  }
+  
+  .login-form button {
+    width: 111%;
+    padding: 0.9rem;
+    background-color: #101111;
+    color: white;
+    font-size: 1rem;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: 'underdog', serif;
+    transition: background-color 0.3s ease;
+  }
+
+  .login-form a {
+    color: #000000;
+    text-decoration: none;
+    font-weight: bold;
+    font-family: 'underdog', serif;
+  }

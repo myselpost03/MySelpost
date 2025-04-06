@@ -28,7 +28,7 @@ const Header = () => {
         />
         <nav className="nav">
           <Link
-            to="/"
+            to="/login"
             className={`nav-link ${isDisabled ? 'conditionally-disabled' : ''}`}
             onClick={(e) => {
               if (window.innerWidth >= 768 && isDisabled) e.preventDefault();
