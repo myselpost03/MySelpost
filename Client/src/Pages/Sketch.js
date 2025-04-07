@@ -13,14 +13,6 @@ const Sketch = () => {
   const duration = 3000;
   const [showAlert, setShowAlert] = useState(false);
 
-  const handlePromptClick = () => {
-    setShowAlert(true);
-  };
-
-  const closeAlert = () => {
-    setShowAlert(false);
-  };
-
   useEffect(() => {
     let start = 0;
     const stepTime = Math.max(Math.floor(duration / target), 1);
@@ -74,15 +66,18 @@ const Sketch = () => {
       </div>
 
       {/* Floating Action Button Group */}
-      <div className={`fab-container`}>
-        <div className="fab-options">
-          <Link to="/app-sketch" className="fab-option">
-            ✨ Create App
-          </Link>
-          <Link to="/web-sketch" className="fab-option">
-            🌐 Create Website
-          </Link>
-        </div>
+      {/* Floating Action Button Group */}
+      <div className="fab-container">
+        {showAlert && (
+          <div className="fab-options">
+            <Link to="/app-sketch" className="fab-option">
+              ✨ Create App
+            </Link>
+            <Link to="/web-sketch" className="fab-option">
+              🌐 Create Website
+            </Link>
+          </div>
+        )}
 
         <button
           className="fab-button"

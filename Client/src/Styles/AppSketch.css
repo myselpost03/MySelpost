@@ -8,12 +8,15 @@
   font-family: 'Patrick Hand', cursive;
   background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
   min-height: 100vh;
+  box-sizing: border-box;
+  padding-top: 100px;
 }
 
 .upload-title {
   font-size: 2.2rem;
   color: #222;
   margin-bottom: 40px;
+  text-align: center;
   text-shadow: 1px 1px #ccc;
 }
 
@@ -38,6 +41,7 @@
   display: block;
   font-size: 1.2rem;
   color: #333;
+  word-wrap: break-word;
 }
 
 .upload-button {
@@ -52,6 +56,8 @@
   cursor: pointer;
   box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease;
+  width: 90%;
+  max-width: 300px;
 }
 
 .upload-button:hover:enabled {
@@ -75,6 +81,7 @@
   box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
   background-color: #fffdf5;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .sketch-input:focus {
@@ -117,6 +124,9 @@
   text-align: center;
   z-index: 9999;
   animation: fadeIn 0.4s ease-out;
+  width: 90%;
+  max-width: 400px;
+  box-sizing: border-box;
 }
 
 .custom-alert button {
@@ -148,4 +158,75 @@
   text-align: center;
   color: #888;
 }
+
+/* ✅ Responsive Styles for Mobile */
+@media (max-width: 600px) {
+  .upload-title {
+    font-size: 1.8rem;
+  }
+
+  .upload-box {
+    padding: 30px 15px;
+  }
+
+  .upload-label {
+    font-size: 1rem;
+  }
+
+  .upload-button {
+    font-size: 1rem;
+    padding: 10px 20px;
+  }
+
+  .sketch-input {
+    font-size: 1rem;
+  }
+
+  .custom-alert {
+    padding: 16px 20px;
+    font-size: 1rem;
+  }
+
+  .custom-alert button {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .cooldown-text {
+    font-size: 15px;
+  }
+}
+
+
+
+.react-share-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  justify-content: center;
+}
+
+.share-coin-button {
+  padding: 8px 14px;
+  background: #ffc107;
+  color: #000;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  font-family: "Acme", sans-serif;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.share-coin-button:hover {
+  background: #e0a800;
+}
+
+.share-instruction {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
 

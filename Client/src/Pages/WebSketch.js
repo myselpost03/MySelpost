@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import Header from "../Components/Header";
 import "../Styles/AppSketch.css";
 import confetti from "canvas-confetti";
 import { supabase } from "../Utils/supabaseClient";
-import {
-  FacebookShareButton,
-  TwitterShareButton,
-  WhatsappShareButton,
-  TelegramShareButton,
-} from "react-share";
-
 
 const setCookie = (name, value, days) => {
   const expires = new Date(Date.now() + days * 864e5).toUTCString();
@@ -24,7 +16,7 @@ const getCookie = (name) => {
   return match ? decodeURIComponent(match.split("=")[1]) : null;
 };
 
-const AppSketch = () => {
+const WebSketch = () => {
   const [cooldownActive, setCooldownActive] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState("");
   const [file, setFile] = useState(null);
@@ -184,29 +176,6 @@ const AppSketch = () => {
     setUploading(false);
   };
 
-  const handleBonusClaim = () => {
-    const now = Date.now();
-  
-    if (isLoggedIn) {
-      const bonusClaimed = localStorage.getItem("bonusCoinClaimed");
-      if (!bonusClaimed) {
-        localStorage.setItem("coin", now.toString());
-        localStorage.setItem("bonusCoinClaimed", "true");
-        setCooldownActive(false);
-        alert("🎉 You've received a bonus sketch point!");
-      }
-    } else {
-      const bonusCookie = getCookie("bonusCoinClaimed");
-      if (!bonusCookie) {
-        setCookie("usedFreeSketch", "", -1); // Clear old usage
-        setCookie("bonusCoinClaimed", "true", 30);
-        setCooldownActive(false);
-        alert("🎉 You've received a bonus sketch point!");
-      }
-    }
-  };
-  
-
   const isFormReady = isLoggedIn
     ? !!file && !uploading
     : !!file && validateEmail(email) && !uploading;
@@ -247,48 +216,11 @@ const AppSketch = () => {
           </>
         )}
         {cooldownActive ? (
-        <p className="cooldown-text">
-        ⏳ You’ve already used your 1 free sketch point.
-        <br />
-        Come back in <strong>{timeRemaining}</strong> to submit again.
-        <br />
-        <span className="share-instruction">🎁 Claim a bonus sketch point by sharing:</span>
-        <div className="react-share-buttons">
-          <FacebookShareButton
-            url="https://myselpost.com/sketch"
-            quote="Get your app built from a sketch!"
-            onShareWindowClose={() => handleBonusClaim()}
-          >
-            <button className="share-coin-button">📘 Facebook</button>
-          </FacebookShareButton>
-      
-          <TwitterShareButton
-            url="https://myselpost.com/sketch"
-            title="I just got an app built from a hand-drawn sketch. Try it yourself!"
-            onShareWindowClose={() => handleBonusClaim()}
-          >
-            <button className="share-coin-button">🐦 Twitter</button>
-          </TwitterShareButton>
-      
-          <WhatsappShareButton
-            url="https://myselpost.com/sketch"
-            title="Build an app from your hand-drawn sketch!"
-            separator=":: "
-            onShareWindowClose={() => handleBonusClaim()}
-          >
-            <button className="share-coin-button">🟢 WhatsApp</button>
-          </WhatsappShareButton>
-      
-          <TelegramShareButton
-            url="https://myselpost.com/sketch"
-            title="Get your app built from a sketch!"
-            onShareWindowClose={() => handleBonusClaim()}
-          >
-            <button className="share-coin-button">📨 Telegram</button>
-          </TelegramShareButton>
-        </div>
-      </p>
-      
+          <p className="cooldown-text">
+            ⏳ You’ve already used your 1 free sketch point.
+            <br />
+            Come back in <strong>{timeRemaining}</strong> to submit again.
+          </p>
         ) : (
           <button
             className="upload-button"
@@ -304,8 +236,8 @@ const AppSketch = () => {
             <p>
               ⏳ Your sketch will magically turn into an app in 20 days!
               <br />
-              We'll send progress updates and code files straight to your inbox
-              so you can follow along.
+              We'll send progress updates and code files straight to your inbox so you can
+              follow along.
             </p>
             <button onClick={() => setShowCustomAlert(false)}>Okay ✨</button>
           </div>
@@ -315,4 +247,4 @@ const AppSketch = () => {
   );
 };
 
-export default AppSketch;
+export default WebSketch;

@@ -5,6 +5,7 @@ import Register from "./Pages/Register";
 import Login from "./Pages/Login";
 import Sketch from "./Pages/Sketch";
 import AppSketch from './Pages/AppSketch';
+import WebSketch from './Pages/WebSketch';
 import Prompt from "./Pages/Prompt";
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Route path="/prompt" element={<Prompt />} />
         <Route path="/sketch" element={<Sketch />} />
         <Route path="/app-sketch" element={<AppSketch />} />
+        <Route path="/web-sketch" element={<WebSketch />} />
       </Routes>
     </Router>
   );
