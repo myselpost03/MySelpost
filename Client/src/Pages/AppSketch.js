@@ -16,10 +16,9 @@ const getCookie = (name) => {
   return match ? decodeURIComponent(match.split("=")[1]) : null;
 };
 
-
 const AppSketch = () => {
   const [cooldownActive, setCooldownActive] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState("");  
+  const [timeRemaining, setTimeRemaining] = useState("");
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -37,27 +36,47 @@ const AppSketch = () => {
   }, []);
 
   useEffect(() => {
+    const now = Date.now();
+    const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+
     const user = localStorage.getItem("user");
     if (user) {
       setIsLoggedIn(true);
-    } else {
-      const cookieVal = getCookie("usedFreeSketch");
-      if (cookieVal) {
-        const lastUsed = parseInt(cookieVal, 10);
-        const now = Date.now();
-        const diff = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
-        if (now - lastUsed < diff) {
+      const coinTime = localStorage.getItem("coin");
+      if (coinTime) {
+        const lastUsed = parseInt(coinTime, 10);
+        if (now - lastUsed < THIRTY_DAYS) {
           setCooldownActive(true);
-          const remaining = new Date(lastUsed + diff - now);
+          const remaining = new Date(lastUsed + THIRTY_DAYS - now);
           const days = remaining.getUTCDate() - 1;
           const hours = remaining.getUTCHours();
           const minutes = remaining.getUTCMinutes();
           setTimeRemaining(`${days}d ${hours}h ${minutes}m`);
+        } else {
+          // Expired - remove it
+          localStorage.removeItem("coin");
+          setCooldownActive(false);
+        }
+      }
+    } else {
+      const cookieVal = getCookie("usedFreeSketch");
+      if (cookieVal) {
+        const lastUsed = parseInt(cookieVal, 10);
+        if (now - lastUsed < THIRTY_DAYS) {
+          setCooldownActive(true);
+          const remaining = new Date(lastUsed + THIRTY_DAYS - now);
+          const days = remaining.getUTCDate() - 1;
+          const hours = remaining.getUTCHours();
+          const minutes = remaining.getUTCMinutes();
+          setTimeRemaining(`${days}d ${hours}h ${minutes}m`);
+        } else {
+          // Expired - remove cookie
+          setCookie("usedFreeSketch", "", -1); // Set expired cookie
+          setCooldownActive(false);
         }
       }
     }
   }, []);
-  
 
   const validateEmail = (value) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -86,14 +105,22 @@ const AppSketch = () => {
   const handleUpload = async () => {
     if (!file || (!isLoggedIn && (!email || emailError))) return;
 
-    // Check if non-logged-in user already used their point
+    // Check if free guest already used their sketch
     if (!isLoggedIn && getCookie("usedFreeSketch") === "true") {
-      alert("You've already used your 1 free sketch point. Please sign up to unlock more.");
+      alert(
+        "You've already used your 1 free sketch point. Please sign up to unlock more."
+      );
       return;
     }
-  
+
+    // Check if logged-in user already submitted sketch
+    if (isLoggedIn && localStorage.getItem("coin")) {
+      alert("You've already used your 1 sketch point. Please wait 30 days.");
+      return;
+    }
+
     setUploading(true);
-  
+
     let userEmail = "";
     if (isLoggedIn) {
       const storedUser = localStorage.getItem("user");
@@ -108,10 +135,10 @@ const AppSketch = () => {
       userEmail = email;
     }
 
-    // Allow only letters, numbers, dot and @ for email in filename
-    const sanitizedEmail = userEmail.replace(/[^a-zA-Z0-9.@]/g, "_");
+    // Keep email as-is
+    const pagePath = window.location.pathname.replace(/[^\w]/g, "_"); // Sanitize URL path
     const fileExt = file.name.split(".").pop();
-    const uniqueName = `${sanitizedEmail}_${Date.now()}.${fileExt}`;
+    const uniqueName = `${userEmail}_${pagePath}_${Date.now()}.${fileExt}`;
 
     const { error } = await supabase.storage
       .from("sketches")
@@ -135,12 +162,17 @@ const AppSketch = () => {
         spread: 80,
         origin: { y: 0.6 },
       });
+
+      const now = Date.now();
+      if (isLoggedIn) {
+        localStorage.setItem("coin", now.toString());
+      } else {
+        setCookie("usedFreeSketch", now.toString(), 30);
+      }
+
+      setCooldownActive(true);
     }
-    if (!isLoggedIn) {
-      setCookie("usedFreeSketch", Date.now().toString(), 30); // Save timestamp
-    }
-    
-  
+
     setUploading(false);
   };
 
@@ -183,22 +215,21 @@ const AppSketch = () => {
             {emailError && <p className="error-text">{emailError}</p>}
           </>
         )}
-{cooldownActive && !isLoggedIn ? (
-  <p className="cooldown-text">
-    ⏳ You’ve already used your 1 free sketch point.
-    <br />
-    Come back in <strong>{timeRemaining}</strong> to submit again.
-  </p>
-) : (
-  <button
-    className="upload-button"
-    disabled={!isFormReady || uploadedUrl !== ""}
-    onClick={handleUpload}
-  >
-    {uploading ? "Uploading..." : "Submit Sketch"}
-  </button>
-)}
-
+        {cooldownActive ? (
+          <p className="cooldown-text">
+            ⏳ You’ve already used your 1 free sketch point.
+            <br />
+            Come back in <strong>{timeRemaining}</strong> to submit again.
+          </p>
+        ) : (
+          <button
+            className="upload-button"
+            disabled={!isFormReady || uploadedUrl !== ""}
+            onClick={handleUpload}
+          >
+            {uploading ? "Uploading..." : "Submit Sketch"}
+          </button>
+        )}
 
         {showCustomAlert && (
           <div className="custom-alert">
