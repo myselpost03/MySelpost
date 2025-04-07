@@ -4,7 +4,22 @@ import "../Styles/AppSketch.css";
 import confetti from "canvas-confetti";
 import { supabase } from "../Utils/supabaseClient";
 
+const setCookie = (name, value, days) => {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${value}; expires=${expires}; path=/`;
+};
+
+const getCookie = (name) => {
+  const match = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(name + "="));
+  return match ? decodeURIComponent(match.split("=")[1]) : null;
+};
+
+
 const AppSketch = () => {
+  const [cooldownActive, setCooldownActive] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState("");  
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -20,6 +35,29 @@ const AppSketch = () => {
       setIsLoggedIn(true);
     }
   }, []);
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      setIsLoggedIn(true);
+    } else {
+      const cookieVal = getCookie("usedFreeSketch");
+      if (cookieVal) {
+        const lastUsed = parseInt(cookieVal, 10);
+        const now = Date.now();
+        const diff = 30 * 24 * 60 * 60 * 1000; // 30 days in ms
+        if (now - lastUsed < diff) {
+          setCooldownActive(true);
+          const remaining = new Date(lastUsed + diff - now);
+          const days = remaining.getUTCDate() - 1;
+          const hours = remaining.getUTCHours();
+          const minutes = remaining.getUTCMinutes();
+          setTimeRemaining(`${days}d ${hours}h ${minutes}m`);
+        }
+      }
+    }
+  }, []);
+  
 
   const validateEmail = (value) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -48,8 +86,14 @@ const AppSketch = () => {
   const handleUpload = async () => {
     if (!file || (!isLoggedIn && (!email || emailError))) return;
 
+    // Check if non-logged-in user already used their point
+    if (!isLoggedIn && getCookie("usedFreeSketch") === "true") {
+      alert("You've already used your 1 free sketch point. Please sign up to unlock more.");
+      return;
+    }
+  
     setUploading(true);
-
+  
     let userEmail = "";
     if (isLoggedIn) {
       const storedUser = localStorage.getItem("user");
@@ -92,7 +136,11 @@ const AppSketch = () => {
         origin: { y: 0.6 },
       });
     }
-
+    if (!isLoggedIn) {
+      setCookie("usedFreeSketch", Date.now().toString(), 30); // Save timestamp
+    }
+    
+  
     setUploading(false);
   };
 
@@ -135,14 +183,22 @@ const AppSketch = () => {
             {emailError && <p className="error-text">{emailError}</p>}
           </>
         )}
+{cooldownActive && !isLoggedIn ? (
+  <p className="cooldown-text">
+    ⏳ You’ve already used your 1 free sketch point.
+    <br />
+    Come back in <strong>{timeRemaining}</strong> to submit again.
+  </p>
+) : (
+  <button
+    className="upload-button"
+    disabled={!isFormReady || uploadedUrl !== ""}
+    onClick={handleUpload}
+  >
+    {uploading ? "Uploading..." : "Submit Sketch"}
+  </button>
+)}
 
-        <button
-          className="upload-button"
-          disabled={!isFormReady || uploadedUrl !== ""}
-          onClick={handleUpload}
-        >
-          {uploading ? "Uploading..." : "Submit Sketch"}
-        </button>
 
         {showCustomAlert && (
           <div className="custom-alert">
