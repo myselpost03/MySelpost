@@ -138,51 +138,71 @@
   }
 }
 
-.fab-button {
+.fab-container {
   position: fixed;
   bottom: 24px;
   right: 24px;
+  display: flex;
+  flex-direction: column-reverse; /* ensures fab is at bottom */
+  align-items: flex-end;
+  z-index: 1000;
+}
+
+.fab-button {
   background-color: #222;
   color: #fff;
   border: none;
   border-radius: 50%;
   width: 60px;
   height: 60px;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  z-index: 1000;
   transition: background-color 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  text-decoration: none;
 }
 
 .fab-button:hover {
   background-color: #444;
 }
 
-.fab-alert {
-  position: fixed;
-  bottom: 100px;
-  right: 24px;
-  background-color: #fffbe6;
+.fab-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: slideUpFade 0.3s ease forwards;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  text-decoration: none;
+}
+
+@keyframes slideUpFade {
+  to {
+    opacity: 1;
+    transform: translateY(1);
+  }
+}
+
+.fab-option {
+  background-color: #fff;
+  color: #222;
   border: 2px solid #222;
-  padding: 16px;
+  padding: 10px 14px;
   border-radius: 12px;
   font-family: "Patrick Hand", cursive;
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.fab-alert p {
-  margin: 0 0 10px 0;
   font-size: 1rem;
-  color: #222;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
 }
 
-.fab-alert button {
+.fab-option:hover {
   background-color: #222;
   color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
 }

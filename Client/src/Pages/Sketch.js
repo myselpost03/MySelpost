@@ -74,18 +74,23 @@ const Sketch = () => {
         </div>
       </div>
 
-         {/* Floating Action Button */}
-         <button className="fab-button" onClick={handlePromptClick} title="Submit your sketch">
-        ✏️
-      </button>
+         {/* Floating Action Button Group */}
+         <div className={`fab-container ${showAlert ? "open" : ""}`}>
+        {showAlert && (
+          <div className="fab-options">
+            <button className="fab-option" onClick={() => alert("App creation coming soon!")}>
+              ✨ Create App
+            </button>
+            <button className="fab-option" onClick={() => alert("Website creation coming soon!")}>
+              🌐 Create Website
+            </button>
+          </div>
+        )}
 
-      {/* Optional Alert */}
-      {showAlert && (
-        <div className="fab-alert">
-          <p>Prompt submission coming soon!</p>
-          <button onClick={closeAlert}>Close</button>
-        </div>
-      )}
+        <button className="fab-button" onClick={() => setShowAlert(!showAlert)} title="Create something">
+          ✏️
+        </button>
+      </div>
 
     </div>
   );
