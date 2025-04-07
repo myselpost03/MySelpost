@@ -9,7 +9,7 @@ import "../Styles/Sketch.css";
 
 const Sketch = () => {
   const [count, setCount] = useState(0);
-  const target = 20500;
+  const target = 1500;
   const duration = 3000;
   const [showAlert, setShowAlert] = useState(false);
 
@@ -59,7 +59,7 @@ const Sketch = () => {
         {/* Text Section */}
         <div className="sketchy-text-wrapper">
           <p className="sketchy-text">
-            <span className="sketchy-number">{count.toLocaleString()}</span>{" "}
+            <span className="sketchy-number">{count.toLocaleString()}+</span>{" "}
             users turned their sketches into a working website and app.
           </p>
         </div>

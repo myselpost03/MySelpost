@@ -24,7 +24,7 @@ const Prompt = () => {
 
   const showCustomAlert = (message) => {
     setCustomAlert(message);
-    setTimeout(() => setCustomAlert(""), 6000);
+    setTimeout(() => setCustomAlert(""), 8000);
   };
 
   const handleSubmit = async () => {

@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="footer-section">
           <h3>MySelpost</h3>
           <p className="tagline">"Ideas don’t need code. Just a sketch."</p>
-          <p>Your place to turn sketches or prompts into real web apps.</p>
+          <p>Your place to turn sketches or prompts into real websites & apps.</p>
         </div>
 
         <div className="footer-section">

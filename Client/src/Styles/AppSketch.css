@@ -163,6 +163,7 @@
 @media (max-width: 600px) {
   .upload-title {
     font-size: 1.8rem;
+    white-space: nowrap;
   }
 
   .upload-box {

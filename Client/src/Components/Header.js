@@ -100,6 +100,10 @@ const Header = () => {
     setUser(null);
   };
 
+  const handlePricing = () => {
+    return navigate("/pricing")
+  }
+
   const handleMobileRedirect = (path) => {
     if (isMobile) navigate(path);
   };
@@ -162,6 +166,9 @@ const Header = () => {
         </form>
       ) : (
         <div className="nav-logged-in">
+          <button onClick={handlePricing} className="logout-button">
+            Pricing
+          </button>
           <button onClick={handleLogout} className="logout-button">
             Logout
           </button>

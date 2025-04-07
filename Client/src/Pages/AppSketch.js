@@ -213,7 +213,7 @@ const AppSketch = () => {
     <>
       <Header />
       <div className="upload-container">
-        <h1 className="upload-title">Upload Your Sketch ✏️</h1>
+        <h1 className="upload-title">Upload Your App Sketch ✏️</h1>
 
         <div className="upload-box">
           <input
