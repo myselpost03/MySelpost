@@ -55,7 +55,7 @@ const Register = () => {
 
       if (error) throw error;
 
-      //alert('Registration successful!');
+      alert('Registration successful!');
       navigate('/login');
     } catch (err) {
       setError(err.message || 'Something went wrong');

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import "../Styles/Home.css";
@@ -48,9 +48,9 @@ const Home = () => {
           <div className="alert-box modal">
             <p>
               To use the Prompt option, you must first{" "}
-              <a href="/register" className="register-link">
+              <Link to="/register" className="register-link">
                 register
-              </a>
+              </Link>
               .
             </p>
             <button onClick={closeAlert} className="close-alert">

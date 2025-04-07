@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from 'react-router-dom';
 import '../Styles/Footer.css';
 
 const Footer = () => {
@@ -14,10 +15,10 @@ const Footer = () => {
         <div className="footer-section">
           <h4>Quick Links</h4>
           <ul>
-            <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact Us</a></li>
-            <li><a href="/terms">Terms of Service</a></li>
-            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><Link to="/about">About</Link></li>
+            <li><Link to="/contact">Contact Us</Link></li>
+            <li><Link to="/terms">Terms of Service</Link></li>
+            <li><Link to="/privacy">Privacy Policy</Link></li>
           </ul>
         </div>
 
@@ -26,9 +27,9 @@ const Footer = () => {
           <p>Email: support@myselpost.com</p>
           <p>
             Instagram:{' '}
-            <a href="https://instagram.com/myselpost" target="_blank" rel="noreferrer">
+            <Link to="https://instagram.com/myselpost" target="_blank" rel="noreferrer">
               @myselpost
-            </a>
+            </Link>
           </p>
         </div>
       </div>

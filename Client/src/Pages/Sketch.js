@@ -70,28 +70,23 @@ const Sketch = () => {
             <span className="sketchy-number">{count.toLocaleString()}</span>{" "}
             users turned their sketches into a working website and app.
           </p>
-          <Link to="/examples" className="example-link" onClick={handlePromptClick}>
-            See Examples of turned sketches to websites/apps →
-          </Link>
+         
         </div>
       </div>
 
+         {/* Floating Action Button */}
+         <button className="fab-button" onClick={handlePromptClick} title="Submit your sketch">
+        ✏️
+      </button>
+
+      {/* Optional Alert */}
       {showAlert && (
-        <div className="modal-overlay">
-          <div className="alert-box modal">
-            <p>
-              To see the examples, you must first{" "}
-              <a href="/register" className="register-link">
-                register
-              </a>
-              .
-            </p>
-            <button onClick={closeAlert} className="close-alert">
-              Close
-            </button>
-          </div>
+        <div className="fab-alert">
+          <p>Prompt submission coming soon!</p>
+          <button onClick={closeAlert}>Close</button>
         </div>
       )}
+
     </div>
   );
 };
