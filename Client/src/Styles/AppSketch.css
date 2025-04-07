@@ -62,3 +62,83 @@
   background-color: #aaa;
   cursor: not-allowed;
 }
+
+.sketch-input {
+  width: 90%;
+  max-width: 500px;
+  margin-top: 25px;
+  padding: 12px 18px;
+  font-size: 1.1rem;
+  font-family: 'Patrick Hand', cursive;
+  border: 2px solid #444;
+  border-radius: 12px;
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
+  background-color: #fffdf5;
+  transition: all 0.3s ease;
+}
+
+.sketch-input:focus {
+  outline: none;
+  border-color: #f0c14b;
+  background-color: #fff7da;
+  transform: scale(1.02);
+}
+
+.error-text {
+  color: #e63946;
+  margin-top: 8px;
+  font-size: 1rem;
+  font-family: 'Patrick Hand', cursive;
+}
+
+.email-info-text {
+  font-size: 1.05rem;
+  font-family: 'Patrick Hand', cursive;
+  color: #444;
+  margin-top: 15px;
+  margin-bottom: 20px;
+  text-align: center;
+  max-width: 500px;
+}
+
+.custom-alert {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #fff8dc;
+  border: 2px solid #444;
+  border-radius: 20px;
+  padding: 20px 30px;
+  font-family: 'Patrick Hand', cursive;
+  font-size: 1.1rem;
+  color: #222;
+  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  z-index: 9999;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.custom-alert button {
+  margin-top: 12px;
+  padding: 8px 18px;
+  font-size: 1rem;
+  font-family: 'Patrick Hand', cursive;
+  background-color: #222;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 50px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
