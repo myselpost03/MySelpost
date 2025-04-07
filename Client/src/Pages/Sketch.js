@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import first from "../Assets/1.jpg";
 import second from "../Assets/2.jpg";
 import Lottie from "lottie-react";
-import arrow from "../Assets/arrow.json"; 
+import arrow from "../Assets/arrow.json";
 import "../Styles/Sketch.css";
 
 const Sketch = () => {
@@ -70,28 +70,28 @@ const Sketch = () => {
             <span className="sketchy-number">{count.toLocaleString()}</span>{" "}
             users turned their sketches into a working website and app.
           </p>
-         
         </div>
       </div>
 
-         {/* Floating Action Button Group */}
-         <div className={`fab-container ${showAlert ? "open" : ""}`}>
-        {showAlert && (
-          <div className="fab-options">
-            <button className="fab-option" onClick={() => alert("App creation coming soon!")}>
-              ✨ Create App
-            </button>
-            <button className="fab-option" onClick={() => alert("Website creation coming soon!")}>
-              🌐 Create Website
-            </button>
-          </div>
-        )}
+      {/* Floating Action Button Group */}
+      <div className={`fab-container`}>
+        <div className="fab-options">
+          <Link to="/app-sketch" className="fab-option">
+            ✨ Create App
+          </Link>
+          <Link to="/web-sketch" className="fab-option">
+            🌐 Create Website
+          </Link>
+        </div>
 
-        <button className="fab-button" onClick={() => setShowAlert(!showAlert)} title="Create something">
+        <button
+          className="fab-button"
+          onClick={() => setShowAlert(!showAlert)}
+          title="Create something"
+        >
           ✏️
         </button>
       </div>
-
     </div>
   );
 };

@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
+
+.upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  font-family: 'Patrick Hand', cursive;
+  background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+  min-height: 100vh;
+}
+
+.upload-title {
+  font-size: 2.2rem;
+  color: #222;
+  margin-bottom: 40px;
+  text-shadow: 1px 1px #ccc;
+}
+
+.upload-box {
+  width: 90%;
+  max-width: 500px;
+  border: 3px dashed #444;
+  border-radius: 20px;
+  padding: 40px 20px;
+  background-color: #fffbe6;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.upload-box:hover {
+  background-color: #fff3c4;
+  transform: scale(1.02);
+}
+
+.upload-label {
+  display: block;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.upload-button {
+  margin-top: 30px;
+  padding: 12px 24px;
+  font-size: 1.2rem;
+  font-family: 'Patrick Hand', cursive;
+  background-color: #222;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+}
+
+.upload-button:hover:enabled {
+  background-color: #444;
+}
+
+.upload-button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
