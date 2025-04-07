@@ -70,7 +70,7 @@ const Sketch = () => {
             <span className="sketchy-number">{count.toLocaleString()}</span>{" "}
             users turned their sketches into a working website and app.
           </p>
-          <Link className="example-link" onClick={handlePromptClick}>
+          <Link to="/examples" className="example-link" onClick={handlePromptClick}>
             See Examples of turned sketches to websites/apps →
           </Link>
         </div>
