@@ -3,6 +3,12 @@ import Header from "../Components/Header";
 import "../Styles/AppSketch.css";
 import confetti from "canvas-confetti";
 import { supabase } from "../Utils/supabaseClient";
+import {
+  FacebookShareButton,
+  TwitterShareButton,
+  WhatsappShareButton,
+  TelegramShareButton,
+} from "react-share";
 
 const setCookie = (name, value, days) => {
   const expires = new Date(Date.now() + days * 864e5).toUTCString();
@@ -27,6 +33,7 @@ const WebSketch = () => {
   const [uploadedUrl, setUploadedUrl] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showCustomAlert, setShowCustomAlert] = useState(false);
+  const [showBonusAlert, setShowBonusAlert] = useState(false);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -115,7 +122,7 @@ const WebSketch = () => {
 
     // Check if logged-in user already submitted sketch
     if (isLoggedIn && localStorage.getItem("coin")) {
-      alert("You've already used your 1 sketch point. Please wait 30 days.");
+      alert("You've already used your 1 sketch point. Please wait 20 days.");
       return;
     }
 
@@ -167,13 +174,37 @@ const WebSketch = () => {
       if (isLoggedIn) {
         localStorage.setItem("coin", now.toString());
       } else {
-        setCookie("usedFreeSketch", now.toString(), 30);
+        setCookie("usedFreeSketch", now.toString(), 20);
       }
 
       setCooldownActive(true);
     }
 
     setUploading(false);
+  };
+
+  const handleBonusClaim = () => {
+    const now = Date.now();
+
+    if (isLoggedIn) {
+      const bonusClaimed = localStorage.getItem("bonusCoinClaimed");
+      if (!bonusClaimed) {
+        localStorage.setItem("coin", now.toString());
+        localStorage.setItem("bonusCoinClaimed", "true");
+        setCooldownActive(false);
+        setShowBonusAlert(true);
+        setTimeout(() => setShowBonusAlert(false), 6000);
+      }
+    } else {
+      const bonusCookie = getCookie("bonusCoinClaimed");
+      if (!bonusCookie) {
+        setCookie("usedFreeSketch", "", -1); // Clear old usage
+        setCookie("bonusCoinClaimed", "true", 20);
+        setCooldownActive(false);
+        setShowBonusAlert(true);
+        setTimeout(() => setShowBonusAlert(false), 6000);
+      }
+    }
   };
 
   const isFormReady = isLoggedIn
@@ -220,6 +251,44 @@ const WebSketch = () => {
             ⏳ You’ve already used your 1 free sketch point.
             <br />
             Come back in <strong>{timeRemaining}</strong> to submit again.
+            <br />
+            <span className="share-instruction">
+              🎁 Claim a bonus sketch point by sharing:
+            </span>
+            <div className="react-share-buttons">
+              <FacebookShareButton
+                url="https://myselpost.com/sketch"
+                quote="Get your app built from a sketch!"
+                onShareWindowClose={() => handleBonusClaim()}
+              >
+                <button className="share-coin-button">📘 Facebook</button>
+              </FacebookShareButton>
+
+              <TwitterShareButton
+                url="https://myselpost.com/sketch"
+                title="I just got an app built from a hand-drawn sketch. Try it yourself!"
+                onShareWindowClose={() => handleBonusClaim()}
+              >
+                <button className="share-coin-button">🐦 Twitter</button>
+              </TwitterShareButton>
+
+              <WhatsappShareButton
+                url="https://myselpost.com/sketch"
+                title="Build an app from your hand-drawn sketch!"
+                separator=":: "
+                onShareWindowClose={() => handleBonusClaim()}
+              >
+                <button className="share-coin-button">🟢 WhatsApp</button>
+              </WhatsappShareButton>
+
+              <TelegramShareButton
+                url="https://myselpost.com/sketch"
+                title="Get your app built from a sketch!"
+                onShareWindowClose={() => handleBonusClaim()}
+              >
+                <button className="share-coin-button">📨 Telegram</button>
+              </TelegramShareButton>
+            </div>
           </p>
         ) : (
           <button
@@ -230,14 +299,25 @@ const WebSketch = () => {
             {uploading ? "Uploading..." : "Submit Sketch"}
           </button>
         )}
+        {showBonusAlert && (
+          <div className="custom-alert bonus">
+            <p>
+              🎉 You’ve received a <strong>bonus sketch point</strong> for
+              sharing!
+              <br />
+              You can now submit another sketch.
+            </p>
+            <button onClick={() => setShowBonusAlert(false)}>Awesome 🚀</button>
+          </div>
+        )}
 
         {showCustomAlert && (
           <div className="custom-alert">
             <p>
-              ⏳ Your sketch will magically turn into an app in 20 days!
+              ⏳ Your sketch will magically turn into a website in 20 days!
               <br />
-              We'll send progress updates and code files straight to your inbox so you can
-              follow along.
+              We'll send progress updates and code files straight to your inbox
+              so you can follow along.
             </p>
             <button onClick={() => setShowCustomAlert(false)}>Okay ✨</button>
           </div>

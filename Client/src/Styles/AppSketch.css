@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap");
 
 .upload-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 60px 20px;
-  font-family: 'Patrick Hand', cursive;
+  font-family: "Patrick Hand", cursive;
   background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
   min-height: 100vh;
   box-sizing: border-box;
@@ -48,7 +48,7 @@
   margin-top: 30px;
   padding: 12px 24px;
   font-size: 1.2rem;
-  font-family: 'Patrick Hand', cursive;
+  font-family: "Patrick Hand", cursive;
   background-color: #222;
   color: #fff;
   border: none;
@@ -75,7 +75,7 @@
   margin-top: 25px;
   padding: 12px 18px;
   font-size: 1.1rem;
-  font-family: 'Patrick Hand', cursive;
+  font-family: "Patrick Hand", cursive;
   border: 2px solid #444;
   border-radius: 12px;
   box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.1);
@@ -95,12 +95,12 @@
   color: #e63946;
   margin-top: 8px;
   font-size: 1rem;
-  font-family: 'Patrick Hand', cursive;
+  font-family: "Patrick Hand", cursive;
 }
 
 .email-info-text {
   font-size: 1.05rem;
-  font-family: 'Patrick Hand', cursive;
+  font-family: "Patrick Hand", cursive;
   color: #444;
   margin-top: 15px;
   margin-bottom: 20px;
@@ -117,7 +117,7 @@
   border: 2px solid #444;
   border-radius: 20px;
   padding: 20px 30px;
-  font-family: 'Patrick Hand', cursive;
+  font-family: "Patrick Hand", cursive;
   font-size: 1.1rem;
   color: #222;
   box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.2);
@@ -133,7 +133,7 @@
   margin-top: 12px;
   padding: 8px 18px;
   font-size: 1rem;
-  font-family: 'Patrick Hand', cursive;
+  font-family: "Patrick Hand", cursive;
   background-color: #222;
   color: #fff;
   border: none;
@@ -197,8 +197,6 @@
   }
 }
 
-
-
 .react-share-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -229,4 +227,19 @@
   font-weight: bold;
 }
 
+.custom-alert.bonus {
+  background-color: #eaffea;
+  border-left: 5px solid #4caf50;
+  animation: slideIn 0.3s ease-out;
+}
 
+@keyframes slideIn {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}

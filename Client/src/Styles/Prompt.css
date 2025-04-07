@@ -1,0 +1,112 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+
+.prompt-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* default for desktop */
+  padding: 2rem;
+  background: #fdf6e3;
+  min-height: 100vh;
+  font-family: "Patrick Hand", cursive;
+}
+
+@media (max-width: 600px) {
+  .prompt-page {
+    justify-content: center; /* 👈 center vertically */
+  }
+  .prompt-container {
+    margin: 2rem auto 0 auto;
+    width: 90%;
+    padding-right: 1.2rem;
+    border-radius: 16px;
+  }
+}
+
+
+.prompt-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff9db;
+  border: 3px dashed #333;
+  padding: 2rem;
+  margin-top: 15%;
+  border-radius: 20px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 5px 5px 0px #000;
+}
+
+.prompt-input {
+  width: 100%;
+  height: 150px;
+  border: 2px dashed #444;
+  border-radius: 10px;
+  background: #fff;
+  padding: 1rem;
+  font-size: 1.2rem;
+  resize: none;
+  outline: none;
+  font-family: "Patrick Hand", cursive;
+  margin-bottom: 1rem;
+}
+
+.send-button {
+  background: #fcd34d;
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 0.6rem 1.5rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  font-family: "Patrick Hand", cursive;
+  box-shadow: 3px 3px 0px #000;
+  transition: transform 0.1s ease;
+  
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.send-button:hover {
+  background: #fde68a;
+  transform: translateY(-2px);
+}
+
+.send-button:active {
+  transform: translateY(1px);
+}
+
+.pay-button {
+    background: #93c5fd;
+    border: 2px solid #000;
+    border-radius: 12px;
+    padding: 0.6rem 1.5rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    font-family: "Patrick Hand", cursive;
+    box-shadow: 3px 3px 0px #000;
+    margin-bottom: 1rem;
+    transition: background 0.2s ease;
+    
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  }
+  
+  .pay-button:hover {
+    background: #bfdbfe;
+  }
+  
+  .prompt-input:disabled,
+  .send-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  

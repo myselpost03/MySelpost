@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import Header from "../Components/Header";
 import "../Styles/AppSketch.css";
 import confetti from "canvas-confetti";
@@ -10,7 +9,6 @@ import {
   WhatsappShareButton,
   TelegramShareButton,
 } from "react-share";
-
 
 const setCookie = (name, value, days) => {
   const expires = new Date(Date.now() + days * 864e5).toUTCString();
@@ -35,6 +33,7 @@ const AppSketch = () => {
   const [uploadedUrl, setUploadedUrl] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showCustomAlert, setShowCustomAlert] = useState(false);
+  const [showBonusAlert, setShowBonusAlert] = useState(false);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -115,15 +114,13 @@ const AppSketch = () => {
 
     // Check if free guest already used their sketch
     if (!isLoggedIn && getCookie("usedFreeSketch") === "true") {
-      alert(
-        "You've already used your 1 free sketch point. Please sign up to unlock more."
-      );
-      return;
+      //alert("You've already used your 1 free sketch point. Please sign up to unlock more.");
+      //return;
     }
 
     // Check if logged-in user already submitted sketch
     if (isLoggedIn && localStorage.getItem("coin")) {
-      alert("You've already used your 1 sketch point. Please wait 30 days.");
+      //alert("You've already used your 1 sketch point. Please wait 20 days.");
       return;
     }
 
@@ -175,7 +172,7 @@ const AppSketch = () => {
       if (isLoggedIn) {
         localStorage.setItem("coin", now.toString());
       } else {
-        setCookie("usedFreeSketch", now.toString(), 30);
+        setCookie("usedFreeSketch", now.toString(), 20);
       }
 
       setCooldownActive(true);
@@ -186,26 +183,27 @@ const AppSketch = () => {
 
   const handleBonusClaim = () => {
     const now = Date.now();
-  
+
     if (isLoggedIn) {
       const bonusClaimed = localStorage.getItem("bonusCoinClaimed");
       if (!bonusClaimed) {
         localStorage.setItem("coin", now.toString());
         localStorage.setItem("bonusCoinClaimed", "true");
         setCooldownActive(false);
-        alert("🎉 You've received a bonus sketch point!");
+        setShowBonusAlert(true);
+        setTimeout(() => setShowBonusAlert(false), 6000);
       }
     } else {
       const bonusCookie = getCookie("bonusCoinClaimed");
       if (!bonusCookie) {
         setCookie("usedFreeSketch", "", -1); // Clear old usage
-        setCookie("bonusCoinClaimed", "true", 30);
+        setCookie("bonusCoinClaimed", "true", 20);
         setCooldownActive(false);
-        alert("🎉 You've received a bonus sketch point!");
+        setShowBonusAlert(true);
+        setTimeout(() => setShowBonusAlert(false), 6000);
       }
     }
   };
-  
 
   const isFormReady = isLoggedIn
     ? !!file && !uploading
@@ -247,48 +245,49 @@ const AppSketch = () => {
           </>
         )}
         {cooldownActive ? (
-        <p className="cooldown-text">
-        ⏳ You’ve already used your 1 free sketch point.
-        <br />
-        Come back in <strong>{timeRemaining}</strong> to submit again.
-        <br />
-        <span className="share-instruction">🎁 Claim a bonus sketch point by sharing:</span>
-        <div className="react-share-buttons">
-          <FacebookShareButton
-            url="https://myselpost.com/sketch"
-            quote="Get your app built from a sketch!"
-            onShareWindowClose={() => handleBonusClaim()}
-          >
-            <button className="share-coin-button">📘 Facebook</button>
-          </FacebookShareButton>
-      
-          <TwitterShareButton
-            url="https://myselpost.com/sketch"
-            title="I just got an app built from a hand-drawn sketch. Try it yourself!"
-            onShareWindowClose={() => handleBonusClaim()}
-          >
-            <button className="share-coin-button">🐦 Twitter</button>
-          </TwitterShareButton>
-      
-          <WhatsappShareButton
-            url="https://myselpost.com/sketch"
-            title="Build an app from your hand-drawn sketch!"
-            separator=":: "
-            onShareWindowClose={() => handleBonusClaim()}
-          >
-            <button className="share-coin-button">🟢 WhatsApp</button>
-          </WhatsappShareButton>
-      
-          <TelegramShareButton
-            url="https://myselpost.com/sketch"
-            title="Get your app built from a sketch!"
-            onShareWindowClose={() => handleBonusClaim()}
-          >
-            <button className="share-coin-button">📨 Telegram</button>
-          </TelegramShareButton>
-        </div>
-      </p>
-      
+          <p className="cooldown-text">
+            ⏳ You’ve already used your 1 free sketch point.
+            <br />
+            Come back in <strong>{timeRemaining}</strong> to submit again.
+            <br />
+            <span className="share-instruction">
+              🎁 Claim a bonus sketch point by sharing:
+            </span>
+            <div className="react-share-buttons">
+              <FacebookShareButton
+                url="https://myselpost.com/sketch"
+                quote="Get your app built from a sketch!"
+                onShareWindowClose={() => handleBonusClaim()}
+              >
+                <button className="share-coin-button">📘 Facebook</button>
+              </FacebookShareButton>
+
+              <TwitterShareButton
+                url="https://myselpost.com/sketch"
+                title="I just got an app built from a hand-drawn sketch. Try it yourself!"
+                onShareWindowClose={() => handleBonusClaim()}
+              >
+                <button className="share-coin-button">🐦 Twitter</button>
+              </TwitterShareButton>
+
+              <WhatsappShareButton
+                url="https://myselpost.com/sketch"
+                title="Build an app from your hand-drawn sketch!"
+                separator=":: "
+                onShareWindowClose={() => handleBonusClaim()}
+              >
+                <button className="share-coin-button">🟢 WhatsApp</button>
+              </WhatsappShareButton>
+
+              <TelegramShareButton
+                url="https://myselpost.com/sketch"
+                title="Get your app built from a sketch!"
+                onShareWindowClose={() => handleBonusClaim()}
+              >
+                <button className="share-coin-button">📨 Telegram</button>
+              </TelegramShareButton>
+            </div>
+          </p>
         ) : (
           <button
             className="upload-button"
@@ -297,6 +296,17 @@ const AppSketch = () => {
           >
             {uploading ? "Uploading..." : "Submit Sketch"}
           </button>
+        )}
+        {showBonusAlert && (
+          <div className="custom-alert bonus">
+            <p>
+              🎉 You’ve received a <strong>bonus sketch point</strong> for
+              sharing!
+              <br />
+              You can now submit another sketch.
+            </p>
+            <button onClick={() => setShowBonusAlert(false)}>Awesome 🚀</button>
+          </div>
         )}
 
         {showCustomAlert && (
