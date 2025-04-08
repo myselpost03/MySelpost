@@ -34,6 +34,9 @@
     list-style: none;
     padding: 0;
     margin: 0;
+    
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   }
   
   .footer-section li {
@@ -67,5 +70,22 @@
     color: #bbb;
     margin-bottom: 8px;
     font-size: 0.95rem;
+  }
+  
+  @media (min-width: 768px) {
+    .footer-section h3,
+    .footer-section h4 {
+      font-size: 1.4rem;
+    }
+  
+    .footer-section p,
+    .footer-section a,
+    .tagline {
+      font-size: 1.1rem;
+    }
+  
+    .footer-bottom {
+      font-size: 1rem;
+    }
   }
   

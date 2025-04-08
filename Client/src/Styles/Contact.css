@@ -5,11 +5,48 @@
     min-height: 100vh;
   }
   
-  .contact-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+ /* Center vertically too */
+.contact-wrapper {
+  min-height: calc(100vh - 120px); /* adjusts for header/footer if needed */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Scale up on larger screens */
+@media (min-width: 768px) {
+  .contact-box {
+    max-width: 800px;
+    padding: 60px;
   }
+
+  .contact-box h1 {
+    font-size: 34px;
+  }
+
+  .contact-box p {
+    font-size: 1.1rem;
+  }
+
+  .contact-form label {
+    font-size: 1rem;
+  }
+
+  .contact-form input,
+  .contact-form textarea {
+    font-size: 1rem;
+  }
+
+  .submit-btn {
+    font-size: 1.1rem;
+    padding: 14px 28px;
+  }
+
+  .thank-you h2 {
+    font-size: 30px;
+  }
+}
+
   
   .contact-box {
     background: #ffffff;

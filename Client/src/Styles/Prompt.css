@@ -181,3 +181,34 @@ body {
 .sketch-points-button:hover {
   background: #fde68a;
 }
+
+
+@media (min-width: 1024px) {
+  .prompt-container {
+    max-width: 700px;
+    padding: 3rem;
+    margin-top: 8%;
+  }
+
+  .prompt-input {
+    font-size: 1.4rem;
+    height: 180px;
+  }
+
+  .send-button,
+  .pay-button,
+  .sketch-points-button {
+    font-size: 1.3rem;
+    padding: 0.8rem 2rem;
+  }
+
+  .building-text {
+    font-size: 1.6rem;
+  }
+
+  .custom-alert {
+    font-size: 1.2rem;
+    padding: 1.5rem 2.5rem;
+    max-width: 600px;
+  }
+}

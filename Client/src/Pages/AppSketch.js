@@ -24,7 +24,7 @@ const getCookie = (name) => {
 };
 
 const AppSketch = () => {
-  const DAILY_FREE_LIMIT = 0;
+  const DAILY_FREE_LIMIT = 2;
 
   const [cooldownActive, setCooldownActive] = useState(false);
   const [dailyCapReached, setDailyCapReached] = useState(false);
@@ -375,6 +375,7 @@ const AppSketch = () => {
     <br />
     Please come back a bit later!
   </p>
+  
   <button
       onClick={handleJoinWaitlist}
       className="upload-button"

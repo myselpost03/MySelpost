@@ -4,19 +4,43 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 3rem 1rem;
+  padding: 2rem;
   min-height: 100vh;
+  background-color: #f9f9f9;
 }
 
 .register-form {
-  display: flex;
-  flex-direction: column;
-  padding: 3rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  width: 100%;
-  text-align: center;
-  margin-bottom: 50%;
+  margin-bottom: 0; /* remove 50% bottom margin */
+  background-color: white;
+  border-radius: 12px;
+}
+
+/* Optional: make it bigger on large screens */
+@media (min-width: 768px) {
+  .register-form {
+    max-width: 500px;
+    padding: 3rem 4rem;
+  }
+
+  .register-form h2 {
+    font-size: 2.2rem;
+  }
+
+  .register-form input,
+  .register-form button {
+    width: 100%;
+  }
+  
+}
+
+@media (max-width: 600px) {
+  .register-form {
+    padding: 1.5rem;
+  }
+
+  .register-form h2 {
+    font-size: 1.6rem;
+  }
 }
 
 .register-form h2 {
