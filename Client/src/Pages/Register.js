@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../Components/Header';
 import '../Styles/Register.css';
-import { supabase } from '../Utils/supabaseClient';
 import bcrypt from 'bcryptjs';
+import { supabase } from '../Utils/supabaseClient';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +14,8 @@ const Register = () => {
   const [emailValid, setEmailValid] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+
   const navigate = useNavigate();
 
   const isEmailValid = (email) => {
@@ -45,18 +47,18 @@ const Register = () => {
     const { name, email, password } = formData;
 
     try {
-      // Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Insert into 'users' table
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('users')
         .insert([{ name, email, password: hashedPassword }]);
 
       if (error) throw error;
 
-      alert('Registration successful!');
-      navigate('/login');
+      setShowAlert(true);
+      setTimeout(() => {
+        setShowAlert(false);
+        navigate('/login');
+      }, 2000);
     } catch (err) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -106,6 +108,12 @@ const Register = () => {
             Already have an account? <Link to="/login">Login</Link>
           </p>
         </form>
+
+        {showAlert && (
+          <div className="custom-alert-box">
+            🎉 Registration successful! Redirecting to login...
+          </div>
+        )}
       </div>
     </div>
   );

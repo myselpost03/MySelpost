@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Header from "../Components/Header";
 import { supabase } from "../Utils/supabaseClient";
 import "../Styles/Prompt.css";
@@ -10,7 +10,10 @@ const Prompt = () => {
   const [submittedPrompt, setSubmittedPrompt] = useState("");
   const [customAlert, setCustomAlert] = useState("");
   const [promptPoints, setPromptPoints] = useState(3);
-  const [clickedGetMore, setClickedGetMore] = useState(false); // track "Get More Points" click
+  const [clickedGetMore, setClickedGetMore] = useState(false);
+  const [isPayingForPoints, setIsPayingForPoints] = useState(false);
+  const paypalRef = useRef(null);
+  const paypalGetMoreRef = useRef(null);
 
   useEffect(() => {
     const storedPoints = localStorage.getItem("promptPoints");
@@ -29,7 +32,6 @@ const Prompt = () => {
 
   const handleSubmit = async () => {
     if (prompt.trim() === "") return;
-
     if (promptPoints <= 0) {
       showCustomAlert("You've used all your free prompt points. 🎁");
       return;
@@ -43,10 +45,7 @@ const Prompt = () => {
       return;
     }
 
-    const { error } = await supabase
-      .from("users")
-      .update({ prompt })
-      .eq("email", email);
+    const { error } = await supabase.from("users").update({ prompt }).eq("email", email);
 
     if (error) {
       console.error("Error inserting prompt:", error);
@@ -62,22 +61,57 @@ const Prompt = () => {
     setPrompt("");
     updatePromptPoints(promptPoints - 1);
 
-    showCustomAlert(
-      `⏳ Your ${type} will magically turn into a ${type} in 7 days. We'll send progress updates and code files straight to your inbox so you can follow along.`
-    );
+    showCustomAlert(`⏳ Your ${type} will magically turn into a ${type} in 7 days.`);
   };
 
-  const handlePayment = () => {
-    setIsPaid(true);
+  const handleUnlockClick = () => {
+    if (!paypalRef.current || paypalRef.current.hasChildNodes()) return;
+
+    window.paypal.Buttons({
+      createOrder: (data, actions) => {
+        return actions.order.create({
+          purchase_units: [{ amount: { value: "5.00" } }],
+        });
+      },
+      onApprove: async (data, actions) => {
+        await actions.order.capture();
+        setIsPaid(true);
+        showCustomAlert("✅ Payment successful! Prompt tool unlocked.");
+      },
+      onError: (err) => {
+        console.error("PayPal Error:", err);
+        showCustomAlert("❌ Payment failed. Please try again.");
+      },
+    }).render(paypalRef.current);
   };
 
   const handleGetMorePoints = () => {
-    const newPoints = promptPoints + 3;
-    updatePromptPoints(newPoints);
-    setClickedGetMore(true);
-    showCustomAlert("🎉 You've been credited with 3 more prompt points!");
+    setIsPayingForPoints(true); // Trigger PayPal $1 rendering
   };
-  
+
+  useEffect(() => {
+    if (!isPayingForPoints || !paypalGetMoreRef.current || paypalGetMoreRef.current.hasChildNodes()) return;
+
+    window.paypal.Buttons({
+      createOrder: (data, actions) => {
+        return actions.order.create({
+          purchase_units: [{ amount: { value: "1.00" } }],
+        });
+      },
+      onApprove: async (data, actions) => {
+        await actions.order.capture();
+        const newPoints = promptPoints + 3;
+        updatePromptPoints(newPoints);
+        setClickedGetMore(true);
+        setIsPayingForPoints(false);
+        showCustomAlert("🎉 You've been credited with 3 more prompt points!");
+      },
+      onError: (err) => {
+        console.error("PayPal Error:", err);
+        showCustomAlert("❌ $1 Payment failed. Please try again.");
+      },
+    }).render(paypalGetMoreRef.current);
+  }, [isPayingForPoints]);
 
   const isWebsite = submittedPrompt.toLowerCase().includes("website");
 
@@ -89,11 +123,12 @@ const Prompt = () => {
 
       <div className="prompt-container">
         {!isPaid && (
-          <>
-            <button className="pay-button" onClick={handlePayment}>
-              💸 Pay to Unlock Prompt Tool
+          <div>
+            <button className="pay-button" onClick={handleUnlockClick}>
+              💸 Pay $5 to Unlock Prompt Tool
             </button>
-          </>
+            <div ref={paypalRef} style={{ marginTop: "20px" }} />
+          </div>
         )}
 
         {!isSubmitted && (
@@ -103,28 +138,26 @@ const Prompt = () => {
                 🖍️ Monthly Prompt Points: {promptPoints}
               </button>
             ) : (
-              <button
-                className="sketch-points-button"
-                onClick={handleGetMorePoints}
-              >
-                🎁 Get More Points
-              </button>
+              <>
+                <button className="sketch-points-button" onClick={handleGetMorePoints}>
+                  🎁 Get More Points ($1)
+                </button>
+                <div ref={paypalGetMoreRef} style={{ marginTop: "10px" }} />
+              </>
             )}
 
             <textarea
               className="prompt-input"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe the app or website you want to create. For example: 'A journal app for tracking daily moods' or 'A site where people can swap books locally.'"
+              placeholder="Describe the app or website you want to create..."
               disabled={!isPaid}
             />
 
             <button
               className="send-button"
               onClick={handleSubmit}
-              disabled={
-                !isPaid || promptPoints <= 0 || (promptPoints === 0 && !clickedGetMore)
-              }
+              disabled={!isPaid || promptPoints <= 0}
             >
               Send ✏️
             </button>

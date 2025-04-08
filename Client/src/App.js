@@ -12,6 +12,7 @@ import About from "./Pages/About";
 import Contact from "./Pages/Contact";
 import Terms from "./Pages/Terms";
 import Privacy from "./Pages/Privacy";
+import ProtectedRoute from "./Utils/ProtectedRoute"; // ✅ import it
 
 function App() {
   return (
@@ -20,7 +21,6 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/prompt" element={<Prompt />} />
         <Route path="/sketch" element={<Sketch />} />
         <Route path="/about" element={<About />} />
         <Route path="/terms" element={<Terms />} />
@@ -29,6 +29,16 @@ function App() {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/app-sketch" element={<AppSketch />} />
         <Route path="/web-sketch" element={<WebSketch />} />
+
+        {/* ✅ Protected Prompt Route */}
+        <Route
+          path="/prompt"
+          element={
+            <ProtectedRoute>
+              <Prompt />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );
