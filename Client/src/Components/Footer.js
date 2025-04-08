@@ -24,7 +24,7 @@ const Footer = () => {
 
         <div className="footer-section">
           <h4>Get in Touch</h4>
-          <p>Email: support@myselpost.com</p>
+          <p>Email: myselpost03@gmail.com</p>
        
         </div>
       </div>

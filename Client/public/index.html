@@ -9,6 +9,7 @@
       name="description"
       content="Web site created using create-react-app"
     />
+    <link rel="canonical" href="https://www.myselpost.com" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -17,10 +18,132 @@
     <meta name="apple-mobile-web-app-title" content="MySelpost" />
     <link rel="manifest" href="/site.webmanifest" />
     <title>MySelpost</title>
+    <style>
+      #install-popup {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #ffffff;
+        padding: 20px;
+        text-align: center;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+        display: none;
+        z-index: 9999;
+      }
+
+      #install-popup-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      #install-popup-text {
+        flex-grow: 1;
+        font-family: "Poppins", sans-serif;
+      }
+
+      #install-button,
+      #cancel-button {
+        background-color: #03c988;
+        color: #ffffff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: "Poppins", sans-serif;
+      }
+
+      #cancel-button {
+        background-color: #ff6666;
+      }
+    </style>
     <script src="https://www.paypal.com/sdk/js?client-id=Adcv7ZvRzIG05mxp1QZkqYJhBNbQUdgw-V7bhbWtOItVdrEFEtcPtRavs5z72VJNa1Pish8CD8yaxjO2&currency=USD"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker
+            .register("./service-worker.js", { scope: "/" })
+            .then(function (registration) {
+              console.log("Service Worker Registered!");
+            })
+            .catch(function (error) {
+              console.log("Service Worker Registration Failed:", error);
+            });
+        });
+      }
+
+      window.addEventListener("beforeinstallprompt", function (event) {
+        event.preventDefault();
+        window.deferredPrompt = event;
+        document.getElementById("install-popup").style.display = "block";
+      });
+
+      window.addEventListener("appinstalled", function (event) {
+        console.log("App installed successfully");
+        document.getElementById("install-popup").style.display = "none";
+      });
+
+      function installApp() {
+        const installPopup = document.getElementById("install-popup");
+        installPopup.style.display = "none";
+        if (window.deferredPrompt) {
+          window.deferredPrompt.prompt();
+          window.deferredPrompt.userChoice.then(function (choiceResult) {
+            if (choiceResult.outcome === "accepted") {
+              console.log("User accepted the install prompt");
+            } else {
+              console.log("User dismissed the install prompt");
+            }
+            window.deferredPrompt = null;
+          });
+        }
+      }
+
+      function cancelInstall() {
+        const installPopup = document.getElementById("install-popup");
+        installPopup.style.display = "none";
+        window.deferredPrompt = null;
+      }
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    <div id="install-popup">
+      <div id="install-popup-content">
+        <button id="install-button" onclick="trackInstallClick(); installApp()">
+          Install
+        </button>
+        <button
+          id="cancel-button"
+          onclick="trackCancelClick(); cancelInstall()"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+    <script>
+      // Track Install button click event
+      function trackInstallClick() {
+        gtag("event", "click", {
+          event_category: "Install Popup",
+          event_label: "Install Button",
+          value: 1,
+        });
+      }
+
+      // Track Cancel button click event
+      function trackCancelClick() {
+        gtag("event", "click", {
+          event_category: "Install Popup",
+          event_label: "Cancel Button",
+          value: 1,
+        });
+      }
+    </script>
+    <script src="./service-worker.js" defer></script>
   </body>
 </html>
