@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import { supabase } from "../Utils/supabaseClient";
 import "../Styles/Prompt.css";
@@ -14,10 +15,77 @@ const Prompt = () => {
   const [isPayingForPoints, setIsPayingForPoints] = useState(false);
   const paypalRef = useRef(null);
   const paypalGetMoreRef = useRef(null);
+  const [remainingTime, setRemainingTime] = useState("");
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isSubmitted) return;
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    const submittedAt = localStorage.getItem("submittedAt");
+
+    // Set new timestamp if none exists
+    if (!submittedAt) {
+      const newTimestamp = new Date().toISOString();
+      localStorage.setItem("submittedAt", newTimestamp);
+    }
+
+    const deadline = new Date(localStorage.getItem("submittedAt"));
+    deadline.setDate(deadline.getDate() + 7);
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const diff = deadline - now;
+
+      if (diff <= 0) {
+        setRemainingTime("Delivered ✅");
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      setRemainingTime(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+    };
+
+    updateCountdown();
+    const intervalId = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [isSubmitted]);
 
   useEffect(() => {
     const storedPoints = localStorage.getItem("promptPoints");
     setPromptPoints(storedPoints !== null ? parseInt(storedPoints) : 3);
+  }, []);
+
+  useEffect(() => {
+    const checkUserPaidStatus = async () => {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const email = user?.email;
+
+      if (!email) return;
+
+      const { data, error } = await supabase
+        .from("users")
+        .select("pricing")
+        .eq("email", email)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user pricing status:", error);
+        return;
+      }
+
+      if (data?.pricing === "paid") {
+        setIsPaid(true);
+      }
+    };
+
+    checkUserPaidStatus();
   }, []);
 
   const updatePromptPoints = (newPoints) => {
@@ -45,7 +113,10 @@ const Prompt = () => {
       return;
     }
 
-    const { error } = await supabase.from("users").update({ prompt }).eq("email", email);
+    const { error } = await supabase
+      .from("users")
+      .update({ prompt })
+      .eq("email", email);
 
     if (error) {
       console.error("Error inserting prompt:", error);
@@ -61,28 +132,58 @@ const Prompt = () => {
     setPrompt("");
     updatePromptPoints(promptPoints - 1);
 
-    showCustomAlert(`⏳ Your ${type} will magically turn into a ${type} in 7 days.`);
+    showCustomAlert(
+      `⏳ Your ${type} will magically turn into a ${type} in 7 days. You'll get your ${type} & code files to your email.`
+    );
+  };
+
+  const handleBack = () => {
+    navigate("/prompt");
   };
 
   const handleUnlockClick = () => {
     if (!paypalRef.current || paypalRef.current.hasChildNodes()) return;
 
-    window.paypal.Buttons({
-      createOrder: (data, actions) => {
-        return actions.order.create({
-          purchase_units: [{ amount: { value: "5.00" } }],
-        });
-      },
-      onApprove: async (data, actions) => {
-        await actions.order.capture();
-        setIsPaid(true);
-        showCustomAlert("✅ Payment successful! Prompt tool unlocked.");
-      },
-      onError: (err) => {
-        console.error("PayPal Error:", err);
-        showCustomAlert("❌ Payment failed. Please try again.");
-      },
-    }).render(paypalRef.current);
+    window.paypal
+      .Buttons({
+        createOrder: (data, actions) => {
+          return actions.order.create({
+            purchase_units: [{ amount: { value: "5.00" } }],
+          });
+        },
+        onApprove: async (data, actions) => {
+          await actions.order.capture();
+          setIsPaid(true);
+          showCustomAlert("✅ Payment successful! Prompt tool unlocked.");
+
+          const user = JSON.parse(localStorage.getItem("user"));
+          const email = user?.email;
+
+          if (email) {
+            const { error } = await supabase
+              .from("users")
+              .update({ pricing: "paid" })
+              .eq("email", email);
+
+            if (error) {
+              console.error("Error updating pricing column:", error);
+              showCustomAlert(
+                "⚠️ Payment succeeded, but we couldn't update your account status."
+              );
+            }
+          } else {
+            showCustomAlert(
+              "⚠️ Could not update user status. Email not found."
+            );
+          }
+        },
+
+        onError: (err) => {
+          console.error("PayPal Error:", err);
+          showCustomAlert("❌ Payment failed. Please try again.");
+        },
+      })
+      .render(paypalRef.current);
   };
 
   const handleGetMorePoints = () => {
@@ -90,27 +191,34 @@ const Prompt = () => {
   };
 
   useEffect(() => {
-    if (!isPayingForPoints || !paypalGetMoreRef.current || paypalGetMoreRef.current.hasChildNodes()) return;
+    if (
+      !isPayingForPoints ||
+      !paypalGetMoreRef.current ||
+      paypalGetMoreRef.current.hasChildNodes()
+    )
+      return;
 
-    window.paypal.Buttons({
-      createOrder: (data, actions) => {
-        return actions.order.create({
-          purchase_units: [{ amount: { value: "1.00" } }],
-        });
-      },
-      onApprove: async (data, actions) => {
-        await actions.order.capture();
-        const newPoints = promptPoints + 3;
-        updatePromptPoints(newPoints);
-        setClickedGetMore(true);
-        setIsPayingForPoints(false);
-        showCustomAlert("🎉 You've been credited with 3 more prompt points!");
-      },
-      onError: (err) => {
-        console.error("PayPal Error:", err);
-        showCustomAlert("❌ $1 Payment failed. Please try again.");
-      },
-    }).render(paypalGetMoreRef.current);
+    window.paypal
+      .Buttons({
+        createOrder: (data, actions) => {
+          return actions.order.create({
+            purchase_units: [{ amount: { value: "1.00" } }],
+          });
+        },
+        onApprove: async (data, actions) => {
+          await actions.order.capture();
+          const newPoints = promptPoints + 3;
+          updatePromptPoints(newPoints);
+          setClickedGetMore(true);
+          setIsPayingForPoints(false);
+          showCustomAlert("🎉 You've been credited with 3 more prompt points!");
+        },
+        onError: (err) => {
+          console.error("PayPal Error:", err);
+          showCustomAlert("❌ $1 Payment failed. Please try again.");
+        },
+      })
+      .render(paypalGetMoreRef.current);
   }, [isPayingForPoints]);
 
   const isWebsite = submittedPrompt.toLowerCase().includes("website");
@@ -139,7 +247,10 @@ const Prompt = () => {
               </button>
             ) : (
               <>
-                <button className="sketch-points-button" onClick={handleGetMorePoints}>
+                <button
+                  className="sketch-points-button"
+                  onClick={handleGetMorePoints}
+                >
                   🎁 Get More Points ($1)
                 </button>
                 <div ref={paypalGetMoreRef} style={{ marginTop: "10px" }} />
@@ -168,10 +279,16 @@ const Prompt = () => {
           <div className="building-container">
             <p className="building-text">
               Your {isWebsite ? "website" : "app"} is building...
+              <br />⏳ {remainingTime}
             </p>
+
             <div className="progress-bar">
               <div className="progress-fill"></div>
             </div>
+
+            <button className="back-btn" onClick={handleBack}>
+              Go to Prompt
+            </button>
           </div>
         )}
       </div>

@@ -244,3 +244,17 @@
     opacity: 1;
   }
 }
+
+
+.link-bold {
+  color: #000000
+}
+
+.waitlist-position {
+  font-weight: bold;
+  color: #ffa500;
+}
+.link-highlight {
+  color: #00bcd4;
+  text-decoration: underline;
+}

@@ -143,6 +143,8 @@ const Header = () => {
                   {checking ? 'Checking...' : 'Login'}
                 </button>
                 <Link to="/register" className="nav-link">Register</Link>
+                <Link to="/pricing" className="nav-link">Pricing</Link>
+
               </nav>
             </>
           ) : (
@@ -156,10 +158,10 @@ const Header = () => {
               </button>
               <button
                 type="button"
-                onClick={() => handleMobileRedirect('/register')}
+                onClick={() => handleMobileRedirect('/pricing')}
                 className="nav-link"
               >
-                Register
+                Pricing
               </button>
             </nav>
           )}
