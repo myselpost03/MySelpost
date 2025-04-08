@@ -4,20 +4,55 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#03C988" />
+
+    <title>MySelpost — Your Sketch, Turned Into a Real Website or App</title>
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="Turn your ideas into reality. MySelpost transforms your sketch or prompt into a custom website or app — built with precision and creativity, no code needed."
     />
+    <meta
+      name="keywords"
+      content="custom website from sketch, prompt to app, build from idea, creative website builder, sketch website maker, personalized web development, unique site builder, myselpost"
+    />
+    <meta name="author" content="MySelpost" />
     <link rel="canonical" href="https://www.myselpost.com" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" content="MySelpost — From Sketch to Web" />
+    <meta
+      property="og:description"
+      content="Sketch something. Describe it. Get a real custom-built website or app with speed and style. No code or templates, just creative execution."
+    />
+    <meta property="og:url" content="https://www.myselpost.com" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Sketch → Custom Website | MySelpost" />
+    <meta
+      name="twitter:description"
+      content="Describe your idea, upload a sketch, and get a unique site or app built for you. No templates, no code required — just your imagination."
+    />
+
+    <!-- Icons -->
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="MySelpost" />
     <link rel="manifest" href="/site.webmanifest" />
-    <title>MySelpost</title>
+
+    <script
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="c532e969-5591-42cc-b86e-5b45b4f28191"
+    ></script>
+
+    <!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=Adcv7ZvRzIG05mxp1QZkqYJhBNbQUdgw-V7bhbWtOItVdrEFEtcPtRavs5z72VJNa1Pish8CD8yaxjO2&currency=USD"></script>
+
+    <!-- PWA Install Popup Style -->
     <style>
       #install-popup {
         position: fixed;
@@ -60,7 +95,8 @@
         background-color: #ff6666;
       }
     </style>
-    <script src="https://www.paypal.com/sdk/js?client-id=Adcv7ZvRzIG05mxp1QZkqYJhBNbQUdgw-V7bhbWtOItVdrEFEtcPtRavs5z72VJNa1Pish8CD8yaxjO2&currency=USD"></script>
+
+    <!-- Service Worker & Install Logic -->
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", function () {
@@ -81,7 +117,7 @@
         document.getElementById("install-popup").style.display = "block";
       });
 
-      window.addEventListener("appinstalled", function (event) {
+      window.addEventListener("appinstalled", function () {
         console.log("App installed successfully");
         document.getElementById("install-popup").style.display = "none";
       });
@@ -112,6 +148,7 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+
     <div id="install-popup">
       <div id="install-popup-content">
         <button id="install-button" onclick="trackInstallClick(); installApp()">
@@ -125,8 +162,9 @@
         </button>
       </div>
     </div>
+
+    <!-- Analytics Events -->
     <script>
-      // Track Install button click event
       function trackInstallClick() {
         gtag("event", "click", {
           event_category: "Install Popup",
@@ -135,7 +173,6 @@
         });
       }
 
-      // Track Cancel button click event
       function trackCancelClick() {
         gtag("event", "click", {
           event_category: "Install Popup",
@@ -144,6 +181,7 @@
         });
       }
     </script>
+
     <script src="./service-worker.js" defer></script>
   </body>
 </html>
