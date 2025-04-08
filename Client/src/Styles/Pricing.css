@@ -3,7 +3,6 @@
     font-family: 'Segoe UI', sans-serif;
     background: #f9f9ff;
     min-height: 100vh;
-    margin-top: 15%;
   }
   
   .pricing-title {
@@ -14,6 +13,8 @@
   }
   
   .plans-wrapper {
+    
+    margin-top: 15%;
     display: flex;
     flex-direction: column;
     gap: 2rem;

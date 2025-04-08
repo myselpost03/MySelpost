@@ -8,6 +8,10 @@ import AppSketch from './Pages/AppSketch';
 import WebSketch from './Pages/WebSketch';
 import Prompt from "./Pages/Prompt";
 import Pricing from "./Pages/Pricing";
+import About from "./Pages/About";
+import Contact from "./Pages/Contact";
+import Terms from "./Pages/Terms";
+import Privacy from "./Pages/Privacy";
 
 function App() {
   return (
@@ -18,6 +22,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/prompt" element={<Prompt />} />
         <Route path="/sketch" element={<Sketch />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/contact-us" element={<Contact />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/app-sketch" element={<AppSketch />} />
         <Route path="/web-sketch" element={<WebSketch />} />

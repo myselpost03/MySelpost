@@ -16,7 +16,7 @@ const Footer = () => {
           <h4>Quick Links</h4>
           <ul>
             <li><Link to="/about">About</Link></li>
-            <li><Link to="/contact">Contact Us</Link></li>
+            <li><Link to="/contact-us">Contact Us</Link></li>
             <li><Link to="/terms">Terms of Service</Link></li>
             <li><Link to="/privacy">Privacy Policy</Link></li>
           </ul>
@@ -25,12 +25,7 @@ const Footer = () => {
         <div className="footer-section">
           <h4>Get in Touch</h4>
           <p>Email: support@myselpost.com</p>
-          <p>
-            Instagram:{' '}
-            <Link to="https://instagram.com/myselpost" target="_blank" rel="noreferrer">
-              @myselpost
-            </Link>
-          </p>
+       
         </div>
       </div>
 
