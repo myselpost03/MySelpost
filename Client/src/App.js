@@ -4,15 +4,16 @@ import Home from "./Pages/Home";
 import Register from "./Pages/Register";
 import Login from "./Pages/Login";
 import Sketch from "./Pages/Sketch";
-import AppSketch from './Pages/AppSketch';
-import WebSketch from './Pages/WebSketch';
+import AppSketch from "./Pages/AppSketch";
+import WebSketch from "./Pages/WebSketch";
 import Prompt from "./Pages/Prompt";
 import Pricing from "./Pages/Pricing";
 import About from "./Pages/About";
 import Contact from "./Pages/Contact";
 import Terms from "./Pages/Terms";
 import Privacy from "./Pages/Privacy";
-import ProtectedRoute from "./Utils/ProtectedRoute"; // ✅ import it
+import ProtectedRoute from "./Utils/ProtectedRoute";
+import NotFound from "./Pages/NotFound";
 
 function App() {
   return (
@@ -39,6 +40,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/* ✅ 404 Catch-All Route */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
