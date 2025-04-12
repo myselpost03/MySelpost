@@ -24,7 +24,7 @@ const getCookie = (name) => {
 };
 
 const WebSketch = () => {
-  const DAILY_FREE_LIMIT = 0;
+  const DAILY_FREE_LIMIT = 1000;
 
   const [cooldownActive, setCooldownActive] = useState(false);
   const [dailyCapReached, setDailyCapReached] = useState(false);
