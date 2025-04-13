@@ -33,10 +33,10 @@ const About = () => {
           <h2>💳 Plans & Delivery</h2>
           <ul>
             <li>
-              <strong>Sketch Plan:</strong> <em>Free</em> – Delivery in <strong>20 days</strong> with <strong>1 monthly point</strong>.
+              <strong>Sketch Plan:</strong> <em>Free</em> – Delivery in <strong>7 days</strong> with <strong>1 monthly point</strong>.
             </li>
             <li>
-              <strong>Prompt Plan:</strong> <em>Paid</em> – Delivery in <strong>7 days</strong> with <strong>3 monthly points</strong>.
+              <strong>Prompt Plan:</strong> <em>Paid</em> – Delivery in <strong>3 days</strong> with <strong>3 monthly points</strong>.
             </li>
           </ul>
         </div>

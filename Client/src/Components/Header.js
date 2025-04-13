@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../Styles/Header.css";
-import { supabase } from '../Utils/supabaseClient';
-import bcrypt from 'bcryptjs';
+import { supabase } from "../Utils/supabaseClient";
+import bcrypt from "bcryptjs";
 
 const Header = () => {
   const [user, setUser] = useState(null);
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [emailValid, setEmailValid] = useState(true);
   const [credentialsValid, setCredentialsValid] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -28,9 +28,9 @@ const Header = () => {
     setChecking(true);
     try {
       const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
+        .from("users")
+        .select("*")
+        .eq("email", email)
         .single();
 
       if (error || !data) {
@@ -76,9 +76,9 @@ const Header = () => {
 
     try {
       const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
+        .from("users")
+        .select("*")
+        .eq("email", email)
         .single();
 
       if (error || !data) throw new Error("Invalid email");
@@ -89,7 +89,7 @@ const Header = () => {
       const userObj = { id: data.id, name: data.name, email: data.email };
       localStorage.setItem("user", JSON.stringify(userObj));
       setUser(userObj); // ✅ Set user to trigger logout UI
-      navigate('/');
+      navigate("/");
     } catch (err) {
       alert(err.message);
     }
@@ -98,11 +98,12 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem("user");
     setUser(null);
+    navigate("/");
   };
 
   const handlePricing = () => {
-    return navigate("/pricing")
-  }
+    return navigate("/pricing");
+  };
 
   const handleMobileRedirect = (path) => {
     if (isMobile) navigate(path);
@@ -110,7 +111,9 @@ const Header = () => {
 
   return (
     <header className="header">
-      <Link to="/" className="logo">MySelpost</Link>
+      <Link to="/" className="logo">
+        MySelpost
+      </Link>
 
       {!user ? (
         <form className="nav-with-inputs" onSubmit={handleSubmit}>
@@ -140,25 +143,28 @@ const Header = () => {
                   className="nav-link"
                   disabled={checking} // ✅ Now allows clicking if not checking
                 >
-                  {checking ? 'Checking...' : 'Login'}
+                  {checking ? "Checking..." : "Login"}
                 </button>
-                <Link to="/register" className="nav-link">Register</Link>
-                <Link to="/pricing" className="nav-link">Pricing</Link>
-
+                <Link to="/register" className="nav-link">
+                  Register
+                </Link>
+                <Link to="/pricing" className="nav-link">
+                  Pricing
+                </Link>
               </nav>
             </>
           ) : (
             <nav className="nav">
               <button
                 type="button"
-                onClick={() => handleMobileRedirect('/login')}
+                onClick={() => handleMobileRedirect("/login")}
                 className="nav-link"
               >
                 Login
               </button>
               <button
                 type="button"
-                onClick={() => handleMobileRedirect('/pricing')}
+                onClick={() => handleMobileRedirect("/pricing")}
                 className="nav-link"
               >
                 Pricing

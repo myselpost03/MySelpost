@@ -42,7 +42,6 @@ const WebSketch = () => {
   const [queuePosition, setQueuePosition] = useState(null);
   const [showTrafficMessage, setShowTrafficMessage] = useState(false);
 
-
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) setIsLoggedIn(true);
@@ -94,79 +93,81 @@ const WebSketch = () => {
     const checkDailyCap = async () => {
       const today = new Date();
       const todayStart = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-    
+
       // 1. Check how many sketches submitted today
       const { count, error } = await supabase
         .from("sketch_requests")
         .select("*", { count: "exact", head: true })
         .gte("created_at", todayStart);
-    
+
       if (!error && count >= DAILY_FREE_LIMIT) {
         setDailyCapReached(true);
         setShowTrafficMessage(Math.random() < 0.5); // 50% chance
-        
       } else {
         setDailyCapReached(false);
-    
+
         // 2. Check if waitlist slot has already been given today
         const { data: metaData, error: metaError } = await supabase
           .from("meta_flags")
           .select("value")
           .eq("key", "last_served")
           .single();
-    
+
         const lastServedDate = metaData?.value;
         const todayDateStr = new Date().toISOString().split("T")[0];
-    
+
         if (lastServedDate === todayDateStr) {
           // Already served someone today
           return;
         }
-    
+
         // 3. Get the first waitlist user (FIFO)
         const { data: waitlistData, error: waitlistError } = await supabase
           .from("waitlist")
           .select("*")
           .order("position", { ascending: true })
           .limit(1);
-    
+
         if (!waitlistError && waitlistData.length > 0) {
           const nextUser = waitlistData[0];
-    
+
           // Serve this user (delete them from waitlist)
           await supabase.from("waitlist").delete().eq("id", nextUser.id);
-    
+
           // 4. Update 'last_served' date
           const { error: updateError } = await supabase
             .from("meta_flags")
             .upsert({ key: "last_served", value: todayDateStr });
-    
+
           if (updateError) console.error("Meta update failed", updateError);
-    
+
           // 5. Reorder remaining waitlist
-          const { data: remainingWaitlist, error: reorderError } = await supabase
-            .from("waitlist")
-            .select("*")
-            .order("position", { ascending: true });
-    
+          const { data: remainingWaitlist, error: reorderError } =
+            await supabase
+              .from("waitlist")
+              .select("*")
+              .order("position", { ascending: true });
+
           if (!reorderError && remainingWaitlist.length > 0) {
             const updates = remainingWaitlist.map((user, index) => ({
               id: user.id,
               position: index + 1,
             }));
-    
+
             const updatePromises = updates.map((u) =>
-              supabase.from("waitlist").update({ position: u.position }).eq("id", u.id)
+              supabase
+                .from("waitlist")
+                .update({ position: u.position })
+                .eq("id", u.id)
             );
-    
+
             await Promise.all(updatePromises);
           }
-    
+
           console.log(`Served waitlist user: ${nextUser.email}`);
         }
       }
     };
-    
 
     checkDailyCap();
   }, []);
@@ -274,24 +275,24 @@ const WebSketch = () => {
     let userEmail = isLoggedIn
       ? JSON.parse(localStorage.getItem("user"))?.email || "unknown"
       : email;
-  
+
     if (!userEmail || (!isLoggedIn && !validateEmail(email))) {
       alert("Please enter a valid email to join the waitlist.");
       return;
     }
-  
+
     // Check if already in waitlist
     const { data: existingEntry, error: fetchError } = await supabase
       .from("waitlist")
       .select("*")
       .eq("email", userEmail)
       .maybeSingle();
-  
+
     if (fetchError) {
       alert("Something went wrong while checking the waitlist.");
       return;
     }
-  
+
     if (existingEntry) {
       setShowCustomAlert(true);
       setJoinedWaitlist(true);
@@ -299,18 +300,18 @@ const WebSketch = () => {
       setTimeout(() => setShowCustomAlert(false), 7000);
       return;
     }
-  
+
     // Get current count for position
     const { count } = await supabase
       .from("waitlist")
       .select("*", { count: "exact", head: true });
-  
+
     const newPosition = (count || 0) + 1;
-  
+
     const { error } = await supabase
       .from("waitlist")
       .insert([{ email: userEmail, position: newPosition }]);
-  
+
     if (!error) {
       setJoinedWaitlist(true);
       setQueuePosition(newPosition);
@@ -320,7 +321,6 @@ const WebSketch = () => {
       alert("Failed to join the waitlist.");
     }
   };
-  
 
   const isFormReady = isLoggedIn
     ? !!file && !uploading
@@ -364,37 +364,40 @@ const WebSketch = () => {
 
         {dailyCapReached ? (
           <div className="cooldown-text">
-          {joinedWaitlist ? (
-  <p>
-    ✅ You’ve joined the waitlist! <br />
-    Your position: <strong>#{queuePosition}</strong>
-  </p>
-) : showTrafficMessage ? (
-  <><p>
-    🚧 The site is getting a lot of traffic right now.
-    <br />
-    Please come back a bit later!
-  </p>
-  <button
-      onClick={handleJoinWaitlist}
-      className="upload-button"
-      disabled={!isLoggedIn && !validateEmail(email)}
-    >Join Waitlist</button>
-  </>
-) : (
-  <>
-    ⛔ Free sketch slots are full for today.
-    <br />
-    Come back tomorrow, or join the waitlist below:
-    <button
-      onClick={handleJoinWaitlist}
-      className="upload-button"
-      disabled={!isLoggedIn && !validateEmail(email)}
-    >
-      Join Waitlist
-    </button>
-  </>
-)}
+            {joinedWaitlist ? (
+              <p>
+                ✅ You’ve joined the waitlist! <br />
+                Your position: <strong>#{queuePosition}</strong>
+              </p>
+            ) : showTrafficMessage ? (
+              <>
+                <p>
+                  🚧 The site is getting a lot of traffic right now.
+                  <br />
+                  Please come back a bit later!
+                </p>
+                <button
+                  onClick={handleJoinWaitlist}
+                  className="upload-button"
+                  disabled={!isLoggedIn && !validateEmail(email)}
+                >
+                  Join Waitlist
+                </button>
+              </>
+            ) : (
+              <>
+                ⛔ Free sketch slots are full for today.
+                <br />
+                Come back tomorrow, or join the waitlist below:
+                <button
+                  onClick={handleJoinWaitlist}
+                  className="upload-button"
+                  disabled={!isLoggedIn && !validateEmail(email)}
+                >
+                  Join Waitlist
+                </button>
+              </>
+            )}
 
             <p>
               Or try our{" "}
@@ -472,7 +475,7 @@ const WebSketch = () => {
             <p>
               {joinedWaitlist
                 ? "✅ You have already joined the waitlist!"
-                : "⏳ Your sketch will magically turn into a website in 20 days!\nWe'll send updates to your inbox."}
+                : "⏳ Your sketch will magically turn into a website in 7 days!\nWe'll send updates to your inbox."}
             </p>
             <button onClick={() => setShowCustomAlert(false)}>Okay ✨</button>
           </div>

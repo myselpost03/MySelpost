@@ -16,6 +16,8 @@ const Prompt = () => {
   const paypalRef = useRef(null);
   const paypalGetMoreRef = useRef(null);
   const [remainingTime, setRemainingTime] = useState("");
+  const [promoCode, setPromoCode] = useState("");
+  const [promoValid, setPromoValid] = useState(false);
 
   const navigate = useNavigate();
 
@@ -25,7 +27,6 @@ const Prompt = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     const submittedAt = localStorage.getItem("submittedAt");
 
-    // Set new timestamp if none exists
     if (!submittedAt) {
       const newTimestamp = new Date().toISOString();
       localStorage.setItem("submittedAt", newTimestamp);
@@ -133,7 +134,7 @@ const Prompt = () => {
     updatePromptPoints(promptPoints - 1);
 
     showCustomAlert(
-      `⏳ Your ${type} will magically turn into a ${type} in 7 days. You'll get your ${type} & code files to your email.`
+      `⏳ Your ${type} will magically turn into a ${type} in 3 days. You'll get your ${type} & code files to your email.`
     );
   };
 
@@ -141,16 +142,41 @@ const Prompt = () => {
     navigate("/prompt");
   };
 
-  const handleUnlockClick = () => {
+  const handleUnlockClick = async () => {
+    const code = promoCode.trim();
+
+    if (code && !promoValid) {
+      const { data, error } = await supabase
+        .from("promo_codes")
+        .select("used")
+        .eq("code", code)
+        .single();
+
+      if (error || !data) {
+        showCustomAlert("❌ Invalid promo code.");
+        return;
+      }
+
+      if (data.used) {
+        showCustomAlert("⚠️ This promo code has already been used.");
+        return;
+      }
+
+      setPromoValid(true);
+      showCustomAlert("🎉 Promo applied! $2.50 price unlocked!");
+    }
+
     if (!paypalRef.current || paypalRef.current.hasChildNodes()) return;
 
     window.paypal
       .Buttons({
         createOrder: (data, actions) => {
+          const finalPrice = promoValid ? "2.50" : "5.00";
           return actions.order.create({
-            purchase_units: [{ amount: { value: "5.00" } }],
+            purchase_units: [{ amount: { value: finalPrice } }],
           });
         },
+
         onApprove: async (data, actions) => {
           await actions.order.capture();
           setIsPaid(true);
@@ -160,21 +186,17 @@ const Prompt = () => {
           const email = user?.email;
 
           if (email) {
-            const { error } = await supabase
+            await supabase
               .from("users")
               .update({ pricing: "paid" })
               .eq("email", email);
+          }
 
-            if (error) {
-              console.error("Error updating pricing column:", error);
-              showCustomAlert(
-                "⚠️ Payment succeeded, but we couldn't update your account status."
-              );
-            }
-          } else {
-            showCustomAlert(
-              "⚠️ Could not update user status. Email not found."
-            );
+          if (promoValid) {
+            await supabase
+              .from("promo_codes")
+              .update({ used: true })
+              .eq("code", promoCode.trim());
           }
         },
 
@@ -187,7 +209,7 @@ const Prompt = () => {
   };
 
   const handleGetMorePoints = () => {
-    setIsPayingForPoints(true); // Trigger PayPal $1 rendering
+    setIsPayingForPoints(true);
   };
 
   useEffect(() => {
@@ -232,8 +254,37 @@ const Prompt = () => {
       <div className="prompt-container">
         {!isPaid && (
           <div>
+            <div className="promo-container">
+              <input
+                type="text"
+                className="promo-input"
+                value={promoCode}
+                onChange={async (e) => {
+                  const code = e.target.value;
+                  setPromoCode(code);
+                  if (code.trim()) {
+                    const { data, error } = await supabase
+                      .from("promo_codes")
+                      .select("used")
+                      .eq("code", code)
+                      .single();
+
+                    if (error || !data) {
+                      setPromoValid(false);
+                    } else if (!data.used) {
+                      setPromoValid(true);
+                    }
+                  } else {
+                    setPromoValid(false);
+                  }
+                }}
+                placeholder="Enter promo code (if any)"
+              />
+              {promoValid && <span className="checkmark">✅</span>}
+            </div>
+
             <button className="pay-button" onClick={handleUnlockClick}>
-              💸 Pay $5 to Unlock Prompt Tool
+              💸 Pay {promoValid ? "$2.50" : "$5"} to Unlock Prompt Tool
             </button>
             <div ref={paypalRef} style={{ marginTop: "20px" }} />
           </div>
