@@ -31,7 +31,7 @@ const Sketch = () => {
     }, stepTime);
 
     // Check if tutorial has been shown before
-    const tutorialShown = localStorage.getItem('tutorialShown');
+    const tutorialShown = localStorage.getItem("tutorialShown");
     if (tutorialShown) {
       setShowTutorial(false);
     }
@@ -43,12 +43,12 @@ const Sketch = () => {
     setShowAlert(!showAlert);
     // Mark tutorial as completed
     setShowTutorial(false);
-    localStorage.setItem('tutorialShown', 'true');
+    localStorage.setItem("tutorialShown", "true");
   };
 
   const handleDoodle = () => {
     navigate("/doodle");
-  }
+  };
 
   return (
     <div>
@@ -86,7 +86,9 @@ const Sketch = () => {
       {showTutorial && (
         <div className="tutorial-overlay">
           <div className="tutorial-content">
-            <p className="tutorial-text">Start sketching by tapping on the pencil icon</p>
+            <p className="tutorial-text">
+              Start sketching by tapping on the pencil icon
+            </p>
             <div className="tutorial-arrow"></div>
           </div>
         </div>
@@ -94,18 +96,12 @@ const Sketch = () => {
 
       {/* Floating Action Buttons */}
       <div className="fab-container">
-      <button className="fab-button new-fab" onClick={handleDoodle}>
+        <button className="fab-button new-fab" onClick={handleDoodle}>
           <img src={draw} alt="New FAB" className="fab-icon" />
         </button>
-        <button
-          className="fab-button"
-          onClick={handleFabClick}
-        >
+        <button className="fab-button" onClick={handleFabClick}>
           ✏️
         </button>
-
-
-        
 
         {showAlert && (
           <div className="fab-options">

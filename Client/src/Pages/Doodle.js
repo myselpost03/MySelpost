@@ -6,12 +6,13 @@ import {
   FaRedo,
   FaFont,
   FaSave,
-  FaSearch,
   FaPencilAlt,
 } from "react-icons/fa";
 import { SketchPicker } from "react-color";
 import Header from "../Components/Header";
 import "../Styles/Doodle.css";
+import animation from "../Assets/Animation.json";
+import Lottie from "lottie-react";
 
 const Doodle = () => {
   // Canvas and drawing references
@@ -42,7 +43,7 @@ const Doodle = () => {
   // Initialize canvas
   useEffect(() => {
     if (!modeSelected) return;
-    
+
     const canvas = canvasRef.current;
     canvas.width = window.innerWidth * 0.95;
     canvas.height = window.innerHeight * 0.75;
@@ -134,7 +135,7 @@ const Doodle = () => {
   // Start drawing
   const startDrawing = (e) => {
     if (!modeSelected) return;
-    
+
     if (tool === "text") {
       const rect = canvasRef.current.getBoundingClientRect();
       setTextPosition({
@@ -227,12 +228,27 @@ const Doodle = () => {
   // Export canvas as PNG
   const exportAsPNG = () => {
     const canvas = canvasRef.current;
+  
+    // Create a temporary canvas
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = canvas.width;
+    exportCanvas.height = canvas.height;
+    const exportCtx = exportCanvas.getContext("2d");
+  
+    // Fill with dark background
+    exportCtx.fillStyle = "#111"; // Your desired background color
+    exportCtx.fillRect(0, 0, canvas.width, canvas.height);
+  
+    // Draw current canvas onto the export canvas
+    exportCtx.drawImage(canvas, 0, 0);
+  
+    // Export from the temp canvas
     const link = document.createElement("a");
     link.download = "drawing.png";
-    link.href = canvas.toDataURL("image/png");
+    link.href = exportCanvas.toDataURL("image/png");
     link.click();
   };
-
+  
   // Toggle tool
   const toggleTool = (selectedTool) => {
     setTool(selectedTool);
@@ -280,6 +296,16 @@ const Doodle = () => {
       <Header />
 
       <div className="canvas-container">
+        {!ctx && (
+          <div className="centered-animation">
+            <Lottie
+              animationData={animation}
+              loop={true}
+              style={{ height: "120px", width: "120px" }}
+            />
+          </div>
+        )}
+
         <canvas
           ref={canvasRef}
           className="bw-canvas"
@@ -318,6 +344,7 @@ const Doodle = () => {
         {/* Canvas Controls */}
         <div className="canvas-controls">
           {/* Tool Selection */}
+
           <div className="tool-buttons">
             <button
               className={`tool-btn ${tool === "pen" ? "active" : ""}`}
@@ -432,11 +459,12 @@ const Doodle = () => {
             </button>
           </div>
           <div className="examples-container">
-          <button className="examples-btn">See Examples</button>
+            <button className="examples-btn">See Examples</button>
+            <button className="examples-btn" style={{ marginTop: "10px" }}>
+              Submit Design
+            </button>
+          </div>
         </div>
-        </div>
-      
-       
       </div>
     </div>
   );
