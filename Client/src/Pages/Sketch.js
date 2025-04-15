@@ -47,7 +47,16 @@ const Sketch = () => {
   };
 
   const handleDoodle = () => {
-    navigate("/doodle");
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      navigate("/app-doodle"); // ✅ Navigate if user is logged in
+    } else {
+      setShowAlert(true); // 🔒 Show alert if not logged in
+    }
+  };
+
+  const closeAlert = () => {
+    setShowAlert(false);
   };
 
   return (
@@ -111,6 +120,23 @@ const Sketch = () => {
             <Link to="/web-sketch" className="fab-option">
               🌐 Create Website
             </Link>
+          </div>
+        )}
+
+        {showAlert && (
+          <div className="modal-overlay">
+            <div className="alert-box modal">
+              <p>
+                To use the Online Sketch feature, you must first{" "}
+                <Link to="/register" className="register-link">
+                  register
+                </Link>
+                .
+              </p>
+              <button onClick={closeAlert} className="close-alert">
+                Close
+              </button>
+            </div>
           </div>
         )}
       </div>

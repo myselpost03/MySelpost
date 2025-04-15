@@ -14,7 +14,9 @@ import Terms from "./Pages/Terms";
 import Privacy from "./Pages/Privacy";
 import ProtectedRoute from "./Utils/ProtectedRoute";
 import NotFound from "./Pages/NotFound";
-import Doodle from "./Pages/Doodle";
+import AppDoodle from "./Pages/AppDoodle";
+import WebDoodle from "./Pages/WebDoodle";
+
 
 function App() {
   return (
@@ -31,11 +33,28 @@ function App() {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/app-sketch" element={<AppSketch />} />
         <Route path="/web-sketch" element={<WebSketch />} />
-        <Route path="/doodle" element={<Doodle />} />
+        <Route path="/app-doodle" element={<AppDoodle />} />
+        <Route path="/web-doodle" element={<WebDoodle />} />
 
         {/* ✅ Protected Prompt Route */}
         <Route
           path="/prompt"
+          element={
+            <ProtectedRoute>
+              <Prompt />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/app-doodle"
+          element={
+            <ProtectedRoute>
+              <Prompt />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/web-doodle"
           element={
             <ProtectedRoute>
               <Prompt />

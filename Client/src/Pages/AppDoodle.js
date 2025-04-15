@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaEraser,
   FaTimes,
@@ -15,7 +16,7 @@ import animation from "../Assets/Animation.json";
 import Lottie from "lottie-react";
 import { supabase } from "../Utils/supabaseClient";
 
-const Doodle = () => {
+const AppDoodle = () => {
   // Canvas and drawing references
   const canvasRef = useRef(null);
   const isDrawing = useRef(false);
@@ -40,7 +41,9 @@ const Doodle = () => {
   // Text tool position
   const [textPosition, setTextPosition] = useState({ x: 0, y: 0 });
   const [showTextInput, setShowTextInput] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const navigate = useNavigate();
   // Initialize canvas
   useEffect(() => {
     if (!modeSelected) return;
@@ -227,44 +230,57 @@ const Doodle = () => {
   };
 
   const handleSubmitDesign = async () => {
+    if (isSubmitting) return; // prevent double submissions
+    setIsSubmitting(true); // disable button
+  
     const canvas = canvasRef.current;
-
-    // Create a temp canvas with background color
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = canvas.width;
     exportCanvas.height = canvas.height;
     const exportCtx = exportCanvas.getContext("2d");
-
-    // Fill background
+  
     exportCtx.fillStyle = "#111";
     exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-
-    // Draw actual canvas content
     exportCtx.drawImage(canvas, 0, 0);
-
-    // Convert to Blob
+  
     exportCanvas.toBlob(async (blob) => {
-      if (!blob) return alert("Failed to export drawing!");
-
-      const fileName = `drawing-${Date.now()}.png`;
-
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from("doodle")
-        .upload(fileName, blob, {
-          contentType: "image/png",
-        });
-
-      if (error) {
-        console.error("Upload error:", error.message);
-        setShowDoodleAlert(false);
-      } else {
-        console.log("Upload success:", data);
-        setShowDoodleAlert(true);
+      if (!blob) {
+        alert("Failed to export drawing!");
+        setIsSubmitting(false);
+        return;
+      }
+  
+      try {
+        const path = window.location.pathname.split("/").filter(Boolean).join("-");
+        const userString = localStorage.getItem("user");
+        const user = JSON.parse(userString);
+        const email = user?.email?.replace(/[^a-zA-Z0-9._]/g, "_") || "anonymous";
+        const fileName = `${path}_${email}.png`;
+  
+        const { data, error } = await supabase.storage
+          .from("doodle")
+          .upload(fileName, blob, {
+            contentType: "image/png",
+          });
+  
+        if (error) {
+          console.error("Upload error:", error.message);
+          setShowDoodleAlert(false);
+        } else {
+          console.log("Upload success:", data);
+          setShowDoodleAlert(true);
+        }
+      } catch (err) {
+        console.error("Error preparing upload:", err);
+        alert("Something went wrong. Try again.");
+      } finally {
+        setIsSubmitting(false);
       }
     }, "image/png");
   };
-
+  
+  
+  
   // Export canvas as PNG
   const exportAsPNG = () => {
     const canvas = canvasRef.current;
@@ -312,6 +328,10 @@ const Doodle = () => {
     setModeSelected(true);
   };
 
+  const handleWebMode = () => {
+    navigate('/web-doodle')
+  };
+
   if (!modeSelected) {
     return (
       <div className="doodle-bw-wrapper">
@@ -322,7 +342,7 @@ const Doodle = () => {
             <button className="mode-btn" onClick={handleModeSelect}>
               App
             </button>
-            <button className="mode-btn" onClick={handleModeSelect}>
+            <button className="mode-btn" onClick={handleWebMode}>
               Website
             </button>
           </div>
@@ -501,12 +521,13 @@ const Doodle = () => {
           <div className="examples-container">
             <button className="examples-btn">See Examples</button>
             <button
-              className="examples-btn"
-              style={{ marginTop: "10px" }}
-              onClick={handleSubmitDesign}
-            >
-              Submit Design
-            </button>
+  className={`submit-btn ${isSubmitting ? "disabled" : ""}`}
+  onClick={handleSubmitDesign}
+  disabled={isSubmitting}
+>
+  {isSubmitting ? "Submitting..." : "Submit"}
+</button>
+
           </div>
         </div>
       </div>
@@ -523,4 +544,4 @@ const Doodle = () => {
   );
 };
 
-export default Doodle;
+export default AppDoodle;
