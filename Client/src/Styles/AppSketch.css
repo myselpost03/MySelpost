@@ -283,3 +283,23 @@
     padding: 16px 28px;
   }
 }
+
+@media (min-width: 1280px) {
+  .upload-title {
+    font-size: 3rem;
+  }
+
+  .upload-box,
+  .sketch-input,
+  .upload-button,
+  .email-info-text,
+  .custom-alert {
+    max-width: 700px;
+    font-size: 1.4rem;
+  }
+
+  .upload-button {
+    padding: 18px 32px;
+  }
+}
+

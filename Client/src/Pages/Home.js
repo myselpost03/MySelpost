@@ -26,7 +26,7 @@ const Home = () => {
   };
 
   return (
-    <div>
+    <div className="background-animated">
       <div className={showAlert ? "blurred" : ""}>
         <Header />
         <main className="center-wrapper">
@@ -42,7 +42,8 @@ const Home = () => {
         </main>
         <Footer />
       </div>
-
+      
+  
       {showAlert && (
         <div className="modal-overlay">
           <div className="alert-box modal">
@@ -61,6 +62,7 @@ const Home = () => {
       )}
     </div>
   );
+  
 };
 
 export default Home;

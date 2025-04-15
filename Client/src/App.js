@@ -14,6 +14,7 @@ import Terms from "./Pages/Terms";
 import Privacy from "./Pages/Privacy";
 import ProtectedRoute from "./Utils/ProtectedRoute";
 import NotFound from "./Pages/NotFound";
+import Doodle from "./Pages/Doodle";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/app-sketch" element={<AppSketch />} />
         <Route path="/web-sketch" element={<WebSketch />} />
+        <Route path="/doodle" element={<Doodle />} />
 
         {/* ✅ Protected Prompt Route */}
         <Route

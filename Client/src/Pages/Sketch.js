@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Header from "../Components/Header";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import first from "../Assets/1.jpg";
 import second from "../Assets/2.jpg";
 import Lottie from "lottie-react";
 import arrow from "../Assets/arrow.json";
+import draw from "../Assets/draw.png"; // Add your image for the new FAB
 import "../Styles/Sketch.css";
 
 const Sketch = () => {
@@ -12,6 +13,8 @@ const Sketch = () => {
   const target = 1500;
   const duration = 3000;
   const [showAlert, setShowAlert] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let start = 0;
@@ -27,8 +30,25 @@ const Sketch = () => {
       }
     }, stepTime);
 
+    // Check if tutorial has been shown before
+    const tutorialShown = localStorage.getItem('tutorialShown');
+    if (tutorialShown) {
+      setShowTutorial(false);
+    }
+
     return () => clearInterval(counter);
   }, []);
+
+  const handleFabClick = () => {
+    setShowAlert(!showAlert);
+    // Mark tutorial as completed
+    setShowTutorial(false);
+    localStorage.setItem('tutorialShown', 'true');
+  };
+
+  const handleDoodle = () => {
+    navigate("/doodle");
+  }
 
   return (
     <div>
@@ -54,9 +74,6 @@ const Sketch = () => {
       </div>
 
       <div className="counter-container">
-        {/* Image Section */}
-
-        {/* Text Section */}
         <div className="sketchy-text-wrapper">
           <p className="sketchy-text">
             <span className="sketchy-number">{count.toLocaleString()}+</span>{" "}
@@ -65,9 +82,31 @@ const Sketch = () => {
         </div>
       </div>
 
-      {/* Floating Action Button Group */}
-      {/* Floating Action Button Group */}
+      {/* Onboarding Tutorial */}
+      {showTutorial && (
+        <div className="tutorial-overlay">
+          <div className="tutorial-content">
+            <p className="tutorial-text">Start sketching by tapping on the pencil icon</p>
+            <div className="tutorial-arrow"></div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Action Buttons */}
       <div className="fab-container">
+      <button className="fab-button new-fab" onClick={handleDoodle}>
+          <img src={draw} alt="New FAB" className="fab-icon" />
+        </button>
+        <button
+          className="fab-button"
+          onClick={handleFabClick}
+        >
+          ✏️
+        </button>
+
+
+        
+
         {showAlert && (
           <div className="fab-options">
             <Link to="/app-sketch" className="fab-option">
@@ -78,14 +117,6 @@ const Sketch = () => {
             </Link>
           </div>
         )}
-
-        <button
-          className="fab-button"
-          onClick={() => setShowAlert(!showAlert)}
-          title="Create something"
-        >
-          ✏️
-        </button>
       </div>
     </div>
   );
