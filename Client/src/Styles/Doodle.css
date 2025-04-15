@@ -298,3 +298,71 @@
 .examples-btn:hover {
   cursor: pointer;
 }
+
+.custom-alert {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #fff8dc;
+  border: 2px solid #444;
+  border-radius: 20px;
+  padding: 20px 30px;
+  font-family: "Patrick Hand", cursive;
+  font-size: 1.1rem;
+  color: #222;
+  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  z-index: 9999;
+  animation: fadeIn 0.4s ease-out;
+  width: 90%;
+  max-width: 400px;
+  box-sizing: border-box;
+}
+
+.custom-alert button {
+  margin-top: 12px;
+  padding: 8px 18px;
+  font-size: 1rem;
+  font-family: "Patrick Hand", cursive;
+  background-color: #222;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 50px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.custom-alert.bonus {
+  background-color: #eaffea;
+  border-left: 5px solid #4caf50;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
+
+@media (min-width: 1024px) {
+
+  .custom-alert {
+    max-width: 600px;
+    font-size: 1.3rem;
+  }}

@@ -13,6 +13,7 @@ import Header from "../Components/Header";
 import "../Styles/Doodle.css";
 import animation from "../Assets/Animation.json";
 import Lottie from "lottie-react";
+import { supabase } from "../Utils/supabaseClient";
 
 const Doodle = () => {
   // Canvas and drawing references
@@ -20,7 +21,7 @@ const Doodle = () => {
   const isDrawing = useRef(false);
   const [ctx, setCtx] = useState(null);
   const [modeSelected, setModeSelected] = useState(false); // New state for mode selection
-
+  const [showDoodleAlert, setShowDoodleAlert] = useState(false);
   // Drawing state
   const [color, setColor] = useState("#ffffff");
   const [brushSize, setBrushSize] = useState(4);
@@ -225,30 +226,69 @@ const Doodle = () => {
     saveCanvasState();
   };
 
+  const handleSubmitDesign = async () => {
+    const canvas = canvasRef.current;
+
+    // Create a temp canvas with background color
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = canvas.width;
+    exportCanvas.height = canvas.height;
+    const exportCtx = exportCanvas.getContext("2d");
+
+    // Fill background
+    exportCtx.fillStyle = "#111";
+    exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+
+    // Draw actual canvas content
+    exportCtx.drawImage(canvas, 0, 0);
+
+    // Convert to Blob
+    exportCanvas.toBlob(async (blob) => {
+      if (!blob) return alert("Failed to export drawing!");
+
+      const fileName = `drawing-${Date.now()}.png`;
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from("doodle")
+        .upload(fileName, blob, {
+          contentType: "image/png",
+        });
+
+      if (error) {
+        console.error("Upload error:", error.message);
+        setShowDoodleAlert(false);
+      } else {
+        console.log("Upload success:", data);
+        setShowDoodleAlert(true);
+      }
+    }, "image/png");
+  };
+
   // Export canvas as PNG
   const exportAsPNG = () => {
     const canvas = canvasRef.current;
-  
+
     // Create a temporary canvas
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = canvas.width;
     exportCanvas.height = canvas.height;
     const exportCtx = exportCanvas.getContext("2d");
-  
+
     // Fill with dark background
     exportCtx.fillStyle = "#111"; // Your desired background color
     exportCtx.fillRect(0, 0, canvas.width, canvas.height);
-  
+
     // Draw current canvas onto the export canvas
     exportCtx.drawImage(canvas, 0, 0);
-  
+
     // Export from the temp canvas
     const link = document.createElement("a");
     link.download = "drawing.png";
     link.href = exportCanvas.toDataURL("image/png");
     link.click();
   };
-  
+
   // Toggle tool
   const toggleTool = (selectedTool) => {
     setTool(selectedTool);
@@ -460,12 +500,25 @@ const Doodle = () => {
           </div>
           <div className="examples-container">
             <button className="examples-btn">See Examples</button>
-            <button className="examples-btn" style={{ marginTop: "10px" }}>
+            <button
+              className="examples-btn"
+              style={{ marginTop: "10px" }}
+              onClick={handleSubmitDesign}
+            >
               Submit Design
             </button>
           </div>
         </div>
       </div>
+      {showDoodleAlert && (
+        <div className="custom-alert bonus">
+          <p>
+            <br />
+            Your Sketch is submitted successfully! 🎉
+          </p>
+          <button onClick={() => setShowDoodleAlert(false)}>OK</button>
+        </div>
+      )}
     </div>
   );
 };
