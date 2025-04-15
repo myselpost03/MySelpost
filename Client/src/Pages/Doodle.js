@@ -18,6 +18,7 @@ const Doodle = () => {
   const canvasRef = useRef(null);
   const isDrawing = useRef(false);
   const [ctx, setCtx] = useState(null);
+  const [modeSelected, setModeSelected] = useState(false); // New state for mode selection
 
   // Drawing state
   const [color, setColor] = useState("#ffffff");
@@ -40,6 +41,8 @@ const Doodle = () => {
 
   // Initialize canvas
   useEffect(() => {
+    if (!modeSelected) return;
+    
     const canvas = canvasRef.current;
     canvas.width = window.innerWidth * 0.95;
     canvas.height = window.innerHeight * 0.75;
@@ -49,11 +52,11 @@ const Doodle = () => {
     context.strokeStyle = color;
     setCtx(context);
     saveCanvasState();
-  }, []);
+  }, [modeSelected]);
 
   // Update canvas operations based on tool
   useEffect(() => {
-    if (!ctx) return;
+    if (!ctx || !modeSelected) return;
 
     if (tool === "eraser") {
       ctx.globalCompositeOperation = "destination-out";
@@ -66,7 +69,7 @@ const Doodle = () => {
       ctx.globalCompositeOperation = "source-over";
       canvasRef.current.style.cursor = tool === "text" ? "text" : "crosshair";
     }
-  }, [tool, eraserSize, ctx]);
+  }, [tool, eraserSize, ctx, modeSelected]);
 
   // Handle color change
   useEffect(() => {
@@ -130,6 +133,8 @@ const Doodle = () => {
 
   // Start drawing
   const startDrawing = (e) => {
+    if (!modeSelected) return;
+    
     if (tool === "text") {
       const rect = canvasRef.current.getBoundingClientRect();
       setTextPosition({
@@ -166,7 +171,7 @@ const Doodle = () => {
 
   // Drawing function
   const draw = (e) => {
-    if (!isDrawing.current || !ctx || tool === "text") return;
+    if (!isDrawing.current || !ctx || tool === "text" || !modeSelected) return;
 
     // Handle pressure sensitivity
     let pressure = 1;
@@ -191,7 +196,7 @@ const Doodle = () => {
 
   // End drawing
   const endDrawing = () => {
-    if (!isDrawing.current) return;
+    if (!isDrawing.current || !modeSelected) return;
 
     isDrawing.current = false;
     saveCanvasState();
@@ -245,6 +250,30 @@ const Doodle = () => {
       setShowEraserControls(false);
     }
   };
+
+  // Handle mode selection
+  const handleModeSelect = () => {
+    setModeSelected(true);
+  };
+
+  if (!modeSelected) {
+    return (
+      <div className="doodle-bw-wrapper">
+        <Header />
+        <div className="mode-selection-container">
+          <h2 className="select-mode">Select Mode</h2>
+          <div className="mode-buttons">
+            <button className="mode-btn" onClick={handleModeSelect}>
+              App
+            </button>
+            <button className="mode-btn" onClick={handleModeSelect}>
+              Website
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="doodle-bw-wrapper">
@@ -402,7 +431,12 @@ const Doodle = () => {
               <FaTimes />
             </button>
           </div>
+          <div className="examples-container">
+          <button className="examples-btn">See Examples</button>
         </div>
+        </div>
+      
+       
       </div>
     </div>
   );

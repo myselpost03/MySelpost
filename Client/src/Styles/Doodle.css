@@ -1,4 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&display=swap");
+@import url(https://fonts.googleapis.com/css?family=Lobster+Two:regular,italic,700,700italic);
+@import url(https://fonts.googleapis.com/css?family=Yatra+One:regular);
+@import url(https://fonts.googleapis.com/css?family=Winky+Rough:300,regular,500,600,700,800,900,300italic,italic,500italic,600italic,700italic,800italic,900italic);
 
 .doodle-bw-wrapper {
   width: 100%;
@@ -9,7 +12,7 @@
   flex-direction: column;
   align-items: center;
   padding-top: 80px;
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: "Space Grotesk", sans-serif;
 }
 
 .search-container {
@@ -31,24 +34,11 @@
   transition: all 0.3s ease;
 }
 
-.search-input:focus {
-  border-color: #555;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
-}
-
-.search-icon {
-  position: absolute;
-  left: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #777;
-}
 
 .canvas-container {
   position: relative;
   background: #111;
   border-radius: 16px;
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
   padding: 8px;
   margin-top: 15px;
   width: 95%;
@@ -60,7 +50,7 @@
   touch-action: none;
   width: 100%;
   height: 75vh;
-  border: 2px solid #333;
+  border: 2px solid #fff;
 }
 
 .text-input-overlay {
@@ -108,8 +98,8 @@
   background: rgba(0, 0, 0, 0.7);
   padding: 15px;
   border-radius: 15px;
-  border: 1px solid #333;
   backdrop-filter: blur(5px);
+  border: 2px solid #fff;
 }
 
 .tool-buttons {
@@ -118,7 +108,8 @@
   margin-bottom: 10px;
 }
 
-.tool-btn, .action-btn {
+.tool-btn,
+.action-btn {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -133,12 +124,14 @@
   font-size: 18px;
 }
 
-.tool-btn:hover, .action-btn:hover {
+.tool-btn:hover,
+.action-btn:hover {
   transform: scale(1.1);
   background: rgba(255, 255, 255, 0.2);
 }
 
-.tool-btn.active, .action-btn:active {
+.tool-btn.active,
+.action-btn:active {
   background: rgba(255, 255, 255, 0.3);
   color: #000;
   background: #fff;
@@ -226,12 +219,75 @@
     width: 90%;
     justify-content: center;
   }
-  
+
   .tool-buttons {
     margin-bottom: 0;
   }
-  
-  .color-picker-container, .brush-controls {
+
+  .color-picker-container,
+  .brush-controls {
     margin-bottom: 0;
   }
+}
+
+
+/* Add these styles to your existing Doodle.css */
+
+.mode-selection-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 80px);
+  width: 100%;
+}
+
+.mode-selection-container h2 {
+  margin-bottom: 30px;
+  font-size: 2rem;
+  color: #fff;
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 30px;
+}
+
+.mode-btn {
+  padding: 15px 40px;
+  font-size: 1.2rem;
+  border-radius: 50px;
+  background: #111;
+  color: #fff;
+  font-family: 'Yatra One', serif;
+  border: 2px solid #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mode-btn:hover {
+  background: #fff;
+  color: #000;
+  transform: scale(1.05);
+}
+
+.select-mode{
+  font-family: 'Lobster Two', sans-serif;
+}
+
+.examples-btn{
+  border: none;
+  outline: none;
+  padding: 0.3rem;
+  width: 100%;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #111;
+  text-align: center;
+  font-family: 'Winky Rough', serif;
+  border-radius: 0.2rem;
+}
+
+.examples-btn:hover{
+  cursor: pointer;
 }

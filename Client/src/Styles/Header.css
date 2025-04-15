@@ -103,7 +103,6 @@
   align-items: center;
   padding: 16px 20px; /* Reduced padding to prevent overflow */
   background-color: #000000;
-  border-bottom: 1px solid #ddd;
   flex-wrap: wrap; /* allow wrapping on small screens */
   box-sizing: border-box;
 }
