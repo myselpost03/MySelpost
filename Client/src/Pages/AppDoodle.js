@@ -8,6 +8,9 @@ import {
   FaFont,
   FaSave,
   FaPencilAlt,
+  FaSquare,
+  FaCircle,
+  FaMinus,
 } from "react-icons/fa";
 import { SketchPicker } from "react-color";
 import Header from "../Components/Header";
@@ -21,8 +24,9 @@ const AppDoodle = () => {
   const canvasRef = useRef(null);
   const isDrawing = useRef(false);
   const [ctx, setCtx] = useState(null);
-  const [modeSelected, setModeSelected] = useState(false); // New state for mode selection
+  const [modeSelected, setModeSelected] = useState(false);
   const [showDoodleAlert, setShowDoodleAlert] = useState(false);
+
   // Drawing state
   const [color, setColor] = useState("#ffffff");
   const [brushSize, setBrushSize] = useState(4);
@@ -30,9 +34,14 @@ const AppDoodle = () => {
   const [eraserSize, setEraserSize] = useState(20);
   const [showEraserControls, setShowEraserControls] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
-  const [tool, setTool] = useState("pen"); // 'pen', 'eraser', 'text'
+  const [tool, setTool] = useState("pen"); // 'pen', 'eraser', 'text', 'rectangle', 'circle', 'line'
   const [textInput, setTextInput] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+
+  // Shape drawing state
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const [currentPos, setCurrentPos] = useState({ x: 0, y: 0 });
+  const [isDrawingShape, setIsDrawingShape] = useState(false);
+  const [previewCanvas, setPreviewCanvas] = useState(null);
 
   // Undo/Redo functionality
   const [drawingHistory, setDrawingHistory] = useState([]);
@@ -44,6 +53,7 @@ const AppDoodle = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
+
   // Initialize canvas
   useEffect(() => {
     if (!modeSelected) return;
@@ -56,6 +66,13 @@ const AppDoodle = () => {
     context.lineWidth = brushSize;
     context.strokeStyle = color;
     setCtx(context);
+
+    // Create a preview canvas
+    const preview = document.createElement("canvas");
+    preview.width = canvas.width;
+    preview.height = canvas.height;
+    setPreviewCanvas(preview);
+
     saveCanvasState();
   }, [modeSelected]);
 
@@ -80,6 +97,7 @@ const AppDoodle = () => {
   useEffect(() => {
     if (ctx) {
       ctx.strokeStyle = color;
+      ctx.fillStyle = color;
     }
   }, [color, ctx]);
 
@@ -136,17 +154,32 @@ const AppDoodle = () => {
     img.src = imageData;
   };
 
+  // Get mouse/touch position
+  const getPosition = (e) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    return {
+      x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
+      y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top,
+    };
+  };
+
   // Start drawing
   const startDrawing = (e) => {
     if (!modeSelected) return;
 
     if (tool === "text") {
-      const rect = canvasRef.current.getBoundingClientRect();
-      setTextPosition({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
+      const pos = getPosition(e);
+      setTextPosition(pos);
       setShowTextInput(true);
+      return;
+    }
+
+    const pos = getPosition(e);
+
+    if (["rectangle", "circle", "line"].includes(tool)) {
+      setIsDrawingShape(true);
+      setStartPos(pos);
+      setCurrentPos(pos);
       return;
     }
 
@@ -165,18 +198,64 @@ const AppDoodle = () => {
       pressure = Math.min(touchRadius / 10, 1);
     }
 
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.touches ? e.touches[0].clientX : e.clientX;
-    const y = e.touches ? e.touches[0].clientY : e.clientY;
-
     ctx.lineWidth =
       tool === "eraser" ? eraserSize * pressure : brushSize * pressure;
-    ctx.moveTo(x - rect.left, y - rect.top);
+    ctx.moveTo(pos.x, pos.y);
+  };
+
+  const drawShape = () => {
+    if (!isDrawingShape || !ctx) return;
+
+    // Clear the canvas and redraw the last saved state
+    const lastState = new Image();
+    lastState.src = drawingHistory[historyIndex];
+    lastState.onload = () => {
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      ctx.drawImage(lastState, 0, 0);
+
+      // Draw the current shape
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = brushSize;
+
+      const width = currentPos.x - startPos.x;
+      const height = currentPos.y - startPos.y;
+
+      switch (tool) {
+        case "rectangle":
+          ctx.strokeRect(startPos.x, startPos.y, width, height);
+          break;
+        case "circle":
+          const radius = Math.sqrt(width * width + height * height);
+          ctx.beginPath();
+          ctx.arc(startPos.x, startPos.y, radius, 0, Math.PI * 2);
+          ctx.stroke();
+          break;
+        case "line":
+          ctx.beginPath();
+          ctx.moveTo(startPos.x, startPos.y);
+          ctx.lineTo(currentPos.x, currentPos.y);
+          ctx.stroke();
+          break;
+        default:
+          break;
+      }
+    };
   };
 
   // Drawing function
   const draw = (e) => {
-    if (!isDrawing.current || !ctx || tool === "text" || !modeSelected) return;
+    if (!modeSelected) return;
+
+    const pos = getPosition(e);
+
+    if (isDrawingShape) {
+      setCurrentPos(pos);
+      drawShape(); // Call the new shape drawing function
+      return;
+    }
+
+    if (!isDrawing.current || !ctx || tool === "text") return;
 
     // Handle pressure sensitivity
     let pressure = 1;
@@ -189,19 +268,30 @@ const AppDoodle = () => {
       pressure = Math.min(touchRadius / 10, 1);
     }
 
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.touches ? e.touches[0].clientX : e.clientX;
-    const y = e.touches ? e.touches[0].clientY : e.clientY;
-
     ctx.lineWidth =
       tool === "eraser" ? eraserSize * pressure : brushSize * pressure;
-    ctx.lineTo(x - rect.left, y - rect.top);
+    ctx.lineTo(pos.x, pos.y);
     ctx.stroke();
   };
+  // Draw shape preview
 
   // End drawing
   const endDrawing = () => {
-    if (!isDrawing.current || !modeSelected) return;
+    if (!modeSelected) return;
+
+    if (isDrawingShape) {
+      // Finalize the shape by saving the canvas state
+      saveCanvasState();
+      setIsDrawingShape(false);
+      return;
+    }
+
+    if (!isDrawing.current) return;
+
+    isDrawing.current = false;
+    saveCanvasState();
+
+    if (!isDrawing.current) return;
 
     isDrawing.current = false;
     saveCanvasState();
@@ -230,39 +320,43 @@ const AppDoodle = () => {
   };
 
   const handleSubmitDesign = async () => {
-    if (isSubmitting) return; // prevent double submissions
-    setIsSubmitting(true); // disable button
-  
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     const canvas = canvasRef.current;
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = canvas.width;
     exportCanvas.height = canvas.height;
     const exportCtx = exportCanvas.getContext("2d");
-  
+
     exportCtx.fillStyle = "#111";
     exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
     exportCtx.drawImage(canvas, 0, 0);
-  
+
     exportCanvas.toBlob(async (blob) => {
       if (!blob) {
         alert("Failed to export drawing!");
         setIsSubmitting(false);
         return;
       }
-  
+
       try {
-        const path = window.location.pathname.split("/").filter(Boolean).join("-");
+        const path = window.location.pathname
+          .split("/")
+          .filter(Boolean)
+          .join("-");
         const userString = localStorage.getItem("user");
         const user = JSON.parse(userString);
-        const email = user?.email?.replace(/[^a-zA-Z0-9._]/g, "_") || "anonymous";
+        const email =
+          user?.email?.replace(/[^a-zA-Z0-9._]/g, "_") || "anonymous";
         const fileName = `${path}_${email}.png`;
-  
+
         const { data, error } = await supabase.storage
           .from("doodle")
           .upload(fileName, blob, {
             contentType: "image/png",
           });
-  
+
         if (error) {
           console.error("Upload error:", error.message);
           setShowDoodleAlert(false);
@@ -278,27 +372,19 @@ const AppDoodle = () => {
       }
     }, "image/png");
   };
-  
-  
-  
+
   // Export canvas as PNG
   const exportAsPNG = () => {
     const canvas = canvasRef.current;
-
-    // Create a temporary canvas
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = canvas.width;
     exportCanvas.height = canvas.height;
     const exportCtx = exportCanvas.getContext("2d");
 
-    // Fill with dark background
-    exportCtx.fillStyle = "#111"; // Your desired background color
+    exportCtx.fillStyle = "#111";
     exportCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw current canvas onto the export canvas
     exportCtx.drawImage(canvas, 0, 0);
 
-    // Export from the temp canvas
     const link = document.createElement("a");
     link.download = "drawing.png";
     link.href = exportCanvas.toDataURL("image/png");
@@ -309,7 +395,6 @@ const AppDoodle = () => {
   const toggleTool = (selectedTool) => {
     setTool(selectedTool);
 
-    // Hide text input when switching away from text tool
     if (tool === "text" && selectedTool !== "text") {
       setShowTextInput(false);
     }
@@ -321,6 +406,13 @@ const AppDoodle = () => {
       setIsErasing(false);
       setShowEraserControls(false);
     }
+
+    // Cancel any ongoing shape drawing
+    if (isDrawingShape) {
+      setIsDrawingShape(false);
+      // Restore canvas to last saved state
+      loadCanvasState(drawingHistory[historyIndex]);
+    }
   };
 
   // Handle mode selection
@@ -329,7 +421,7 @@ const AppDoodle = () => {
   };
 
   const handleWebMode = () => {
-    navigate('/web-doodle')
+    navigate("/web-doodle");
   };
 
   if (!modeSelected) {
@@ -404,13 +496,12 @@ const AppDoodle = () => {
         {/* Canvas Controls */}
         <div className="canvas-controls">
           {/* Tool Selection */}
-
           <div className="tool-buttons">
             <button
               className={`tool-btn ${tool === "pen" ? "active" : ""}`}
               onClick={() => {
                 toggleTool("pen");
-                setShowTextInput(false); // Additional safeguard
+                setShowTextInput(false);
               }}
               title="Pen"
             >
@@ -421,7 +512,7 @@ const AppDoodle = () => {
               className={`tool-btn ${tool === "eraser" ? "active" : ""}`}
               onClick={() => {
                 toggleTool("eraser");
-                setShowTextInput(false); // Additional safeguard
+                setShowTextInput(false);
               }}
               title="Eraser"
             >
@@ -434,6 +525,30 @@ const AppDoodle = () => {
               title="Text"
             >
               <FaFont />
+            </button>
+
+            <button
+              className={`tool-btn ${tool === "rectangle" ? "active" : ""}`}
+              onClick={() => toggleTool("rectangle")}
+              title="Rectangle"
+            >
+              <FaSquare />
+            </button>
+
+            <button
+              className={`tool-btn ${tool === "circle" ? "active" : ""}`}
+              onClick={() => toggleTool("circle")}
+              title="Circle"
+            >
+              <FaCircle />
+            </button>
+
+            <button
+              className={`tool-btn ${tool === "line" ? "active" : ""}`}
+              onClick={() => toggleTool("line")}
+              title="Line"
+            >
+              <FaMinus />
             </button>
           </div>
 
@@ -521,13 +636,12 @@ const AppDoodle = () => {
           <div className="examples-container">
             <button className="examples-btn">See Examples</button>
             <button
-  className={`submit-btn ${isSubmitting ? "disabled" : ""}`}
-  onClick={handleSubmitDesign}
-  disabled={isSubmitting}
->
-  {isSubmitting ? "Submitting..." : "Submit"}
-</button>
-
+              className={`submit-btn ${isSubmitting ? "disabled" : ""}`}
+              onClick={handleSubmitDesign}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit"}
+            </button>
           </div>
         </div>
       </div>

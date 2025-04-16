@@ -309,7 +309,7 @@
   margin-top: 10px;
 }
 
-.submit-btn:hover{
+.submit-btn:hover {
   background-color: #fff;
   color: #111;
 }
@@ -319,7 +319,6 @@
   cursor: not-allowed;
   pointer-events: none;
 }
-
 
 .examples-btn:hover {
   cursor: pointer;
@@ -387,8 +386,17 @@
 }
 
 @media (min-width: 1024px) {
-
   .custom-alert {
     max-width: 600px;
     font-size: 1.3rem;
-  }}
+  }
+}
+
+.shape-selector {
+  margin-left: 10px;
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: #333;
+  color: white;
+}
