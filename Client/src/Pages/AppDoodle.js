@@ -50,6 +50,7 @@ const AppDoodle = () => {
   const [showTextInput, setShowTextInput] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Doodle points state
   const [canSubmit, setCanSubmit] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -81,6 +82,7 @@ const AppDoodle = () => {
       setMessage("You have 1 sketch point available.");
     }
   }, []);
+
   // Initialize canvas
   useEffect(() => {
     if (!modeSelected) return;
@@ -662,7 +664,7 @@ const AppDoodle = () => {
 
             {canSubmit ? (
               <button
-                className={`submit-btn ${isSubmitting ? "disabled" : ""}`}
+                className={`submit-button ${isSubmitting ? "disabled" : ""}`}
                 onClick={handleSubmitDesign}
                 disabled={isSubmitting}
               >

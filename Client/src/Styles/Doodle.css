@@ -301,7 +301,7 @@
   border-radius: 0.2rem;
 }
 
-.submit-btn {
+.submit-button {
   border: none;
   outline: none;
   padding: 0.3rem;
@@ -313,6 +313,11 @@
   font-family: "Winky Rough", serif;
   border-radius: 0.2rem;
   margin-top: 10px;
+}
+
+
+.submit-button:hover{
+  cursor: pointer;
 }
 
 .submit-btn:hover {

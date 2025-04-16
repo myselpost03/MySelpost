@@ -1,65 +1,95 @@
+:root {
+  --font-primary: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --color-bg: #f9fafc;
+  --color-text: #333;
+  --color-heading: #111;
+  --color-accent: #1e3a8a;
+  --color-footer: #444;
+  --shadow-card: 0 8px 20px rgba(0, 0, 0, 0.05);
+  --max-width: 800px;
+  --spacing-xl: 60px;
+  --spacing-lg: 40px;
+  --spacing-md: 30px;
+  --spacing-sm: 20px;
+  --spacing-xs: 12px;
+  --spacing-xxs: 10px;
+  --border-radius: 12px;
+  --line-height: 1.7;
+}
+
 .about-page {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f9fafc;
-  color: #333;
+  font-family: var(--font-primary);
+  background-color: var(--color-bg);
+  color: var(--color-text);
   min-height: 100vh;
-  padding-bottom: 50px;
+  padding-bottom: var(--spacing-md);
 }
 
 .about-content {
-  max-width: 800px;
-  margin: 60px auto;
-  padding: 0 20px;
+  max-width: var(--max-width);
+  margin: var(--spacing-xl) auto;
+  padding: var(--spacing-lg);
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-  padding: 40px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-card);
 }
 
 .about-content h1 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-  color: #111;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-heading);
   text-align: center;
 }
 
 .intro-text {
   font-size: 1.15rem;
-  line-height: 1.7;
+  line-height: var(--line-height);
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .about-section {
-  margin-bottom: 40px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .about-section h2 {
   font-size: 1.5rem;
-  color: #1e3a8a;
-  margin-bottom: 12px;
+  color: var(--color-accent);
+  margin-bottom: var(--spacing-xs);
 }
 
-.about-section p {
-  line-height: 1.7;
+.about-section p,
+.about-section li {
+  line-height: var(--line-height);
   font-size: 1rem;
 }
 
 .about-section ul {
   list-style-type: disc;
-  padding-left: 20px;
-  margin-top: 10px;
+  padding-left: var(--spacing-sm);
+  margin-top: var(--spacing-xxs);
 }
 
 .about-section li {
-  margin-bottom: 10px;
-  font-size: 1rem;
+  margin-bottom: var(--spacing-xxs);
 }
 
 .about-footer {
   text-align: center;
-  margin-top: 30px;
+  margin-top: var(--spacing-md);
   font-style: italic;
   font-size: 1.1rem;
-  color: #444;
+  color: var(--color-footer);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .about-content {
+    margin: var(--spacing-lg) var(--spacing-sm);
+    padding: var(--spacing-sm);
+  }
+  
+  .about-section {
+    margin-bottom: var(--spacing-md);
+  }
 }

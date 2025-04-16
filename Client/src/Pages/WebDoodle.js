@@ -622,7 +622,7 @@ const WebDoodle = () => {
           <div className="examples-container">
             {canSubmit ? (
               <button
-                className={`submit-btn ${isSubmitting ? "disabled" : ""}`}
+                className={`submit-button ${isSubmitting ? "disabled" : ""}`}
                 onClick={handleSubmitDesign}
                 disabled={isSubmitting}
               >
