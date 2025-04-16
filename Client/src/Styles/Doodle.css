@@ -2,6 +2,7 @@
 @import url(https://fonts.googleapis.com/css?family=Lobster+Two:regular,italic,700,700italic);
 @import url(https://fonts.googleapis.com/css?family=Yatra+One:regular);
 @import url(https://fonts.googleapis.com/css?family=Winky+Rough:300,regular,500,600,700,800,900,300italic,italic,500italic,600italic,700italic,800italic,900italic);
+@import url(https://fonts.googleapis.com/css?family=Rowdies:300,regular,700);
 
 .doodle-bw-wrapper {
   width: 100%;
@@ -103,6 +104,8 @@
 
 .tool-buttons {
   display: flex;
+  flex-direction: row;
+  justify-content: space-around;
   gap: 10px;
   margin-bottom: 10px;
 }
@@ -147,6 +150,9 @@
 .color-picker-container {
   position: relative;
   margin-bottom: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
 }
 
 .color-picker-btn {
@@ -399,4 +405,21 @@
   border: 1px solid #ccc;
   background: #333;
   color: white;
+}
+
+.shapes-tool {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.sketch-wait {
+  color: #d9534f;
+  white-space: normal;
+  word-wrap: break-word;
+  font-size: 15px;
+  margin-top: 10px;
+  width: 230px;
+  font-family: "Rowdies", serif;
+  text-align: center;
 }

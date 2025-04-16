@@ -1,67 +1,70 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./Pages/Home";
-import Register from "./Pages/Register";
-import Login from "./Pages/Login";
-import Sketch from "./Pages/Sketch";
-import AppSketch from "./Pages/AppSketch";
-import WebSketch from "./Pages/WebSketch";
-import Prompt from "./Pages/Prompt";
-import Pricing from "./Pages/Pricing";
-import About from "./Pages/About";
-import Contact from "./Pages/Contact";
-import Terms from "./Pages/Terms";
-import Privacy from "./Pages/Privacy";
 import ProtectedRoute from "./Utils/ProtectedRoute";
-import NotFound from "./Pages/NotFound";
-import AppDoodle from "./Pages/AppDoodle";
-import WebDoodle from "./Pages/WebDoodle";
+import {
+  Home,
+  Register,
+  Login,
+  Sketch,
+  AppSketch,
+  WebSketch,
+  Prompt,
+  Pricing,
+  About,
+  Contact,
+  Terms,
+  Privacy,
+  NotFound,
+  AppDoodle,
+  WebDoodle,
+  DoodleExample,
+} from "./Pages/index";
 
+const protectedRoutes = [
+  { path: "/prompt", component: Prompt },
+  { path: "/app-doodle", component: AppDoodle },
+  { path: "/web-doodle", component: WebDoodle },
+  { path: "/doodle-example", component: DoodleExample },
+];
+
+const publicRoutes = [
+  { path: "/", component: Home },
+  { path: "/register", component: Register },
+  { path: "/login", component: Login },
+  { path: "/sketch", component: Sketch },
+  { path: "/about", component: About },
+  { path: "/terms", component: Terms },
+  { path: "/privacy", component: Privacy },
+  { path: "/contact-us", component: Contact },
+  { path: "/pricing", component: Pricing },
+  { path: "/app-sketch", component: AppSketch },
+  { path: "/web-sketch", component: WebSketch },
+];
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/sketch" element={<Sketch />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/contact-us" element={<Contact />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/app-sketch" element={<AppSketch />} />
-        <Route path="/web-sketch" element={<WebSketch />} />
-        <Route path="/app-doodle" element={<AppDoodle />} />
-        <Route path="/web-doodle" element={<WebDoodle />} />
+        {publicRoutes.map((route) => (
+          <Route
+            key={route.path}
+            path={route.path}
+            element={<route.component />}
+          />
+        ))}
 
-        {/* ✅ Protected Prompt Route */}
-        <Route
-          path="/prompt"
-          element={
-            <ProtectedRoute>
-              <Prompt />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/app-doodle"
-          element={
-            <ProtectedRoute>
-              <Prompt />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/web-doodle"
-          element={
-            <ProtectedRoute>
-              <Prompt />
-            </ProtectedRoute>
-          }
-        />
-        {/* ✅ 404 Catch-All Route */}
+        {protectedRoutes.map((route) => (
+          <Route
+            key={route.path}
+            path={route.path}
+            element={
+              <ProtectedRoute>
+                <route.component />
+              </ProtectedRoute>
+            }
+          />
+        ))}
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

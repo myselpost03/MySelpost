@@ -67,6 +67,7 @@
   width: 100%;
   max-width: 140px;
   height: 20%;
+  border: 1px solid #000000;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
@@ -289,7 +290,7 @@
 .tutorial-content {
   background-color: white;
   padding: 20px;
-  bottom: 110px;
+  bottom: 170px;
   border-radius: 12px;
   max-width: 250px;
   position: relative;

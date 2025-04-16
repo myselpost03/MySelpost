@@ -13,6 +13,8 @@ const Sketch = () => {
   const target = 1500;
   const duration = 3000;
   const [showAlert, setShowAlert] = useState(false);
+
+  const [showCustomAlert, setShowCustomAlert] = useState(false);
   const [showTutorial, setShowTutorial] = useState(true);
   const navigate = useNavigate();
 
@@ -51,12 +53,12 @@ const Sketch = () => {
     if (storedUser) {
       navigate("/app-doodle"); // ✅ Navigate if user is logged in
     } else {
-      setShowAlert(true); // 🔒 Show alert if not logged in
+      setShowCustomAlert(true); // 🔒 Show alert if not logged in
     }
   };
 
   const closeAlert = () => {
-    setShowAlert(false);
+    setShowCustomAlert(false);
   };
 
   return (
@@ -96,7 +98,7 @@ const Sketch = () => {
         <div className="tutorial-overlay">
           <div className="tutorial-content">
             <p className="tutorial-text">
-              Start sketching by tapping on the pencil icon
+              Start sketching by tapping on the pencil or draw icon
             </p>
             <div className="tutorial-arrow"></div>
           </div>
@@ -123,7 +125,7 @@ const Sketch = () => {
           </div>
         )}
 
-        {showAlert && (
+        {showCustomAlert && (
           <div className="modal-overlay">
             <div className="alert-box modal">
               <p>

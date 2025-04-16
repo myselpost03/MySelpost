@@ -15,8 +15,6 @@ import {
 import { SketchPicker } from "react-color";
 import Header from "../Components/Header";
 import "../Styles/Doodle.css";
-import animation from "../Assets/Animation.json";
-import Lottie from "lottie-react";
 import { supabase } from "../Utils/supabaseClient";
 
 const AppDoodle = () => {
@@ -52,8 +50,37 @@ const AppDoodle = () => {
   const [showTextInput, setShowTextInput] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [canSubmit, setCanSubmit] = useState(false);
+  const [message, setMessage] = useState("");
+
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const lastSubmit = localStorage.getItem("lastSketchSubmit");
+
+    if (lastSubmit) {
+      const last = new Date(lastSubmit);
+      const now = new Date();
+      const daysPassed = Math.floor((now - last) / (1000 * 60 * 60 * 24));
+
+      if (daysPassed >= 20) {
+        setCanSubmit(true);
+        setMessage("You have 1 sketch point available.");
+      } else {
+        const daysLeft = 20 - daysPassed;
+        setCanSubmit(false);
+        setMessage(
+          `You used your 1 free sketch point. It will refill in ${daysLeft} day${
+            daysLeft > 1 ? "s" : ""
+          }.`
+        );
+      }
+    } else {
+      // No record, first time user
+      setCanSubmit(true);
+      setMessage("You have 1 sketch point available.");
+    }
+  }, []);
   // Initialize canvas
   useEffect(() => {
     if (!modeSelected) return;
@@ -165,8 +192,6 @@ const AppDoodle = () => {
 
   // Start drawing
   const startDrawing = (e) => {
-    if (!modeSelected) return;
-
     if (tool === "text") {
       const pos = getPosition(e);
       setTextPosition(pos);
@@ -202,7 +227,6 @@ const AppDoodle = () => {
       tool === "eraser" ? eraserSize * pressure : brushSize * pressure;
     ctx.moveTo(pos.x, pos.y);
   };
-
   const drawShape = () => {
     if (!isDrawingShape || !ctx) return;
 
@@ -320,6 +344,7 @@ const AppDoodle = () => {
   };
 
   const handleSubmitDesign = async () => {
+    if (!canSubmit) return;
     if (isSubmitting) return;
     setIsSubmitting(true);
 
@@ -371,6 +396,10 @@ const AppDoodle = () => {
         setIsSubmitting(false);
       }
     }, "image/png");
+    localStorage.setItem("lastSketchSubmit", new Date().toISOString());
+
+    setCanSubmit(false);
+    setMessage("You used your 1 free doodle point. It will refill in 20 days.");
   };
 
   // Export canvas as PNG
@@ -415,6 +444,10 @@ const AppDoodle = () => {
     }
   };
 
+  const handleExample = () => {
+    navigate("/doodle-example");
+  };
+
   // Handle mode selection
   const handleModeSelect = () => {
     setModeSelected(true);
@@ -448,16 +481,6 @@ const AppDoodle = () => {
       <Header />
 
       <div className="canvas-container">
-        {!ctx && (
-          <div className="centered-animation">
-            <Lottie
-              animationData={animation}
-              loop={true}
-              style={{ height: "120px", width: "120px" }}
-            />
-          </div>
-        )}
-
         <canvas
           ref={canvasRef}
           className="bw-canvas"
@@ -534,7 +557,10 @@ const AppDoodle = () => {
             >
               <FaSquare />
             </button>
+          </div>
 
+          {/* Color Picker */}
+          <div className="color-picker-container">
             <button
               className={`tool-btn ${tool === "circle" ? "active" : ""}`}
               onClick={() => toggleTool("circle")}
@@ -550,10 +576,6 @@ const AppDoodle = () => {
             >
               <FaMinus />
             </button>
-          </div>
-
-          {/* Color Picker */}
-          <div className="color-picker-container">
             <button
               className="color-picker-btn"
               onClick={() => setShowColorPicker(!showColorPicker)}
@@ -634,14 +656,21 @@ const AppDoodle = () => {
             </button>
           </div>
           <div className="examples-container">
-            <button className="examples-btn">See Examples</button>
-            <button
-              className={`submit-btn ${isSubmitting ? "disabled" : ""}`}
-              onClick={handleSubmitDesign}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Submitting..." : "Submit"}
+            <button className="examples-btn" onClick={handleExample}>
+              See Example
             </button>
+
+            {canSubmit ? (
+              <button
+                className={`submit-btn ${isSubmitting ? "disabled" : ""}`}
+                onClick={handleSubmitDesign}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </button>
+            ) : (
+              <p className="sketch-wait">{message}</p>
+            )}
           </div>
         </div>
       </div>

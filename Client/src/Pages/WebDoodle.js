@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaEraser,
   FaTimes,
@@ -7,13 +8,13 @@ import {
   FaFont,
   FaSave,
   FaPencilAlt,
+  FaSquare,
+  FaCircle,
+  FaMinus,
 } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
 import { SketchPicker } from "react-color";
 import Header from "../Components/Header";
 import "../Styles/Doodle.css";
-import animation from "../Assets/Animation.json";
-import Lottie from "lottie-react";
 import { supabase } from "../Utils/supabaseClient";
 
 const WebDoodle = () => {
@@ -22,6 +23,7 @@ const WebDoodle = () => {
   const isDrawing = useRef(false);
   const [ctx, setCtx] = useState(null);
   const [showDoodleAlert, setShowDoodleAlert] = useState(false);
+
   // Drawing state
   const [color, setColor] = useState("#ffffff");
   const [brushSize, setBrushSize] = useState(4);
@@ -29,9 +31,14 @@ const WebDoodle = () => {
   const [eraserSize, setEraserSize] = useState(20);
   const [showEraserControls, setShowEraserControls] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
-  const [tool, setTool] = useState("pen"); // 'pen', 'eraser', 'text'
+  const [tool, setTool] = useState("pen"); // 'pen', 'eraser', 'text', 'rectangle', 'circle', 'line'
   const [textInput, setTextInput] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+
+  // Shape drawing state
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const [currentPos, setCurrentPos] = useState({ x: 0, y: 0 });
+  const [isDrawingShape, setIsDrawingShape] = useState(false);
+  const [previewCanvas, setPreviewCanvas] = useState(null);
 
   // Undo/Redo functionality
   const [drawingHistory, setDrawingHistory] = useState([]);
@@ -42,8 +49,36 @@ const WebDoodle = () => {
   const [showTextInput, setShowTextInput] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const navigate = useNavigate();
+  const [canSubmit, setCanSubmit] = useState(false);
+  const [message, setMessage] = useState("");
 
+  const navigate = useNavigate();
+  useEffect(() => {
+    const lastSubmit = localStorage.getItem("lastSketchSubmit");
+
+    if (lastSubmit) {
+      const last = new Date(lastSubmit);
+      const now = new Date();
+      const daysPassed = Math.floor((now - last) / (1000 * 60 * 60 * 24));
+
+      if (daysPassed >= 20) {
+        setCanSubmit(true);
+        setMessage("You have 1 sketch point available.");
+      } else {
+        const daysLeft = 20 - daysPassed;
+        setCanSubmit(false);
+        setMessage(
+          `You used your 1 free sketch point. It will refill in ${daysLeft} day${
+            daysLeft > 1 ? "s" : ""
+          }.`
+        );
+      }
+    } else {
+      // No record, first time user
+      setCanSubmit(true);
+      setMessage("You have 1 sketch point available.");
+    }
+  }, []);
   // Initialize canvas
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -54,6 +89,13 @@ const WebDoodle = () => {
     context.lineWidth = brushSize;
     context.strokeStyle = color;
     setCtx(context);
+
+    // Create a preview canvas
+    const preview = document.createElement("canvas");
+    preview.width = canvas.width;
+    preview.height = canvas.height;
+    setPreviewCanvas(preview);
+
     saveCanvasState();
   }, []);
 
@@ -78,6 +120,7 @@ const WebDoodle = () => {
   useEffect(() => {
     if (ctx) {
       ctx.strokeStyle = color;
+      ctx.fillStyle = color;
     }
   }, [color, ctx]);
 
@@ -134,15 +177,30 @@ const WebDoodle = () => {
     img.src = imageData;
   };
 
+  // Get mouse/touch position
+  const getPosition = (e) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    return {
+      x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
+      y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top,
+    };
+  };
+
   // Start drawing
   const startDrawing = (e) => {
     if (tool === "text") {
-      const rect = canvasRef.current.getBoundingClientRect();
-      setTextPosition({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
+      const pos = getPosition(e);
+      setTextPosition(pos);
       setShowTextInput(true);
+      return;
+    }
+
+    const pos = getPosition(e);
+
+    if (["rectangle", "circle", "line"].includes(tool)) {
+      setIsDrawingShape(true);
+      setStartPos(pos);
+      setCurrentPos(pos);
       return;
     }
 
@@ -161,17 +219,61 @@ const WebDoodle = () => {
       pressure = Math.min(touchRadius / 10, 1);
     }
 
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.touches ? e.touches[0].clientX : e.clientX;
-    const y = e.touches ? e.touches[0].clientY : e.clientY;
-
     ctx.lineWidth =
       tool === "eraser" ? eraserSize * pressure : brushSize * pressure;
-    ctx.moveTo(x - rect.left, y - rect.top);
+    ctx.moveTo(pos.x, pos.y);
+  };
+
+  const drawShape = () => {
+    if (!isDrawingShape || !ctx) return;
+
+    // Clear the canvas and redraw the last saved state
+    const lastState = new Image();
+    lastState.src = drawingHistory[historyIndex];
+    lastState.onload = () => {
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      ctx.drawImage(lastState, 0, 0);
+
+      // Draw the current shape
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = brushSize;
+
+      const width = currentPos.x - startPos.x;
+      const height = currentPos.y - startPos.y;
+
+      switch (tool) {
+        case "rectangle":
+          ctx.strokeRect(startPos.x, startPos.y, width, height);
+          break;
+        case "circle":
+          const radius = Math.sqrt(width * width + height * height);
+          ctx.beginPath();
+          ctx.arc(startPos.x, startPos.y, radius, 0, Math.PI * 2);
+          ctx.stroke();
+          break;
+        case "line":
+          ctx.beginPath();
+          ctx.moveTo(startPos.x, startPos.y);
+          ctx.lineTo(currentPos.x, currentPos.y);
+          ctx.stroke();
+          break;
+        default:
+          break;
+      }
+    };
   };
 
   // Drawing function
   const draw = (e) => {
+    const pos = getPosition(e);
+
+    if (isDrawingShape) {
+      setCurrentPos(pos);
+      drawShape(); // Call the new shape drawing function
+      return;
+    }
+
     if (!isDrawing.current || !ctx || tool === "text") return;
 
     // Handle pressure sensitivity
@@ -185,18 +287,27 @@ const WebDoodle = () => {
       pressure = Math.min(touchRadius / 10, 1);
     }
 
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.touches ? e.touches[0].clientX : e.clientX;
-    const y = e.touches ? e.touches[0].clientY : e.clientY;
-
     ctx.lineWidth =
       tool === "eraser" ? eraserSize * pressure : brushSize * pressure;
-    ctx.lineTo(x - rect.left, y - rect.top);
+    ctx.lineTo(pos.x, pos.y);
     ctx.stroke();
   };
+  // Draw shape preview
 
   // End drawing
   const endDrawing = () => {
+    if (isDrawingShape) {
+      // Finalize the shape by saving the canvas state
+      saveCanvasState();
+      setIsDrawingShape(false);
+      return;
+    }
+
+    if (!isDrawing.current) return;
+
+    isDrawing.current = false;
+    saveCanvasState();
+
     if (!isDrawing.current) return;
 
     isDrawing.current = false;
@@ -226,8 +337,9 @@ const WebDoodle = () => {
   };
 
   const handleSubmitDesign = async () => {
-    if (isSubmitting) return; // prevent double submissions
-    setIsSubmitting(true); // disable button
+    if (!canSubmit) return;
+    if (isSubmitting) return;
+    setIsSubmitting(true);
 
     const canvas = canvasRef.current;
     const exportCanvas = document.createElement("canvas");
@@ -277,26 +389,23 @@ const WebDoodle = () => {
         setIsSubmitting(false);
       }
     }, "image/png");
-  };
+    localStorage.setItem("lastSketchSubmit", new Date().toISOString());
 
+    setCanSubmit(false);
+    setMessage("You used your 1 free doodle point. It will refill in 20 days.");
+  };
   // Export canvas as PNG
   const exportAsPNG = () => {
     const canvas = canvasRef.current;
-
-    // Create a temporary canvas
     const exportCanvas = document.createElement("canvas");
     exportCanvas.width = canvas.width;
     exportCanvas.height = canvas.height;
     const exportCtx = exportCanvas.getContext("2d");
 
-    // Fill with dark background
-    exportCtx.fillStyle = "#111"; // Your desired background color
+    exportCtx.fillStyle = "#111";
     exportCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Draw current canvas onto the export canvas
     exportCtx.drawImage(canvas, 0, 0);
 
-    // Export from the temp canvas
     const link = document.createElement("a");
     link.download = "drawing.png";
     link.href = exportCanvas.toDataURL("image/png");
@@ -307,7 +416,6 @@ const WebDoodle = () => {
   const toggleTool = (selectedTool) => {
     setTool(selectedTool);
 
-    // Hide text input when switching away from text tool
     if (tool === "text" && selectedTool !== "text") {
       setShowTextInput(false);
     }
@@ -319,6 +427,17 @@ const WebDoodle = () => {
       setIsErasing(false);
       setShowEraserControls(false);
     }
+
+    // Cancel any ongoing shape drawing
+    if (isDrawingShape) {
+      setIsDrawingShape(false);
+      // Restore canvas to last saved state
+      loadCanvasState(drawingHistory[historyIndex]);
+    }
+  };
+
+  const handleExample = () => {
+    navigate("/doodle-example");
   };
 
   return (
@@ -326,16 +445,6 @@ const WebDoodle = () => {
       <Header />
 
       <div className="canvas-container">
-        {!ctx && (
-          <div className="centered-animation">
-            <Lottie
-              animationData={animation}
-              loop={true}
-              style={{ height: "120px", width: "120px" }}
-            />
-          </div>
-        )}
-
         <canvas
           ref={canvasRef}
           className="bw-canvas"
@@ -374,13 +483,12 @@ const WebDoodle = () => {
         {/* Canvas Controls */}
         <div className="canvas-controls">
           {/* Tool Selection */}
-
           <div className="tool-buttons">
             <button
               className={`tool-btn ${tool === "pen" ? "active" : ""}`}
               onClick={() => {
                 toggleTool("pen");
-                setShowTextInput(false); // Additional safeguard
+                setShowTextInput(false);
               }}
               title="Pen"
             >
@@ -391,7 +499,7 @@ const WebDoodle = () => {
               className={`tool-btn ${tool === "eraser" ? "active" : ""}`}
               onClick={() => {
                 toggleTool("eraser");
-                setShowTextInput(false); // Additional safeguard
+                setShowTextInput(false);
               }}
               title="Eraser"
             >
@@ -405,10 +513,33 @@ const WebDoodle = () => {
             >
               <FaFont />
             </button>
+
+            <button
+              className={`tool-btn ${tool === "rectangle" ? "active" : ""}`}
+              onClick={() => toggleTool("rectangle")}
+              title="Rectangle"
+            >
+              <FaSquare />
+            </button>
           </div>
 
           {/* Color Picker */}
           <div className="color-picker-container">
+            <button
+              className={`tool-btn ${tool === "circle" ? "active" : ""}`}
+              onClick={() => toggleTool("circle")}
+              title="Circle"
+            >
+              <FaCircle />
+            </button>
+
+            <button
+              className={`tool-btn ${tool === "line" ? "active" : ""}`}
+              onClick={() => toggleTool("line")}
+              title="Line"
+            >
+              <FaMinus />
+            </button>
             <button
               className="color-picker-btn"
               onClick={() => setShowColorPicker(!showColorPicker)}
@@ -489,14 +620,17 @@ const WebDoodle = () => {
             </button>
           </div>
           <div className="examples-container">
-            <button className="examples-btn">See Examples</button>
-            <button
-              className={`submit-btn ${isSubmitting ? "disabled" : ""}`}
-              onClick={handleSubmitDesign}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Submitting..." : "Submit Design"}
-            </button>
+            {canSubmit ? (
+              <button
+                className={`submit-btn ${isSubmitting ? "disabled" : ""}`}
+                onClick={handleSubmitDesign}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </button>
+            ) : (
+              <p className="sketch-wait">{message}</p>
+            )}
           </div>
         </div>
       </div>
