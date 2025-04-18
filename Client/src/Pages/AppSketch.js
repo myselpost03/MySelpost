@@ -41,6 +41,7 @@ const AppSketch = () => {
   const [joinedWaitlist, setJoinedWaitlist] = useState(false);
   const [queuePosition, setQueuePosition] = useState(null);
   const [showTrafficMessage, setShowTrafficMessage] = useState(false);
+  const [appName, setAppName] = useState("");
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -213,7 +214,8 @@ const AppSketch = () => {
 
     const pagePath = window.location.pathname.replace(/[^\w]/g, "_");
     const fileExt = file.name.split(".").pop();
-    const uniqueName = `${userEmail}_${pagePath}_${Date.now()}.${fileExt}`;
+    const safeAppName = appName.replace(/[^\w\s]/gi, "").replace(/\s+/g, "_");
+    const uniqueName = `${userEmail}_${pagePath}_${safeAppName}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from("sketches")
@@ -323,8 +325,8 @@ const AppSketch = () => {
   };
 
   const isFormReady = isLoggedIn
-    ? !!file && !uploading
-    : !!file && validateEmail(email) && !uploading;
+    ? !!file && !!appName && !uploading
+    : !!file && validateEmail(email) && !!appName && !uploading;
 
   return (
     <>
@@ -347,6 +349,17 @@ const AppSketch = () => {
                 : "Drag & drop or click to browse"}
             </p>
           </label>
+        </div>
+
+        <div className="brutalist-container">
+          <input
+            placeholder="TYPE HERE"
+            className="brutalist-input smooth-type"
+            type="text"
+            value={appName}
+            onChange={(e) => setAppName(e.target.value)}
+          />
+          <label className="brutalist-label">APP NAME</label>
         </div>
 
         {!isLoggedIn && (

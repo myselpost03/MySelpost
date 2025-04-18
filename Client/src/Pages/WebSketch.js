@@ -41,6 +41,8 @@ const WebSketch = () => {
   const [joinedWaitlist, setJoinedWaitlist] = useState(false);
   const [queuePosition, setQueuePosition] = useState(null);
   const [showTrafficMessage, setShowTrafficMessage] = useState(false);
+  const [appName, setAppName] = useState("");
+
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -323,8 +325,8 @@ const WebSketch = () => {
   };
 
   const isFormReady = isLoggedIn
-    ? !!file && !uploading
-    : !!file && validateEmail(email) && !uploading;
+  ? !!file && !!appName && !uploading
+  : !!file && validateEmail(email) && !!appName && !uploading;
 
   return (
     <>
@@ -347,6 +349,16 @@ const WebSketch = () => {
                 : "Drag & drop or click to browse"}
             </p>
           </label>
+        </div>
+        <div className="brutalist-container">
+          <input
+            placeholder="TYPE HERE"
+            className="brutalist-input smooth-type"
+            type="text"
+            value={appName}
+            onChange={(e) => setAppName(e.target.value)}
+          />
+          <label className="brutalist-label">APP NAME</label>
         </div>
 
         {!isLoggedIn && (

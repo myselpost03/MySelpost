@@ -134,7 +134,7 @@ const Prompt = () => {
     updatePromptPoints(promptPoints - 1);
 
     showCustomAlert(
-      `⏳ Your ${type} will magically turn into a ${type} in 3 days. You'll get your ${type} & code files to your email.`
+      `⏳ Your sketch will magically turn into a ${type} in 3 days. You'll get your ${type} & code files to your email.`
     );
   };
 

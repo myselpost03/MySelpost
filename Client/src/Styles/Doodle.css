@@ -315,8 +315,7 @@
   margin-top: 10px;
 }
 
-
-.submit-button:hover{
+.submit-button:hover {
   cursor: pointer;
 }
 
@@ -427,4 +426,37 @@
   width: 230px;
   font-family: "Rowdies", serif;
   text-align: center;
+}
+
+.app-name-input-container {
+  width: 100%;
+  margin: 10px 0;
+}
+
+.app-name-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #fff;
+  background-color: #111;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: "Space Grotesk", sans-serif;
+}
+
+.app-name-input::placeholder {
+  color: #888;
+}
+
+.app-name-input:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.submit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  
 }

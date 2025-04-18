@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   FaEraser,
   FaTimes,
@@ -52,7 +51,8 @@ const WebDoodle = () => {
   const [canSubmit, setCanSubmit] = useState(false);
   const [message, setMessage] = useState("");
 
-  const navigate = useNavigate();
+  const [appName, setAppName] = useState("");
+
   useEffect(() => {
     const lastSubmit = localStorage.getItem("lastSketchSubmit");
 
@@ -61,11 +61,11 @@ const WebDoodle = () => {
       const now = new Date();
       const daysPassed = Math.floor((now - last) / (1000 * 60 * 60 * 24));
 
-      if (daysPassed >= 20) {
+      if (daysPassed >= 15) {
         setCanSubmit(true);
         setMessage("You have 1 sketch point available.");
       } else {
-        const daysLeft = 20 - daysPassed;
+        const daysLeft = 15 - daysPassed;
         setCanSubmit(false);
         setMessage(
           `You used your 1 free sketch point. It will refill in ${daysLeft} day${
@@ -367,7 +367,11 @@ const WebDoodle = () => {
         const user = JSON.parse(userString);
         const email =
           user?.email?.replace(/[^a-zA-Z0-9._]/g, "_") || "anonymous";
-        const fileName = `${path}_${email}.png`;
+        const safeAppName = appName
+          .replace(/[^\w\s]/gi, "")
+          .replace(/\s+/g, "_");
+
+        const fileName = `${path}_${email}_${safeAppName}.png`;
 
         const { data, error } = await supabase.storage
           .from("doodle")
@@ -392,7 +396,7 @@ const WebDoodle = () => {
     localStorage.setItem("lastSketchSubmit", new Date().toISOString());
 
     setCanSubmit(false);
-    setMessage("You used your 1 free doodle point. It will refill in 20 days.");
+    setMessage("You used your 1 free doodle point. It will refill in 15 days.");
   };
   // Export canvas as PNG
   const exportAsPNG = () => {
@@ -434,10 +438,6 @@ const WebDoodle = () => {
       // Restore canvas to last saved state
       loadCanvasState(drawingHistory[historyIndex]);
     }
-  };
-
-  const handleExample = () => {
-    navigate("/doodle-example");
   };
 
   return (
@@ -619,15 +619,29 @@ const WebDoodle = () => {
               <FaTimes />
             </button>
           </div>
+        
           <div className="examples-container">
+            
+
             {canSubmit ? (
-              <button
-                className={`submit-button ${isSubmitting ? "disabled" : ""}`}
-                onClick={handleSubmitDesign}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Submitting..." : "Submit"}
-              </button>
+              <>
+                <div className="app-name-input-container">
+                  <input
+                    type="text"
+                    value={appName}
+                    onChange={(e) => setAppName(e.target.value)}
+                    placeholder="Type Your Website Name..."
+                    className="app-name-input"
+                  />
+                </div>
+                <button
+                  className={`submit-button ${isSubmitting ? "disabled" : ""}`}
+                  onClick={handleSubmitDesign}
+                  disabled={isSubmitting || !appName.trim()}
+                >
+                  {isSubmitting ? "Submitting..." : "Submit"}
+                </button>
+              </>
             ) : (
               <p className="sketch-wait">{message}</p>
             )}
