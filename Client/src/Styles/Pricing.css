@@ -1,113 +1,131 @@
 .pricing-page {
-    padding: 2rem;
-    font-family: 'Segoe UI', sans-serif;
-    background: #f9f9ff;
-    min-height: 100vh;
-  }
-  
-  .pricing-title {
-    text-align: center;
-    font-size: 2rem;
-    margin-bottom: 2rem;
-    color: #333;
-  }
-  
+  padding: 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f9f9ff;
+  min-height: 100vh;
+}
+
+.pricing-title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.plans-wrapper {
+  margin-top: 15%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
   .plans-wrapper {
-    
-    margin-top: 15%;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+    flex-direction: row;
+    justify-content: center;
   }
-  
-  @media (min-width: 768px) {
-    .plans-wrapper {
-      flex-direction: row;
-      justify-content: center;
-    }
+}
+
+.plan-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  flex: 1;
+  max-width: 320px;
+  transition: transform 0.2s;
+}
+
+.plan-card:hover {
+  transform: translateY(-4px);
+}
+
+.plan-name {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.plan-price {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.plan-features li {
+  margin: 0.5rem 0;
+  color: #444;
+}
+
+.select-button {
+  background-color: #000000;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.select-button:hover {
+  background-color: #333;
+}
+
+.select-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.select-button.green {
+  background-color: green;
+}
+
+.select-button.green:hover {
+  background-color: #007f00;
+}
+
+.free {
+  border-top: 4px solid #000000;
+}
+
+.paid {
+  border-top: 4px solid #000000;
+}
+
+#paypal-button-container {
+  margin-top: 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .pricing-title {
+    font-size: 2.5rem;
   }
-  
+
   .plan-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
-    flex: 1;
-    max-width: 320px;
-    transition: transform 0.2s;
+    max-width: 400px;
+    padding: 3rem;
   }
-  
-  .plan-card:hover {
-    transform: translateY(-4px);
-  }
-  
+
   .plan-name {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
   }
-  
+
   .plan-price {
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
-    color: #555;
+    font-size: 1.5rem;
   }
-  
-  .plan-features {
-    list-style: none;
-    padding: 0;
-    margin: 1rem 0;
-  }
-  
-  .plan-features li {
-    margin: 0.5rem 0;
-    color: #444;
-  }
-  
+
   .select-button {
-    background-color: #000000;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 1rem;
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
   }
-  
-  .select-button:hover {
-    background-color: #000000;
-  }
-  
-  .free {
-    border-top: 4px solid #000000;
-  }
-  
-  .paid {
-    border-top: 4px solid #000000;
-  }
-  
-  @media (min-width: 1024px) {
-    .pricing-title {
-      font-size: 2.5rem;
-    }
-  
-    .plan-card {
-      max-width: 400px;
-      padding: 3rem;
-    }
-  
-    .plan-name {
-      font-size: 1.8rem;
-    }
-  
-    .plan-price {
-      font-size: 1.5rem;
-    }
-  
-    .select-button {
-      font-size: 1.1rem;
-      padding: 1rem 2rem;
-    }
-  }
-  
+}
