@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Header from "../Components/Header";
 import "../Styles/AppSketch.css";
@@ -42,6 +42,13 @@ const AppSketch = () => {
   const [queuePosition, setQueuePosition] = useState(null);
   const [showTrafficMessage, setShowTrafficMessage] = useState(false);
   const [appName, setAppName] = useState("");
+  const [creditCost] = useState(1); // Fixed cost for priority
+  const [isProcessingUpgrade, setIsProcessingUpgrade] = useState(false);
+  const [showSpeedUpAlert, setShowSpeedUpAlert] = useState(false);
+  const [speedUpAlertMessage, setSpeedUpAlertMessage] = useState("");
+  const [showWhyTwoDaysAlert, setShowWhyTwoDaysAlert] = useState(false);
+
+  const paypalRef = useRef(null);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -50,7 +57,7 @@ const AppSketch = () => {
 
   useEffect(() => {
     const now = Date.now();
-    const TWENTY_DAYS = 20 * 24 * 60 * 60 * 1000;
+    const TWENTY_DAYS = 2 * 24 * 60 * 60 * 1000;
 
     const user = localStorage.getItem("user");
     if (user) {
@@ -181,6 +188,43 @@ const AppSketch = () => {
     setEmailError(
       validateEmail(value) ? "" : "Please enter a valid email address."
     );
+  };
+
+  const handlePriorityUpgrade = async () => {
+    // Check if user is logged in
+
+    if (!paypalRef.current || paypalRef.current.hasChildNodes()) return;
+
+    window.paypal
+      .Buttons({
+        createOrder: (data, actions) => {
+          const finalPrice = "1.00";
+          return actions.order.create({
+            purchase_units: [{ amount: { value: finalPrice } }],
+          });
+        },
+
+        onApprove: async (data, actions) => {
+          await actions.order.capture();
+          showCustomAlert("✅ Payment successful! Wait time skipped.");
+
+          const user = JSON.parse(localStorage.getItem("user"));
+          const email = user?.email;
+
+          if (email) {
+            await supabase
+              .from("users")
+              .update({ speedUp: "used" })
+              .eq("email", email);
+          }
+        },
+
+        onError: (err) => {
+          console.error("PayPal Error:", err);
+          showCustomAlert("❌ Payment failed. Please try again.");
+        },
+      })
+      .render(paypalRef.current);
   };
 
   const handleFileChange = (e) => {
@@ -422,32 +466,119 @@ const AppSketch = () => {
             </p>
           </div>
         ) : cooldownActive ? (
-          <p className="cooldown-text">
-            ⏳ You’ve already used your <strong>1 free sketch point</strong>.
-            <br />
-            Come back in <strong>{timeRemaining}</strong> to submit again.
-            <br />
+          <div className="status-card">
+            <div className="status-header">
+              <div className="status-icon">⏳</div>
+              <h3>Your Build Status</h3>
+            </div>
+
+            <div className="status-grid">
+              <div className="status-item">
+                <div className="status-label">Estimated Wait</div>
+                <div className="status-value">
+                  <p style={{ marginTop: "10px", fontSize: "15px" }}>
+                    48 hours {""}
+                    <button
+                      onClick={() => setShowWhyTwoDaysAlert(true)}
+                      style={{
+                        outline: 'none',
+                        border: "none",
+                        color: "#fff",
+                        backgroundColor: "#000000",
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                        padding: 5,
+                        borderRadius: 3
+
+                      }}
+                    >
+                      Why?
+                    </button>
+                  </p>
+                </div>
+              </div>
+
+              <div className="status-item">
+                <div className="status-label">Queue Position</div>
+                <div className="status-value">
+                  #{queuePosition || "Processing"}
+                </div>
+              </div>
+
+              <div className="status-item full-width">
+                <div className="status-label">System Status</div>
+                <div className="status-value">
+                  AI processing in queue to prevent overload
+                </div>
+              </div>
+            </div>
+
+            <div className="status-note">
+              <p>
+                You've used your free sketch point. Available in:{" "}
+                <strong>{timeRemaining}</strong>
+              </p>
+            </div>
             <span className="share-instruction">
               🎁 Claim a bonus sketch point by sharing:
             </span>
+            {/*<div className="priority-upgrade">
+              <div className="upgrade-header">
+                <span className="badge">🚀 Turbo Mode</span>
+                <h4>Skip Wait Time</h4>
+              </div>
+
+              <p className="time-comparison">
+                <span className="time-option">
+                  <span className="time-badge">🐢 Standard</span>
+                  <span>48 hours</span>
+                </span>
+
+                <span className="arrow">→</span>
+
+                <span className="time-option">
+                  <span className="time-badge turbo">⚡ Turbo</span>
+                  <span>2 hours</span>
+                </span>
+              </p>
+
+              <button
+                className="upgrade-button"
+                onClick={handlePriorityUpgrade}
+              >
+                <strong>Speed Up ($1)</strong>
+              </button>
+              <div ref={paypalRef} style={{ marginTop: "20px" }} />
+              <div className="benefits-list">
+                <div className="benefit-item">
+                  <span>⏱️</span> 24x faster processing
+                </div>
+                <div className="benefit-item">
+                  <span>💎</span> Priority cloud container
+                </div>
+                <div className="benefit-item">
+                  <span>📬</span> Instant notifications
+                </div>
+              </div>
+            </div>*/}
             <div className="react-share-buttons">
               <FacebookShareButton
                 url="https://myselpost.com/sketch"
-                quote="Get your app built from a sketch!"
+                quote="Get your website built from a sketch!"
                 onShareWindowClose={handleBonusClaim}
               >
                 <button className="share-coin-button">📘 Facebook</button>
               </FacebookShareButton>
               <TwitterShareButton
                 url="https://myselpost.com/sketch"
-                title="I just got an app built from a hand-drawn sketch. Try it yourself!"
+                title="I just got a website built from a hand-drawn sketch. Try it yourself!"
                 onShareWindowClose={handleBonusClaim}
               >
                 <button className="share-coin-button">🐦 Twitter</button>
               </TwitterShareButton>
               <WhatsappShareButton
                 url="https://myselpost.com/sketch"
-                title="Build an app from your hand-drawn sketch!"
+                title="Build a website from your hand-drawn sketch!"
                 separator=":: "
                 onShareWindowClose={handleBonusClaim}
               >
@@ -455,13 +586,13 @@ const AppSketch = () => {
               </WhatsappShareButton>
               <TelegramShareButton
                 url="https://myselpost.com/sketch"
-                title="Get your app built from a sketch!"
+                title="Get your website built from a sketch!"
                 onShareWindowClose={handleBonusClaim}
               >
                 <button className="share-coin-button">📨 Telegram</button>
               </TelegramShareButton>
             </div>
-          </p>
+          </div>
         ) : (
           <button
             className="upload-button"
@@ -483,15 +614,47 @@ const AppSketch = () => {
             <button onClick={() => setShowBonusAlert(false)}>Awesome 🚀</button>
           </div>
         )}
+        {showWhyTwoDaysAlert && (
+          <div className="custom-alert info">
+            <p>
+              🕒 <strong>Why 48 Hours?</strong>
+              <br />
+              Your app is first built by AI, then reviewed by a human expert to
+              ensure everything works smoothly, looks clean, and doesn't include
+              anything unsafe, illegal, or inappropriate.
+              <br />
+            </p>
+            <button onClick={() => setShowWhyTwoDaysAlert(false)}>
+              Got it 👍
+            </button>
+          </div>
+        )}
 
         {showCustomAlert && (
           <div className="custom-alert">
             <p>
               {joinedWaitlist
                 ? "✅ You have already joined the waitlist!"
-                : "⏳ Your sketch will magically turn into an app in 7 days!\nWe'll send updates to your inbox."}
+                : "⏳ App creation started! We'll email progress."}
             </p>
             <button onClick={() => setShowCustomAlert(false)}>Okay ✨</button>
+          </div>
+        )}
+
+        {showSpeedUpAlert && (
+          <div className="speed-up-alert">
+            <div className="speed-up-alert-content">
+              <p>{speedUpAlertMessage}</p>
+              {isLoggedIn && speedUpAlertMessage.includes("Complete your") && (
+                <div id="paypal-button-container"></div>
+              )}
+              <button
+                onClick={() => setShowSpeedUpAlert(false)}
+                className="speed-up-alert-button"
+              >
+                {speedUpAlertMessage.includes("successful") ? "Great!" : "Okay"}
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -397,6 +397,262 @@
   color: transparent;
 }
 
-.brutalist-input:focus {
-  animation: focus-pulse 4s cubic-bezier(0.25, 0.8, 0.25, 1) infinite;
+.highlight-box {
+  background-color: #fff8e1;
+  border-left: 4px solid #ffc107;
+  padding: 12px;
+  margin: 12px 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.95em;
+  line-height: 1.5;
 }
+
+@media (max-width: 600px) {
+  .highlight-box {
+    padding: 8px;
+    font-size: 0.9em;
+  }
+}
+
+/* Status Card Layout */
+.status-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-width: 500px;
+  margin: 20px auto;
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.status-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.status-icon {
+  font-size: 1.5rem;
+}
+
+/* Grid Layout */
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.status-item {
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+.status-label {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.status-value {
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+/* Compact Elements */
+.compact-share-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.share-button {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.bonus-section {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px dashed #eee;
+}
+
+.status-note {
+  background: #fff8e6;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.priority-upgrade {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 20px;
+  border: 1px solid #dee2e6;
+}
+
+.upgrade-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.badge {
+  background: #ff6b6b;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.upgrade-button {
+  width: 100%;
+  background: linear-gradient(135deg, #ff8a00 0%, #da1b60 100%);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  margin: 10px 0;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.upgrade-button:hover {
+  transform: translateY(-2px);
+}
+
+.benefits-list {
+  display: grid;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.time-comparison {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin: 15px 0;
+  font-size: 1.1rem;
+}
+
+.time-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.time-badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.time-badge.turbo {
+  background: linear-gradient(135deg, #40E0D0 0%, #FF8C00 50%, #FF0080 100%);
+  color: white;
+}
+
+.arrow {
+  font-size: 1.5rem;
+  color: #666;
+  margin: 0 10px;
+}
+
+.custom-alert.info {
+  background-color: #e9f6ff;
+  border-left: 6px solid #2d9cdb;
+  color: #1b4f72;
+  padding: 16px;
+  margin: 20px 0;
+  border-radius: 10px;
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+
+/* Speed Up Alert Styles */
+.speed-up-alert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.speed-up-alert-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.speed-up-alert-content p {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.speed-up-alert-button {
+  background-color: #000;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.speed-up-alert-button:hover {
+  background-color: #333;
+}
+
+#paypal-button-container {
+  margin: 1rem 0;
+}
+
+.alert-link {
+  color: #0066cc;
+  text-decoration: underline;
+  font-weight: bold;
+  margin: 0 2px;
+}
+
+.alert-link:hover {
+  color: #004499;
+}
+

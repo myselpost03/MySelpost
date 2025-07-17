@@ -18,6 +18,7 @@ import {
   AppDoodle,
   WebDoodle,
   DoodleExample,
+  FirstUserSketch
 } from "./Pages/index";
 
 const protectedRoutes = [
@@ -39,6 +40,7 @@ const publicRoutes = [
   { path: "/pricing", component: Pricing },
   { path: "/app-sketch", component: AppSketch },
   { path: "/web-sketch", component: WebSketch },
+  {path: "/first-user-sketch", component: FirstUserSketch}
 ];
 
 function App() {

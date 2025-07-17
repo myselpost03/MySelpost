@@ -29,11 +29,15 @@ const ABOUT_CONTENT = [
       <ul>
         <li>
           <strong>Sketch Plan:</strong> <em>Free</em> – Delivery in{" "}
-          <strong>7 days</strong> with <strong>1 monthly point</strong>.
+          <strong>72 hours</strong> with <strong>1 monthly point</strong>.
         </li>
         <li>
           <strong>Prompt Plan:</strong> <em>Paid</em> – Delivery in{" "}
-          <strong>3 days</strong> with <strong>3 monthly points</strong>.
+          <strong>48 hours</strong> with <strong>3 monthly points</strong>.
+        </li>
+        <li>
+          <strong>Business Plan:</strong> <em>Paid</em> – Delivery in{" "}
+          <strong>24 hours</strong> with <strong>5 monthly points</strong>.
         </li>
       </ul>
     ),

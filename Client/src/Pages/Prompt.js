@@ -134,7 +134,7 @@ const Prompt = () => {
     updatePromptPoints(promptPoints - 1);
 
     showCustomAlert(
-      `⏳ Your sketch will magically turn into a ${type} in 3 days. You'll get your ${type} & code files to your email.`
+      `⏳ Your sketch will magically turn into a ${type} in 48 hours. You'll get your ${type} & code files to your email.`
     );
   };
 
@@ -163,7 +163,7 @@ const Prompt = () => {
       }
 
       setPromoValid(true);
-      showCustomAlert("🎉 Promo applied! $2.50 price unlocked!");
+      showCustomAlert("🎉 Promo applied! $0.50 price unlocked!");
     }
 
     if (!paypalRef.current || paypalRef.current.hasChildNodes()) return;
@@ -171,7 +171,7 @@ const Prompt = () => {
     window.paypal
       .Buttons({
         createOrder: (data, actions) => {
-          const finalPrice = promoValid ? "2.50" : "5.00";
+          const finalPrice = promoValid ? "0.50" : "5.00";
           return actions.order.create({
             purchase_units: [{ amount: { value: finalPrice } }],
           });
@@ -224,7 +224,7 @@ const Prompt = () => {
       .Buttons({
         createOrder: (data, actions) => {
           return actions.order.create({
-            purchase_units: [{ amount: { value: "1.00" } }],
+            purchase_units: [{ amount: { value: "5.00" } }],
           });
         },
         onApprove: async (data, actions) => {
@@ -237,7 +237,7 @@ const Prompt = () => {
         },
         onError: (err) => {
           console.error("PayPal Error:", err);
-          showCustomAlert("❌ $1 Payment failed. Please try again.");
+          showCustomAlert("❌ $5 Payment failed. Please try again.");
         },
       })
       .render(paypalGetMoreRef.current);
@@ -284,7 +284,7 @@ const Prompt = () => {
             </div>
 
             <button className="pay-button" onClick={handleUnlockClick}>
-              💸 Pay {promoValid ? "$2.50" : "$5"} to Unlock Prompt Tool
+              💸 Pay {promoValid ? "$0.50" : "$5"} to Unlock Prompt Tool
             </button>
             <div ref={paypalRef} style={{ marginTop: "20px" }} />
           </div>

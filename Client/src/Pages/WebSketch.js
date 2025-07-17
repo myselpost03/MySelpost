@@ -42,7 +42,14 @@ const WebSketch = () => {
   const [queuePosition, setQueuePosition] = useState(null);
   const [showTrafficMessage, setShowTrafficMessage] = useState(false);
   const [appName, setAppName] = useState("");
-
+  const [creditCost] = useState(5); // Fixed cost for priority
+  const [isProcessingUpgrade, setIsProcessingUpgrade] = useState(false);
+  const [userCredits, setUserCredits] = useState(() => {
+    // Initialize credits from localStorage or default to 0
+    const storedCredits = localStorage.getItem("userCredits");
+    return storedCredits ? parseInt(storedCredits) : 0;
+  });
+  const [showWhyTwoDaysAlert, setShowWhyTwoDaysAlert] = useState(false);
 
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -51,7 +58,7 @@ const WebSketch = () => {
 
   useEffect(() => {
     const now = Date.now();
-    const TWENTY_DAYS = 20 * 24 * 60 * 60 * 1000;
+    const TWENTY_DAYS = 2 * 24 * 60 * 60 * 1000;
 
     const user = localStorage.getItem("user");
     if (user) {
@@ -195,6 +202,51 @@ const WebSketch = () => {
     }
   };
 
+  const handlePriorityUpgrade = () => {
+    setIsProcessingUpgrade(true);
+
+    try {
+      // 1. Verify user has enough credits
+      if (userCredits < creditCost) {
+        alert(`Not enough credits! You need ${creditCost} credits.`);
+        setIsProcessingUpgrade(false);
+        return;
+      }
+
+      // 2. Deduct credits
+      const newCredits = userCredits - creditCost;
+      setUserCredits(newCredits);
+      localStorage.setItem("userCredits", newCredits.toString());
+
+      // 3. Update build priority in localStorage
+      const currentBuilds = JSON.parse(
+        localStorage.getItem("userBuilds") || []
+      );
+      const updatedBuilds = currentBuilds.map((build) => ({
+        ...build,
+        priority: "high",
+        status: "processing",
+      }));
+      localStorage.setItem("userBuilds", JSON.stringify(updatedBuilds));
+
+      // 4. Visual feedback
+      confetti({ particleCount: 100, spread: 70 });
+      setShowCustomAlert({
+        title: "Priority Activated!",
+        message: "Your build is now processing with dedicated resources",
+        type: "success",
+      });
+
+      // 5. Update local state
+      setCooldownActive(false);
+    } catch (error) {
+      alert("Upgrade failed. Please try again.");
+      console.error(error);
+    } finally {
+      setIsProcessingUpgrade(false);
+    }
+  };
+
   const handleUpload = async () => {
     if (!file || (!isLoggedIn && (!email || emailError))) return;
 
@@ -215,7 +267,8 @@ const WebSketch = () => {
 
     const pagePath = window.location.pathname.replace(/[^\w]/g, "_");
     const fileExt = file.name.split(".").pop();
-    const uniqueName = `${userEmail}_${pagePath}_${Date.now()}.${fileExt}`;
+    const safeWebsiteName = appName.replace(/[^\w\s]/gi, "").replace(/\s+/g, "_");
+    const uniqueName = `${userEmail}_${pagePath}_${safeWebsiteName}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from("sketches")
@@ -325,8 +378,8 @@ const WebSketch = () => {
   };
 
   const isFormReady = isLoggedIn
-  ? !!file && !!appName && !uploading
-  : !!file && validateEmail(email) && !!appName && !uploading;
+    ? !!file && !!appName && !uploading
+    : !!file && validateEmail(email) && !!appName && !uploading;
 
   return (
     <>
@@ -358,7 +411,7 @@ const WebSketch = () => {
             value={appName}
             onChange={(e) => setAppName(e.target.value)}
           />
-          <label className="brutalist-label">APP NAME</label>
+          <label className="brutalist-label">WEBSITE NAME</label>
         </div>
 
         {!isLoggedIn && (
@@ -420,14 +473,103 @@ const WebSketch = () => {
             </p>
           </div>
         ) : cooldownActive ? (
-          <p className="cooldown-text">
-            ⏳ You’ve already used your <strong>1 free sketch point</strong>.
-            <br />
-            Come back in <strong>{timeRemaining}</strong> to submit again.
-            <br />
+          <div className="status-card">
+            <div className="status-header">
+              <div className="status-icon">⏳</div>
+              <h3>Your Build Status</h3>
+            </div>
+
+            <div className="status-grid">
+              <div className="status-item">
+                <div className="status-label">Estimated Wait</div>
+                <div className="status-value">
+                   <p style={{ marginTop: "10px", fontSize: "15px" }}>
+                    48 hours {""}
+                    <button
+                      onClick={() => setShowWhyTwoDaysAlert(true)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "#000000",
+                        textDecoration: "underline",
+                        cursor: "pointer",
+                        padding: 0,
+                      }}
+                    >
+                      Why?
+                    </button>
+                  </p>
+                </div>
+              </div>
+
+              <div className="status-item">
+                <div className="status-label">Queue Position</div>
+                <div className="status-value">
+                  #{queuePosition || "Processing"}
+                </div>
+              </div>
+
+              <div className="status-item full-width">
+                <div className="status-label">System Status</div>
+                <div className="status-value">
+                  AI processing in queue to prevent overload
+                </div>
+              </div>
+            </div>
+
+            <div className="status-note">
+              <p>
+                You've used your free sketch point. Available in:{" "}
+                <strong>{timeRemaining}</strong>
+              </p>
+            </div>
             <span className="share-instruction">
               🎁 Claim a bonus sketch point by sharing:
             </span>
+            {/*<div className="priority-upgrade">
+              <div className="upgrade-header">
+                <span className="badge">🚀 Turbo Mode</span>
+                <h4>Process Instantly (48 hours → 2 hours)</h4>
+              </div>
+
+              <p className="time-comparison">
+                <span className="time-option">
+                  <span className="time-badge">🐢 Standard</span>
+                  <span>48 hours</span>
+                </span>
+
+                <span className="arrow">→</span>
+
+                <span className="time-option">
+                  <span className="time-badge turbo">⚡ Turbo</span>
+                  <span>2 hours</span>
+                </span>
+              </p>
+
+              <button
+                className="upgrade-button"
+                onClick={handlePriorityUpgrade}
+                disabled={isProcessingUpgrade || userCredits < creditCost}
+              >
+                {isProcessingUpgrade ? (
+                  <span className="loading-spinner"></span>
+                ) : (
+                  `Speed Up (${creditCost} credits)`
+                )}
+              </button>
+
+              <div className="benefits-list">
+                <div className="benefit-item">
+                  <span>⏱️</span> 24x faster processing
+                </div>
+                <div className="benefit-item">
+                  <span>💎</span> Priority cloud container
+                </div>
+                <div className="benefit-item">
+                  <span>📬</span> Instant notifications
+                </div>
+              </div>
+            </div>*/}
             <div className="react-share-buttons">
               <FacebookShareButton
                 url="https://myselpost.com/sketch"
@@ -459,7 +601,7 @@ const WebSketch = () => {
                 <button className="share-coin-button">📨 Telegram</button>
               </TelegramShareButton>
             </div>
-          </p>
+          </div>
         ) : (
           <button
             className="upload-button"
@@ -482,12 +624,28 @@ const WebSketch = () => {
           </div>
         )}
 
+         {showWhyTwoDaysAlert && (
+          <div className="custom-alert info">
+            <p>
+              🕒 <strong>Why 48 Hours?</strong>
+              <br />
+              Your website is first built by AI, then reviewed by a human expert to
+              ensure everything works smoothly, looks clean, and doesn't include
+              anything unsafe, illegal, or inappropriate.
+              <br />
+            </p>
+            <button onClick={() => setShowWhyTwoDaysAlert(false)}>
+              Got it 👍
+            </button>
+          </div>
+        )}
+
         {showCustomAlert && (
           <div className="custom-alert">
             <p>
               {joinedWaitlist
                 ? "✅ You have already joined the waitlist!"
-                : "⏳ Your sketch will magically turn into a website in 7 days!\nWe'll send updates to your inbox."}
+                : "⏳ Your sketch will magically turn into a website in 2 days!\nWe'll send updates to your inbox."}
             </p>
             <button onClick={() => setShowCustomAlert(false)}>Okay ✨</button>
           </div>

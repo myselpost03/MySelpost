@@ -50,7 +50,7 @@ const Pricing = () => {
           return actions.order.create({
             purchase_units: [
               {
-                amount: { value: "300.00" },
+                amount: { value: "100.00" },
               },
             ],
           });
@@ -99,7 +99,7 @@ const Pricing = () => {
             <h2 className="plan-name">🎨 Sketch</h2>
             <p className="plan-price">Free</p>
             <ul className="plan-features">
-              <li>📦 Delivery Time: 7 Days</li>
+              <li>📦 Delivery Time: 48 Hours</li>
               <li>🖍️ Monthly Points: 1</li>
               <li>💡 Submit using hand-drawn sketches</li>
             </ul>
@@ -116,7 +116,7 @@ const Pricing = () => {
             <h2 className="plan-name">✏️ Prompt</h2>
             <p className="plan-price">$5/month</p>
             <ul className="plan-features">
-              <li>⚡ Delivery Time: 3 Days</li>
+              <li>⚡ Delivery Time: Instant</li>
               <li>🖍️ Monthly Points: 3</li>
               <li>💬 Describe your idea in text</li>
             </ul>
@@ -131,9 +131,9 @@ const Pricing = () => {
           {/* Business Plan */}
           <div className="plan-card business">
             <h2 className="plan-name">💼 Business</h2>
-            <p className="plan-price">$300/month</p>
+            <p className="plan-price">$100/month</p>
             <ul className="plan-features">
-              <li>⚡ Delivery Time: 3 Days</li>
+              <li>⚡ Delivery Time: Instant</li>
               <li>🖍️ Monthly Points: 5</li>
               <li>💬 24/7 Customer Support</li>
               <li>📱 Get AI-Generated free device mockups</li>
