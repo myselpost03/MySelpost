@@ -104,7 +104,7 @@ const Register = () => {
           <button type="submit" disabled={!isFormValid || loading}>
             {loading ? 'Registering...' : 'Register'}
           </button>
-          <p>
+          <p className="link-to-login">
             Already have an account? <Link to="/login">Login</Link>
           </p>
         </form>

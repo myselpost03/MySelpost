@@ -18,13 +18,16 @@ import {
   AppDoodle,
   WebDoodle,
   DoodleExample,
-  FirstUserSketch
+  FirstUserSketch,
+  Chat,
+  ChatList,
 } from "./Pages/index";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
   { path: "/app-doodle", component: AppDoodle },
   { path: "/web-doodle", component: WebDoodle },
+  //  { path: "/chat", component: Chat },
   { path: "/doodle-example", component: DoodleExample },
 ];
 
@@ -37,10 +40,12 @@ const publicRoutes = [
   { path: "/terms", component: Terms },
   { path: "/privacy", component: Privacy },
   { path: "/contact-us", component: Contact },
+  { path: "/chat", component: Chat },
   { path: "/pricing", component: Pricing },
+  { path: "/chat-list", component: ChatList },
   { path: "/app-sketch", component: AppSketch },
   { path: "/web-sketch", component: WebSketch },
-  {path: "/first-user-sketch", component: FirstUserSketch}
+  { path: "/first-user-sketch", component: FirstUserSketch },
 ];
 
 function App() {

@@ -1,104 +1,126 @@
-@import url(https://fonts.googleapis.com/css?family=Underdog:regular);
+@import url('https://fonts.googleapis.com/css2?family=Underdog&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Underdog', cursive;
+  background: #f5f5f5;
+}
 
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
   padding: 2rem;
-  background-color: #f9f9f9;
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #fafafa, #eee);
 }
 
 .login-form {
-  display: flex;
-  flex-direction: column;
-  padding: 2.5rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   width: 100%;
   max-width: 400px;
   background-color: white;
-  border-radius: 12px;
+  padding: 2.5rem;
+  border: 3px solid #000;
+  border-radius: 16px;
+  box-shadow: 6px 6px 0px #000;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
+  transition: transform 0.2s ease-in-out;
+}
+
+.login-form:hover {
+  transform: scale(1.01);
+}
+
+.login-form h2 {
+  font-size: 2rem;
+  color: #222;
+  margin-bottom: 1rem;
+  text-align: center;
+  text-decoration: underline;
+  font-family: 'Underdog', cursive;
+}
+
+.login-form input {
+  padding: 0.9rem 1rem;
+  border: 2px solid #111;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: 'Underdog', cursive;
+  background: #fff;
+  transition: border-color 0.3s ease, box-shadow 0.2s ease;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: #000;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+.login-form input.invalid {
+  border-color: red;
+  background-color: #ffe6e6;
+}
+
+.login-form .error-msg {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.login-form button {
+  padding: 0.9rem;
+  font-size: 1rem;
+  background-color: #000;
+  color: white;
+  border: 2px solid #000;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+  font-family: 'Underdog', cursive;
+}
+
+.login-form button:disabled {
+  background-color: #ccc;
+  color: #666;
+  border-color: #aaa;
+  cursor: not-allowed;
+}
+
+.login-form button:not(:disabled):hover {
+  background-color: #222;
+}
+
+.login-form p {
+  font-size: 0.9rem;
   text-align: center;
 }
 
-/* Larger screens: scale up the form */
+.login-form a {
+  color: #000;
+  text-decoration: underline;
+  font-weight: bold;
+  font-family: 'Underdog', cursive;
+}
+
+/* Responsive boost */
 @media (min-width: 768px) {
   .login-form {
+    padding: 3rem 3rem;
     max-width: 500px;
-    padding: 3rem 4rem;
   }
 
   .login-form h2 {
-    font-size: 2.2rem;
+    font-size: 2.5rem;
   }
 
-  .login-form input {
-    font-size: 1.1rem;
-  }
-
+  .login-form input,
   .login-form button {
     font-size: 1.1rem;
   }
 }
-
-
-.login-form h2 {
-    font-family: 'underdog', serif;
-    margin-bottom: 3rem;
-    white-space: nowrap;
-    color: #333;
-    font-size: 1.8rem;
-  }
-  
-  .login-form input {
-    width: 100%;
-    padding: 0.8rem;
-    margin-bottom: 1rem;
-    border: 1px solid #19191a;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-  }
-  
-  .login-form input:focus {
-    outline: none;
-    border-color: #1b1b1b;
-  }
-  
-  .login-form button {
-    width: 111%;
-    padding: 0.9rem;
-    background-color: #101111;
-    color: white;
-    font-size: 1rem;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    font-family: 'underdog', serif;
-    transition: background-color 0.3s ease;
-  }
-
-  .login-form a {
-    color: #000000;
-    text-decoration: none;
-    font-weight: bold;
-    font-family: 'underdog', serif;
-  }
-
-  .login-form button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-  }
-  
-
-  .login-form .error-msg {
-    color: red;
-    font-size: 0.85rem;
-    margin-top: -0.5rem;
-    margin-bottom: 1rem;
-    text-align: left;
-  }
-  
-  .login-form input.invalid {
-    border-color: red;
-  }
-  

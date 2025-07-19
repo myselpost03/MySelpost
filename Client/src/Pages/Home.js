@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import AdBanner from "../Components/AdBanner";
+import FAB from "../Components/FAB";
 import "../Styles/Home.css";
 
 const Home = () => {
@@ -30,7 +31,7 @@ const Home = () => {
     <div className="background-animated">
       <div className={showAlert ? "blurred" : ""}>
         <Header />
-        <AdBanner />
+        {/*<AdBanner />*/}
         <main className="center-wrapper">
           <div className="button-container">
             <button className="sketchy-button" onClick={handleSketchClick}>
@@ -44,27 +45,25 @@ const Home = () => {
         </main>
         <Footer />
       </div>
-      
-  
+
       {showAlert && (
         <div className="modal-overlay">
-          <div className="alert-box modal">
+          <div className="sketchy-alert-box">
             <p>
               To use the Prompt option, you must first{" "}
-              <Link to="/register" className="register-link">
+              <Link to="/register" className="sketchy-link">
                 register
               </Link>
               .
             </p>
-            <button onClick={closeAlert} className="close-alert">
-              Close
+            <button onClick={closeAlert} className="sketchy-close-btn">
+              Got it!
             </button>
           </div>
         </div>
       )}
     </div>
   );
-  
 };
 
 export default Home;

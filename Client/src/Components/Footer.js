@@ -24,7 +24,7 @@ const Footer = () => {
               <Link to="/contact-us">Contact Us</Link>
             </li>
             <li>
-              <Link to="/terms">Terms of Service</Link>
+              <Link to="/pricing">Pricing</Link>
             </li>
             <li>
               <Link to="/privacy">Privacy Policy</Link>

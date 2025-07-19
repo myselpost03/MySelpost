@@ -1,0 +1,359 @@
+@import url(https://fonts.googleapis.com/css?family=Comic+Neue:300,300italic,regular,italic,700,700italic);
+
+.chatlist-container {
+  margin-top: 7%; /* reduced from 5% */
+  margin-bottom: 2%; /* added to reduce space at the bottom */
+  padding: 0.8rem 1rem; /* reduced vertical padding */
+  background: #faf8f2;
+  font-family: "Comic Neue", cursive;
+}
+
+/* Desktop-specific tweaks */
+@media (min-width: 768px) {
+  .chatlist-container {
+    height: 80vh; /* Adjust this as needed */
+    overflow-y: auto;
+    padding: 0.5rem 1rem;
+    max-width: 600px;
+    margin: 10% auto;
+    border: 2px dashed #ccc;
+    border-radius: 16px;
+    box-shadow: 3px 3px 0px #ccc;
+    background: #fffef9;
+
+    /* Hide scrollbar - Chrome, Edge, Safari */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+  }
+}
+.chatlist-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+.chatlist-title {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  text-shadow: 1px 1px #aaa;
+  font-weight: bold;
+  user-select: none;
+}
+
+.sketchy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem;
+  background: #fffdf7;
+  border: 2px dashed #333;
+  border-radius: 12px;
+  box-shadow: 2px 3px 0px #8884;
+  animation: popIn 0.4s ease forwards;
+  transition: transform 0.3s ease;
+}
+
+.user-card.has-notification {
+  background-color: rgba(255, 235, 150, 0.15); /* soft golden-glow */
+  border: 1px dashed #f4c542;
+  box-shadow: 0 0 6px rgba(244, 197, 66, 0.3);
+  backdrop-filter: blur(3px);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+
+.user-card:hover {
+  transform: scale(1.02);
+}
+
+.user-avatar {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  border: 2px solid #333;
+  object-fit: cover;
+  margin-right: 1rem;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 0.3rem;
+}
+
+.user-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.country {
+  font-style: italic;
+}
+
+.status-dot svg {
+  font-size: 0.7rem;
+}
+
+.status-dot.online {
+  color: #00c853;
+}
+
+.status-dot.offline {
+  color: #9e9e9e;
+}
+
+.gender-icon {
+  font-size: 0.9rem;
+}
+
+.gender-icon.male {
+  color: #2196f3;
+}
+
+.gender-icon.female {
+  color: #e91e63;
+}
+
+/* Subtle entry animation */
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.sketchy-list-scrollable {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  scroll-behavior: smooth;
+
+  /* Hide scrollbar for all browsers */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Optional: Custom scrollbar for sketchy feel */
+.sketchy-list-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+.sketchy-list-scrollable::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+.sketchy-list-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-family: "Comic Neue", cursive;
+}
+
+.filter-bar select {
+  padding: 0.5rem 1rem;
+  border: 2px dashed #333;
+  border-radius: 8px;
+  background: #fffdf7;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px #8884;
+  transition: all 0.2s ease;
+}
+
+.filter-bar select:hover {
+  transform: scale(1.03);
+}
+
+/* Verified Badge */
+.verified-badge {
+  color: #2196f3;
+  margin-left: 0.4rem;
+  font-size: 0.95rem;
+  vertical-align: middle;
+}
+
+/* Sketchy Searchbar */
+.sketchy-search {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  border: 2px dashed #333;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  background: #fffdf7;
+  font-family: "Comic Neue", cursive;
+  outline: none;
+  box-shadow: 2px 2px 0px #8884;
+  transition: transform 0.2s ease;
+}
+
+.sketchy-search:focus {
+  transform: scale(1.02);
+  border-color: #444;
+}
+
+@media (max-width: 768px) {
+  .chatlist-title {
+    display: none;
+  }
+
+  .sketchy-search {
+    margin-top: 10%;
+  }
+}
+
+.dm-icon {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background-color: #444;
+  border-radius: 50%;
+  padding: 6px;
+  color: #fff;
+  font-size: 2rem;
+  user-select: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  z-index: 2;
+}
+
+.dm-icon:hover {
+  background-color: #666;
+}
+
+.sketchy-notification {
+  display: inline-block;
+  background-color: #ff5252;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 4px 8px;
+  margin-left: 0.4rem;
+  border: 2px dashed #333;
+  border-radius: 50%;
+  font-family: 'Comic Neue', cursive;
+  box-shadow: 1px 2px 0px #222;
+  position: relative;
+  top: -3px;
+  animation: bounceIn 0.4s ease;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  margin: 1rem;
+  border: 2px dashed #333;
+  border-radius: 16px;
+  background: #fefefe;
+  box-shadow: 4px 4px 0px #999;
+  transition: all 0.3s ease;
+}
+
+.user-avatar-wrapper {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.user-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px dashed #444;
+  object-fit: cover;
+}
+
+.sketchy-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ff4b4b;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  padding: 3px 6px;
+  border-radius: 50%;
+  border: 2px solid #000;
+  font-family: 'Comic Neue', cursive;
+  box-shadow: 1px 2px 0px #000;
+}
+
+.user-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.user-top-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.user-bottom-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.3rem;
+}
+
+.verified-icon {
+  color: rgb(0, 162, 255);
+  font-size: 1rem;
+}
+
+
+
+.dm-link {
+  color: #333;
+  transition: transform 0.2s;
+}
+
+.dm-link:hover {
+  transform: scale(1.2);
+}
+
+.user-card.has-notification {
+  background-color: #fffbe8; /* subtle warm highlight */
+}

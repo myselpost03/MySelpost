@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap");
 
 /* Hide scrollbar but keep scroll functionality */
 body {
@@ -11,23 +11,23 @@ body::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
   overflow-y: scroll;
-  scrollbar-width: none;       /* Firefox */
-  -ms-overflow-style: none;    /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
-  display: none;               /* Chrome, Safari, Opera */
+  display: none; /* Chrome, Safari, Opera */
 }
 
-
 .center-wrapper {
-  height: calc(100vh - 350px);
+  height: calc(100vh - 150px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -43,7 +43,7 @@ body::-webkit-scrollbar {
 }
 
 .sketchy-button {
-  font-family: 'Patrick Hand', cursive;
+  font-family: "Patrick Hand", cursive;
   font-size: 1.9rem;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -62,7 +62,7 @@ body::-webkit-scrollbar {
 
 /* hand-drawn look */
 .sketchy-button::after {
-  content: '';
+  content: "";
   position: absolute;
   top: -3px;
   left: -3px;
@@ -80,7 +80,7 @@ body::-webkit-scrollbar {
 }
 
 .or-text {
-  font-family: 'Patrick Hand', cursive;
+  font-family: "Patrick Hand", cursive;
   font-size: 1.8rem;
   color: #666;
 }
@@ -113,7 +113,7 @@ body::-webkit-scrollbar {
   border: 4px solid #333;
   padding: 20px 25px;
   border-radius: 12px;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: "Segoe UI", sans-serif;
   width: 250px;
   text-align: center;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
@@ -147,7 +147,7 @@ body::-webkit-scrollbar {
 
 @media (min-width: 768px) {
   .center-wrapper {
-    height: calc(100vh - 324px);
+    height: calc(100vh - 150px);
     padding: 40px;
   }
 
@@ -173,4 +173,58 @@ body::-webkit-scrollbar {
   }
 }
 
+/* Sketchy styled alert box */
+.sketchy-alert-box {
+  background-color: #fffefc;
+  color: #222;
+  font-family: "Patrick Hand", cursive;
+  font-size: 1.1rem;
+  border: 3px solid #222;
+  border-radius: 20px;
+  box-shadow: -4px 4px 0px #222;
+  padding: 20px 25px;
+  width: 260px;
+  text-align: center;
+  position: relative;
+  transition: all 0.2s ease-in-out;
+}
 
+.sketchy-alert-box::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 100%;
+  height: 100%;
+  border: 3px dashed #222;
+  border-radius: 20px;
+  transform: rotate(-1deg);
+  z-index: -1;
+}
+
+/* Link inside alert box */
+.sketchy-link {
+  color: #0077cc;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* Button inside alert */
+.sketchy-close-btn {
+  margin-top: 20px;
+  background-color: #333;
+  color: #fff;
+  font-family: "Patrick Hand", cursive;
+  font-size: 1rem;
+  padding: 10px 16px;
+  border: 3px solid #000;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: -3px 3px 0px #000;
+  transition: all 0.1s ease-in-out;
+}
+
+.sketchy-close-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: -1px 1px 0px #000;
+}
