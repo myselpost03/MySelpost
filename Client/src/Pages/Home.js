@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
+import AdBanner from "../Components/AdBanner";
 import "../Styles/Home.css";
 
 const Home = () => {
@@ -29,6 +30,7 @@ const Home = () => {
     <div className="background-animated">
       <div className={showAlert ? "blurred" : ""}>
         <Header />
+        <AdBanner />
         <main className="center-wrapper">
           <div className="button-container">
             <button className="sketchy-button" onClick={handleSketchClick}>

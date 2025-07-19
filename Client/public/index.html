@@ -46,16 +46,24 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="MySelpost" />
     <link rel="manifest" href="/site.webmanifest" />
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-9B4XGR3X7Z"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
 
+      gtag("config", "G-9B4XGR3X7Z");
+    </script>
     <script
       defer
       src="https://cloud.umami.is/script.js"
       data-website-id="d1f76f7c-aa17-429e-ba89-519eb6080819"
-    ></script>
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7710551496406301"
-      crossorigin="anonymous"
     ></script>
     <!-- PayPal SDK -->
     <script src="https://www.paypal.com/sdk/js?client-id=AVgtohR20go8ZTiaW4UnDMKUg44T7fgrGoa8emnIgN71wamVtcfaYLKodXfo_puCWu4yL58cFd_or-LA&currency=USD"></script>
@@ -63,5 +71,6 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+  
   </body>
 </html>
