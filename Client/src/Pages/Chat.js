@@ -145,6 +145,13 @@ const Chat = () => {
         setLastFetchedAt(filtered[filtered.length - 1].created_at);
       }
       setIsLoading(false); // Done loading
+      // Reset unread count (other user → current user)
+await supabase
+  .from("unread_counts")
+  .update({ count: 0 })
+  .eq("sender_id", targetId)
+  .eq("receiver_id", currentUser.id);
+
     };
 
     loadInitialMessages();
@@ -243,7 +250,44 @@ const Chat = () => {
     } else {
       setInput("");
     }
+// Update unread count
+await supabase.rpc('increment_unread_count', {
+  sender: currentUser.id,
+  receiver: targetId,
+});
 
+// Instead of using RPC, we'll just do raw upsert manually:
+await supabase
+  .from("unread_counts")
+  .upsert(
+    {
+      sender_id: currentUser.id,
+      receiver_id: targetId,
+      count: 1, // initial
+      updated_at: new Date().toISOString(),
+    },
+    {
+      onConflict: ["sender_id", "receiver_id"],
+      ignoreDuplicates: false,
+    }
+  )
+  .select()
+  .then(async ({ data, error }) => {
+    if (!error) {
+      // Increment count manually if exists
+      const existing = data[0];
+      if (existing) {
+        await supabase
+          .from("unread_counts")
+          .update({
+            count: existing.count + 1,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("sender_id", currentUser.id)
+          .eq("receiver_id", targetId);
+      }
+    }
+  })
     console.log("✅ Message sent to Supabase:", data);
 
     // Don’t update local messages state manually to avoid duplication
@@ -557,7 +601,7 @@ const Chat = () => {
                   onClick={sendMessage}
                   disabled={isSending || !input.trim()}
                 >
-                  {isSending ? "Sending..." : "➤"}
+                  {isSending ? "➤" : "➤"}
                 </button>
               </div>
             </>

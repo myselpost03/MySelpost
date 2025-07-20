@@ -286,7 +286,7 @@
   top: -5px;
   right: -5px;
   background: #ff4b4b;
-  color: white;
+  color: #ff4b4b;
   font-size: 0.7rem;
   font-weight: bold;
   padding: 3px 6px;
@@ -335,9 +335,16 @@
   flex-wrap: wrap;
 }
 
-display: flex;
-align-items: center;
-justify-content: space-between;
+.pinned-tab-badge {
+  font-size: 0.7rem;
+  background-color: #e53935;
+  padding: 2px 6px;
+  border-radius: 12px;
+  position: absolute;
+  top: -6px;
+  right: -6px;
+}
+
 
 .dm-envelope {
   font-size: 1.1rem;
