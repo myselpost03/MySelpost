@@ -13,6 +13,7 @@ import {
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
 import LoadingIndicator from "../Components/LoadingIndicator";
+import ReactCountryFlag from "react-country-flag";
 
 // Move user data into state
 const initialUsers = [
@@ -121,6 +122,63 @@ const initialUsers = [
   },
 ];
 
+const countryNameToCode = {
+  IN: "IN",
+  US: "US",
+  US: "US",
+  GB: "GB",
+  CA: "CA",
+  AU: "AU",
+  DE: "DE",
+  FR: "FR",
+  IT: "IT",
+  ES: "ES",
+  JP: "JP",
+  CN: "CN",
+  RU: "RU",
+  BR: "BR",
+  MX: "MX",
+  KR: "KR",
+  ID: "ID",
+  NL: "NL",
+  SE: "SE",
+  NO: "NO",
+  DK: "DK",
+  CH: "CH",
+  AE: "AE",
+  SA: "SA",
+  ZA: "ZA",
+  EG: "EG",
+  TR: "TR",
+  TH: "TH",
+  VN: "VN",
+  AR: "AR",
+  CL: "CL",
+  IE: "IE",
+  SG: "SG",
+  MY: "MY",
+  PH: "PH",
+  IL: "IL",
+  UA: "UA",
+  BE: "BE",
+  AT: "AT",
+  FI: "FI",
+  PL: "PL",
+  PT: "PT",
+  GR: "GR",
+  PK: "PK",
+  BD: "BD",
+  NG: "NG",
+  KE: "KE",
+  MA: "MA",
+  NZ: "NZ",
+  CO: "CO",
+  PE: "PE",
+  CZ: "CZ",
+  HU: "HU",
+  RO: "RO",
+};
+
 const ChatList = () => {
   const [users, setUsers] = useState([]);
   const [genderFilter, setGenderFilter] = useState("all");
@@ -159,8 +217,6 @@ const ChatList = () => {
     return () => clearInterval(interval);
   }, [user.id]);
 
-  
-
   const handleUserClick = (clickedId) => {
     setUsers((prevUsers) =>
       prevUsers.map((user) =>
@@ -190,15 +246,15 @@ const ChatList = () => {
       if (error) {
         console.error("Error fetching users:", error.message);
       } else {
-       const processed = allUsers
-  .filter((u) => u.id !== user.id) // 👈 Hide current user
-  .map((user) => ({
-    ...user,
-    avatar: user.profile_pic || empty + user.id,
-    notifications: user.notifications || 0,
-    pinned: pinnedIds.includes(user.id),
-    status: user.status || "offline",
-  }));
+        const processed = allUsers
+          .filter((u) => u.id !== user.id) // 👈 Hide current user
+          .map((user) => ({
+            ...user,
+            avatar: user.profile_pic || empty + user.id,
+            notifications: user.notifications || 0,
+            pinned: pinnedIds.includes(user.id),
+            status: user.status || "offline",
+          }));
 
         setUsers(processed);
       }
@@ -221,8 +277,6 @@ const ChatList = () => {
       navigate("/register");
     }
   };
-
-  
 
   const filteredUsers = users
     .filter((user) => {
@@ -373,86 +427,110 @@ const ChatList = () => {
           <div className="sketchy-list-scrollable">
             {filteredUsers.length > 0 ? (
               filteredUsers
-              .filter((u) => u.id !== user.id)
-              .map((user) => (
-                <Link
-                  to="#"
-                  key={user.id}
-                  className={`user-card ${
-                    user.notifications > 0 ? "has-notification" : ""
-                  }`}
-                  onClick={(e) => {
-                    handleUserClick(user.id);
-                    handleProtectedNavigation(e, `/chat/${user.id}`, user);
-                  }}
-                >
-                  <div className="user-avatar-wrapper">
-                    <Link to={`/profile/${user.id}`}>
-                      {user.img ? (
-                        <img
-                          src={user.avatar}
-                          alt="white area"
-                          className="user-avatar"
-                        />
-                      ) : (
-                        <img
-                          src={empty}
-                          alt="whie area"
-                          className="user-avatar"
-                        />
-                      )}
-                    </Link>
+                .filter((u) => u.id !== user.id)
+                .map((user) => (
+                  <Link
+                    to="#"
+                    key={user.id}
+                    className={`user-card ${
+                      user.notifications > 0 ? "has-notification" : ""
+                    }`}
+                    onClick={(e) => {
+                      handleUserClick(user.id);
+                      handleProtectedNavigation(e, `/chat/${user.id}`, user);
+                    }}
+                  >
+                    <div className="user-avatar-wrapper">
+                      <Link to={`/profile/${user.id}`}>
+                        {user.img ? (
+                          <img
+                            src={user.avatar}
+                            alt="white area"
+                            className="user-avatar"
+                          />
+                        ) : (
+                          <img
+                            src={empty}
+                            alt="whie area"
+                            className="user-avatar"
+                          />
+                        )}
+                      </Link>
 
-                    {unreadCounts[user.id] > 0 && (
-                      <span className="sketchy-badge">
-                        {unreadCounts[user.id]}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="user-info">
-                    <div className="user-top-row">
-                      <span className="user-name">{user.name}</span>
-                      {user.verified && (
-                        <FaCheckCircle className="verified-icon" />
+                      {unreadCounts[user.id] > 0 && (
+                        <span className="sketchy-badge">
+                          {unreadCounts[user.id]}
+                        </span>
                       )}
                     </div>
 
-                    <div className="user-bottom-row">
-                      <span className="country">
-                        {user.country ? user.country : "Hidden"}
-                      </span>
-                      {user.gender === "male" ? (
-                        <FaMars className="gender-icon male" />
-                      ) : (
-                        <FaVenus className="gender-icon female" />
-                      )}
-                      <span
-                        className={`status-dot ${
-                          user.status === "online" ? "online" : "offline"
-                        }`}
-                      >
-                        <FaCircle />
-                      </span>
+                    <div className="user-info">
+                      <div className="user-top-row">
+                        <span className="user-name">{user.name}</span>
+                        {user.verified && (
+                          <FaCheckCircle className="verified-icon" />
+                        )}
+                      </div>
 
-                      <div className="spacer" />
-                      <FaThumbtack
-                        className={`pin-icon ${user.pinned ? "pinned" : ""}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          togglePin(user.id);
-                        }}
-                      />
-                      <FaEnvelope
-                        className="dm-envelope"
-                        onClick={(e) =>
-                          handleProtectedNavigation(e, `/chat/${user.id}`, user)
-                        }
-                      />
+                      <div className="user-bottom-row">
+                        <span
+                          className="country"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          {user.country && countryNameToCode[user.country] && (
+                            <ReactCountryFlag
+                              countryCode={countryNameToCode[user.country]}
+                              svg
+                              style={{
+                                width: "1.5em",
+                                height: "1.5em",
+                                borderRadius: "3px",
+                              }}
+                              title={user.country}
+                            />
+                          )}
+                          {user.country || "Hidden"}
+                        </span>
+
+                        {user.gender === "male" ? (
+                          <FaMars className="gender-icon male" />
+                        ) : (
+                          <FaVenus className="gender-icon female" />
+                        )}
+                        <span
+                          className={`status-dot ${
+                            user.status === "online" ? "online" : "offline"
+                          }`}
+                        >
+                          <FaCircle />
+                        </span>
+
+                        <div className="spacer" />
+                        <FaThumbtack
+                          className={`pin-icon ${user.pinned ? "pinned" : ""}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            togglePin(user.id);
+                          }}
+                        />
+                        <FaEnvelope
+                          className="dm-envelope"
+                          onClick={(e) =>
+                            handleProtectedNavigation(
+                              e,
+                              `/chat/${user.id}`,
+                              user
+                            )
+                          }
+                        />
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))
+                  </Link>
+                ))
             ) : (
               <div className="no-pinned-users">
                 <img
