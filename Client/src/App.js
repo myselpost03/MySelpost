@@ -29,6 +29,8 @@ const protectedRoutes = [
   { path: "/app-doodle", component: AppDoodle },
   { path: "/web-doodle", component: WebDoodle },
   { path: "/doodle-example", component: DoodleExample },
+  { path: "/chat/:id", component: Chat },
+  { path: "/profile/:id", component: Profile },
 ];
 
 const publicRoutes = [
@@ -40,13 +42,11 @@ const publicRoutes = [
   { path: "/terms", component: Terms },
   { path: "/privacy", component: Privacy },
   { path: "/contact-us", component: Contact },
-  { path: "/chat/:id", component: Chat },
   { path: "/pricing", component: Pricing },
   { path: "/chat-list", component: ChatList },
   { path: "/app-sketch", component: AppSketch },
   { path: "/web-sketch", component: WebSketch },
   { path: "/demo", component: Demo },
-  { path: "/profile/:id", component: Profile },
 ];
 
 function App() {
