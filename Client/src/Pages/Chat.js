@@ -4,6 +4,7 @@ import Header from "../Components/Header";
 import { supabase } from "../Utils/supabaseClient";
 import LoadingIndicator from "../Components/LoadingIndicator";
 import { FaImage, FaMicrophone, FaMoon, FaSun, FaSmile } from "react-icons/fa";
+import dayjs from "dayjs";
 import "../Styles/Chat.css";
 
 const emojis = ["😊", "😂", "👍", "❤️", "🔥", "😎", "🎨", "💬"];
@@ -35,6 +36,8 @@ const Chat = () => {
   const handleThemeToggle = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
+
+  
 
   useEffect(() => {
     const checkIfBlocked = async () => {
@@ -146,12 +149,11 @@ const Chat = () => {
       }
       setIsLoading(false); // Done loading
       // Reset unread count (other user → current user)
-await supabase
-  .from("unread_counts")
-  .update({ count: 0 })
-  .eq("sender_id", targetId)
-  .eq("receiver_id", currentUser.id);
-
+      await supabase
+        .from("unread_counts")
+        .update({ count: 0 })
+        .eq("sender_id", targetId)
+        .eq("receiver_id", currentUser.id);
     };
 
     loadInitialMessages();
@@ -208,6 +210,30 @@ await supabase
     }
   };
 
+  const deleteOldMessagesBetweenUsers = async (currentUserId, otherUserId) => {
+  // Get current time in local timezone and subtract 24 hours
+  const localCutoffTime = dayjs().subtract(24, "hour").toISOString();
+
+  const { error } = await supabase
+    .from("chats")
+    .delete()
+    .or(
+      `and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUserId})`
+    )
+    .lt("created_at", localCutoffTime);
+
+  if (error) {
+    console.error("Failed to delete old messages:", error.message);
+  } else {
+    console.log("Old messages between users deleted.");
+  }
+};
+
+useEffect(() => {
+  deleteOldMessagesBetweenUsers(currentUser.id, targetUser.id);
+}, [currentUser.id, targetUser.id]);
+
+  
   function getTimeAgo(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -250,44 +276,44 @@ await supabase
     } else {
       setInput("");
     }
-// Update unread count
-await supabase.rpc('increment_unread_count', {
-  sender: currentUser.id,
-  receiver: targetId,
-});
+    // Update unread count
+    await supabase.rpc("increment_unread_count", {
+      sender: currentUser.id,
+      receiver: targetId,
+    });
 
-// Instead of using RPC, we'll just do raw upsert manually:
-await supabase
-  .from("unread_counts")
-  .upsert(
-    {
-      sender_id: currentUser.id,
-      receiver_id: targetId,
-      count: 1, // initial
-      updated_at: new Date().toISOString(),
-    },
-    {
-      onConflict: ["sender_id", "receiver_id"],
-      ignoreDuplicates: false,
-    }
-  )
-  .select()
-  .then(async ({ data, error }) => {
-    if (!error) {
-      // Increment count manually if exists
-      const existing = data[0];
-      if (existing) {
-        await supabase
-          .from("unread_counts")
-          .update({
-            count: existing.count + 1,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("sender_id", currentUser.id)
-          .eq("receiver_id", targetId);
-      }
-    }
-  })
+    // Instead of using RPC, we'll just do raw upsert manually:
+    await supabase
+      .from("unread_counts")
+      .upsert(
+        {
+          sender_id: currentUser.id,
+          receiver_id: targetId,
+          count: 1, // initial
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: ["sender_id", "receiver_id"],
+          ignoreDuplicates: false,
+        }
+      )
+      .select()
+      .then(async ({ data, error }) => {
+        if (!error) {
+          // Increment count manually if exists
+          const existing = data[0];
+          if (existing) {
+            await supabase
+              .from("unread_counts")
+              .update({
+                count: existing.count + 1,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("sender_id", currentUser.id)
+              .eq("receiver_id", targetId);
+          }
+        }
+      });
     console.log("✅ Message sent to Supabase:", data);
 
     // Don’t update local messages state manually to avoid duplication
