@@ -166,7 +166,16 @@ const ChatList = () => {
       return priorityB - priorityA;
     });
 
-  return (
+const togglePin = (id) => {
+  setUsers((prevUsers) =>
+    prevUsers.map((user) =>
+      user.id === id ? { ...user, pinned: !user.pinned } : user
+    )
+  );
+};
+
+
+    return (
     <div className="chatlist-container">
       <Header />
       <h2 className="chatlist-title">🖋️ Your Circles</h2>
@@ -250,6 +259,14 @@ const ChatList = () => {
                 </span>
 
                 <div className="spacer" />
+<FaThumbtack
+    className={`pin-icon ${user.pinned ? "pinned" : ""}`}
+    onClick={(e) => {
+      e.preventDefault();
+      togglePin(user.id);
+    }}
+  />
+
                 <FaEnvelope className="dm-envelope" />
               </div>
             </div>

@@ -56,7 +56,7 @@
   transition: transform 0.3s ease;
   gap: 1rem;
   text-decoration: none;
-  color: #000000
+  color: #000000;
 }
 
 .user-card.has-notification {
@@ -66,8 +66,6 @@
   backdrop-filter: blur(3px);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
-
-
 
 .user-card:hover {
   transform: scale(1.02);
@@ -256,7 +254,7 @@
   margin-left: 0.4rem;
   border: 2px dashed #333;
   border-radius: 50%;
-  font-family: 'Comic Neue', cursive;
+  font-family: "Comic Neue", cursive;
   box-shadow: 1px 2px 0px #222;
   position: relative;
   top: -3px;
@@ -277,15 +275,11 @@
   }
 }
 
-
-
 .user-avatar-wrapper {
   position: relative;
   width: 60px;
   height: 60px;
 }
-
-
 
 .sketchy-badge {
   position: absolute;
@@ -298,7 +292,7 @@
   padding: 3px 6px;
   border-radius: 50%;
   border: 2px solid #000;
-  font-family: 'Comic Neue', cursive;
+  font-family: "Comic Neue", cursive;
   box-shadow: 1px 2px 0px #000;
 }
 
@@ -317,14 +311,10 @@
   font-size: 1rem;
 }
 
-
-
 .verified-icon {
   color: rgb(0, 162, 255);
   font-size: 1rem;
 }
-
-
 
 .dm-link {
   color: #333;
@@ -344,6 +334,10 @@
   justify-content: space-between;
   flex-wrap: wrap;
 }
+
+display: flex;
+align-items: center;
+justify-content: space-between;
 
 .dm-envelope {
   font-size: 1.1rem;
@@ -377,7 +371,7 @@
   border: 2px dashed #555;
   border-radius: 10px;
   padding: 0.4rem 0.8rem;
-  font-family: 'Comic Sans MS', cursive;
+  font-family: "Comic Sans MS", cursive;
   white-space: nowrap;
   cursor: pointer;
   transition: background 0.3s ease;
@@ -453,4 +447,25 @@
     transform: scale(1);
     opacity: 1;
   }
+}
+
+.pin-icon {
+  cursor: pointer;
+  color: gray;
+  margin-right: 8px;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.pin-icon:hover {
+  color: #2b6cb0;
+  transform: scale(1.1);
+}
+
+.pin-icon.pinned {
+  color: #ff9800;
+  transform: rotate(-45deg);
+}
+
+.spacer {
+  flex-grow: 1;
 }
