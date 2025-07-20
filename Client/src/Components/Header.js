@@ -10,6 +10,7 @@ const Header = () => {
   const [emailValid, setEmailValid] = useState(true);
   const [credentialsValid, setCredentialsValid] = useState(false);
   const [checking, setChecking] = useState(false);
+  
   const navigate = useNavigate();
   const debounceTimeout = useRef(null);
 
@@ -105,6 +106,10 @@ const Header = () => {
     return navigate("/pricing");
   };
 
+  const handleChat = () => {
+    return navigate("/chat-list");
+  };
+
   const handleMobileRedirect = (path) => {
     if (isMobile) navigate(path);
   };
@@ -174,8 +179,9 @@ const Header = () => {
         </form>
       ) : (
         <div className="nav-logged-in">
-          <button onClick={handlePricing} className="logout-button">
-            Pricing
+          
+          <button onClick={handleChat} className="logout-button">
+            Chat
           </button>
           <button onClick={handleLogout} className="logout-button">
             Logout

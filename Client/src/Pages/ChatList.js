@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import "../Styles/ChatList.css";
 import {
@@ -10,6 +10,8 @@ import {
   FaEnvelope,
   FaThumbtack,
 } from "react-icons/fa";
+import empty from "../Assets/empty.png";
+import { supabase } from "../Utils/supabaseClient";
 
 // Move user data into state
 const initialUsers = [
@@ -119,15 +121,16 @@ const initialUsers = [
 ];
 
 const ChatList = () => {
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState([]);
   const [genderFilter, setGenderFilter] = useState("all");
   const [countryFilter, setCountryFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [showGenderTabs, setShowGenderTabs] = useState(false);
   const [showCountryTabs, setShowCountryTabs] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const countries = [...new Set(users.map((u) => u.country))];
+  const countries = [...new Set(users?.map((u) => u.country))];
 
   const handleUserClick = (clickedId) => {
     setUsers((prevUsers) =>
@@ -136,6 +139,48 @@ const ChatList = () => {
       )
     );
   };
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("id, name, profile_pic, country, gender, status");
+
+      if (error) {
+        console.error("Error fetching users:", error.message);
+      } else {
+        const processed = data.map((user) => ({
+          ...user,
+          avatar:
+            user.profile_pic ||
+            "https://cdn2.iconfinder.com/data/icons/circle-icons-1/64/profle-64.png" +
+              user.id,
+          notifications: user.notifications || 0,
+          pinned: user.pinned || false,
+          status: user.status || "offline",
+        }));
+        setUsers(processed);
+      }
+
+      setLoading(false);
+    };
+
+    fetchUsers();
+  }, []);
+
+  const navigate = useNavigate();
+
+ const handleProtectedNavigation = (e, path, targetUser = null) => {
+  e.preventDefault();
+  const isLoggedIn = localStorage.getItem("user");
+
+  if (isLoggedIn) {
+    navigate(path, { state: { targetUser } }); // 👈 Pass clicked user to next screen
+  } else {
+    navigate("/register");
+  }
+};
+
 
   const filteredUsers = users
     .filter((user) => {
@@ -223,20 +268,27 @@ const ChatList = () => {
         {filteredUsers.length > 0 ? (
           filteredUsers.map((user) => (
             <Link
-              to={`/chat/${user.id}`}
+              to="#"
               key={user.id}
               className={`user-card ${
                 user.notifications > 0 ? "has-notification" : ""
               }`}
-              onClick={() => handleUserClick(user.id)}
+              onClick={(e) => {
+                handleUserClick(user.id);
+                handleProtectedNavigation(e, `/chat/${user.id}`, user);
+              }}
             >
               <div className="user-avatar-wrapper">
                 <Link to={`/profile/${user.id}`}>
-                  <img
-                    src={user.avatar}
-                    alt={user.name}
-                    className="user-avatar"
-                  />
+                  {user.img ? (
+                    <img
+                      src={user.avatar}
+                      alt="white area"
+                      className="user-avatar"
+                    />
+                  ) : (
+                    <img src={empty} alt="whie area" className="user-avatar" />
+                  )}
                 </Link>
                 {user.notifications > 0 && (
                   <span className="sketchy-badge">{user.notifications}</span>
@@ -250,7 +302,9 @@ const ChatList = () => {
                 </div>
 
                 <div className="user-bottom-row">
-                  <span className="country">{user.country}</span>
+                  <span className="country">
+                    {user.country ? user.country : "Hidden"}
+                  </span>
                   {user.gender === "male" ? (
                     <FaMars className="gender-icon male" />
                   ) : (
@@ -272,7 +326,12 @@ const ChatList = () => {
                       togglePin(user.id);
                     }}
                   />
-                  <FaEnvelope className="dm-envelope" />
+                  <FaEnvelope
+                    className="dm-envelope"
+                    onClick={(e) =>
+                      handleProtectedNavigation(e, `/chat/${user.id}`, user)
+                    }
+                  />
                 </div>
               </div>
             </Link>

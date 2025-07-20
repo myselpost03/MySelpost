@@ -21,14 +21,13 @@ import {
   Demo,
   Chat,
   ChatList,
-  Profile
+  Profile,
 } from "./Pages/index";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
   { path: "/app-doodle", component: AppDoodle },
   { path: "/web-doodle", component: WebDoodle },
-  //  { path: "/chat", component: Chat },
   { path: "/doodle-example", component: DoodleExample },
 ];
 
@@ -41,34 +40,30 @@ const publicRoutes = [
   { path: "/terms", component: Terms },
   { path: "/privacy", component: Privacy },
   { path: "/contact-us", component: Contact },
-  { path: "/chat", component: Chat },
+  { path: "/chat/:id", component: Chat },
   { path: "/pricing", component: Pricing },
   { path: "/chat-list", component: ChatList },
   { path: "/app-sketch", component: AppSketch },
   { path: "/web-sketch", component: WebSketch },
   { path: "/demo", component: Demo },
-   { path: "/profile", component: Profile },
+  { path: "/profile", component: Profile },
 ];
 
 function App() {
   return (
     <Router>
       <Routes>
-        {publicRoutes.map((route) => (
-          <Route
-            key={route.path}
-            path={route.path}
-            element={<route.component />}
-          />
+        {publicRoutes.map(({ path, component: Component }) => (
+          <Route key={path} path={path} element={<Component />} />
         ))}
 
-        {protectedRoutes.map((route) => (
+        {protectedRoutes.map(({ path, component: Component }) => (
           <Route
-            key={route.path}
-            path={route.path}
+            key={path}
+            path={path}
             element={
               <ProtectedRoute>
-                <route.component />
+                <Component />
               </ProtectedRoute>
             }
           />

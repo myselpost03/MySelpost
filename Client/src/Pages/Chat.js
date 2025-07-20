@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useParams, useLocation } from "react-router-dom";
 import Header from "../Components/Header";
+import { supabase } from "../Utils/supabaseClient";
 import { FaImage, FaMicrophone, FaMoon, FaSun, FaSmile } from "react-icons/fa";
 import "../Styles/Chat.css";
 
@@ -15,7 +17,12 @@ const Chat = () => {
   const [audioPermission, setAudioPermission] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [hasInvitedFriend, setHasInvitedFriend] = useState(false); // NEW
+  const { id: targetId } = useParams();
+  const { state } = useLocation();
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+  const [lastFetchedAt, setLastFetchedAt] = useState(null);
 
+  const targetUser = state?.targetUser;
   const typingTimeoutRef = useRef(null);
 
   const [showEmojis, setShowEmojis] = useState(false);
@@ -23,6 +30,93 @@ const Chat = () => {
 
   const handleThemeToggle = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  };
+
+  useEffect(() => {
+    const loadInitialMessages = async () => {
+      const { data, error } = await supabase
+        .from("chats")
+        .select("*")
+        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("Initial message load failed:", error.message);
+        return;
+      }
+
+      const filtered = data.filter(
+        (msg) =>
+          (msg.sender_id === currentUser.id && msg.receiver_id === targetId) ||
+          (msg.sender_id === targetId && msg.receiver_id === currentUser.id)
+      );
+
+      const formatted = filtered.map((msg) => ({
+        id: msg.id,
+        text: msg.message,
+        type: msg.sender_id === currentUser.id ? "sent" : "received",
+        time: new Date(msg.created_at).toLocaleTimeString(),
+        timestamp: msg.created_at,
+      }));
+
+      setMessages(formatted);
+      if (filtered.length > 0) {
+        setLastFetchedAt(filtered[filtered.length - 1].created_at);
+      }
+    };
+
+    loadInitialMessages();
+  }, [targetId, currentUser.id]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchNewMessages();
+    }, 2000); // Poll every 2 seconds
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, [lastFetchedAt, targetId, currentUser.id]);
+
+  const fetchNewMessages = async () => {
+    const query = supabase
+      .from("chats")
+      .select("*")
+      .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+      .order("created_at", { ascending: true });
+
+    if (lastFetchedAt) {
+      query.gt("created_at", lastFetchedAt);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Polling error:", error.message);
+      return;
+    }
+
+    const filtered = data.filter(
+      (msg) =>
+        (msg.sender_id === currentUser.id && msg.receiver_id === targetId) ||
+        (msg.sender_id === targetId && msg.receiver_id === currentUser.id)
+    );
+
+    if (filtered.length > 0) {
+      const formatted = filtered.map((msg) => ({
+        id: msg.id,
+        text: msg.message,
+        type: msg.sender_id === currentUser.id ? "sent" : "received",
+        time: new Date(msg.created_at).toLocaleTimeString(),
+        timestamp: msg.created_at,
+      }));
+
+      setMessages((prev) => {
+        const existingIds = new Set(prev.map((m) => m.id));
+        const unique = formatted.filter((msg) => !existingIds.has(msg.id));
+        return [...prev, ...unique];
+      });
+
+      setLastFetchedAt(filtered[filtered.length - 1].created_at);
+    }
   };
 
   function getTimeAgo(dateString) {
@@ -48,35 +142,67 @@ const Chat = () => {
     return "just now";
   }
 
-  const sendMessage = () => {
+const sendMessage = async () => {
+  if (!input.trim()) return;
+
+  const newMessage = {
+    sender_id: currentUser.id,
+    receiver_id: targetId,
+    message: input.trim(),
+    reply_to: replyTo?.id || null, // optional, if you have reply feature
+  };
+
+  // Insert into Supabase
+  const { data, error } = await supabase.from("chats").insert([newMessage]);
+
+  if (error) {
+    console.error("❌ Supabase insert error:", error.message);
+    return;
+  }
+
+  console.log("✅ Message sent to Supabase:", data);
+
+  // Don’t update local messages state manually to avoid duplication
+  setInput("");
+  setReplyTo(null);
+};
+
+
+
+ {/* const sendMessage = async () => {
     if (!input.trim()) return;
 
     const newMessage = {
-      id: Date.now(),
-      text: input,
-      type: "sent",
-      time: new Date().toLocaleTimeString(),
-      status: "sent",
-      replyTo: replyTo,
+      sender_id: currentUser.id,
+      receiver_id: targetId,
+      message: input.trim(),
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    // Insert to Supabase
+    const { data, error } = await supabase.from("chats").insert([newMessage]);
+
+    if (error) {
+      console.error("Failed to send message:", error.message);
+      return;
+    }
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        text: input,
+        type: "sent",
+        time: new Date().toLocaleTimeString(),
+        status: "sent",
+        replyTo: replyTo,
+        timestamp: new Date(),
+      },
+    ]);
+
     setInput("");
     setReplyTo(null);
-
-    // Simulate auto-receiver reply
-    setTimeout(() => {
-      const reply = {
-        id: Date.now() + 1,
-        text: "Received your message! (Demo)",
-        type: "received",
-        time: new Date().toLocaleTimeString(),
-        status: "received",
-      };
-      setMessages((prev) => [...prev, reply]);
-    }, 1000);
   };
-
+*/}
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       sendMessage();
@@ -114,32 +240,32 @@ const Chat = () => {
     }
   };
 
-const handleAudioClick = () => {
-  if (!hasInvitedFriend) {
-    const inviteMsg = {
-      id: Date.now(),
-      text: "🎟️ Audio uploads are premium! Invite a friend using your code to unlock.",
-      type: "sent",
-      time: new Date().toLocaleTimeString(),
-      status: "info",
-    };
-    setMessages((prev) => [...prev, inviteMsg]);
-    return;
-  }
+  const handleAudioClick = () => {
+    if (!hasInvitedFriend) {
+      const inviteMsg = {
+        id: Date.now(),
+        text: "🎟️ Audio uploads are premium! Invite a friend using your code to unlock.",
+        type: "sent",
+        time: new Date().toLocaleTimeString(),
+        status: "info",
+      };
+      setMessages((prev) => [...prev, inviteMsg]);
+      return;
+    }
 
-  if (audioPermission) {
-    const msg = {
-      id: Date.now(),
-      text: "🎤 Sent an audio (demo)",
-      type: "sent",
-      time: new Date().toLocaleTimeString(),
-      status: "sent",
-    };
-    setMessages((prev) => [...prev, msg]);
-  } else {
-    requestPermission("audio");
-  }
-};
+    if (audioPermission) {
+      const msg = {
+        id: Date.now(),
+        text: "🎤 Sent an audio (demo)",
+        type: "sent",
+        time: new Date().toLocaleTimeString(),
+        status: "sent",
+      };
+      setMessages((prev) => [...prev, msg]);
+    } else {
+      requestPermission("audio");
+    }
+  };
 
   const handleReply = (msg) => {
     setReplyTo(msg);
