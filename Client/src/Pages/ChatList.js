@@ -178,127 +178,38 @@ const ChatList = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <div className="tab-bar">
-        {/* Default view */}
-        {!showGenderTabs && !showCountryTabs && (
-          <>
-            <button
-              className={`sketchy-tab ${activeTab === "all" ? "active" : ""}`}
-              onClick={() => setActiveTab("all")}
-            >
-              All
-            </button>
-            <button
-              className={`sketchy-tab ${
-                activeTab === "pinned" ? "active" : ""
-              }`}
-              onClick={() => setActiveTab("pinned")}
-            >
-              📌 Pinned
-            </button>
-            <button
-              className="sketchy-tab"
-              onClick={() => {
-                setShowGenderTabs(true);
-                setShowCountryTabs(false);
-              }}
-            >
-              Gender
-            </button>
-            <button
-              className="sketchy-tab"
-              onClick={() => {
-                setShowCountryTabs(true);
-                setShowGenderTabs(false);
-              }}
-            >
-              Country
-            </button>
-          </>
-        )}
-
-        {/* Gender tab options */}
-        {showGenderTabs && (
-          <>
-            <button
-              className="sketchy-tab"
-              onClick={() => setShowGenderTabs(false)}
-            >
-              ⬅ Back
-            </button>
-            <button
-              className={`sketchy-tab ${
-                genderFilter === "all" ? "active" : ""
-              }`}
-              onClick={() => {
-                setGenderFilter("all");
-                setShowGenderTabs(false);
-              }}
-            >
-              All Genders
-            </button>
-            <button
-              className={`sketchy-tab ${
-                genderFilter === "male" ? "active" : ""
-              }`}
-              onClick={() => {
-                setGenderFilter("male");
-                setShowGenderTabs(false);
-              }}
-            >
-              ♂️ Male
-            </button>
-            <button
-              className={`sketchy-tab ${
-                genderFilter === "female" ? "active" : ""
-              }`}
-              onClick={() => {
-                setGenderFilter("female");
-                setShowGenderTabs(false);
-              }}
-            >
-              ♀️ Female
-            </button>
-          </>
-        )}
-
-        {/* Country tab options */}
-        {showCountryTabs && (
-          <>
-            <button
-              className="sketchy-tab"
-              onClick={() => setShowCountryTabs(false)}
-            >
-              ⬅ Back
-            </button>
-            <button
-              className={`sketchy-tab ${
-                countryFilter === "all" ? "active" : ""
-              }`}
-              onClick={() => {
-                setCountryFilter("all");
-                setShowCountryTabs(false);
-              }}
-            >
-              All Countries
-            </button>
-            {countries.map((country, i) => (
-              <button
-                key={i}
-                className={`sketchy-tab ${
-                  countryFilter === country ? "active" : ""
-                }`}
-                onClick={() => {
-                  setCountryFilter(country);
-                  setShowCountryTabs(false);
-                }}
-              >
-                {country}
-              </button>
-            ))}
-          </>
-        )}
-      </div>
+     <div className="tab-bar">
+  <button
+    className={`sketchy-tab ${activeTab === "all" ? "active" : ""}`}
+    onClick={() => setActiveTab("all")}
+  >
+    All
+  </button>
+  <button
+    className={`sketchy-tab ${activeTab === "pinned" ? "active" : ""}`}
+    onClick={() => setActiveTab("pinned")}
+  >
+    📌 Pinned
+  </button>
+  <button
+    className="sketchy-tab"
+    onClick={() => {
+      setShowGenderTabs(true);
+      setShowCountryTabs(false);
+    }}
+  >
+    Gender ▼
+  </button>
+  <button
+    className="sketchy-tab"
+    onClick={() => {
+      setShowCountryTabs(true);
+      setShowGenderTabs(false);
+    }}
+  >
+    Country ▼
+  </button>
+</div>
 
       <div className="sketchy-list-scrollable">
         {filteredUsers.map((user) => (
@@ -345,7 +256,74 @@ const ChatList = () => {
           </Link>
         ))}
       </div>
+    {/* Modal for Gender Filter */}
+{showGenderTabs && (
+  <div className="modal-backdrop" onClick={() => setShowGenderTabs(false)}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <h3>Choose Gender</h3>
+      <button
+        className={`modal-btn ${genderFilter === "all" ? "active" : ""}`}
+        onClick={() => {
+          setGenderFilter("all");
+          setShowGenderTabs(false);
+        }}
+      >
+        All Genders
+      </button>
+      <button
+        className={`modal-btn ${genderFilter === "male" ? "active" : ""}`}
+        onClick={() => {
+          setGenderFilter("male");
+          setShowGenderTabs(false);
+        }}
+      >
+        ♂️ Male
+      </button>
+      <button
+        className={`modal-btn ${genderFilter === "female" ? "active" : ""}`}
+        onClick={() => {
+          setGenderFilter("female");
+          setShowGenderTabs(false);
+        }}
+      >
+        ♀️ Female
+      </button>
     </div>
+  </div>
+)}
+
+{/* Modal for Country Filter */}
+{showCountryTabs && (
+  <div className="modal-backdrop" onClick={() => setShowCountryTabs(false)}>
+    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <h3>Choose Country</h3>
+      <button
+        className={`modal-btn ${countryFilter === "all" ? "active" : ""}`}
+        onClick={() => {
+          setCountryFilter("all");
+          setShowCountryTabs(false);
+        }}
+      >
+        All Countries
+      </button>
+      {countries.map((country, i) => (
+        <button
+          key={i}
+          className={`modal-btn ${countryFilter === country ? "active" : ""}`}
+          onClick={() => {
+            setCountryFilter(country);
+            setShowCountryTabs(false);
+          }}
+        >
+          {country}
+        </button>
+      ))}
+    </div>
+  </div>
+)}
+
+    </div>
+    
   );
 };
 
