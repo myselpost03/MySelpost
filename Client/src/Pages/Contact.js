@@ -27,7 +27,7 @@ const Contact = () => {
 
     setLoading(true);
 
-    const { error } = await supabase.from("contactUs").insert([formData]);
+    const { error } = await supabase.from("contact_us").insert([formData]);
 
     setLoading(false);
 

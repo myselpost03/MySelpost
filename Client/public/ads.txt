@@ -1099,3 +1099,5 @@ sharethrough.com, 1SghQadK, RESELLER, d53b998a7bd4ecd2
 
 #Newor Media
 newormedia.com, 3734af22-d38c-441b-ae2f-0bd336ac6817, DIRECT
+
+google.com, pub-3460063744827331, DIRECT, f08c47fec0942fa0

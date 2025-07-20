@@ -18,7 +18,7 @@ import {
   AppDoodle,
   WebDoodle,
   DoodleExample,
-  FirstUserSketch,
+  Demo,
   Chat,
   ChatList,
 } from "./Pages/index";
@@ -45,7 +45,7 @@ const publicRoutes = [
   { path: "/chat-list", component: ChatList },
   { path: "/app-sketch", component: AppSketch },
   { path: "/web-sketch", component: WebSketch },
-  { path: "/first-user-sketch", component: FirstUserSketch },
+  { path: "/demo", component: Demo },
 ];
 
 function App() {

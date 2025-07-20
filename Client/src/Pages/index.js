@@ -14,6 +14,6 @@ export { default as Pricing } from "./Pricing";
 export { default as Privacy } from "./Privacy";
 export { default as Prompt } from "./Prompt";
 export { default as Terms } from "./Terms";
-export { default as FirstUserSketch } from "./FirstUserSketch";
+export { default as Demo } from "./Demo";
 export { default as Chat } from "./Chat";
 export { default as ChatList } from "./ChatList";
