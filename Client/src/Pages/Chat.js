@@ -15,6 +15,8 @@ const Chat = () => {
   const [replyTo, setReplyTo] = useState(null);
   const [imagePermission, setImagePermission] = useState(false);
   const [audioPermission, setAudioPermission] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+
   const [isTyping, setIsTyping] = useState(false);
   const [hasInvitedFriend, setHasInvitedFriend] = useState(false); // NEW
   const { id: targetId } = useParams();
@@ -31,6 +33,80 @@ const Chat = () => {
   const handleThemeToggle = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
+
+useEffect(() => {
+  const checkIfBlocked = async () => {
+    const { data, error } = await supabase
+      .from("blocked_users")
+      .select("*")
+      .eq("blocker_id", currentUser.id)
+      .eq("blocked_id", targetId)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      console.error("Block check failed:", error.message);
+    } else {
+      setIsBlocked(!!data);
+    }
+  };
+
+  checkIfBlocked();
+}, [currentUser.id, targetId]);
+
+useEffect(() => {
+  const checkBlockStatus = async () => {
+    const { data: blockedByMe, error: error1 } = await supabase
+      .from("blocked_users")
+      .select("*")
+      .eq("blocker_id", currentUser.id)
+      .eq("blocked_id", targetId)
+      .single();
+
+    const { data: blockedMe, error: error2 } = await supabase
+      .from("blocked_users")
+      .select("*")
+      .eq("blocker_id", targetId)
+      .eq("blocked_id", currentUser.id)
+      .single();
+
+    if (error1 && error1.code !== "PGRST116") console.error("Error1:", error1.message);
+    if (error2 && error2.code !== "PGRST116") console.error("Error2:", error2.message);
+
+  
+  };
+
+  checkBlockStatus();
+}, [currentUser.id, targetId]);
+
+const [blockedByOtherUser, setBlockedByOtherUser] = useState(false);
+const [iBlockedOtherUser, setIBlockedOtherUser] = useState(false);
+
+useEffect(() => {
+  const checkBlockStatus = async () => {
+    const { data: blockedByMe, error: error1 } = await supabase
+      .from("blocked_users")
+      .select("*")
+      .eq("blocker_id", currentUser.id)
+      .eq("blocked_id", targetId)
+      .single();
+
+    const { data: blockedMe, error: error2 } = await supabase
+      .from("blocked_users")
+      .select("*")
+      .eq("blocker_id", targetId)
+      .eq("blocked_id", currentUser.id)
+      .single();
+
+    if (error1 && error1.code !== "PGRST116") console.error("Error1:", error1.message);
+    if (error2 && error2.code !== "PGRST116") console.error("Error2:", error2.message);
+
+    setIBlockedOtherUser(!!blockedByMe);
+    setBlockedByOtherUser(!!blockedMe);
+  };
+
+  checkBlockStatus();
+}, [currentUser.id, targetId]);
+
 
   useEffect(() => {
     const loadInitialMessages = async () => {
@@ -142,67 +218,34 @@ const Chat = () => {
     return "just now";
   }
 
-const sendMessage = async () => {
-  if (!input.trim()) return;
-
-  const newMessage = {
-    sender_id: currentUser.id,
-    receiver_id: targetId,
-    message: input.trim(),
-    reply_to: replyTo?.id || null, // optional, if you have reply feature
-  };
-
-  // Insert into Supabase
-  const { data, error } = await supabase.from("chats").insert([newMessage]);
-
-  if (error) {
-    console.error("❌ Supabase insert error:", error.message);
-    return;
-  }
-
-  console.log("✅ Message sent to Supabase:", data);
-
-  // Don’t update local messages state manually to avoid duplication
-  setInput("");
-  setReplyTo(null);
-};
-
-
-
- {/* const sendMessage = async () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
-
+    setIsSending(true);
     const newMessage = {
       sender_id: currentUser.id,
       receiver_id: targetId,
       message: input.trim(),
+      reply_to: replyTo?.id || null, // optional, if you have reply feature
     };
 
-    // Insert to Supabase
+    // Insert into Supabase
     const { data, error } = await supabase.from("chats").insert([newMessage]);
 
     if (error) {
-      console.error("Failed to send message:", error.message);
+      console.error("❌ Supabase insert error:", error.message);
       return;
+    } else {
+      setInput("");
     }
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        text: input,
-        type: "sent",
-        time: new Date().toLocaleTimeString(),
-        status: "sent",
-        replyTo: replyTo,
-        timestamp: new Date(),
-      },
-    ]);
+    console.log("✅ Message sent to Supabase:", data);
 
+    // Don’t update local messages state manually to avoid duplication
     setInput("");
+    setIsSending(false);
     setReplyTo(null);
   };
-*/}
+
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       sendMessage();
@@ -313,9 +356,76 @@ const sendMessage = async () => {
     }, 1000);
   };
 
-  const handleBlockToggle = () => {
-    setIsBlocked((prev) => !prev);
+  const handleBlockToggle = async () => {
+  if (!isBlocked) {
+    const { error } = await supabase.from("blocked_users").insert([
+      {
+        blocker_id: currentUser.id,
+        blocked_id: targetId,
+      },
+    ]);
+
+    if (error) {
+      console.error("Block failed:", error.message);
+      return;
+    }
+    setIsBlocked(true);
+  } else {
+    const { error } = await supabase
+      .from("blocked_users")
+      .delete()
+      .eq("blocker_id", currentUser.id)
+      .eq("blocked_id", targetId);
+
+    if (error) {
+      console.error("Unblock failed:", error.message);
+      return;
+    }
+    setIsBlocked(false);
+  }
+};
+
+  const updateTypingStatus = async (typing) => {
+    await supabase.from("typing_status").upsert(
+      {
+        user_id: currentUser.id,
+        target_id: targetId,
+        is_typing: typing,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: ["user_id", "target_id"] }
+    );
   };
+
+  const handleInputChange = (e) => {
+    setInput(e.target.value);
+    updateTypingStatus(true); // Notify Supabase you're typing
+
+    clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      updateTypingStatus(false); // Stop typing after inactivity
+    }, 1500);
+  };
+
+  //Is typing functionality
+  {
+    /*useEffect(() => {
+    const interval = setInterval(async () => {
+      const { data, error } = await supabase
+        .from("typing_status")
+        .select("is_typing")
+        .eq("user_id", targetId)
+        .eq("target_id", currentUser.id)
+        .single();
+
+      if (!error && data) {
+        setIsTyping(data.is_typing);
+      }
+    }, 1000); // Check every second
+
+    return () => clearInterval(interval);
+  }, [targetId, currentUser.id]);*/
+  }
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -342,12 +452,15 @@ const sendMessage = async () => {
             </button>
           </div>
 
-          {isBlocked ? (
-            <div className="blocked-ui">
-              <h2>🚫 You’re blocked!</h2>
-              <p>This chat has gone full sketch-mode.</p>
-            </div>
-          ) : (
+        {blockedByOtherUser || iBlockedOtherUser ?  (
+ <div className="blocked-ui">
+  <h2>🚫 Chat Blocked</h2>
+  {iBlockedOtherUser && <p>You have blocked this user.</p>}
+  {blockedByOtherUser && <p>This user has blocked you. You can no longer send messages.</p>}
+</div>
+
+) : (
+
             <>
               <div className="messages">
                 {messages.length === 0 && (
@@ -426,17 +539,16 @@ const sendMessage = async () => {
                       : "Write a message..."
                   }
                   value={input}
-                  onChange={(e) => {
-                    setInput(e.target.value);
-                    setIsTyping(true);
-                    clearTimeout(typingTimeoutRef.current);
-                    typingTimeoutRef.current = setTimeout(() => {
-                      setIsTyping(false);
-                    }, 1500); // 1.5 seconds of inactivity
-                  }}
+                  onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
                 />
-                <button onClick={sendMessage}>➤</button>
+
+                <button
+                  onClick={sendMessage}
+                  disabled={isSending || !input.trim()}
+                >
+                  {isSending ? "Sending..." : "➤"}
+                </button>
               </div>
             </>
           )}
