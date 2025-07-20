@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import Header from "../Components/Header";
 import { supabase } from "../Utils/supabaseClient";
+import LoadingIndicator from "../Components/LoadingIndicator";
 import { FaImage, FaMicrophone, FaMoon, FaSun, FaSmile } from "react-icons/fa";
 import "../Styles/Chat.css";
 
@@ -16,6 +17,7 @@ const Chat = () => {
   const [imagePermission, setImagePermission] = useState(false);
   const [audioPermission, setAudioPermission] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [isTyping, setIsTyping] = useState(false);
   const [hasInvitedFriend, setHasInvitedFriend] = useState(false); // NEW
@@ -34,82 +36,84 @@ const Chat = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
-useEffect(() => {
-  const checkIfBlocked = async () => {
-    const { data, error } = await supabase
-      .from("blocked_users")
-      .select("*")
-      .eq("blocker_id", currentUser.id)
-      .eq("blocked_id", targetId)
-      .single();
+  useEffect(() => {
+    const checkIfBlocked = async () => {
+      const { data, error } = await supabase
+        .from("blocked_users")
+        .select("*")
+        .eq("blocker_id", currentUser.id)
+        .eq("blocked_id", targetId)
+        .single();
 
-    if (error && error.code !== "PGRST116") {
-      console.error("Block check failed:", error.message);
-    } else {
-      setIsBlocked(!!data);
-    }
-  };
+      if (error && error.code !== "PGRST116") {
+        console.error("Block check failed:", error.message);
+      } else {
+        setIsBlocked(!!data);
+      }
+    };
 
-  checkIfBlocked();
-}, [currentUser.id, targetId]);
+    checkIfBlocked();
+  }, [currentUser.id, targetId]);
 
-useEffect(() => {
-  const checkBlockStatus = async () => {
-    const { data: blockedByMe, error: error1 } = await supabase
-      .from("blocked_users")
-      .select("*")
-      .eq("blocker_id", currentUser.id)
-      .eq("blocked_id", targetId)
-      .single();
+  useEffect(() => {
+    const checkBlockStatus = async () => {
+      const { data: blockedByMe, error: error1 } = await supabase
+        .from("blocked_users")
+        .select("*")
+        .eq("blocker_id", currentUser.id)
+        .eq("blocked_id", targetId)
+        .single();
 
-    const { data: blockedMe, error: error2 } = await supabase
-      .from("blocked_users")
-      .select("*")
-      .eq("blocker_id", targetId)
-      .eq("blocked_id", currentUser.id)
-      .single();
+      const { data: blockedMe, error: error2 } = await supabase
+        .from("blocked_users")
+        .select("*")
+        .eq("blocker_id", targetId)
+        .eq("blocked_id", currentUser.id)
+        .single();
 
-    if (error1 && error1.code !== "PGRST116") console.error("Error1:", error1.message);
-    if (error2 && error2.code !== "PGRST116") console.error("Error2:", error2.message);
+      if (error1 && error1.code !== "PGRST116")
+        console.error("Error1:", error1.message);
+      if (error2 && error2.code !== "PGRST116")
+        console.error("Error2:", error2.message);
+    };
 
-  
-  };
+    checkBlockStatus();
+  }, [currentUser.id, targetId]);
 
-  checkBlockStatus();
-}, [currentUser.id, targetId]);
+  const [blockedByOtherUser, setBlockedByOtherUser] = useState(false);
+  const [iBlockedOtherUser, setIBlockedOtherUser] = useState(false);
 
-const [blockedByOtherUser, setBlockedByOtherUser] = useState(false);
-const [iBlockedOtherUser, setIBlockedOtherUser] = useState(false);
+  useEffect(() => {
+    const checkBlockStatus = async () => {
+      const { data: blockedByMe, error: error1 } = await supabase
+        .from("blocked_users")
+        .select("*")
+        .eq("blocker_id", currentUser.id)
+        .eq("blocked_id", targetId)
+        .single();
 
-useEffect(() => {
-  const checkBlockStatus = async () => {
-    const { data: blockedByMe, error: error1 } = await supabase
-      .from("blocked_users")
-      .select("*")
-      .eq("blocker_id", currentUser.id)
-      .eq("blocked_id", targetId)
-      .single();
+      const { data: blockedMe, error: error2 } = await supabase
+        .from("blocked_users")
+        .select("*")
+        .eq("blocker_id", targetId)
+        .eq("blocked_id", currentUser.id)
+        .single();
 
-    const { data: blockedMe, error: error2 } = await supabase
-      .from("blocked_users")
-      .select("*")
-      .eq("blocker_id", targetId)
-      .eq("blocked_id", currentUser.id)
-      .single();
+      if (error1 && error1.code !== "PGRST116")
+        console.error("Error1:", error1.message);
+      if (error2 && error2.code !== "PGRST116")
+        console.error("Error2:", error2.message);
 
-    if (error1 && error1.code !== "PGRST116") console.error("Error1:", error1.message);
-    if (error2 && error2.code !== "PGRST116") console.error("Error2:", error2.message);
+      setIBlockedOtherUser(!!blockedByMe);
+      setBlockedByOtherUser(!!blockedMe);
+    };
 
-    setIBlockedOtherUser(!!blockedByMe);
-    setBlockedByOtherUser(!!blockedMe);
-  };
-
-  checkBlockStatus();
-}, [currentUser.id, targetId]);
-
+    checkBlockStatus();
+  }, [currentUser.id, targetId]);
 
   useEffect(() => {
     const loadInitialMessages = async () => {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from("chats")
         .select("*")
@@ -118,6 +122,7 @@ useEffect(() => {
 
       if (error) {
         console.error("Initial message load failed:", error.message);
+        setIsLoading(false);
         return;
       }
 
@@ -139,6 +144,7 @@ useEffect(() => {
       if (filtered.length > 0) {
         setLastFetchedAt(filtered[filtered.length - 1].created_at);
       }
+      setIsLoading(false); // Done loading
     };
 
     loadInitialMessages();
@@ -357,33 +363,33 @@ useEffect(() => {
   };
 
   const handleBlockToggle = async () => {
-  if (!isBlocked) {
-    const { error } = await supabase.from("blocked_users").insert([
-      {
-        blocker_id: currentUser.id,
-        blocked_id: targetId,
-      },
-    ]);
+    if (!isBlocked) {
+      const { error } = await supabase.from("blocked_users").insert([
+        {
+          blocker_id: currentUser.id,
+          blocked_id: targetId,
+        },
+      ]);
 
-    if (error) {
-      console.error("Block failed:", error.message);
-      return;
-    }
-    setIsBlocked(true);
-  } else {
-    const { error } = await supabase
-      .from("blocked_users")
-      .delete()
-      .eq("blocker_id", currentUser.id)
-      .eq("blocked_id", targetId);
+      if (error) {
+        console.error("Block failed:", error.message);
+        return;
+      }
+      setIsBlocked(true);
+    } else {
+      const { error } = await supabase
+        .from("blocked_users")
+        .delete()
+        .eq("blocker_id", currentUser.id)
+        .eq("blocked_id", targetId);
 
-    if (error) {
-      console.error("Unblock failed:", error.message);
-      return;
+      if (error) {
+        console.error("Unblock failed:", error.message);
+        return;
+      }
+      setIsBlocked(false);
     }
-    setIsBlocked(false);
-  }
-};
+  };
 
   const updateTypingStatus = async (typing) => {
     await supabase.from("typing_status").upsert(
@@ -452,15 +458,19 @@ useEffect(() => {
             </button>
           </div>
 
-        {blockedByOtherUser || iBlockedOtherUser ?  (
- <div className="blocked-ui">
-  <h2>🚫 Chat Blocked</h2>
-  {iBlockedOtherUser && <p>You have blocked this user.</p>}
-  {blockedByOtherUser && <p>This user has blocked you. You can no longer send messages.</p>}
-</div>
-
-) : (
-
+          {blockedByOtherUser || iBlockedOtherUser ? (
+            <div className="blocked-ui">
+              <h2>🚫 Chat Blocked</h2>
+              {iBlockedOtherUser && <p>You have blocked this user.</p>}
+              {blockedByOtherUser && (
+                <p>
+                  This user has blocked you. You can no longer send messages.
+                </p>
+              )}
+            </div>
+          ) : isLoading ? (
+            <LoadingIndicator />
+          ) : (
             <>
               <div className="messages">
                 {messages.length === 0 && (

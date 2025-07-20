@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
+import  LoadingIndicator  from "../Components/LoadingIndicator";
 
 // Move user data into state
 const initialUsers = [
@@ -142,45 +143,58 @@ const ChatList = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const { data, error } = await supabase
-        .from("users")
-        .select("id, name, profile_pic, country, gender, status");
+  const { data: allUsers, error } = await supabase
+    .from("users")
+    .select("id, name, profile_pic, country, gender, status");
 
-      if (error) {
-        console.error("Error fetching users:", error.message);
-      } else {
-        const processed = data.map((user) => ({
-          ...user,
-          avatar:
-            user.profile_pic ||
-            "https://cdn2.iconfinder.com/data/icons/circle-icons-1/64/profle-64.png" +
-              user.id,
-          notifications: user.notifications || 0,
-          pinned: user.pinned || false,
-          status: user.status || "offline",
-        }));
-        setUsers(processed);
-      }
+  const user = JSON.parse(localStorage.getItem("user"));
 
-      setLoading(false);
-    };
+  let pinnedIds = [];
+  if (user) {
+    const { data: pinnedData, error: pinnedError } = await supabase
+      .from("pinned_users")
+      .select("pinned_user_id")
+      .eq("user_id", user.id);
+
+    if (!pinnedError && pinnedData) {
+      pinnedIds = pinnedData.map((row) => row.pinned_user_id);
+    }
+  }
+
+  if (error) {
+    console.error("Error fetching users:", error.message);
+  } else {
+    const processed = allUsers.map((user) => ({
+      ...user,
+      avatar:
+        user.profile_pic ||
+       empty +
+          user.id,
+      notifications: user.notifications || 0,
+      pinned: pinnedIds.includes(user.id),
+      status: user.status || "offline",
+    }));
+    setUsers(processed);
+  }
+
+  setLoading(false);
+};
 
     fetchUsers();
   }, []);
 
   const navigate = useNavigate();
 
- const handleProtectedNavigation = (e, path, targetUser = null) => {
-  e.preventDefault();
-  const isLoggedIn = localStorage.getItem("user");
+  const handleProtectedNavigation = (e, path, targetUser = null) => {
+    e.preventDefault();
+    const isLoggedIn = localStorage.getItem("user");
 
-  if (isLoggedIn) {
-    navigate(path, { state: { targetUser } }); // 👈 Pass clicked user to next screen
-  } else {
-    navigate("/register");
-  }
-};
-
+    if (isLoggedIn) {
+      navigate(path, { state: { targetUser } }); // 👈 Pass clicked user to next screen
+    } else {
+      navigate("/register");
+    }
+  };
 
   const filteredUsers = users
     .filter((user) => {
@@ -211,19 +225,56 @@ const ChatList = () => {
       return priorityB - priorityA;
     });
 
-  const togglePin = (id) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === id ? { ...user, pinned: !user.pinned } : user
-      )
-    );
-  };
+const togglePin = async (targetUserId) => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user) return;
+
+  const alreadyPinned = users.find(
+    (u) => u.id === targetUserId && u.pinned
+  );
+
+  if (alreadyPinned) {
+    // Unpin
+    const { error } = await supabase
+      .from("pinned_users")
+      .delete()
+      .match({ user_id: user.id, pinned_user_id: targetUserId });
+
+    if (!error) {
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
+          u.id === targetUserId ? { ...u, pinned: false } : u
+        )
+      );
+    } else {
+      console.error("Error unpinning:", error.message);
+    }
+  } else {
+    // Pin
+    const { error } = await supabase.from("pinned_users").insert([
+      { user_id: user.id, pinned_user_id: targetUserId },
+    ]);
+
+    if (!error) {
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
+          u.id === targetUserId ? { ...u, pinned: true } : u
+        )
+      );
+    } else {
+      console.error("Error pinning:", error.message);
+    }
+  }
+};
+
 
   return (
     <div className="chatlist-container">
       <Header />
       <h2 className="chatlist-title">🖋️ Your Circles</h2>
-
+{loading ? (
+      <LoadingIndicator />
+    ) : (<>
       <input
         type="text"
         className="sketchy-search"
@@ -433,6 +484,8 @@ const ChatList = () => {
           </div>
         </div>
       )}
+      </>
+  )}
     </div>
   );
 };
