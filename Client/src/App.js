@@ -46,7 +46,7 @@ const publicRoutes = [
   { path: "/app-sketch", component: AppSketch },
   { path: "/web-sketch", component: WebSketch },
   { path: "/demo", component: Demo },
-  { path: "/profile", component: Profile },
+  { path: "/profile/:id", component: Profile },
 ];
 
 function App() {

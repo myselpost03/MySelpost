@@ -2,7 +2,7 @@
 
 .sketchy-profile-wrapper {
   max-width: 500px;
-  margin: 4rem auto;
+  margin: 7rem auto;
   padding: 1rem;
   font-family: 'Gloria Hallelujah', cursive;
   background: #fffef6;
@@ -12,6 +12,26 @@
   position: relative;
   animation: popIn 0.6s ease;
 }
+
+.sketchy-logout-btn {
+  background-color: #fff;
+  border: 2px dashed red;
+  color: red;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 red;
+  margin-top: 20px;
+  transition: all 0.2s ease;
+}
+
+.sketchy-logout-btn:hover {
+  background-color: #ffecec;
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 red;
+}
+
 
 @keyframes popIn {
   0% {

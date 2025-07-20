@@ -188,7 +188,7 @@ const ChatList = () => {
   const [showGenderTabs, setShowGenderTabs] = useState(false);
   const [showCountryTabs, setShowCountryTabs] = useState(false);
   const [loading, setLoading] = useState(true);
-const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const user = JSON.parse(localStorage.getItem("user"));
 
   const countries = [...new Set(users?.map((u) => u.country))];
@@ -218,40 +218,39 @@ const [isOnline, setIsOnline] = useState(navigator.onLine);
   }, [user.id]);
 
   const updateUserStatus = async (status) => {
-  if (user?.id) {
-    await supabase
-      .from("users")
-      .update({ status }) // 👈 Make sure "status" column exists in your users table
-      .eq("id", user.id);
-  }
-};
-
-useEffect(() => {
-  const handleOnline = () => {
-    setIsOnline(true);
-    updateUserStatus("online");
+    if (user?.id) {
+      await supabase
+        .from("users")
+        .update({ status }) // 👈 Make sure "status" column exists in your users table
+        .eq("id", user.id);
+    }
   };
 
-  const handleOffline = () => {
-    setIsOnline(false);
-    updateUserStatus("offline");
-  };
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      updateUserStatus("online");
+    };
 
-  window.addEventListener("online", handleOnline);
-  window.addEventListener("offline", handleOffline);
+    const handleOffline = () => {
+      setIsOnline(false);
+      updateUserStatus("offline");
+    };
 
-  // Set initial status when component mounts
-  updateUserStatus(navigator.onLine ? "online" : "offline");
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
-  return () => {
-    window.removeEventListener("online", handleOnline);
-    window.removeEventListener("offline", handleOffline);
+    // Set initial status when component mounts
+    updateUserStatus(navigator.onLine ? "online" : "offline");
 
-    // Optional: Set offline when component unmounts
-    updateUserStatus("offline");
-  };
-}, []);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
 
+      // Optional: Set offline when component unmounts
+      updateUserStatus("offline");
+    };
+  }, []);
 
   const handleUserClick = (clickedId) => {
     setUsers((prevUsers) =>
@@ -305,15 +304,14 @@ useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
-
 
   const navigate = useNavigate();
 
@@ -491,7 +489,12 @@ useEffect(() => {
                     }}
                   >
                     <div className="user-avatar-wrapper">
-                      <Link to={`/profile/${user.id}`}>
+                      <Link
+                        to={`/profile/${user.id}`}
+                        onClick={(e) => {
+                          e.stopPropagation(); // 👈 prevent parent click
+                        }}
+                      >
                         {user.img ? (
                           <img
                             src={user.avatar}
@@ -501,7 +504,7 @@ useEffect(() => {
                         ) : (
                           <img
                             src={empty}
-                            alt="whie area"
+                            alt="white area"
                             className="user-avatar"
                           />
                         )}
