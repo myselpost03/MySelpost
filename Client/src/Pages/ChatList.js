@@ -159,6 +159,8 @@ const ChatList = () => {
     return () => clearInterval(interval);
   }, [user.id]);
 
+  
+
   const handleUserClick = (clickedId) => {
     setUsers((prevUsers) =>
       prevUsers.map((user) =>
@@ -188,13 +190,16 @@ const ChatList = () => {
       if (error) {
         console.error("Error fetching users:", error.message);
       } else {
-        const processed = allUsers.map((user) => ({
-          ...user,
-          avatar: user.profile_pic || empty + user.id,
-          notifications: user.notifications || 0,
-          pinned: pinnedIds.includes(user.id),
-          status: user.status || "offline",
-        }));
+       const processed = allUsers
+  .filter((u) => u.id !== user.id) // 👈 Hide current user
+  .map((user) => ({
+    ...user,
+    avatar: user.profile_pic || empty + user.id,
+    notifications: user.notifications || 0,
+    pinned: pinnedIds.includes(user.id),
+    status: user.status || "offline",
+  }));
+
         setUsers(processed);
       }
 
@@ -216,6 +221,8 @@ const ChatList = () => {
       navigate("/register");
     }
   };
+
+  
 
   const filteredUsers = users
     .filter((user) => {
@@ -365,7 +372,9 @@ const ChatList = () => {
 
           <div className="sketchy-list-scrollable">
             {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
+              filteredUsers
+              .filter((u) => u.id !== user.id)
+              .map((user) => (
                 <Link
                   to="#"
                   key={user.id}
