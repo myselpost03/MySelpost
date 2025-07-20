@@ -39,16 +39,41 @@
   max-width: 600px;
   min-width: 300px;
   height: 75vh;
+  padding: 1rem;
 
-  border: 3px dashed #222;
+  background: repeating-linear-gradient(
+      45deg,
+      #fffef9,
+      #fffef9 10px,
+      #f9f7ed 10px,
+      #f9f7ed 20px
+    ),
+    radial-gradient(circle at top left, #fffef9 0%, #f1efdb 100%);
+  background-blend-mode: multiply;
+  animation: sketchy-pop 0.5s ease-out;
+  border: 3px dashed #333;
   border-radius: 20px;
-  background: #fffef9;
+  box-shadow: 6px 6px 0px #aaa;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 4px 4px 0px #aaa;
-  padding: 1rem;
   position: relative;
+
+  transform: rotate(-0.3deg); /* sketchy vibe */
+}
+
+@keyframes sketchy-pop {
+  0% {
+    transform: scale(0.95) rotate(-1deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.02) rotate(0.3deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
 }
 
 .message {
@@ -126,7 +151,7 @@
 }
 
 .image-icon {
-  cursor: pointer;
+  pointer-events: none;
   font-size: 1.3rem;
   color: #444;
   margin-right: 4px;
@@ -347,7 +372,6 @@ body.theme-dark .fixed-theme-toggle {
   }
 }
 
-
 @keyframes fadeIn {
   from {
     opacity: 0.4;
@@ -459,11 +483,52 @@ body.theme-dark .fixed-theme-toggle {
   color: #ccc;
 }
 
-
 .empty-chat-img {
   width: 150px;
   height: auto;
   margin-bottom: 1rem;
   opacity: 0.8;
   filter: drop-shadow(2px 4px 6px #ccc);
+}
+
+.chat-img-preview {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 8px;
+  margin-top: 5px;
+}
+
+.icon-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-right: 0.4rem;
+}
+
+.coming-soon-ribbon {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  background: #ff6f61;
+  color: white;
+  font-size: 0.55rem;
+  padding: 1px 4px;
+  border-radius: 6px;
+  font-family: "Caveat", cursive;
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+  transform: rotate(6deg);
+  opacity: 15;
+  pointer-events: none;
+  animation: pulse-ribbon 2s infinite;
+}
+
+@keyframes pulse-ribbon {
+  0%,
+  100% {
+    opacity: 15;
+    transform: rotate(6deg) scale(1);
+  }
+  50% {
+    opacity: 15;
+    transform: rotate(6deg) scale(1.05);
+  }
 }

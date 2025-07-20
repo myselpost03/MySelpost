@@ -37,8 +37,6 @@ const Chat = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
-  
-
   useEffect(() => {
     const checkIfBlocked = async () => {
       const { data, error } = await supabase
@@ -211,29 +209,28 @@ const Chat = () => {
   };
 
   const deleteOldMessagesBetweenUsers = async (currentUserId, otherUserId) => {
-  // Get current time in local timezone and subtract 24 hours
-  const localCutoffTime = dayjs().subtract(24, "hour").toISOString();
+    // Get current time in local timezone and subtract 24 hours
+    const localCutoffTime = dayjs().subtract(24, "hour").toISOString();
 
-  const { error } = await supabase
-    .from("chats")
-    .delete()
-    .or(
-      `and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUserId})`
-    )
-    .lt("created_at", localCutoffTime);
+    const { error } = await supabase
+      .from("chats")
+      .delete()
+      .or(
+        `and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUserId})`
+      )
+      .lt("created_at", localCutoffTime);
 
-  if (error) {
-    console.error("Failed to delete old messages:", error.message);
-  } else {
-    console.log("Old messages between users deleted.");
-  }
-};
+    if (error) {
+      console.error("Failed to delete old messages:", error.message);
+    } else {
+      console.log("Old messages between users deleted.");
+    }
+  };
 
-useEffect(() => {
-  deleteOldMessagesBetweenUsers(currentUser.id, targetUser.id);
-}, [currentUser.id, targetUser.id]);
+  useEffect(() => {
+    deleteOldMessagesBetweenUsers(currentUser.id, targetUser.id);
+  }, [currentUser.id, targetUser.id]);
 
-  
   function getTimeAgo(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -608,8 +605,15 @@ useEffect(() => {
               </div>
 
               <div className="input-area">
-                <FaImage className="icon-btn" onClick={handleImageClick} />
-                <FaMicrophone className="icon-btn" onClick={handleAudioClick} />
+                <div className="icon-wrapper">
+                  <FaImage className="icon-btn" />
+                  <div className="coming-soon-ribbon">Coming Soon</div>
+                </div>
+
+                <div className="icon-wrapper">
+                  <FaMicrophone className="icon-btn" />
+                  <div className="coming-soon-ribbon">Coming Soon</div>
+                </div>
 
                 <input
                   type="text"
