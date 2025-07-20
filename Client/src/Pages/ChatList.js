@@ -188,7 +188,7 @@ const ChatList = () => {
   const [showGenderTabs, setShowGenderTabs] = useState(false);
   const [showCountryTabs, setShowCountryTabs] = useState(false);
   const [loading, setLoading] = useState(true);
-
+const [isOnline, setIsOnline] = useState(navigator.onLine);
   const user = JSON.parse(localStorage.getItem("user"));
 
   const countries = [...new Set(users?.map((u) => u.country))];
@@ -216,6 +216,42 @@ const ChatList = () => {
     const interval = setInterval(fetchUnreadCounts, 3000);
     return () => clearInterval(interval);
   }, [user.id]);
+
+  const updateUserStatus = async (status) => {
+  if (user?.id) {
+    await supabase
+      .from("users")
+      .update({ status }) // 👈 Make sure "status" column exists in your users table
+      .eq("id", user.id);
+  }
+};
+
+useEffect(() => {
+  const handleOnline = () => {
+    setIsOnline(true);
+    updateUserStatus("online");
+  };
+
+  const handleOffline = () => {
+    setIsOnline(false);
+    updateUserStatus("offline");
+  };
+
+  window.addEventListener("online", handleOnline);
+  window.addEventListener("offline", handleOffline);
+
+  // Set initial status when component mounts
+  updateUserStatus(navigator.onLine ? "online" : "offline");
+
+  return () => {
+    window.removeEventListener("online", handleOnline);
+    window.removeEventListener("offline", handleOffline);
+
+    // Optional: Set offline when component unmounts
+    updateUserStatus("offline");
+  };
+}, []);
+
 
   const handleUserClick = (clickedId) => {
     setUsers((prevUsers) =>
@@ -264,6 +300,20 @@ const ChatList = () => {
 
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
 
   const navigate = useNavigate();
 
