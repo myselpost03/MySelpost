@@ -166,16 +166,15 @@ const ChatList = () => {
       return priorityB - priorityA;
     });
 
-const togglePin = (id) => {
-  setUsers((prevUsers) =>
-    prevUsers.map((user) =>
-      user.id === id ? { ...user, pinned: !user.pinned } : user
-    )
-  );
-};
+  const togglePin = (id) => {
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === id ? { ...user, pinned: !user.pinned } : user
+      )
+    );
+  };
 
-
-    return (
+  return (
     <div className="chatlist-container">
       <Header />
       <h2 className="chatlist-title">🖋️ Your Circles</h2>
@@ -187,160 +186,195 @@ const togglePin = (id) => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-     <div className="tab-bar">
-  <button
-    className={`sketchy-tab ${activeTab === "all" ? "active" : ""}`}
-    onClick={() => setActiveTab("all")}
-  >
-    All
-  </button>
-  <button
-    className={`sketchy-tab ${activeTab === "pinned" ? "active" : ""}`}
-    onClick={() => setActiveTab("pinned")}
-  >
-    📌 Pinned
-  </button>
-  <button
-    className="sketchy-tab"
-    onClick={() => {
-      setShowGenderTabs(true);
-      setShowCountryTabs(false);
-    }}
-  >
-    Gender ▼
-  </button>
-  <button
-    className="sketchy-tab"
-    onClick={() => {
-      setShowCountryTabs(true);
-      setShowGenderTabs(false);
-    }}
-  >
-    Country ▼
-  </button>
-</div>
-
-      <div className="sketchy-list-scrollable">
-        {filteredUsers.map((user) => (
-          <Link
-            to={`/chat/${user.id}`}
-            key={user.id}
-            className={`user-card ${
-              user.notifications > 0 ? "has-notification" : ""
-            }`}
-            onClick={() => handleUserClick(user.id)}
-          >
-            <div className="user-avatar-wrapper">
-              <img src={user.avatar} alt={user.name} className="user-avatar" />
-              {user.notifications > 0 && (
-                <span className="sketchy-badge">{user.notifications}</span>
-              )}
-            </div>
-
-            <div className="user-info">
-              <div className="user-top-row">
-                <span className="user-name">{user.name}</span>
-                {user.verified && <FaCheckCircle className="verified-icon" />}
-              </div>
-
-              <div className="user-bottom-row">
-                <span className="country">{user.country}</span>
-                {user.gender === "male" ? (
-                  <FaMars className="gender-icon male" />
-                ) : (
-                  <FaVenus className="gender-icon female" />
-                )}
-                <span
-                  className={`status-dot ${
-                    user.status === "online" ? "online" : "offline"
-                  }`}
-                >
-                  <FaCircle />
-                </span>
-
-                <div className="spacer" />
-<FaThumbtack
-    className={`pin-icon ${user.pinned ? "pinned" : ""}`}
-    onClick={(e) => {
-      e.preventDefault();
-      togglePin(user.id);
-    }}
-  />
-
-                <FaEnvelope className="dm-envelope" />
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-    {/* Modal for Gender Filter */}
-{showGenderTabs && (
-  <div className="modal-backdrop" onClick={() => setShowGenderTabs(false)}>
-    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-      <h3>Choose Gender</h3>
-      <button
-        className={`modal-btn ${genderFilter === "all" ? "active" : ""}`}
-        onClick={() => {
-          setGenderFilter("all");
-          setShowGenderTabs(false);
-        }}
-      >
-        All Genders
-      </button>
-      <button
-        className={`modal-btn ${genderFilter === "male" ? "active" : ""}`}
-        onClick={() => {
-          setGenderFilter("male");
-          setShowGenderTabs(false);
-        }}
-      >
-        ♂️ Male
-      </button>
-      <button
-        className={`modal-btn ${genderFilter === "female" ? "active" : ""}`}
-        onClick={() => {
-          setGenderFilter("female");
-          setShowGenderTabs(false);
-        }}
-      >
-        ♀️ Female
-      </button>
-    </div>
-  </div>
-)}
-
-{/* Modal for Country Filter */}
-{showCountryTabs && (
-  <div className="modal-backdrop" onClick={() => setShowCountryTabs(false)}>
-    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-      <h3>Choose Country</h3>
-      <button
-        className={`modal-btn ${countryFilter === "all" ? "active" : ""}`}
-        onClick={() => {
-          setCountryFilter("all");
-          setShowCountryTabs(false);
-        }}
-      >
-        All Countries
-      </button>
-      {countries.map((country, i) => (
+      <div className="tab-bar">
         <button
-          key={i}
-          className={`modal-btn ${countryFilter === country ? "active" : ""}`}
+          className={`sketchy-tab ${activeTab === "all" ? "active" : ""}`}
+          onClick={() => setActiveTab("all")}
+        >
+          All
+        </button>
+        <button
+          className={`sketchy-tab ${activeTab === "pinned" ? "active" : ""}`}
+          onClick={() => setActiveTab("pinned")}
+        >
+          📌 Pinned
+        </button>
+        <button
+          className="sketchy-tab"
           onClick={() => {
-            setCountryFilter(country);
+            setShowGenderTabs(true);
             setShowCountryTabs(false);
           }}
         >
-          {country}
+          Gender ▼
         </button>
-      ))}
-    </div>
-  </div>
-)}
+        <button
+          className="sketchy-tab"
+          onClick={() => {
+            setShowCountryTabs(true);
+            setShowGenderTabs(false);
+          }}
+        >
+          Country ▼
+        </button>
+      </div>
 
+      <div className="sketchy-list-scrollable">
+        {filteredUsers.length > 0 ? (
+          filteredUsers.map((user) => (
+            <Link
+              to={`/chat/${user.id}`}
+              key={user.id}
+              className={`user-card ${
+                user.notifications > 0 ? "has-notification" : ""
+              }`}
+              onClick={() => handleUserClick(user.id)}
+            >
+              <div className="user-avatar-wrapper">
+                <Link to={`/profile/${user.id}`}>
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="user-avatar"
+                  />
+                </Link>
+                {user.notifications > 0 && (
+                  <span className="sketchy-badge">{user.notifications}</span>
+                )}
+              </div>
+
+              <div className="user-info">
+                <div className="user-top-row">
+                  <span className="user-name">{user.name}</span>
+                  {user.verified && <FaCheckCircle className="verified-icon" />}
+                </div>
+
+                <div className="user-bottom-row">
+                  <span className="country">{user.country}</span>
+                  {user.gender === "male" ? (
+                    <FaMars className="gender-icon male" />
+                  ) : (
+                    <FaVenus className="gender-icon female" />
+                  )}
+                  <span
+                    className={`status-dot ${
+                      user.status === "online" ? "online" : "offline"
+                    }`}
+                  >
+                    <FaCircle />
+                  </span>
+
+                  <div className="spacer" />
+                  <FaThumbtack
+                    className={`pin-icon ${user.pinned ? "pinned" : ""}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      togglePin(user.id);
+                    }}
+                  />
+                  <FaEnvelope className="dm-envelope" />
+                </div>
+              </div>
+            </Link>
+          ))
+        ) : (
+          <div className="no-pinned-users">
+            <img
+              src="https://cdn4.iconfinder.com/data/icons/essentials-72/24/031_-_Pin-64.png"
+              alt="No pinned users"
+              className="empty-state-image"
+              style={{
+                maxWidth: "300px",
+                margin: "2rem auto",
+                display: "block",
+              }}
+            />
+            <p
+              style={{ textAlign: "center", fontSize: "1.2rem", color: "#555" }}
+            >
+              No pinned users yet. Start pinning to keep your favorites close!
+              📌
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Modal for Gender Filter */}
+      {showGenderTabs && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setShowGenderTabs(false)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Choose Gender</h3>
+            <button
+              className={`modal-btn ${genderFilter === "all" ? "active" : ""}`}
+              onClick={() => {
+                setGenderFilter("all");
+                setShowGenderTabs(false);
+              }}
+            >
+              All Genders
+            </button>
+            <button
+              className={`modal-btn ${genderFilter === "male" ? "active" : ""}`}
+              onClick={() => {
+                setGenderFilter("male");
+                setShowGenderTabs(false);
+              }}
+            >
+              ♂️ Male
+            </button>
+            <button
+              className={`modal-btn ${
+                genderFilter === "female" ? "active" : ""
+              }`}
+              onClick={() => {
+                setGenderFilter("female");
+                setShowGenderTabs(false);
+              }}
+            >
+              ♀️ Female
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Country Filter */}
+      {showCountryTabs && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setShowCountryTabs(false)}
+        >
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Choose Country</h3>
+            <button
+              className={`modal-btn ${countryFilter === "all" ? "active" : ""}`}
+              onClick={() => {
+                setCountryFilter("all");
+                setShowCountryTabs(false);
+              }}
+            >
+              All Countries
+            </button>
+            {countries.map((country, i) => (
+              <button
+                key={i}
+                className={`modal-btn ${
+                  countryFilter === country ? "active" : ""
+                }`}
+                onClick={() => {
+                  setCountryFilter(country);
+                  setShowCountryTabs(false);
+                }}
+              >
+                {country}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
-    
   );
 };
 

@@ -17,3 +17,4 @@ export { default as Terms } from "./Terms";
 export { default as Demo } from "./Demo";
 export { default as Chat } from "./Chat";
 export { default as ChatList } from "./ChatList";
+export { default as Profile } from "./Profile";

@@ -21,6 +21,7 @@ import {
   Demo,
   Chat,
   ChatList,
+  Profile
 } from "./Pages/index";
 
 const protectedRoutes = [
@@ -46,6 +47,7 @@ const publicRoutes = [
   { path: "/app-sketch", component: AppSketch },
   { path: "/web-sketch", component: WebSketch },
   { path: "/demo", component: Demo },
+   { path: "/profile", component: Profile },
 ];
 
 function App() {
