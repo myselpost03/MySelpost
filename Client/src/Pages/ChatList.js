@@ -8,6 +8,7 @@ import {
   FaVenus,
   FaCheckCircle,
   FaEnvelope,
+  FaThumbtack,
 } from "react-icons/fa";
 
 // Move user data into state
@@ -21,6 +22,7 @@ const initialUsers = [
     avatar: "https://i.pravatar.cc/150?img=3",
     verified: true,
     notifications: 3,
+    pinned: false,
   },
   {
     id: 2,
@@ -31,6 +33,7 @@ const initialUsers = [
     avatar: "https://i.pravatar.cc/150?img=5",
     verified: true,
     notifications: 10,
+    pinned: false,
   },
   {
     id: 3,
@@ -41,6 +44,7 @@ const initialUsers = [
     avatar: "https://i.pravatar.cc/150?img=11",
     verified: false,
     notifications: 5,
+    pinned: false,
   },
   {
     id: 4,
@@ -51,6 +55,7 @@ const initialUsers = [
     avatar: "https://i.pravatar.cc/150?img=7",
     verified: false,
     notifications: 6,
+    pinned: false,
   },
   {
     id: 5,
@@ -61,6 +66,7 @@ const initialUsers = [
     avatar: "https://i.pravatar.cc/150?img=8",
     verified: true,
     notifications: 1,
+    pinned: false,
   },
   {
     id: 6,
@@ -70,6 +76,7 @@ const initialUsers = [
     gender: "female",
     avatar: "https://i.pravatar.cc/150?img=9",
     verified: false,
+    pinned: false,
   },
   {
     id: 7,
@@ -79,6 +86,7 @@ const initialUsers = [
     gender: "male",
     avatar: "https://i.pravatar.cc/150?img=10",
     verified: false,
+    pinned: false,
   },
   {
     id: 8,
@@ -88,6 +96,7 @@ const initialUsers = [
     gender: "female",
     avatar: "https://i.pravatar.cc/150?img=12",
     verified: true,
+    pinned: false,
   },
   {
     id: 9,
@@ -114,6 +123,9 @@ const ChatList = () => {
   const [genderFilter, setGenderFilter] = useState("all");
   const [countryFilter, setCountryFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [showGenderTabs, setShowGenderTabs] = useState(false);
+  const [showCountryTabs, setShowCountryTabs] = useState(false);
 
   const countries = [...new Set(users.map((u) => u.country))];
 
@@ -134,14 +146,13 @@ const ChatList = () => {
       const searchMatch = user.name
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
-      return genderMatch && countryMatch && searchMatch;
+      const pinMatch = activeTab === "pinned" ? user.pinned : true;
+      return genderMatch && countryMatch && searchMatch && pinMatch;
     })
     .sort((a, b) => {
-      // ✅ Step 1: Show online users first
       if (a.status === "online" && b.status !== "online") return -1;
       if (a.status !== "online" && b.status === "online") return 1;
 
-      // ✅ Step 2: Then apply priority logic
       const getPriority = (u) => {
         if (u.verified && u.notifications > 0) return 4000;
         if (!u.verified && u.notifications > 0) return 3000;
@@ -152,10 +163,7 @@ const ChatList = () => {
       const priorityA = getPriority(a);
       const priorityB = getPriority(b);
 
-      if (priorityA !== priorityB) return priorityB - priorityA;
-
-      // Optional: tiebreaker by number of notifications
-      return (b.notifications || 0) - (a.notifications || 0);
+      return priorityB - priorityA;
     });
 
   return (
@@ -170,33 +178,132 @@ const ChatList = () => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
+      <div className="tab-bar">
+        {/* Default view */}
+        {!showGenderTabs && !showCountryTabs && (
+          <>
+            <button
+              className={`sketchy-tab ${activeTab === "all" ? "active" : ""}`}
+              onClick={() => setActiveTab("all")}
+            >
+              All
+            </button>
+            <button
+              className={`sketchy-tab ${
+                activeTab === "pinned" ? "active" : ""
+              }`}
+              onClick={() => setActiveTab("pinned")}
+            >
+              📌 Pinned
+            </button>
+            <button
+              className="sketchy-tab"
+              onClick={() => {
+                setShowGenderTabs(true);
+                setShowCountryTabs(false);
+              }}
+            >
+              Gender
+            </button>
+            <button
+              className="sketchy-tab"
+              onClick={() => {
+                setShowCountryTabs(true);
+                setShowGenderTabs(false);
+              }}
+            >
+              Country
+            </button>
+          </>
+        )}
 
-      <div className="filter-bar">
-        <select
-          value={genderFilter}
-          onChange={(e) => setGenderFilter(e.target.value)}
-        >
-          <option value="all">All Genders</option>
-          <option value="male">♂️ Male</option>
-          <option value="female">♀️ Female</option>
-        </select>
+        {/* Gender tab options */}
+        {showGenderTabs && (
+          <>
+            <button
+              className="sketchy-tab"
+              onClick={() => setShowGenderTabs(false)}
+            >
+              ⬅ Back
+            </button>
+            <button
+              className={`sketchy-tab ${
+                genderFilter === "all" ? "active" : ""
+              }`}
+              onClick={() => {
+                setGenderFilter("all");
+                setShowGenderTabs(false);
+              }}
+            >
+              All Genders
+            </button>
+            <button
+              className={`sketchy-tab ${
+                genderFilter === "male" ? "active" : ""
+              }`}
+              onClick={() => {
+                setGenderFilter("male");
+                setShowGenderTabs(false);
+              }}
+            >
+              ♂️ Male
+            </button>
+            <button
+              className={`sketchy-tab ${
+                genderFilter === "female" ? "active" : ""
+              }`}
+              onClick={() => {
+                setGenderFilter("female");
+                setShowGenderTabs(false);
+              }}
+            >
+              ♀️ Female
+            </button>
+          </>
+        )}
 
-        <select
-          value={countryFilter}
-          onChange={(e) => setCountryFilter(e.target.value)}
-        >
-          <option value="all">All Countries</option>
-          {countries.map((country, i) => (
-            <option key={i} value={country}>
-              {country}
-            </option>
-          ))}
-        </select>
+        {/* Country tab options */}
+        {showCountryTabs && (
+          <>
+            <button
+              className="sketchy-tab"
+              onClick={() => setShowCountryTabs(false)}
+            >
+              ⬅ Back
+            </button>
+            <button
+              className={`sketchy-tab ${
+                countryFilter === "all" ? "active" : ""
+              }`}
+              onClick={() => {
+                setCountryFilter("all");
+                setShowCountryTabs(false);
+              }}
+            >
+              All Countries
+            </button>
+            {countries.map((country, i) => (
+              <button
+                key={i}
+                className={`sketchy-tab ${
+                  countryFilter === country ? "active" : ""
+                }`}
+                onClick={() => {
+                  setCountryFilter(country);
+                  setShowCountryTabs(false);
+                }}
+              >
+                {country}
+              </button>
+            ))}
+          </>
+        )}
       </div>
 
       <div className="sketchy-list-scrollable">
         {filteredUsers.map((user) => (
-          <div
+          <Link
+            to={`/chat/${user.id}`}
             key={user.id}
             className={`user-card ${
               user.notifications > 0 ? "has-notification" : ""
@@ -215,6 +322,7 @@ const ChatList = () => {
                 <span className="user-name">{user.name}</span>
                 {user.verified && <FaCheckCircle className="verified-icon" />}
               </div>
+
               <div className="user-bottom-row">
                 <span className="country">{user.country}</span>
                 {user.gender === "male" ? (
@@ -229,12 +337,12 @@ const ChatList = () => {
                 >
                   <FaCircle />
                 </span>
-                <Link to="/chat" className="dm-link">
-                  <FaEnvelope />
-                </Link>
+
+                <div className="spacer" />
+                <FaEnvelope className="dm-envelope" />
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

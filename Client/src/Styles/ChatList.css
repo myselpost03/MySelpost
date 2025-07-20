@@ -54,7 +54,9 @@
   box-shadow: 2px 3px 0px #8884;
   animation: popIn 0.4s ease forwards;
   transition: transform 0.3s ease;
-  gap: 1rem
+  gap: 1rem;
+  text-decoration: none;
+  color: #000000
 }
 
 .user-card.has-notification {
@@ -315,12 +317,7 @@
   font-size: 1rem;
 }
 
-.user-bottom-row {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  margin-top: 0.3rem;
-}
+
 
 .verified-icon {
   color: rgb(0, 162, 255);
@@ -338,3 +335,57 @@
   transform: scale(1.2);
 }
 
+/* Pushes last element in flex to far right */
+.user-bottom-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.3rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.dm-envelope {
+  font-size: 1.1rem;
+  color: #444;
+  margin-left: auto;
+  margin-right: 0.3rem;
+  transition: transform 0.2s ease;
+}
+
+.dm-envelope:hover {
+  transform: scale(1.2);
+}
+
+.tab-bar {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #ccc;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab-bar::-webkit-scrollbar {
+  display: none; /* hide scrollbar on mobile */
+}
+
+.sketchy-tab {
+  background: transparent;
+  border: 2px dashed #555;
+  border-radius: 10px;
+  padding: 0.4rem 0.8rem;
+  font-family: 'Comic Sans MS', cursive;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  color: #333;
+}
+
+.sketchy-tab.active {
+  background-color: #333;
+  color: white;
+  border-color: #333;
+}
