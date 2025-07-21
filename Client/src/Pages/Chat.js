@@ -5,6 +5,8 @@ import { supabase } from "../Utils/supabaseClient";
 import LoadingIndicator from "../Components/LoadingIndicator";
 import { FaImage, FaMicrophone, FaMoon, FaSun, FaSmile } from "react-icons/fa";
 import dayjs from "dayjs";
+import bannedData from "../Utils/bannedWords.json";
+import SketchyAlert from "../Components/SketchyAlert";
 import "../Styles/Chat.css";
 
 const emojis = ["😊", "😂", "👍", "❤️", "🔥", "😎", "🎨", "💬"];
@@ -13,6 +15,8 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [theme, setTheme] = useState("light");
+  const [alertMessage, setAlertMessage] = useState(null);
+
   const [isBlocked, setIsBlocked] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
   const [imagePermission, setImagePermission] = useState(false);
@@ -226,6 +230,19 @@ const Chat = () => {
       console.log("Old messages between users deleted.");
     }
   };
+  const containsAbusiveOrLink = (text) => {
+    const lowerText = text.toLowerCase();
+
+    for (const word of bannedData.abusiveWords) {
+      if (lowerText.includes(word.toLowerCase())) return "abusive";
+    }
+
+    for (const link of bannedData.bannedLinks) {
+      if (lowerText.includes(link.toLowerCase())) return "link";
+    }
+
+    return false;
+  };
 
   useEffect(() => {
     deleteOldMessagesBetweenUsers(currentUser.id, targetUser.id);
@@ -256,6 +273,7 @@ const Chat = () => {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
+    
     setIsSending(true);
     const newMessage = {
       sender_id: currentUser.id,
@@ -470,15 +488,40 @@ const Chat = () => {
     );
   };
 
-  const handleInputChange = (e) => {
-    setInput(e.target.value);
-    updateTypingStatus(true); // Notify Supabase you're typing
+const handleInputChange = (e) => {
+  const newText = e.target.value;
+  const lowerText = newText.toLowerCase();
 
-    clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
-      updateTypingStatus(false); // Stop typing after inactivity
-    }, 1500);
-  };
+  const hasAbuse = bannedData.abusiveWords.some((word) =>
+    lowerText.includes(word.toLowerCase())
+  );
+
+  const hasLink = bannedData.bannedLinks.some((link) =>
+    lowerText.includes(link.toLowerCase())
+  );
+
+  if (hasAbuse) {
+    setAlertMessage("❌ Abusive words are not allowed.");
+    setInput("");
+    return;
+  }
+
+  if (hasLink) {
+    setAlertMessage("❌ Links are not allowed in chat.");
+    setInput("");
+    return;
+  }
+
+  setInput(newText);
+  updateTypingStatus(true);
+
+  clearTimeout(typingTimeoutRef.current);
+  typingTimeoutRef.current = setTimeout(() => {
+    updateTypingStatus(false);
+  }, 1500);
+};
+
+
 
   //Is typing functionality
   {
@@ -513,6 +556,10 @@ const Chat = () => {
   return (
     <div className={`Chat-UI ${theme}`}>
       <Header />
+      {alertMessage && (
+  <SketchyAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
+)}
+
       {/*     <div className="fixed-theme-toggle" onClick={handleThemeToggle}>
         {theme === "light" ? <FaMoon /> : <FaSun />}
       </div>

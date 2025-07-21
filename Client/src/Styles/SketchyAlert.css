@@ -1,0 +1,35 @@
+/* src/Styles/SketchyAlert.css */
+.sketchy-alert {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff8dc;
+  border: 2px dashed #222;
+  padding: 12px 20px;
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-size: 16px;
+  color: #000;
+  z-index: 9999;
+  border-radius: 8px;
+  box-shadow: 4px 4px 0 #000;
+  animation: fadeInOut 3s ease;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+}

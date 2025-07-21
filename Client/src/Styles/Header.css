@@ -2,6 +2,9 @@
 @import url(https://fonts.googleapis.com/css?family=Acme:regular);
 @import url(https://fonts.googleapis.com/css?family=Freckle+Face:regular);
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
 
 .logo {
   font-size: 1.8rem;
@@ -12,8 +15,6 @@
   touch-action: manipulation;
   text-decoration: none;
 }
-
-
 
 .nav-with-inputs {
   display: flex;
@@ -58,7 +59,6 @@
   justify-content: center;
   overflow-x: auto; /* fallback scroll if wrapping fails */
 }
-
 
 .nav-link {
   text-decoration: none;
@@ -107,10 +107,9 @@
   box-sizing: border-box;
 }
 
-
 /* Optional smoother shadow below header for clarity */
 .header::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -1px;
   left: 0;
@@ -132,8 +131,3 @@
     padding: 12px 16px;
   }
 }
-
-
-
-
-
