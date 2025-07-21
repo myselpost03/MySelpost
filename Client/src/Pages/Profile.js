@@ -21,11 +21,12 @@ const Profile = () => {
 
 
   const giftList = [
-    "https://cdn-icons-png.flaticon.com/512/1077/1077012.png", // Heart
-    "https://cdn-icons-png.flaticon.com/512/616/616408.png", // Flower
-    "https://cdn-icons-png.flaticon.com/512/254/254029.png", // Gift Box
-    "https://cdn-icons-png.flaticon.com/512/5293/5293251.png", // Chocolate
-    "https://cdn-icons-png.flaticon.com/512/3468/3468374.png", // Party Hat
+    "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png", 
+    "https://cdn1.iconfinder.com/data/icons/DarkGlass_Reworked/128x128/apps/beryl-manager.png", // Flower
+    "https://cdn1.iconfinder.com/data/icons/icons-for-a-site-1/64/advantage_deliver-64.png", // Gift Box
+    "https://cdn0.iconfinder.com/data/icons/icecandy-psd/256/icecandy-chocolate.png", // Chocolate
+    "https://cdn1.iconfinder.com/data/icons/icons-for-a-site-1/64/advantage_quality-64.png", // Party Hat
+    "https://images.icon-icons.com/327/PNG/256/Clown_Impish_35102.png"
   ];
 
   const isCurrentUser = currentUser?.id?.toString() === id;
@@ -49,19 +50,22 @@ const Profile = () => {
     }
   };
 
-  const fetchGifts = async () => {
-    const { data, error } = await supabase
-      .from("gifts")
-      .select("id, sender_id, gift_type, created_at")
-      .eq("receiver_id", id)
-      .order("created_at", { ascending: false });
+const fetchGifts = async () => {
+  const receiverId = isCurrentUser ? currentUser.id : id;
 
-    if (!error) {
-      setReceivedGifts(data);
-    } else {
-      console.error("Error fetching gifts:", error.message);
-    }
-  };
+  const { data, error } = await supabase
+    .from("gifts")
+    .select("id, sender_id, gift_type, created_at")
+    .eq("receiver_id", receiverId)
+    .order("created_at", { ascending: false });
+
+  if (!error) {
+    setReceivedGifts(data);
+  } else {
+    console.error("Error fetching gifts:", error.message);
+  }
+};
+
 
   useEffect(() => {
     if (id) {
