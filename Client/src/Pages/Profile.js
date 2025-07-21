@@ -4,6 +4,7 @@ import Header from "../Components/Header";
 import "../Styles/Profile.css";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
+import SketchyAlert from "../Components/SketchyAlert";
 
 const Profile = () => {
   const { id } = useParams();
@@ -14,31 +15,79 @@ const Profile = () => {
   const [bio, setBio] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [sendingGift, setSendingGift] = useState(false);
+  const [receivedGifts, setReceivedGifts] = useState([]);
+  const [alertMessage, setAlertMessage] = useState("");
+
+
+  const giftList = [
+    "https://cdn-icons-png.flaticon.com/512/1077/1077012.png", // Heart
+    "https://cdn-icons-png.flaticon.com/512/616/616408.png", // Flower
+    "https://cdn-icons-png.flaticon.com/512/254/254029.png", // Gift Box
+    "https://cdn-icons-png.flaticon.com/512/5293/5293251.png", // Chocolate
+    "https://cdn-icons-png.flaticon.com/512/3468/3468374.png", // Party Hat
+  ];
 
   const isCurrentUser = currentUser?.id?.toString() === id;
 
+  const fetchUser = async () => {
+    const { data, error } = await supabase
+      .from("users")
+      .select("id, name, bio, profile_pic, app_created")
+      .eq("id", id)
+      .single();
+
+    if (!error) {
+      setUser({
+        ...data,
+        avatar: data.profile_pic || empty,
+      });
+      setName(data.name || "");
+      setBio(data.bio || "");
+    } else {
+      console.error("Error fetching user:", error.message);
+    }
+  };
+
+  const fetchGifts = async () => {
+    const { data, error } = await supabase
+      .from("gifts")
+      .select("id, sender_id, gift_type, created_at")
+      .eq("receiver_id", id)
+      .order("created_at", { ascending: false });
+
+    if (!error) {
+      setReceivedGifts(data);
+    } else {
+      console.error("Error fetching gifts:", error.message);
+    }
+  };
+
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data, error } = await supabase
-        .from("users")
-        .select("id, name, bio, profile_pic, app_created")
-        .eq("id", id)
-        .single();
-
-      if (!error) {
-        setUser({
-          ...data,
-          avatar: data.profile_pic || empty,
-        });
-        setName(data.name || "");
-        setBio(data.bio || "");
-      } else {
-        console.error("Error fetching user:", error.message);
-      }
-    };
-
-    if (id) fetchUser();
+    if (id) {
+      fetchUser();
+      fetchGifts();
+    }
   }, [id]);
+
+ const handleSendGift = async (giftUrl) => {
+  if (sendingGift) return;
+  setSendingGift(true);
+  const { error } = await supabase.from("gifts").insert([
+    {
+      sender_id: currentUser.id,
+      receiver_id: id,
+      gift_type: giftUrl,
+    },
+  ]);
+  if (error) {
+    console.error("Gift send error:", error.message);
+  } else {
+    setAlertMessage("🎁 Gift sent successfully!");
+    await fetchGifts();
+  }
+  setSendingGift(false);
+};
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -176,6 +225,40 @@ const Profile = () => {
             />
           </div>
         </div>
+        {receivedGifts.length > 0 && (
+          <div className="sketchy-gift-section">
+            <h3>🎁 Gifts Received</h3>
+            <div className="sketchy-gift-list">
+              {receivedGifts.map((gift) => (
+                <img
+                  key={gift.id}
+                  src={gift.gift_type}
+                  alt="gift"
+                  className="sketchy-gift"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!isCurrentUser && (
+          <div className="floating-gifts-container">
+            {giftList.map((giftUrl, index) => (
+              <img
+                key={index}
+                src={giftUrl}
+                alt={`gift-${index}`}
+                className="floating-gift"
+                onClick={() => !sendingGift && handleSendGift(giftUrl)}
+                title="Send gift"
+              />
+            ))}
+          </div>
+        )}
+        {alertMessage && (
+  <SketchyAlert message={alertMessage} onClose={() => setAlertMessage("")} />
+)}
+
       </div>
     </>
   );

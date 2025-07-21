@@ -9,8 +9,6 @@ import {
   FaCheckCircle,
   FaEnvelope,
   FaThumbtack,
-  FaLock,
-  FaUnlock,
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
@@ -190,12 +188,6 @@ const ChatList = () => {
   const [showGenderTabs, setShowGenderTabs] = useState(false);
   const [showCountryTabs, setShowCountryTabs] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showPinModal, setShowPinModal] = useState(false);
-  const [pinMode, setPinMode] = useState("set"); // or "verify"
-  const [targetLockUser, setTargetLockUser] = useState(null);
-  const [pinInput, setPinInput] = useState("");
-  const [lockedUsers, setLockedUsers] = useState([]); // 👈 new state
-
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -323,101 +315,14 @@ const ChatList = () => {
 
   const navigate = useNavigate();
 
-  const fetchLockedUsers = async () => {
-    const { data, error } = await supabase
-      .from("locked_chats")
-      .select("locked_user_id")
-      .eq("user_id", user.id);
-
-    if (!error && data) {
-      const lockedIds = data.map((item) => item.locked_user_id);
-      setLockedUsers(lockedIds);
-    }
-  };
-
-  fetchLockedUsers();
-
-  const handleLockClick = async (e, targetUserId) => {
-    e.preventDefault();
-    setTargetLockUser(targetUserId);
-
-    const { data, error } = await supabase
-      .from("locked_chats")
-      .select("pin_code")
-      .eq("user_id", user.id)
-      .eq("locked_user_id", targetUserId)
-      .single();
-
-    if (data && data.pin_code) {
-      setPinMode("verify");
-    } else {
-      setPinMode("set");
-    }
-
-    setPinInput("");
-    setShowPinModal(true);
-  };
-
-  const submitPinHandler = async () => {
-    if (!pinInput || !targetLockUser) return;
-
-    if (pinMode === "set") {
-      const { error } = await supabase.from("locked_chats").insert([
-        {
-          user_id: user.id,
-          locked_user_id: targetLockUser,
-          pin_code: pinInput,
-        },
-      ]);
-
-      if (!error) {
-        alert("PIN set successfully!");
-        setShowPinModal(false);
-      }
-    } else {
-      const { data, error } = await supabase
-        .from("locked_chats")
-        .select("pin_code")
-        .eq("user_id", user.id)
-        .eq("locked_user_id", targetLockUser)
-        .single();
-
-      if (data?.pin_code === pinInput) {
-        alert("PIN verified! Unlocking chat...");
-        setShowPinModal(false);
-        navigate(`/chat/${targetLockUser}`, {
-          state: { targetUser: targetLockUser },
-        });
-      } else {
-        alert("Incorrect PIN.");
-      }
-    }
-  };
-
-  const handleProtectedNavigation = async (e, path, targetUser = null) => {
+  const handleProtectedNavigation = (e, path, targetUser = null) => {
     e.preventDefault();
     const isLoggedIn = localStorage.getItem("user");
-    if (!isLoggedIn || !targetUser) {
-      navigate("/register");
-      return;
-    }
 
-    const { data, error } = await supabase
-      .from("locked_chats")
-      .select("pin_code")
-      .eq("user_id", user.id)
-      .eq("locked_user_id", targetUser.id)
-      .single();
-
-    if (data && data.pin_code) {
-      // PIN is set but not yet verified — show modal to verify
-      setTargetLockUser(targetUser.id);
-      setPinMode("verify");
-      setPinInput("");
-      setShowPinModal(true);
+    if (isLoggedIn) {
+      navigate(path, { state: { targetUser } }); // 👈 Pass clicked user to next screen
     } else {
-      // No PIN set, allow direct navigation
-      navigate(path, { state: { targetUser } });
+      navigate("/register");
     }
   };
 
@@ -665,24 +570,6 @@ const ChatList = () => {
                             togglePin(user.id);
                           }}
                         />
-                        {lockedUsers.includes(user.id) ? (
-                          <FaLock
-                            className="lock-icon"
-                            title="Chat is locked"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleLockClick(e, user.id);
-                            }}
-                          />
-                        ) : (
-                          <FaUnlock
-                            className="unlock-icon"
-                            title="Chat is unlocked"
-                            style={{ opacity: 0.4, pointerEvents: "none" }} // 👈 looks faded, not clickable
-                          />
-                        )}
-
                         <FaEnvelope
                           className="dm-envelope"
                           onClick={(e) =>
@@ -811,23 +698,6 @@ const ChatList = () => {
             </div>
           )}
         </>
-      )}
-      {showPinModal && (
-        <div className="modal-backdrop" onClick={() => setShowPinModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>{pinMode === "set" ? "Set Chat PIN" : "Enter Chat PIN"}</h3>
-            <input
-              type="password"
-              value={pinInput}
-              placeholder="Enter PIN"
-              onChange={(e) => setPinInput(e.target.value)}
-              className="sketchy-input"
-            />
-            <button className="modal-btn" onClick={submitPinHandler}>
-              Submit
-            </button>
-          </div>
-        </div>
       )}
     </div>
   );
