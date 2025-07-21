@@ -28,6 +28,9 @@ const Profile = () => {
     "https://images.icon-icons.com/327/PNG/256/Clown_Impish_35102.png",
   ];
 
+  const giftCoinRequirements = [50, 300, 150, 10, 400, 100];
+
+
   const isCurrentUser = currentUser?.id?.toString() === id;
 
   const fetchUser = async () => {
@@ -72,37 +75,37 @@ const Profile = () => {
     }
   }, [id]);
 
-  const handleSendGift = async (giftUrl, index) => {
-    if (sendingGift) return;
+ const handleSendGift = async (giftUrl, index) => {
+  if (sendingGift) return;
 
-    // Restrict first gift if coins < 10
-    if (index === 0 && user.coins < 10) {
-      setAlertMessage({
-        text: "❌ You don't have enough coins to send this gift.",
-        withButton: true,
-      });
-      return;
-    }
+  const requiredCoins = giftCoinRequirements[index];
+  if (user.coins < requiredCoins) {
+    setAlertMessage({
+      text: `❌ You need ${requiredCoins} coins to send this gift.`,
+      withButton: true,
+    });
+    return;
+  }
 
-    setSendingGift(true);
+  setSendingGift(true);
 
-    const { error } = await supabase.from("gifts").insert([
-      {
-        sender_id: currentUser.id,
-        receiver_id: id,
-        gift_type: giftUrl,
-      },
-    ]);
+  const { error } = await supabase.from("gifts").insert([
+    {
+      sender_id: currentUser.id,
+      receiver_id: id,
+      gift_type: giftUrl,
+    },
+  ]);
 
-    if (error) {
-      console.error("Gift send error:", error.message);
-    } else {
-      setAlertMessage("🎁 Gift sent successfully!");
-      await fetchGifts();
-    }
+  if (error) {
+    console.error("Gift send error:", error.message);
+  } else {
+    setAlertMessage("🎁 Gift sent successfully!");
+    await fetchGifts();
+  }
 
-    setSendingGift(false);
-  };
+  setSendingGift(false);
+};
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -282,7 +285,7 @@ const Profile = () => {
             buttonText="Get More Coins"
             onButtonClick={() => {
               setAlertMessage("");
-              window.location.href = "/coins";
+              window.location.href = `/coins/${currentUser.id}`;
             }}
           />
         ) : (

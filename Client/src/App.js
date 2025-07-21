@@ -22,6 +22,7 @@ import {
   Chat,
   ChatList,
   Profile,
+  Coins,
 } from "./Pages/index";
 
 const protectedRoutes = [
@@ -31,6 +32,7 @@ const protectedRoutes = [
   { path: "/doodle-example", component: DoodleExample },
   { path: "/chat/:id", component: Chat },
   { path: "/profile/:id", component: Profile },
+  { path: "/coins/:id", component: Coins },
 ];
 
 const publicRoutes = [
