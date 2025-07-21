@@ -10,6 +10,8 @@ const Coins = () => {
   const [user, setUser] = useState(null);
   const [showPayPal, setShowPayPal] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
+  const [inviteCode, setInviteCode] = useState("");
+  const [showInvitePopup, setShowInvitePopup] = useState(false);
 
   useEffect(() => {
     const getUserById = async () => {
@@ -25,6 +27,61 @@ const Coins = () => {
 
     getUserById();
   }, [id]);
+
+  const generateRandomCode = () => {
+    return Math.random().toString(36).substr(2, 8).toUpperCase();
+  };
+
+ const handleInviteClick = async () => {
+  const code = generateRandomCode();
+
+  // First, check if invite already exists for this user
+  const { data: existingInvite, error: fetchError } = await supabase
+    .from("invites")
+    .select("*")
+    .eq("sender_id", id)
+    .single();
+
+  if (fetchError && fetchError.code !== "PGRST116") {
+    // Only log unexpected errors, not "row not found"
+    console.error("Error checking existing invite:", fetchError.message);
+    setAlertMessage({
+      text: "❌ Something went wrong. Try again later.",
+      withButton: true,
+    });
+    return;
+  }
+
+  let response;
+
+  if (existingInvite) {
+    // Update existing invite code
+    response = await supabase
+      .from("invites")
+      .update({ code: code })
+      .eq("sender_id", id);
+  } else {
+    // Insert new invite
+    response = await supabase.from("invites").insert([
+      {
+        sender_id: id,
+        code: code,
+      },
+    ]);
+  }
+
+  if (response.error) {
+    console.error("Error saving invite code:", response.error.message);
+    setAlertMessage({
+      text: "❌ Failed to generate invite code. Try again.",
+      withButton: true,
+    });
+  } else {
+    setInviteCode(code);
+    setShowInvitePopup(true);
+  }
+};
+
 
   useEffect(() => {
     if (showPayPal && window.paypal && user) {
@@ -47,13 +104,10 @@ const Coins = () => {
             },
             onApprove: async (data, actions) => {
               await actions.order.capture();
-
-              // Add 100 coins to user
-              const newCoins = (user.coins || 0) + 100;
-
+              const newCoins = (user.reward_coins || 0) + 100;
               const { error: updateError } = await supabase
                 .from("users")
-                .update({ coins: newCoins })
+                .update({ reward_coins: newCoins })
                 .eq("id", user.id);
 
               if (updateError) {
@@ -61,7 +115,7 @@ const Coins = () => {
                 alert("❌ Failed to add coins.");
               } else {
                 alert("✅ 100 coins added!");
-                setUser({ ...user, coins: newCoins });
+                setUser({ ...user, reward_coins: newCoins });
               }
 
               setShowPayPal(false);
@@ -90,12 +144,13 @@ const Coins = () => {
 
         <div className="sketchy-coins-options">
           <button className="sketchy-coin-btn">
-            ⏳ Spend 1 Hour & Earn 3 Coins
+            ⏳ Spend 1 Hour & Earn 3  (Auto Detect)
           </button>
 
-          <button className="sketchy-coin-btn">
+          <button className="sketchy-coin-btn" onClick={handleInviteClick}>
             📲 Invite Friends & Earn 50 Coins
           </button>
+
           <button
             className="sketchy-coin-btn"
             onClick={() => setShowPayPal(true)}
@@ -108,10 +163,22 @@ const Coins = () => {
           <div id="paypal-button-container" className="paypal-box"></div>
         )}
 
+        {showInvitePopup && (
+          <div className="invite-popup">
+            <div className="invite-box">
+              <h3>Your Invite Code</h3>
+              <p className="invite-code">{inviteCode}</p>
+              <p>Share this with your friend. You’ll get 50 coins if they use it.</p>
+              <button onClick={() => setShowInvitePopup(false)} className="close-btn">Close</button>
+            </div>
+          </div>
+        )}
+
         <p className="sketchy-coin-note">
           * Coins are non-refundable & expire in 30 days.
         </p>
       </div>
+
       {alertMessage && (
         <SketchyAlert
           message={alertMessage.text}

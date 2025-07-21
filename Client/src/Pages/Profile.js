@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import "../Styles/Profile.css";
 import empty from "../Assets/empty.png";
@@ -18,6 +18,7 @@ const Profile = () => {
   const [sendingGift, setSendingGift] = useState(false);
   const [receivedGifts, setReceivedGifts] = useState([]);
   const [alertMessage, setAlertMessage] = useState("");
+  const navigate = useNavigate();
 
   const giftList = [
     "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png",
@@ -30,13 +31,12 @@ const Profile = () => {
 
   const giftCoinRequirements = [50, 300, 150, 10, 400, 100];
 
-
   const isCurrentUser = currentUser?.id?.toString() === id;
 
   const fetchUser = async () => {
     const { data, error } = await supabase
       .from("users")
-      .select("id, name, bio, profile_pic, app_created, coins")
+      .select("id, name, bio, profile_pic, app_created, reward_coins")
       .eq("id", id)
       .single();
 
@@ -75,11 +75,25 @@ const Profile = () => {
     }
   }, [id]);
 
- const handleSendGift = async (giftUrl, index) => {
-  if (sendingGift) return;
+const handleSendGift = async (giftUrl, index) => {
+  if (sendingGift || !user) return;
+
+  // ✅ Refetch latest user coin balance
+  const { data: updatedUser, error: userError } = await supabase
+    .from("users")
+    .select("reward_coins")
+    .eq("id", currentUser.id)
+    .single();
+
+  if (userError || !updatedUser) {
+    console.error("Failed to fetch updated user coins:", userError?.message);
+    return;
+  }
 
   const requiredCoins = giftCoinRequirements[index];
-  if (user.coins < requiredCoins) {
+  const currentCoins = updatedUser.reward_coins;
+
+  if (currentCoins < requiredCoins) {
     setAlertMessage({
       text: `❌ You need ${requiredCoins} coins to send this gift.`,
       withButton: true,
@@ -89,7 +103,20 @@ const Profile = () => {
 
   setSendingGift(true);
 
-  const { error } = await supabase.from("gifts").insert([
+  // 🪙 Deduct coins
+  const { error: coinUpdateError } = await supabase
+    .from("users")
+    .update({ reward_coins: currentCoins - requiredCoins })
+    .eq("id", currentUser.id);
+
+  if (coinUpdateError) {
+    console.error("Failed to deduct coins:", coinUpdateError.message);
+    setSendingGift(false);
+    return;
+  }
+
+  // 🎁 Insert gift
+  const { error: giftError } = await supabase.from("gifts").insert([
     {
       sender_id: currentUser.id,
       receiver_id: id,
@@ -97,15 +124,18 @@ const Profile = () => {
     },
   ]);
 
-  if (error) {
-    console.error("Gift send error:", error.message);
+  if (giftError) {
+    console.error("Gift send error:", giftError.message);
   } else {
     setAlertMessage("🎁 Gift sent successfully!");
     await fetchGifts();
+    await fetchUser(); // ✅ Update coin UI in real-time
   }
 
   setSendingGift(false);
 };
+
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -208,10 +238,10 @@ const Profile = () => {
 
             <div className="sketchy-profile-stats-row">
               <p className="sketchy-profile-app-count">
-                Apps Created: {user.appsCreated || 0}
+                Apps Created: {user.appCreated || 0}
               </p>
               <p className="sketchy-profile-coin-count">
-                Coins: {user.coins || 0}
+                Coins: {user.reward_coins || 0}
               </p>
             </div>
 
@@ -285,7 +315,7 @@ const Profile = () => {
             buttonText="Get More Coins"
             onButtonClick={() => {
               setAlertMessage("");
-              window.location.href = `/coins/${currentUser.id}`;
+              navigate(`/coins/${currentUser.id}`);
             }}
           />
         ) : (

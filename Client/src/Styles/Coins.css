@@ -1,59 +1,139 @@
 .sketchy-coins-container {
   background: #fef9e7;
   min-height: 100vh;
-  padding: 60px 20px 30px;
+  padding: 80px 16px 40px;
   font-family: 'Comic Sans MS', cursive;
-  margin-top: 10%;
+  margin-top: 60px;
 }
 
 .sketchy-coins-box {
-  max-width: 500px;
+  max-width: 480px;
   margin: 0 auto;
-  padding: 30px;
+  padding: 25px 20px;
   border: 3px dashed #333;
   border-radius: 20px;
   background: #fff9dc;
-  box-shadow: 5px 5px 0px #444;
+  box-shadow: 5px 5px 0px #555;
   text-align: center;
 }
 
 .sketchy-coins-title {
   font-size: 2rem;
-  color: #444;
-  margin-bottom: 10px;
+  color: #333;
+  margin-bottom: 12px;
 }
 
 .sketchy-coins-desc {
   font-size: 1rem;
-  color: #666;
-  margin-bottom: 20px;
+  color: #555;
+  margin-bottom: 25px;
 }
 
 .sketchy-coins-options {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
 }
 
 .sketchy-coin-btn {
-  padding: 12px 20px;
-  border: 2px dashed #555;
-  border-radius: 10px;
+  padding: 12px 18px;
+  border: 2px dashed #444;
+  border-radius: 12px;
   background-color: #fff8e1;
   color: #333;
   font-size: 1rem;
   cursor: pointer;
-  transition: 0.2s;
-  box-shadow: 3px 3px 0px #aaa;
+  transition: all 0.2s ease;
+  box-shadow: 4px 4px 0px #999;
 }
 
 .sketchy-coin-btn:hover {
-  background-color: #ffecb3;
+  background-color: #ffe59f;
   transform: scale(1.03);
 }
 
 .sketchy-coin-note {
-  margin-top: 25px;
-  font-size: 0.85rem;
-  color: #999;
+  margin-top: 28px;
+  font-size: 0.9rem;
+  color: #888;
+  line-height: 1.4;
+}
+
+/* Invite Popup */
+.invite-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(30, 30, 30, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.invite-box {
+  background: #fffef3;
+  padding: 25px 20px;
+  border-radius: 15px;
+  text-align: center;
+  border: 3px dashed #444;
+  box-shadow: 6px 6px 0px #666;
+  max-width: 320px;
+  width: 90%;
+}
+
+.invite-box h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: #444;
+}
+
+.invite-code {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff;
+  background: #e6f2ff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  display: inline-block;
+  margin-bottom: 15px;
+  border: 2px dashed #007bff;
+}
+
+input.invite-input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 2px dashed #666;
+  border-radius: 8px;
+  font-family: 'Comic Sans MS', cursive;
+  outline: none;
+  box-shadow: 3px 3px 0px #aaa;
+}
+
+.sketchy-popup-btn {
+  margin-top: 18px;
+  background-color: #fff4cc;
+  padding: 10px 16px;
+  font-size: 1rem;
+  border: 2px dashed #444;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #aaa;
+}
+
+.sketchy-popup-btn:hover {
+  background-color: #ffe599;
+}
+
+ .close-btn {
+  background-color: #ff6961;
+  color: white;
+  font-family: serif;
+  font-weight: bold;
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 2px solid #b22222;
 }

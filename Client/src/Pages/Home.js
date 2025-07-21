@@ -5,6 +5,7 @@ import Footer from "../Components/Footer";
 import "../Styles/Home.css";
 import { supabase } from "../Utils/supabaseClient";
 import SketchyAlert from "../Components/SketchyAlert";
+import InviteFAB from "../Components/InviteFAB";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const Home = () => {
         : null;
 
       if (!lastAwardTime || now - lastAwardTime >= 3600000) {
-        const newCoins = (user.coins || 0) + 3;
+        const newCoins = (user.reward_coins || 0, 10) + 3;
 
         const { error } = await supabase
           .from("users")
@@ -111,6 +112,7 @@ const Home = () => {
           onClose={() => setAlertMessage(null)}
         />
       )}
+      <InviteFAB />
     </div>
   );
 };
