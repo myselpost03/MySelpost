@@ -51,6 +51,15 @@
     ".net",
     ".xyz",
     "t.me",
-    "discord.gg"
+    "discord.gg",
+    "http",
+    "https",
+    ".org",
+    "www",
+    "dotcom",
+    "discord",
+    "youtube",
+    "facebook",
+    "instagram"
   ]
 }

@@ -273,7 +273,7 @@ const Chat = () => {
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    
+
     setIsSending(true);
     const newMessage = {
       sender_id: currentUser.id,
@@ -492,23 +492,36 @@ const handleInputChange = (e) => {
   const newText = e.target.value;
   const lowerText = newText.toLowerCase();
 
+  // Normalize input: remove spaces, dots, dashes, colons
+  const normalized = lowerText
+    .replace(/\s+/g, "") // remove spaces
+    .replace(/[\-.:]/g, "") // remove common URL separators
+    .replace(/dot/g, "."); // replace 'dot' with '.'
+
+  // Combine original and normalized text
+  const textsToCheck = [lowerText, normalized];
+
+  // Check for abusive words
   const hasAbuse = bannedData.abusiveWords.some((word) =>
-    lowerText.includes(word.toLowerCase())
+    textsToCheck.some((text) => text.includes(word.toLowerCase()))
   );
 
+  // Check for banned links/domains
   const hasLink = bannedData.bannedLinks.some((link) =>
-    lowerText.includes(link.toLowerCase())
+    textsToCheck.some((text) => text.includes(link.toLowerCase()))
   );
 
   if (hasAbuse) {
-    setAlertMessage("❌ Abusive words are not allowed.");
+    setAlertMessage("🚫 Abusive words are not allowed.");
     setInput("");
+    updateTypingStatus(false);
     return;
   }
 
   if (hasLink) {
-    setAlertMessage("❌ Links are not allowed in chat.");
+    setAlertMessage("🚫 Links or obfuscated links are not allowed.");
     setInput("");
+    updateTypingStatus(false);
     return;
   }
 
@@ -520,7 +533,6 @@ const handleInputChange = (e) => {
     updateTypingStatus(false);
   }, 1500);
 };
-
 
 
   //Is typing functionality
@@ -557,8 +569,11 @@ const handleInputChange = (e) => {
     <div className={`Chat-UI ${theme}`}>
       <Header />
       {alertMessage && (
-  <SketchyAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
-)}
+        <SketchyAlert
+          message={alertMessage}
+          onClose={() => setAlertMessage(null)}
+        />
+      )}
 
       {/*     <div className="fixed-theme-toggle" onClick={handleThemeToggle}>
         {theme === "light" ? <FaMoon /> : <FaSun />}
