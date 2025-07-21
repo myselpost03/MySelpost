@@ -345,7 +345,6 @@
   right: -6px;
 }
 
-
 .dm-envelope {
   font-size: 1.1rem;
   color: #444;
@@ -457,6 +456,13 @@
 }
 
 .pin-icon {
+  cursor: pointer;
+  color: gray;
+  margin-right: 8px;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.lock-icon {
   cursor: pointer;
   color: gray;
   margin-right: 8px;
