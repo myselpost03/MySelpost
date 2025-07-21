@@ -10,12 +10,12 @@ const Header = () => {
   const [emailValid, setEmailValid] = useState(true);
   const [credentialsValid, setCredentialsValid] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [activeTab, setActiveTab] = useState(""); // Track active tab
 
   const navigate = useNavigate();
   const debounceTimeout = useRef(null);
 
   const isMobile = window.innerWidth < 768;
-  const currentUser = JSON.parse(localStorage.getItem("user"));
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -96,16 +96,6 @@ const Header = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
-    navigate("/");
-  };
-
-  const handlePricing = () => {
-    return navigate("/pricing");
-  };
-
   const handleChat = () => {
     return navigate("/chat-list");
   };
@@ -179,13 +169,13 @@ const Header = () => {
         </form>
       ) : (
         <div className="nav-logged-in">
-          <button onClick={handleChat} className="logout-button">
+          <button onClick={handleChat} className="profile-button">
             Chat
           </button>
           <Link
             style={{ textDecoration: "none" }}
             to={`/profile/${user.id}`}
-            className="logout-button"
+            className="profile-button"
           >
             Profile
           </Link>

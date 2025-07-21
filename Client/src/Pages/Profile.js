@@ -41,16 +41,15 @@ const Profile = () => {
   }, [id]);
 
   const handleLogout = async () => {
-  await supabase.auth.signOut();
-  localStorage.removeItem("user");
-  window.location.href = "/"; // redirect to homepage or login
-};
-
+    await supabase.auth.signOut();
+    localStorage.removeItem("user");
+    window.location.href = "/"; // redirect to homepage or login
+  };
 
   const uploadImage = async () => {
     if (!imageFile) return null;
 
-    const fileExt = imageFile.name.split('.').pop();
+    const fileExt = imageFile.name.split(".").pop();
     const fileName = `${id}_${Date.now()}.${fileExt}`;
     const filePath = `avatars/${fileName}`;
 
@@ -97,80 +96,88 @@ const Profile = () => {
 
   if (!user) {
     return (
-      <div className="sketchy-profile-wrapper">
+      <>
         <Header />
-        <div className="sketchy-profile-tab">Loading Profile...</div>
-      </div>
+        <div className="sketchy-profile-wrapper">
+          <div className="sketchy-profile-tab">Loading Profile...</div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="sketchy-profile-wrapper">
+    <>
       <Header />
-      <div className="sketchy-profile-tab">Sketchy Profile</div>
-      <div className="sketchy-profile-card">
-        <div className="sketchy-profile-left">
-          {editing ? (
-            <>
-              <input
-                className="sketchy-profile-input"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-              <textarea
-                className="sketchy-profile-textarea"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-              />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImageFile(e.target.files[0])}
-              />
-            </>
-          ) : (
-            <>
-              <h2 className="sketchy-profile-name">{user.name}</h2>
-              <p className="sketchy-profile-bio">{user.bio || "No bio yet."}</p>
-            </>
-          )}
+      <div className="sketchy-profile-wrapper">
+        <div className="sketchy-profile-tab">Sketchy Profile</div>
+        <div className="sketchy-profile-card">
+          <div className="sketchy-profile-left">
+            {editing ? (
+              <>
+                <input
+                  className="sketchy-profile-input"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <textarea
+                  className="sketchy-profile-textarea"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files[0])}
+                />
+              </>
+            ) : (
+              <>
+                <h2 className="sketchy-profile-name">{user.name}</h2>
+                <p className="sketchy-profile-bio">
+                  {user.bio || "No bio yet."}
+                </p>
+              </>
+            )}
 
-          <p className="sketchy-profile-app-count">
-            Apps Created: {user.appsCreated || 0}
-          </p>
+            <p className="sketchy-profile-app-count">
+              Apps Created: {user.appsCreated || 0}
+            </p>
 
-         {isCurrentUser && (
-  <>
-    <button
-      className="sketchy-profile-update-btn"
-      onClick={() => (editing ? handleUpdate() : setEditing(true))}
-      disabled={uploading}
-    >
-      {editing ? (uploading ? "Saving..." : "Save Profile") : "Update Profile"}
-    </button>
+            {isCurrentUser && (
+              <>
+                <button
+                  className="sketchy-profile-update-btn"
+                  onClick={() => (editing ? handleUpdate() : setEditing(true))}
+                  disabled={uploading}
+                >
+                  {editing
+                    ? uploading
+                      ? "Saving..."
+                      : "Save Profile"
+                    : "Update Profile"}
+                </button>
 
-    <button
-      className="sketchy-logout-btn"
-      onClick={handleLogout}
-      style={{ marginTop: "10px" }}
-    >
-      Logout
-    </button>
-  </>
-)}
+                <button
+                  className="sketchy-logout-btn"
+                  onClick={handleLogout}
+                  style={{ marginTop: "10px" }}
+                >
+                  Logout
+                </button>
+              </>
+            )}
+          </div>
 
-
-        </div>
-
-        <div className="sketchy-profile-center">
-          <img
-            src={user.avatar}
-            alt="Avatar"
-            className="sketchy-profile-avatar"
-          />
+          <div className="sketchy-profile-center">
+            <img
+              src={user.avatar}
+              alt="Avatar"
+              className="sketchy-profile-avatar"
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
