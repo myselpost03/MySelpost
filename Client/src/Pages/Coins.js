@@ -90,8 +90,9 @@ const Coins = () => {
 
         <div className="sketchy-coins-options">
           <button className="sketchy-coin-btn">
-            🎯 Watch Ad & Get 10 Coins
+            ⏳ Spend 1 Hour & Earn 3 Coins
           </button>
+
           <button className="sketchy-coin-btn">
             📲 Invite Friends & Earn 50 Coins
           </button>
