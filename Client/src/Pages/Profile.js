@@ -19,14 +19,13 @@ const Profile = () => {
   const [receivedGifts, setReceivedGifts] = useState([]);
   const [alertMessage, setAlertMessage] = useState("");
 
-
   const giftList = [
-    "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png", 
+    "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png",
     "https://cdn1.iconfinder.com/data/icons/DarkGlass_Reworked/128x128/apps/beryl-manager.png", // Flower
     "https://cdn1.iconfinder.com/data/icons/icons-for-a-site-1/64/advantage_deliver-64.png", // Gift Box
     "https://cdn0.iconfinder.com/data/icons/icecandy-psd/256/icecandy-chocolate.png", // Chocolate
     "https://cdn1.iconfinder.com/data/icons/icons-for-a-site-1/64/advantage_quality-64.png", // Party Hat
-    "https://images.icon-icons.com/327/PNG/256/Clown_Impish_35102.png"
+    "https://images.icon-icons.com/327/PNG/256/Clown_Impish_35102.png",
   ];
 
   const isCurrentUser = currentUser?.id?.toString() === id;
@@ -34,7 +33,7 @@ const Profile = () => {
   const fetchUser = async () => {
     const { data, error } = await supabase
       .from("users")
-      .select("id, name, bio, profile_pic, app_created")
+      .select("id, name, bio, profile_pic, app_created, coins")
       .eq("id", id)
       .single();
 
@@ -50,22 +49,21 @@ const Profile = () => {
     }
   };
 
-const fetchGifts = async () => {
-  const receiverId = isCurrentUser ? currentUser.id : id;
+  const fetchGifts = async () => {
+    const receiverId = isCurrentUser ? currentUser.id : id;
 
-  const { data, error } = await supabase
-    .from("gifts")
-    .select("id, sender_id, gift_type, created_at")
-    .eq("receiver_id", receiverId)
-    .order("created_at", { ascending: false });
+    const { data, error } = await supabase
+      .from("gifts")
+      .select("id, sender_id, gift_type, created_at")
+      .eq("receiver_id", receiverId)
+      .order("created_at", { ascending: false });
 
-  if (!error) {
-    setReceivedGifts(data);
-  } else {
-    console.error("Error fetching gifts:", error.message);
-  }
-};
-
+    if (!error) {
+      setReceivedGifts(data);
+    } else {
+      console.error("Error fetching gifts:", error.message);
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -74,24 +72,37 @@ const fetchGifts = async () => {
     }
   }, [id]);
 
- const handleSendGift = async (giftUrl) => {
-  if (sendingGift) return;
-  setSendingGift(true);
-  const { error } = await supabase.from("gifts").insert([
-    {
-      sender_id: currentUser.id,
-      receiver_id: id,
-      gift_type: giftUrl,
-    },
-  ]);
-  if (error) {
-    console.error("Gift send error:", error.message);
-  } else {
-    setAlertMessage("🎁 Gift sent successfully!");
-    await fetchGifts();
-  }
-  setSendingGift(false);
-};
+  const handleSendGift = async (giftUrl, index) => {
+    if (sendingGift) return;
+
+    // Restrict first gift if coins < 10
+    if (index === 0 && user.coins < 10) {
+      setAlertMessage({
+        text: "❌ You don't have enough coins to send this gift.",
+        withButton: true,
+      });
+      return;
+    }
+
+    setSendingGift(true);
+
+    const { error } = await supabase.from("gifts").insert([
+      {
+        sender_id: currentUser.id,
+        receiver_id: id,
+        gift_type: giftUrl,
+      },
+    ]);
+
+    if (error) {
+      console.error("Gift send error:", error.message);
+    } else {
+      setAlertMessage("🎁 Gift sent successfully!");
+      await fetchGifts();
+    }
+
+    setSendingGift(false);
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -192,9 +203,14 @@ const fetchGifts = async () => {
               </>
             )}
 
-            <p className="sketchy-profile-app-count">
-              Apps Created: {user.appsCreated || 0}
-            </p>
+            <div className="sketchy-profile-stats-row">
+              <p className="sketchy-profile-app-count">
+                Apps Created: {user.appsCreated || 0}
+              </p>
+              <p className="sketchy-profile-coin-count">
+                Coins: {user.coins || 0}
+              </p>
+            </div>
 
             {isCurrentUser && (
               <>
@@ -253,16 +269,30 @@ const fetchGifts = async () => {
                 src={giftUrl}
                 alt={`gift-${index}`}
                 className="floating-gift"
-                onClick={() => !sendingGift && handleSendGift(giftUrl)}
+                onClick={() => !sendingGift && handleSendGift(giftUrl, index)}
                 title="Send gift"
               />
             ))}
           </div>
         )}
-        {alertMessage && (
-  <SketchyAlert message={alertMessage} onClose={() => setAlertMessage("")} />
-)}
-
+        {alertMessage && typeof alertMessage === "object" ? (
+          <SketchyAlert
+            message={alertMessage.text}
+            onClose={() => setAlertMessage("")}
+            buttonText="Get More Coins"
+            onButtonClick={() => {
+              setAlertMessage("");
+              window.location.href = "/coins";
+            }}
+          />
+        ) : (
+          alertMessage && (
+            <SketchyAlert
+              message={alertMessage}
+              onClose={() => setAlertMessage("")}
+            />
+          )
+        )}
       </div>
     </>
   );
