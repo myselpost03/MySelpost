@@ -488,52 +488,51 @@ const Chat = () => {
     );
   };
 
-const handleInputChange = (e) => {
-  const newText = e.target.value;
-  const lowerText = newText.toLowerCase();
+  const handleInputChange = (e) => {
+    const newText = e.target.value;
+    const lowerText = newText.toLowerCase();
 
-  // Normalize input: remove spaces, dots, dashes, colons
-  const normalized = lowerText
-    .replace(/\s+/g, "") // remove spaces
-    .replace(/[\-.:]/g, "") // remove common URL separators
-    .replace(/dot/g, "."); // replace 'dot' with '.'
+    // Normalize input for smart detection
+    const normalizedText = lowerText
+      .replace(/\s+/g, "") // Remove all spaces
+      .replace(/[\-.:\/]/g, "") // Remove separators like '-', '.', ':', '/'
+      .replace(/dot/g, "."); // Replace 'dot' with '.'
 
-  // Combine original and normalized text
-  const textsToCheck = [lowerText, normalized];
+    const textsToCheck = [lowerText, normalizedText];
 
-  // Check for abusive words
-  const hasAbuse = bannedData.abusiveWords.some((word) =>
-    textsToCheck.some((text) => text.includes(word.toLowerCase()))
-  );
+    // Check for abusive words
+    const hasAbuse = bannedData.abusiveWords.some((word) =>
+      textsToCheck.some((text) => text.includes(word.toLowerCase()))
+    );
 
-  // Check for banned links/domains
-  const hasLink = bannedData.bannedLinks.some((link) =>
-    textsToCheck.some((text) => text.includes(link.toLowerCase()))
-  );
+    if (hasAbuse) {
+      setAlertMessage("🚫 Abusive words are not allowed.");
+      setInput("");
+      updateTypingStatus(false);
+      return;
+    }
 
-  if (hasAbuse) {
-    setAlertMessage("🚫 Abusive words are not allowed.");
-    setInput("");
-    updateTypingStatus(false);
-    return;
-  }
+    // Check for banned links/domains/keywords
+    const hasLink = bannedData.bannedLinks.some((link) =>
+      textsToCheck.some((text) => text.includes(link.toLowerCase()))
+    );
 
-  if (hasLink) {
-    setAlertMessage("🚫 Links or obfuscated links are not allowed.");
-    setInput("");
-    updateTypingStatus(false);
-    return;
-  }
+    if (hasLink) {
+      setAlertMessage("🚫 Links or obfuscated links are not allowed.");
+      setInput("");
+      updateTypingStatus(false);
+      return;
+    }
 
-  setInput(newText);
-  updateTypingStatus(true);
+    // Passed checks, allow typing
+    setInput(newText);
+    updateTypingStatus(true);
 
-  clearTimeout(typingTimeoutRef.current);
-  typingTimeoutRef.current = setTimeout(() => {
-    updateTypingStatus(false);
-  }, 1500);
-};
-
+    clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      updateTypingStatus(false);
+    }, 1500);
+  };
 
   //Is typing functionality
   {
@@ -668,12 +667,12 @@ const handleInputChange = (e) => {
 
               <div className="input-area">
                 <div className="icon-wrapper">
-                  <FaImage className="icon-btn" />
+                  <FaImage title="Coming Soon" className="icon-btn" />
                   <div className="coming-soon-ribbon">Coming Soon</div>
                 </div>
 
                 <div className="icon-wrapper">
-                  <FaMicrophone className="icon-btn" />
+                  <FaMicrophone title="Coming Soon" className="icon-btn" />
                   <div className="coming-soon-ribbon">Coming Soon</div>
                 </div>
 
