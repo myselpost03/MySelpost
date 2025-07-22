@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, useLocation } from "react-router-dom";
-import Header from "../Components/Header";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import SketchyHeader from "../Components/SketchyHeader";
 import { supabase } from "../Utils/supabaseClient";
 import LoadingIndicator from "../Components/LoadingIndicator";
 import { FaImage, FaMicrophone, FaMoon, FaSun, FaSmile } from "react-icons/fa";
@@ -33,7 +33,7 @@ const Chat = () => {
 
   const targetUser = state?.targetUser;
   const typingTimeoutRef = useRef(null);
-
+  const navigate = useNavigate();
   const [showEmojis, setShowEmojis] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -553,6 +553,9 @@ const Chat = () => {
     return () => clearInterval(interval);
   }, [targetId, currentUser.id]);*/
   }
+  const handleBack = () => {
+    navigate(-1);
+  };
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -566,7 +569,7 @@ const Chat = () => {
 
   return (
     <div className={`Chat-UI ${theme}`}>
-      <Header />
+      <SketchyHeader title="Chat" onBack={handleBack} />
       {alertMessage && (
         <SketchyAlert
           message={alertMessage}

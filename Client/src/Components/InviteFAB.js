@@ -93,9 +93,13 @@ const InviteFAB = () => {
   return (
     <>
       {/* Sketchy Floating Button */}
-    <button className="sketchy-fab" onClick={() => setShowPopup(true)}>
-  <img src="https://cdn4.iconfinder.com/data/icons/free-glyph-christmas-icons/24/Present_Box_1-64.png" alt="Gift" style={{ width: "24px", height: "24px" }} />
-</button>
+      <button className="sketchy-fab" onClick={() => setShowPopup(true)}>
+        <img
+          src="https://cdn4.iconfinder.com/data/icons/free-glyph-christmas-icons/24/Present_Box_1-64.png"
+          alt="Gift"
+          style={{ width: "24px", height: "24px" }}
+        />
+      </button>
 
       {/* Sketchy Modal */}
       {showPopup && (

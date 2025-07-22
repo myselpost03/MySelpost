@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import Header from "../Components/Header";
+import { useParams, useNavigate } from "react-router-dom";
+import SketchyHeader from "../Components/SketchyHeader";
 import "../Styles/Coins.css";
 import SketchyAlert from "../Components/SketchyAlert";
 import { supabase } from "../Utils/supabaseClient";
@@ -12,6 +12,12 @@ const Coins = () => {
   const [alertMessage, setAlertMessage] = useState(null);
   const [inviteCode, setInviteCode] = useState("");
   const [showInvitePopup, setShowInvitePopup] = useState(false);
+
+  const navigate = useNavigate()
+
+  const handleBack = () => {
+    navigate(-1);
+  }
 
   useEffect(() => {
     const getUserById = async () => {
@@ -135,7 +141,7 @@ const Coins = () => {
 
   return (
     <div className="sketchy-coins-container">
-      <Header />
+      <SketchyHeader title="Coins" onBack={handleBack} />
       <div className="sketchy-coins-box">
         <h1 className="sketchy-coins-title">💰 Get More Coins</h1>
         <p className="sketchy-coins-desc">

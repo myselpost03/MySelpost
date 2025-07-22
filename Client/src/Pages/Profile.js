@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Header from "../Components/Header";
+import SketchyHeader from "../Components/SketchyHeader";
 import "../Styles/Profile.css";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
@@ -32,6 +32,10 @@ const Profile = () => {
   const giftCoinRequirements = [50, 300, 150, 10, 400, 100];
 
   const isCurrentUser = currentUser?.id?.toString() === id;
+
+  const handleBack = () => {
+    navigate(-1);
+  }
 
   const fetchUser = async () => {
     const { data, error } = await supabase
@@ -194,7 +198,8 @@ const handleSendGift = async (giftUrl, index) => {
   if (!user) {
     return (
       <>
-        <Header />
+      <SketchyHeader title="Profile" onBack={handleBack} />
+
         <div className="sketchy-profile-wrapper">
           <div className="sketchy-profile-tab">Loading Profile...</div>
         </div>
@@ -204,7 +209,8 @@ const handleSendGift = async (giftUrl, index) => {
 
   return (
     <>
-      <Header />
+    <SketchyHeader title="Profile" onBack={handleBack} />
+
       <div className="sketchy-profile-wrapper">
         <div className="sketchy-profile-tab">Sketchy Profile</div>
         <div className="sketchy-profile-card">
