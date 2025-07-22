@@ -26,6 +26,8 @@ import {
 } from "./Pages/index";
 import { supabase } from "./Utils/supabaseClient";
 import SketchyAlert from "./Components/SketchyAlert";
+import InternetStatusAlert from "./Components/InternetStatusAlert";
+
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
   { path: "/app-doodle", component: AppDoodle },
@@ -110,6 +112,8 @@ function App() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+            <InternetStatusAlert />
+
       {alertMessage && (
         <SketchyAlert
           message={alertMessage.text}
