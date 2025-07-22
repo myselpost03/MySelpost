@@ -135,15 +135,15 @@ const Header = () => {
               <nav className="nav">
                 <button
                   type="submit"
-                  className="nav-link"
+                  className="profile-button"
                   disabled={checking} // ✅ Now allows clicking if not checking
                 >
                   {checking ? "Checking..." : "Login"}
                 </button>
-                <Link to="/register" className="nav-link">
+                <Link to="/register" className="profile-button">
                   Register
                 </Link>
-                <Link to="/chat-list" className="nav-link">
+                <Link to="/chat-list" className="profile-button">
                   Chat
                 </Link>
               </nav>
@@ -153,14 +153,14 @@ const Header = () => {
               <button
                 type="button"
                 onClick={() => handleMobileRedirect("/login")}
-                className="nav-link"
+                className="profile-button"
               >
                 Login
               </button>
               <button
                 type="button"
                 onClick={() => handleMobileRedirect("/chat-list")}
-                className="nav-link"
+                className="profile-button"
               >
                 Chat
               </button>

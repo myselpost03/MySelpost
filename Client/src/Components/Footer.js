@@ -7,7 +7,7 @@ const Footer = () => {
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-section">
-          <h3>MySelpost</h3>
+          <h3 className="footer-txt-1">MySelpost</h3>
           <p className="tagline">"Ideas don’t need code. Just a sketch."</p>
           <p>
             Your place to turn sketches or prompts into real websites & apps.

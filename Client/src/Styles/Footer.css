@@ -1,10 +1,21 @@
+@import url(https://fonts.googleapis.com/css?family=McLaren:regular);
+
 .footer {
     background-color: #1e1e1e;
     color: #e0e0e0;
-    padding: 2px 16px 10px; /* ⬅️ reduced padding */
-    font-family: 'Segoe UI', sans-serif;
+    padding: 2px 16px 10px; 
+    font-family: 'Mc Laren', sans-serif;
   }
   
+  h3.footer-txt-1{
+    font-family: 'mclaren', serif;
+  }
+
+  .footer-section{
+        font-family: 'mclaren', serif;
+
+  }
+
   .footer-container {
     display: flex;
     flex-direction: column;
