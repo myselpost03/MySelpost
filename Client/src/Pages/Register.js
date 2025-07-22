@@ -35,6 +35,30 @@ const Register = () => {
       });
   }, []);
 
+  const getDeviceId = () => {
+    const key = "device_id";
+
+    if (typeof window === "undefined") return ""; // For server environments
+
+    const stored = localStorage.getItem(key);
+    if (stored) return stored;
+
+    // Generate a basic fingerprint
+    const idParts = [
+      navigator.userAgent,
+      window.screen?.width,
+      window.screen?.height,
+      navigator.language,
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+    ];
+
+    const id = idParts.join("-");
+    const deviceId = btoa(id).slice(0, 32); // 32-char simple hashed ID
+
+    localStorage.setItem(key, deviceId);
+    return deviceId;
+  };
+
   const isEmailValid = (email) => {
     const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return pattern.test(email);
@@ -84,12 +108,29 @@ const Register = () => {
     setError("");
 
     const { name, email, password, gender } = formData;
-
+    const deviceId = getDeviceId();
     try {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const { error } = await supabase
+      const { data: existingUsers, error: checkError } = await supabase
         .from("users")
-        .insert([{ name, email, password: hashedPassword, gender, country }]);
+        .select("id")
+        .eq("device_id", deviceId);
+
+      if (existingUsers.length > 0) {
+        setError("This device has already been used to register.");
+        setLoading(false);
+        return;
+      }
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const { error } = await supabase.from("users").insert([
+        {
+          name,
+          email,
+          password: hashedPassword,
+          gender,
+          country,
+          device_id: deviceId,
+        },
+      ]);
 
       if (error) throw error;
 
