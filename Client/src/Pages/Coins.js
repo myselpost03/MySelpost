@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import SketchyHeader from "../Components/SketchyHeader";
 import "../Styles/Coins.css";
 import SketchyAlert from "../Components/SketchyAlert";
+import LoadingIndicator from "../Components/LoadingIndicator";
 import { supabase } from "../Utils/supabaseClient";
 
 const Coins = () => {
@@ -12,12 +13,13 @@ const Coins = () => {
   const [alertMessage, setAlertMessage] = useState(null);
   const [inviteCode, setInviteCode] = useState("");
   const [showInvitePopup, setShowInvitePopup] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleBack = () => {
     navigate(-1);
-  }
+  };
 
   useEffect(() => {
     const getUserById = async () => {
@@ -38,56 +40,59 @@ const Coins = () => {
     return Math.random().toString(36).substr(2, 8).toUpperCase();
   };
 
- const handleInviteClick = async () => {
-  const code = generateRandomCode();
+  const handleInviteClick = async () => {
+    setLoading(true);
+    const code = generateRandomCode();
 
-  // First, check if invite already exists for this user
-  const { data: existingInvite, error: fetchError } = await supabase
-    .from("invites")
-    .select("*")
-    .eq("sender_id", id)
-    .single();
-
-  if (fetchError && fetchError.code !== "PGRST116") {
-    // Only log unexpected errors, not "row not found"
-    console.error("Error checking existing invite:", fetchError.message);
-    setAlertMessage({
-      text: "❌ Something went wrong. Try again later.",
-      withButton: true,
-    });
-    return;
-  }
-
-  let response;
-
-  if (existingInvite) {
-    // Update existing invite code
-    response = await supabase
+    // First, check if invite already exists for this user
+    const { data: existingInvite, error: fetchError } = await supabase
       .from("invites")
-      .update({ code: code })
-      .eq("sender_id", id);
-  } else {
-    // Insert new invite
-    response = await supabase.from("invites").insert([
-      {
-        sender_id: id,
-        code: code,
-      },
-    ]);
-  }
+      .select("*")
+      .eq("sender_id", id)
+      .single();
 
-  if (response.error) {
-    console.error("Error saving invite code:", response.error.message);
-    setAlertMessage({
-      text: "❌ Failed to generate invite code. Try again.",
-      withButton: true,
-    });
-  } else {
-    setInviteCode(code);
-    setShowInvitePopup(true);
-  }
-};
+    if (fetchError && fetchError.code !== "PGRST116") {
+      // Only log unexpected errors, not "row not found"
+      console.error("Error checking existing invite:", fetchError.message);
+      setAlertMessage({
+        text: "❌ Something went wrong. Try again later.",
+        withButton: true,
+      });
+      setLoading(false);
+      return;
+    }
 
+    let response;
+
+    if (existingInvite) {
+      // Update existing invite code
+      response = await supabase
+        .from("invites")
+        .update({ code: code })
+        .eq("sender_id", id);
+    } else {
+      // Insert new invite
+      response = await supabase.from("invites").insert([
+        {
+          sender_id: id,
+          code: code,
+        },
+      ]);
+    }
+
+    if (response.error) {
+      console.error("Error saving invite code:", response.error.message);
+      setAlertMessage({
+        text: "❌ Failed to generate invite code. Try again.",
+        withButton: true,
+      });
+      setLoading(false);
+    } else {
+      setInviteCode(code);
+      setShowInvitePopup(true);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (showPayPal && window.paypal && user) {
@@ -150,7 +155,7 @@ const Coins = () => {
 
         <div className="sketchy-coins-options">
           <button className="sketchy-coin-btn">
-            ⏳ Spend 1 Hour & Earn 3  (Auto Detect)
+            ⏳ Spend 1 Hour & Earn 3 (Auto Detect)
           </button>
 
           <button className="sketchy-coin-btn" onClick={handleInviteClick}>
@@ -168,14 +173,21 @@ const Coins = () => {
         {showPayPal && (
           <div id="paypal-button-container" className="paypal-box"></div>
         )}
-
+{loading && !showInvitePopup && <LoadingIndicator />}
         {showInvitePopup && (
           <div className="invite-popup">
             <div className="invite-box">
               <h3>Your Invite Code</h3>
               <p className="invite-code">{inviteCode}</p>
-              <p>Share this with your friend. You’ll get 50 coins if they use it.</p>
-              <button onClick={() => setShowInvitePopup(false)} className="close-btn">Close</button>
+              <p>
+                Share this with your friend. You’ll get 50 coins if they use it.
+              </p>
+              <button
+                onClick={() => setShowInvitePopup(false)}
+                className="close-btn"
+              >
+                Close
+              </button>
             </div>
           </div>
         )}

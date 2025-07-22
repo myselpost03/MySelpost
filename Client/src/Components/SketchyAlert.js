@@ -10,7 +10,7 @@ const SketchyAlert = ({ message, onClose, buttonText, onButtonClick  }) => {
 
   return (
    <div className="sketchy-alert-new">
-      <p>{message}</p>
+      <p className="alert-msg">{message}</p>
       <div style={{ marginTop: "10px" }}>
         {buttonText && (
           <button

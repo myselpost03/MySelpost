@@ -5,7 +5,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #fff8dc;
+  background: #eee;
   padding: 20px 30px;
   border: 2px dashed #555;
   border-radius: 10px;
@@ -15,7 +15,9 @@
   font-family: 'Comic Sans MS', cursive;
 }
 
-
+.alert-msg{
+  white-space: nowrap;
+}
 
 /* Button styles */
 .sketchy-alert-new button {
@@ -34,13 +36,13 @@
 }
 
 .sketchy-alert-new .sketchy-coin-btn {
-  background-color: gold;
+  background-color: #eee;
   color: black;
   border: 2px solid #222;
 }
 
 .sketchy-alert-new .close-btn {
-  background-color: #ff6961;
+  background-color: #000000;
   color: white;
-  border: 2px solid #b22222;
+  border: 2px solid #eee;
 }
