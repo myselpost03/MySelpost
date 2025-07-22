@@ -1,23 +1,4 @@
-.sketchy-fab {
-  position: fixed;
-  bottom: 18px;
-  right: 18px;
-  background: #eee;
-  color: #000;
-  border: 2px dashed #333;
-  border-radius: 50%;
-  width: 64px;
-  height: 64px;
-  font-size: 28px;
-  cursor: pointer;
-  box-shadow: 3px 3px 0px #333;
-  font-family: 'Comic Sans MS', cursive;
-  z-index: 999;
-  transition: transform 0.1s ease;
-}
-.sketchy-fab:active {
-  transform: scale(0.95);
-}
+
 
 .sketchy-popup-overlay {
   position: fixed;
@@ -85,4 +66,36 @@
 }
 .sketchy-btn.cancel {
   background: #ffcaca;
+}
+
+@keyframes sketchyBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.sketchy-fab {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  background: #eee;
+  color: #000;
+  border: 2px dashed #333;
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #333;
+  font-family: 'Comic Sans MS', cursive;
+  z-index: 999;
+  transition: transform 0.1s ease;
+  animation: sketchyBounce 2s infinite ease-in-out;
+}
+
+.sketchy-fab:active {
+  transform: scale(0.95);
 }
