@@ -26,7 +26,6 @@ import {
 } from "./Pages/index";
 import { supabase } from "./Utils/supabaseClient";
 import SketchyAlert from "./Components/SketchyAlert";
-
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
   { path: "/app-doodle", component: AppDoodle },
@@ -55,6 +54,7 @@ const publicRoutes = [
 
 function App() {
   const [alertMessage, setAlertMessage] = useState(null);
+  
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser || !storedUser.id) return;
@@ -86,6 +86,9 @@ function App() {
       console.log("🧼 Interval cleared");
     };
   }, []);
+
+  
+
   return (
     <Router>
       <Routes>

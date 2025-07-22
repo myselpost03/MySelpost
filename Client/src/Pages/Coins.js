@@ -36,6 +36,73 @@ const Coins = () => {
     getUserById();
   }, [id]);
 
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      console.log("👍 beforeinstallprompt fired");
+      setDeferredPrompt(e);
+      setShowPrompt(true);
+    };
+
+    const handleAppInstalled = async () => {
+      console.log("App installed successfully");
+      setShowPrompt(false);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    return () => {
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, []);
+
+  const installApp = () => {
+    // Check if app is already installed
+    const isInstalled =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+
+    if (isInstalled) {
+      setAlertMessage({
+        text: "✅ Installed already! If not then refresh the page",
+        withButton: true,
+      });
+      return;
+    }
+
+    setShowPrompt(false);
+
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === "accepted") {
+          console.log("User accepted the install prompt");
+        } else {
+          console.log("User dismissed the install prompt");
+        }
+        setDeferredPrompt(null);
+      });
+    } else {
+      setAlertMessage({
+        text: "✅ Installed already! If not then refresh the page", //"❌ Install not available now",
+        withButton: true,
+      });
+    }
+  };
+
+  const cancelInstall = () => {
+    console.log("User cancelled install prompt");
+    setShowPrompt(false);
+  };
+
   const generateRandomCode = () => {
     return Math.random().toString(36).substr(2, 8).toUpperCase();
   };
@@ -93,6 +160,7 @@ const Coins = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     if (showPayPal && window.paypal && user) {
       if (
@@ -174,7 +242,11 @@ const Coins = () => {
 
         <div className="sketchy-coins-options">
           <button className="sketchy-coin-btn">
-            ⏳ Spend 1 Hour & Earn 3 (Auto Transfer)
+            ⏳ Spend 1 Hour & Earn 3 Coins (Auto Transfer)
+          </button>
+
+          <button className="sketchy-coin-btn" onClick={installApp}>
+            🎁 Install App & Get +30 Coins
           </button>
 
           <button className="sketchy-coin-btn" onClick={handleInviteClick}>
@@ -222,6 +294,22 @@ const Coins = () => {
           withButton={alertMessage.withButton}
           onClose={() => setAlertMessage(null)}
         />
+      )}
+
+      {showPrompt && (
+        <div id="install-popup">
+          <div id="install-popup-content">
+            <span id="install-popup-text">
+              Install our app for a better experience!
+            </span>
+            <button id="install-button" onClick={installApp}>
+              Install
+            </button>
+            <button id="cancel-button" onClick={cancelInstall}>
+              Cancel
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

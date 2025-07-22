@@ -35,7 +35,7 @@ const Profile = () => {
 
   const handleBack = () => {
     navigate(-1);
-  }
+  };
 
   const fetchUser = async () => {
     const { data, error } = await supabase
@@ -79,65 +79,65 @@ const Profile = () => {
     }
   }, [id]);
 
-const handleSendGift = async (giftUrl, index) => {
-  if (sendingGift || !user) return;
+  const handleSendGift = async (giftUrl, index) => {
+    if (sendingGift || !user) return;
 
-  // ✅ Refetch latest user coin balance
-  const { data: updatedUser, error: userError } = await supabase
-    .from("users")
-    .select("reward_coins")
-    .eq("id", currentUser.id)
-    .single();
+    // ✅ Refetch latest user coin balance
+    const { data: updatedUser, error: userError } = await supabase
+      .from("users")
+      .select("reward_coins")
+      .eq("id", currentUser.id)
+      .single();
 
-  if (userError || !updatedUser) {
-    console.error("Failed to fetch updated user coins:", userError?.message);
-    return;
-  }
+    if (userError || !updatedUser) {
+      console.error("Failed to fetch updated user coins:", userError?.message);
+      return;
+    }
 
-  const requiredCoins = giftCoinRequirements[index];
-  const currentCoins = updatedUser.reward_coins;
+    const requiredCoins = giftCoinRequirements[index];
+    const currentCoins = updatedUser.reward_coins;
 
-  if (currentCoins < requiredCoins) {
-    setAlertMessage({
-      text: `❌ You need ${requiredCoins} coins to send this gift.`,
-      withButton: true,
-    });
-    return;
-  }
+    if (currentCoins < requiredCoins) {
+      setAlertMessage({
+        text: `❌ You need ${requiredCoins} coins to send this gift.`,
+        withButton: true,
+      });
+      return;
+    }
 
-  setSendingGift(true);
+    setSendingGift(true);
 
-  // 🪙 Deduct coins
-  const { error: coinUpdateError } = await supabase
-    .from("users")
-    .update({ reward_coins: currentCoins - requiredCoins })
-    .eq("id", currentUser.id);
+    // 🪙 Deduct coins
+    const { error: coinUpdateError } = await supabase
+      .from("users")
+      .update({ reward_coins: currentCoins - requiredCoins })
+      .eq("id", currentUser.id);
 
-  if (coinUpdateError) {
-    console.error("Failed to deduct coins:", coinUpdateError.message);
+    if (coinUpdateError) {
+      console.error("Failed to deduct coins:", coinUpdateError.message);
+      setSendingGift(false);
+      return;
+    }
+
+    // 🎁 Insert gift
+    const { error: giftError } = await supabase.from("gifts").insert([
+      {
+        sender_id: currentUser.id,
+        receiver_id: id,
+        gift_type: giftUrl,
+      },
+    ]);
+
+    if (giftError) {
+      console.error("Gift send error:", giftError.message);
+    } else {
+      setAlertMessage("🎁 Gift sent successfully!");
+      await fetchGifts();
+      await fetchUser(); // ✅ Update coin UI in real-time
+    }
+
     setSendingGift(false);
-    return;
-  }
-
-  // 🎁 Insert gift
-  const { error: giftError } = await supabase.from("gifts").insert([
-    {
-      sender_id: currentUser.id,
-      receiver_id: id,
-      gift_type: giftUrl,
-    },
-  ]);
-
-  if (giftError) {
-    console.error("Gift send error:", giftError.message);
-  } else {
-    setAlertMessage("🎁 Gift sent successfully!");
-    await fetchGifts();
-    await fetchUser(); // ✅ Update coin UI in real-time
-  }
-
-  setSendingGift(false);
-};
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -168,6 +168,10 @@ const handleSendGift = async (giftUrl, index) => {
     return data.publicUrl;
   };
 
+  const handleCoins = () => {
+    navigate(`/coins/${currentUser.id}`);
+  };
+
   const handleUpdate = async () => {
     setUploading(true);
 
@@ -196,7 +200,7 @@ const handleSendGift = async (giftUrl, index) => {
   if (!user) {
     return (
       <>
-      <SketchyHeader title="Profile" onBack={handleBack} />
+        <SketchyHeader title="Profile" onBack={handleBack} />
 
         <div className="sketchy-profile-wrapper">
           <div className="sketchy-profile-tab">Loading Profile...</div>
@@ -207,7 +211,7 @@ const handleSendGift = async (giftUrl, index) => {
 
   return (
     <>
-    <SketchyHeader title="Profile" onBack={handleBack} />
+      <SketchyHeader title="Profile" onBack={handleBack} />
 
       <div className="sketchy-profile-wrapper">
         <div className="sketchy-profile-tab">Sketchy Profile</div>
@@ -262,7 +266,13 @@ const handleSendGift = async (giftUrl, index) => {
                       : "Save Profile"
                     : "Update Profile"}
                 </button>
-
+                <button
+                  className="sketchy-coin-btn-new"
+                  onClick={handleCoins}
+                  style={{ marginTop: "10px" }}
+                >
+                  Get More Coins
+                </button>
                 <button
                   className="sketchy-logout-btn"
                   onClick={handleLogout}
@@ -316,11 +326,6 @@ const handleSendGift = async (giftUrl, index) => {
           <SketchyAlert
             message={alertMessage.text}
             onClose={() => setAlertMessage("")}
-            buttonText="Get More Coins"
-            onButtonClick={() => {
-              setAlertMessage("");
-              navigate(`/coins/${currentUser.id}`);
-            }}
           />
         ) : (
           alertMessage && (
