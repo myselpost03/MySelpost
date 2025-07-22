@@ -257,7 +257,7 @@ const Coins = () => {
             className="sketchy-coin-btn"
             onClick={() => setShowPayPal(true)}
           >
-            🛒 Buy 100 Coins - $1
+            🛒 Buy 100 Coins - {user?.country === "IN" ? "₹86" : "$1"}
           </button>
         </div>
 
