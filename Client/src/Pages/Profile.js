@@ -139,8 +139,6 @@ const handleSendGift = async (giftUrl, index) => {
   setSendingGift(false);
 };
 
-
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     localStorage.removeItem("user");

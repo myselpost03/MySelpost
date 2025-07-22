@@ -93,7 +93,6 @@ const Coins = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (showPayPal && window.paypal && user) {
       if (
@@ -115,21 +114,41 @@ const Coins = () => {
             },
             onApprove: async (data, actions) => {
               await actions.order.capture();
-              const newCoins = (user.reward_coins || 0) + 100;
-              const { error: updateError } = await supabase
-                .from("users")
-                .update({ reward_coins: newCoins })
-                .eq("id", user.id);
 
-              if (updateError) {
-                console.error("Coin update failed:", updateError.message);
-                alert("❌ Failed to add coins.");
-              } else {
-                alert("✅ 100 coins added!");
-                setUser({ ...user, reward_coins: newCoins });
+              try {
+                const { error: rpcError } = await supabase.rpc(
+                  "increment_reward_coins",
+                  {
+                    user_id_input: user.id,
+                    increment_by: 100,
+                  }
+                );
+
+                if (rpcError) {
+                  console.error("❌ RPC update error:", rpcError.message);
+                  setAlertMessage({
+                    text: "❌ Failed to add coins.",
+                    withButton: true,
+                  });
+                } else {
+                  setAlertMessage({
+                    text: "100 coins added.",
+                    withButton: true,
+                  });
+                  setUser((prevUser) => ({
+                    ...prevUser,
+                    reward_coins: (prevUser.reward_coins || 0) + 100,
+                  }));
+                }
+
+                setShowPayPal(false);
+              } catch (err) {
+                console.error("❗ Unexpected RPC error:", err);
+                setAlertMessage({
+                  text: "❌ Something went wrong while adding coins.",
+                  withButton: true,
+                });
               }
-
-              setShowPayPal(false);
             },
             onError: (err) => {
               console.error("PayPal error:", err);
@@ -155,7 +174,7 @@ const Coins = () => {
 
         <div className="sketchy-coins-options">
           <button className="sketchy-coin-btn">
-            ⏳ Spend 1 Hour & Earn 3 (Auto Detect)
+            ⏳ Spend 1 Hour & Earn 3 (Auto Transfer)
           </button>
 
           <button className="sketchy-coin-btn" onClick={handleInviteClick}>
@@ -173,7 +192,7 @@ const Coins = () => {
         {showPayPal && (
           <div id="paypal-button-container" className="paypal-box"></div>
         )}
-{loading && !showInvitePopup && <LoadingIndicator />}
+        {loading && !showInvitePopup && <LoadingIndicator />}
         {showInvitePopup && (
           <div className="invite-popup">
             <div className="invite-box">

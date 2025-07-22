@@ -3,55 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import "../Styles/Home.css";
-import { supabase } from "../Utils/supabaseClient";
 import SketchyAlert from "../Components/SketchyAlert";
 import InviteFAB from "../Components/InviteFAB";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
 
-  useEffect(() => {
-    if (!user) return;
-
-    const interval = setInterval(async () => {
-      const now = new Date();
-      const lastAwardTime = user.last_coin_award_time
-        ? new Date(user.last_coin_award_time)
-        : null;
-
-      if (!lastAwardTime || now - lastAwardTime >= 3600000) {
-        const newCoins = (user.reward_coins || 0, 10) + 3;
-
-        const { error } = await supabase
-          .from("users")
-          .update({
-            coins: newCoins,
-            last_coin_award_time: now.toISOString(),
-          })
-          .eq("id", user.id);
-
-        if (!error) {
-          setUser({
-            ...user,
-            coins: newCoins,
-            last_coin_award_time: now.toISOString(),
-          });
-
-          setAlertMessage({
-            text: `🕒 You've earned +3 coins for 1 hour of engagement!`,
-            withButton: true,
-          });
-        } else {
-          console.error("Hourly coin update failed:", error.message);
-        }
-      }
-    }, 60000); // Check every 60 seconds
-
-    return () => clearInterval(interval);
-  }, [user]);
 
   const handleSketchClick = () => {
     navigate("/sketch");

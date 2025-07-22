@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Header from '../Components/Header';
-import '../Styles/Login.css';
-import { supabase } from '../Utils/supabaseClient';
-import bcrypt from 'bcryptjs';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Header from "../Components/Header";
+import "../Styles/Login.css";
+import { supabase } from "../Utils/supabaseClient";
+import bcrypt from "bcryptjs";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
 
   const [emailValid, setEmailValid] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -21,13 +21,13 @@ const Login = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === 'email') {
+    if (name === "email") {
       setEmailValid(isEmailValid(value));
     }
 
     setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -35,37 +35,42 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     const { email, password } = formData;
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
+        .from("users")
+        .select("*")
+        .eq("email", email)
         .single();
 
       if (fetchError || !data) {
-        throw new Error('Invalid email or user not found.');
+        throw new Error("Invalid email or user not found.");
       }
 
       const passwordMatch = await bcrypt.compare(password, data.password);
       if (!passwordMatch) {
-        throw new Error('Incorrect password.');
+        throw new Error("Incorrect password.");
       }
 
       // ✅ Store logged-in user data in localStorage
-      localStorage.setItem('user', JSON.stringify({
-        id: data.id,
-        name: data.name,
-        email: data.email
-      }));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          coins: data.reward_coins ?? 0, // fallback to 0
+          rewardTime: data.last_coin_award_time ?? null,
+        })
+      );
 
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      setError(err.message || 'Login failed.');
+      setError(err.message || "Login failed.");
     } finally {
       setLoading(false);
     }
@@ -84,7 +89,7 @@ const Login = () => {
             value={formData.email}
             onChange={handleChange}
             required
-            className={!emailValid ? 'invalid' : ''}
+            className={!emailValid ? "invalid" : ""}
           />
           {!emailValid && (
             <p className="error-msg">Please enter a valid email address.</p>
@@ -99,7 +104,7 @@ const Login = () => {
           />
           {error && <p className="error-msg">{error}</p>}
           <button type="submit" disabled={!isFormValid || loading}>
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? "Logging in..." : "Login"}
           </button>
           <p>
             Don't have an account? <Link to="/register">Register</Link>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./Utils/ProtectedRoute";
 import {
@@ -24,6 +24,8 @@ import {
   Profile,
   Coins,
 } from "./Pages/index";
+import { supabase } from "./Utils/supabaseClient";
+import SketchyAlert from "./Components/SketchyAlert";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
@@ -52,6 +54,38 @@ const publicRoutes = [
 ];
 
 function App() {
+  const [alertMessage, setAlertMessage] = useState(null);
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser || !storedUser.id) return;
+
+    console.log("🎯 Reward coin interval started");
+
+    const interval = setInterval(async () => {
+      try {
+        const { error } = await supabase.rpc("increment_reward_coins", {
+          user_id_input: storedUser.id,
+          increment_by: 3,
+        });
+
+        if (error) {
+          console.error("❌ RPC update error:", error);
+        } else {
+          setAlertMessage({
+            text: "✅ You got 3 coins for spending an hour.",
+            withButton: true,
+          });
+        }
+      } catch (err) {
+        console.error("❗ Unexpected RPC error:", err);
+      }
+    }, 3600000); // 1 hour (use 5000 for testing)
+
+    return () => {
+      clearInterval(interval);
+      console.log("🧼 Interval cleared");
+    };
+  }, []);
   return (
     <Router>
       <Routes>
@@ -73,6 +107,13 @@ function App() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+      {alertMessage && (
+        <SketchyAlert
+          message={alertMessage.text}
+          withButton={alertMessage.withButton}
+          onClose={() => setAlertMessage(null)}
+        />
+      )}
     </Router>
   );
 }

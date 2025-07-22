@@ -66,27 +66,43 @@ const InviteFAB = () => {
       setIsRedeeming(false);
       return;
     }
+    try {
+      // Reward inviter (sender) with 50 coins
+      const { error: inviterError } = await supabase.rpc(
+        "increment_reward_coins",
+        {
+          user_id_input: senderId,
+          increment_by: 50,
+        }
+      );
 
-    const newCoins = parseInt(sender.reward_coins || 0, 10) + 50;
+      if (inviterError) {
+        console.error("❌ RPC error:", inviterError);
+        setAlertMessage({
+          text: "❌ Failed to reward inviter or user.",
+          withButton: true,
+        });
+      } else {
+        console.log("✅ Coins rewarded: 50 to inviter");
+        setAlertMessage({
+          text: "✅ Invite code accepted! Inviter rewarded with 50 coins.",
+          withButton: true,
+        });
+        const { error: deleteError } = await supabase
+          .from("invites")
+          .delete()
+          .eq("code", inviteInput.trim().toUpperCase());
 
-    const { error: updateError } = await supabase
-      .from("users")
-      .update({ reward_coins: newCoins })
-      .eq("id", senderId);
-
-    if (updateError) {
-      setAlertMessage({
-        text: "❌ Failed to reward inviter.",
-        withButton: true,
-      });
-    } else {
-      setAlertMessage({
-        text: "✅ Invite code accepted! Inviter rewarded with 50 coins.",
-        withButton: true,
-      });
-      setInviteInput("");
-      setShowPopup(false);
+        if (deleteError) {
+          console.error("⚠️ Failed to delete used code:", deleteError);
+        }
+        setInviteInput("");
+        setShowPopup(false);
+      }
+    } catch (err) {
+      console.error("❗ Unexpected RPC error:", err);
     }
+
     setIsRedeeming(false);
   };
 
