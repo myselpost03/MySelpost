@@ -132,3 +132,43 @@
     padding: 12px 16px;
   }
 }
+
+.sketchy-alert {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fffdd0;
+  border: 3px dashed #333;
+  padding: 25px;
+  z-index: 1000;
+  border-radius: 16px;
+  box-shadow: 6px 6px 0px #000;
+  max-width: 90%;
+  font-family: "Comic Sans MS", "Lilita One", cursive;
+  text-align: center;
+}
+
+.sketchy-alert-text {
+  font-size: 1.1rem;
+  color: #222;
+  margin-bottom: 15px;
+}
+
+.sketchy-alert-button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  border: 2px dashed #000;
+  border-radius: 10px;
+  background-color: #caffbf;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #333;
+  transition: all 0.2s ease;
+}
+
+.sketchy-alert-button:hover {
+  background-color: #b7f7ac;
+  box-shadow: 1px 1px 0px #333;
+}
+

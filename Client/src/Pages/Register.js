@@ -22,14 +22,15 @@ const Register = () => {
   const [nameTaken, setNameTaken] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch("http://ip-api.com/json/?fields=status,message,countryCode")
-      .then((res) => res.json())
-      .then((response) => {
-        setCountry(response.countryCode || "Hidden");
-      })
-      .catch(() => setCountry("Hidden"));
-  }, []);
+ useEffect(() => {
+  fetch("https://ipwho.is/?fields=country_code")
+    .then((res) => res.json())
+    .then((response) => {
+      setCountry(response.country_code || "Hidden");
+    })
+    .catch(() => setCountry("Hidden"));
+}, []);
+
 
   const getDeviceId = () => {
     const key = "device_id";
@@ -248,7 +249,7 @@ const Register = () => {
 
         {showAlert && (
           <div className="custom-alert-box">
-            🎉 Registration successful! Redirecting to homepage...
+            🎉 Registration successful! Redirecting to login...
           </div>
         )}
       </div>

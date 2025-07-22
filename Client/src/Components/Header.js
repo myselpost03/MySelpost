@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import "../Styles/Header.css";
 import { supabase } from "../Utils/supabaseClient";
 import bcrypt from "bcryptjs";
+import SketchyAlert from "../Components/SketchyAlert";
+
 
 const Header = () => {
   const [user, setUser] = useState(null);
@@ -10,7 +12,7 @@ const Header = () => {
   const [emailValid, setEmailValid] = useState(true);
   const [credentialsValid, setCredentialsValid] = useState(false);
   const [checking, setChecking] = useState(false);
-  const [activeTab, setActiveTab] = useState(""); // Track active tab
+  const [alertMessage, setAlertMessage] = useState(null);
 
   const navigate = useNavigate();
   const debounceTimeout = useRef(null);
@@ -96,9 +98,17 @@ const Header = () => {
     }
   };
 
-  const handleChat = () => {
-    return navigate("/chat-list");
-  };
+const handleChat = () => {
+  if (!user) {
+    setAlertMessage({
+            text: "🚫 You need to register or log in to access the chat featue.",
+            withButton: true,
+          });
+    return;
+  }
+  navigate("/chat-list");
+};
+
 
   const handleMobileRedirect = (path) => {
     if (isMobile) navigate(path);
@@ -143,9 +153,10 @@ const Header = () => {
                 <Link to="/register" className="profile-button">
                   Register
                 </Link>
-                <Link to="/chat-list" className="profile-button">
-                  Chat
-                </Link>
+                <button type="button" onClick={handleChat} className="profile-button">
+  Chat
+</button>
+
               </nav>
             </>
           ) : (
@@ -159,7 +170,7 @@ const Header = () => {
               </button>
               <button
                 type="button"
-                onClick={() => handleMobileRedirect("/chat-list")}
+                onClick={handleChat}
                 className="profile-button"
               >
                 Chat
@@ -181,6 +192,15 @@ const Header = () => {
           </Link>
         </div>
       )}
+ {alertMessage && (
+         <SketchyAlert
+           message={alertMessage.text}
+           withButton={alertMessage.withButton}
+           onClose={() => setAlertMessage(null)}
+         />
+       )}
+
+
     </header>
   );
 };
