@@ -5,46 +5,52 @@ import Footer from "../Components/Footer";
 import "../Styles/Home.css";
 import SketchyAlert from "../Components/SketchyAlert";
 import InviteFAB from "../Components/InviteFAB";
-import {supabase} from "../Utils/supabaseClient"
+import { supabase } from "../Utils/supabaseClient";
 import { isRunningAsPWA } from "../Utils/CheckPWA";
 
 const Home = () => {
   const navigate = useNavigate();
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
+  const [user, setUser] = useState(null);
 
   
-     useEffect(() => {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      if (!storedUser || !storedUser.id) return;
-  
-      const rewardKey = `${storedUser.id}`;
-  
-      if (isRunningAsPWA() && !localStorage.getItem(rewardKey)) {
-        console.log("🚀 PWA detected – rewarding 30 coins");
-  
-        (async () => {
-          try {
-            const { error } = await supabase.rpc("increment_reward_coins", {
-              user_id_input: storedUser.id,
-              increment_by: 30,
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser || !storedUser.id) return;
+    if (storedUser && storedUser.id) {
+      setUser(storedUser); // ✅ Save user to state
+    } else {
+      setUser(null);
+      return;
+    }
+    const rewardKey = `${storedUser.id}`;
+
+    if (isRunningAsPWA() && !localStorage.getItem(rewardKey)) {
+      console.log("🚀 PWA detected – rewarding 30 coins");
+
+      (async () => {
+        try {
+          const { error } = await supabase.rpc("increment_reward_coins", {
+            user_id_input: storedUser.id,
+            increment_by: 30,
+          });
+
+          if (error) {
+            console.error("❌ PWA reward error:", error.message);
+          } else {
+            localStorage.setItem(rewardKey, "true");
+            setAlertMessage({
+              text: "🎉 App Installed! You got +30 coins.",
+              withButton: true,
             });
-  
-            if (error) {
-              console.error("❌ PWA reward error:", error.message);
-            } else {
-              localStorage.setItem(rewardKey, "true");
-              setAlertMessage({
-                text: "🎉 App Installed! You got +30 coins.",
-                withButton: true,
-              });
-            }
-          } catch (err) {
-            console.error("❗ Unexpected PWA reward error:", err);
           }
-        })();
-      }
-    }, []);
+        } catch (err) {
+          console.error("❗ Unexpected PWA reward error:", err);
+        }
+      })();
+    }
+  }, []);
 
   const handleSketchClick = () => {
     navigate("/sketch");
@@ -105,7 +111,7 @@ const Home = () => {
           onClose={() => setAlertMessage(null)}
         />
       )}
-      <InviteFAB />
+      {user && <InviteFAB />}
     </div>
   );
 };

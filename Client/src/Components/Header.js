@@ -4,7 +4,7 @@ import "../Styles/Header.css";
 import { supabase } from "../Utils/supabaseClient";
 import bcrypt from "bcryptjs";
 import SketchyAlert from "../Components/SketchyAlert";
-
+import LoadingIndicator from "../Components/LoadingIndicator";
 
 const Header = () => {
   const [user, setUser] = useState(null);
@@ -12,17 +12,28 @@ const Header = () => {
   const [emailValid, setEmailValid] = useState(true);
   const [credentialsValid, setCredentialsValid] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [alertMessage, setAlertMessage] = useState(null);
+  const [showZoomed, setShowZoomed] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const navigate = useNavigate();
   const debounceTimeout = useRef(null);
 
-  const isMobile = window.innerWidth < 768;
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+    setTimeout(() => {
+      setLoading(false); // simulate delay or finish loading
+    }, 500);
   }, []);
 
   const isEmailValid = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -48,7 +59,13 @@ const Header = () => {
       setChecking(false);
     }
   };
-
+  const handleClick = () => {
+    setLoading(true);
+    // Simulate loading (optional)
+    setTimeout(() => {
+      navigate(`/profile/${user.id}`);
+    }, 500); // Optional delay
+  };
   const handleChange = (e) => {
     const { name, value } = e.target;
     const updatedForm = { ...formData, [name]: value };
@@ -98,17 +115,16 @@ const Header = () => {
     }
   };
 
-const handleChat = () => {
-  if (!user) {
-    setAlertMessage({
-            text: "🚫 You need to register or log in to access the chat featue.",
-            withButton: true,
-          });
-    return;
-  }
-  navigate("/chat-list");
-};
-
+  const handleChat = () => {
+    if (!user) {
+      setAlertMessage({
+        text: "🚫 You need to register or log in to access the chat featue.",
+        withButton: true,
+      });
+      return;
+    }
+    navigate("/chat-list");
+  };
 
   const handleMobileRedirect = (path) => {
     if (isMobile) navigate(path);
@@ -116,9 +132,22 @@ const handleChat = () => {
 
   return (
     <header className="header">
-      <Link to="/" className="logo">
-        MySelpost
-      </Link>
+      <div className="logo-container">
+        <Link to="/" className="logo">
+          MySelpost
+        </Link>
+        {user && !isMobile && (
+          <div className="feature-banner-container">
+            <div className="coming-soon-banner">Coming Soon</div>
+            <button
+              className="sketchy-feature-button"
+              //onClick={() => setShowZoomed(true)}
+            >
+              ✨ Feature your Profile here
+            </button>
+          </div>
+        )}
+      </div>
 
       {!user ? (
         <form className="nav-with-inputs" onSubmit={handleSubmit}>
@@ -153,10 +182,13 @@ const handleChat = () => {
                 <Link to="/register" className="profile-button">
                   Register
                 </Link>
-                <button type="button" onClick={handleChat} className="profile-button">
-  Chat
-</button>
-
+                <button
+                  type="button"
+                  onClick={handleChat}
+                  className="profile-button"
+                >
+                  Chat
+                </button>
               </nav>
             </>
           ) : (
@@ -185,22 +217,29 @@ const handleChat = () => {
           </button>
           <Link
             style={{ textDecoration: "none" }}
-            to={`/profile/${user.id}`}
+            onClick={handleClick}
             className="profile-button"
           >
             Profile
           </Link>
         </div>
       )}
- {alertMessage && (
-         <SketchyAlert
-           message={alertMessage.text}
-           withButton={alertMessage.withButton}
-           onClose={() => setAlertMessage(null)}
-         />
-       )}
-
-
+      {alertMessage && (
+        <SketchyAlert
+          message={alertMessage.text}
+          withButton={alertMessage.withButton}
+          onClose={() => setAlertMessage(null)}
+        />
+      )}
+      {showZoomed && (
+        <div className="zoom-overlay" onClick={() => setShowZoomed(false)}>
+          <img
+            src="https://i.pinimg.com/736x/b4/41/52/b44152e1ad63150f12efe7a050a0b26c.jpg"
+            alt="Zoomed"
+            className="zoomed-profile-pic"
+          />
+        </div>
+      )}
     </header>
   );
 };

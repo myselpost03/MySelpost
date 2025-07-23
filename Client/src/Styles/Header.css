@@ -172,3 +172,100 @@
   box-shadow: 1px 1px 0px #333;
 }
 
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-pic-sketchy {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px dashed #222;
+  box-shadow: 2px 2px 0px #000;
+  cursor: pointer;
+  flex-shrink: 0;
+  background-color: #fff;
+  transition: transform 0.2s ease;
+}
+
+.profile-pic-sketchy:hover {
+  transform: scale(1.1) rotate(-2deg);
+}
+
+/* Blurred background overlay */
+.zoom-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  backdrop-filter: blur(8px);
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Zoomed-in profile image */
+.zoomed-profile-pic {
+  width: 330px;
+  height: 330px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 5px dashed #222;
+  box-shadow: 4px 4px 0px #000;
+  background-color: white;
+}
+.sketchy-feature-button {
+  padding: 10px 16px;
+  font-size: 1.1rem;
+  font-family: "Lilita One", sans-serif;
+  background-color: #eee; /* matches your sketchy-profile-update-btn */
+  border: 2px dashed #000;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #000;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-weight: bold;
+  margin-left: 1rem;
+}
+
+.sketchy-feature-button:hover {
+  transform: scale(1.05);
+  box-shadow: 5px 5px 0 #000;
+}
+
+.feature-banner-container {
+  position: relative;
+  display: inline-block;
+  margin-left: 1rem;
+}
+
+.coming-soon-banner {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: crimson;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  letter-spacing: 0.5px;
+}
+
+
+
+.sketchy-feature-button:hover {
+  transform: scale(1.05);
+  box-shadow: 4px 4px 0 #000;
+}
