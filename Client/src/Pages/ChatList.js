@@ -177,22 +177,25 @@ const ChatList = () => {
     e.preventDefault();
     const isLoggedIn = localStorage.getItem("user");
 
-    if (isLoggedIn) {
-      // 🚫 Restrict if non-US user tries to chat with US user
-      if (
-        user.country !== "US" &&
-        targetUser?.country === "US" &&
-        !hasPaidPremium
-      ) {
-        setPremiumTargetUser(targetUser);
-        setShowPremiumNotice(true);
-        return;
-      }
+   if (isLoggedIn) {
+  console.log("Logged in user:", user);
 
-      navigate(path, { state: { targetUser } }); // 👈 Pass clicked user to next screen
-    } else {
-      navigate("/register");
-    }
+  // 🚫 Restrict if non-US user (except Akriti) tries to chat with US user
+  const isNotUS = user.country !== "US";
+  const isNotAkriti = user.name?.trim().toLowerCase() !== "akriti";
+  const isTargetUS = targetUser?.country === "US";
+
+  if (isNotUS && isNotAkriti && isTargetUS && !hasPaidPremium) {
+    setPremiumTargetUser(targetUser);
+    setShowPremiumNotice(true);
+    return;
+  }
+
+  navigate(path, { state: { targetUser } }); // 👈 Pass clicked user to next screen
+} else {
+  navigate("/register");
+}
+
   };
 
   useEffect(() => {
