@@ -24,7 +24,7 @@ const Prompt = () => {
   useEffect(() => {
     if (!isSubmitted) return;
 
-    const user = JSON.parse(localStorage.getItem("user"));
+
     const submittedAt = localStorage.getItem("submittedAt");
 
     if (!submittedAt) {

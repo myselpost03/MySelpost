@@ -80,9 +80,14 @@ const ChatList = () => {
   const [showGenderTabs, setShowGenderTabs] = useState(false);
   const [showCountryTabs, setShowCountryTabs] = useState(false);
   const [loading, setLoading] = useState(true);
-  const user = JSON.parse(localStorage.getItem("user"));
   const [countries, setCountries] = useState([]);
+  const [showPremiumNotice, setShowPremiumNotice] = useState(false);
+  const [premiumTargetUser, setPremiumTargetUser] = useState(null);
+  const [hasPaidPremium, setHasPaidPremium] = useState(false);
+
   const [unreadCounts, setUnreadCounts] = useState({});
+
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     const fetchUnreadCounts = async () => {
@@ -121,6 +126,7 @@ const ChatList = () => {
       setCountries(uniqueCountries);
     }
   }, [users]);
+
   useEffect(() => {
     const fetchUsers = async () => {
       const { data: allUsers, error } = await supabase
@@ -172,10 +178,45 @@ const ChatList = () => {
     const isLoggedIn = localStorage.getItem("user");
 
     if (isLoggedIn) {
+      // 🚫 Restrict if non-US user tries to chat with US user
+      if (
+        user.country !== "US" &&
+        targetUser?.country === "US" &&
+        !hasPaidPremium
+      ) {
+        setPremiumTargetUser(targetUser);
+        setShowPremiumNotice(true);
+        return;
+      }
+
       navigate(path, { state: { targetUser } }); // 👈 Pass clicked user to next screen
     } else {
       navigate("/register");
     }
+  };
+
+  useEffect(() => {
+    const fetchUserPremiumStatus = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("premium_pricing")
+        .eq("id", user?.id)
+        .single();
+
+      if (!error && data?.premium_pricing === true) {
+        setHasPaidPremium(true);
+      } else {
+        setHasPaidPremium(false);
+      }
+    };
+
+    if (user?.id) {
+      fetchUserPremiumStatus();
+    }
+  }, [user?.id]);
+
+  const handlePaypalRedirect = () => {
+    navigate(`/payments/${user.id}`);
   };
 
   const filteredUsers = users
@@ -566,6 +607,40 @@ const ChatList = () => {
             </div>
           )}
         </>
+      )}
+      {showPremiumNotice && (
+        <div
+          className="premium-modal-overlay"
+          onClick={() => setShowPremiumNotice(false)}
+        >
+          <div
+            className="premium-modal-box"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="premium-modal-title">🌍 Premium Chat</h2>
+            <p className="premium-modal-message">
+              Pay to chat with premium country people.
+            </p>
+            <div className="premium-modal-buttons">
+              <button
+                className="premium-btn premium-pay-btn"
+                onClick={() => {
+                  setShowPremiumNotice(false);
+                  handlePaypalRedirect();
+                  // Replace this with actual payment logic
+                }}
+              >
+                💰 Pay to Unlock
+              </button>
+              <button
+                className="premium-btn premium-cancel-btn"
+                onClick={() => setShowPremiumNotice(false)}
+              >
+                ❌ Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

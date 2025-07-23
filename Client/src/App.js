@@ -23,6 +23,7 @@ import {
   ChatList,
   Profile,
   Coins,
+  PaymentPage,
 } from "./Pages/index";
 import { supabase } from "./Utils/supabaseClient";
 import SketchyAlert from "./Components/SketchyAlert";
@@ -36,6 +37,7 @@ const protectedRoutes = [
   { path: "/chat/:id", component: Chat },
   { path: "/profile/:id", component: Profile },
   { path: "/coins/:id", component: Coins },
+  { path: "/payments/:id", component: PaymentPage },
 ];
 
 const publicRoutes = [
@@ -56,7 +58,7 @@ const publicRoutes = [
 
 function App() {
   const [alertMessage, setAlertMessage] = useState(null);
-  
+
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser || !storedUser.id) return;
@@ -89,8 +91,6 @@ function App() {
     };
   }, []);
 
-  
-
   return (
     <Router>
       <Routes>
@@ -112,7 +112,7 @@ function App() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
-            <InternetStatusAlert />
+      <InternetStatusAlert />
 
       {alertMessage && (
         <SketchyAlert

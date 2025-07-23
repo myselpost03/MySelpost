@@ -1,0 +1,68 @@
+.sketchy-payment-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  margin-top: 7%;
+  background-color: #fffcf2;
+  min-height: 100vh;
+  font-family: "Lilita One", cursive;
+}
+
+.sketchy-payment-title {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+  border-bottom: 4px dashed #000;
+  padding-bottom: 0.5rem;
+}
+
+.sketchy-payment-box {
+  border: 3px dashed #000;
+  background-color: #fff3cd;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 5px 5px 0 #000;
+  text-align: center;
+}
+
+.sketchy-payment-text {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.sketchy-payment-buttons {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.sketchy-pay-now,
+.sketchy-cancel {
+  padding: 10px 20px;
+  border: 2px dashed #000;
+  border-radius: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.sketchy-pay-now {
+  background-color: #caffbf;
+}
+
+.sketchy-pay-now:hover {
+  background-color: #b2f2bb;
+}
+
+.sketchy-cancel {
+  background-color: #ffc9c9;
+}
+
+.sketchy-cancel:hover {
+  background-color: #ffb3b3;
+}
