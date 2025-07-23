@@ -157,27 +157,40 @@
   padding: 20px;
   border-radius: 10px;
   z-index: 1001;
-  width: 80%;
-  max-width: 400px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
   text-align: center;
+  width: 90%;
+  max-width: 400px;
+  max-height: 300px;
+  overflow-y: auto;
+  box-sizing: border-box;
+
+  /* Hide scrollbar – Chrome, Safari */
+  scrollbar-width: none;         /* Firefox */
+  -ms-overflow-style: none;      /* IE/Edge */
 }
+
+.modal-content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
 
 .modal-btn {
   display: block;
   margin: 10px auto;
   padding: 10px 20px;
   font-size: 1rem;
-  border: 2px solid #000;
-  background: #f1f1f1;
+  border: none;
+  color: #fff;
+  background: #d4d0d0;
   cursor: pointer;
+  font-family: 'comic neue', serif;
   border-radius: 6px;
   font-weight: bold;
   width: 100%;
 }
 
 .modal-btn.active {
-  background-color: #caffbf;
+  background-color: #080808;
 }
 
 

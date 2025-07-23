@@ -13,119 +13,10 @@ import {
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
 import LoadingIndicator from "../Components/LoadingIndicator";
-import { useStatusTracker } from "../Hooks/useStatusTracker";
 import ReactCountryFlag from "react-country-flag";
-
-// Move user data into state
-const initialUsers = [
-  {
-    id: 1,
-    name: "Arjun Raj",
-    country: "India",
-    status: "online",
-    gender: "male",
-    avatar: "https://i.pravatar.cc/150?img=3",
-    verified: true,
-    notifications: 3,
-    pinned: false,
-  },
-  {
-    id: 2,
-    name: "Sophia Lynn",
-    country: "USA",
-    status: "offline",
-    gender: "female",
-    avatar: "https://i.pravatar.cc/150?img=5",
-    verified: true,
-    notifications: 10,
-    pinned: false,
-  },
-  {
-    id: 3,
-    name: "Kenji Ito",
-    country: "Japan",
-    status: "online",
-    gender: "male",
-    avatar: "https://i.pravatar.cc/150?img=11",
-    verified: false,
-    notifications: 5,
-    pinned: false,
-  },
-  {
-    id: 4,
-    name: "Amira Noor",
-    country: "UAE",
-    status: "online",
-    gender: "female",
-    avatar: "https://i.pravatar.cc/150?img=7",
-    verified: false,
-    notifications: 6,
-    pinned: false,
-  },
-  {
-    id: 5,
-    name: "Liam Zhao",
-    country: "China",
-    status: "offline",
-    gender: "male",
-    avatar: "https://i.pravatar.cc/150?img=8",
-    verified: true,
-    notifications: 1,
-    pinned: false,
-  },
-  {
-    id: 6,
-    name: "Isla Byrne",
-    country: "Ireland",
-    status: "online",
-    gender: "female",
-    avatar: "https://i.pravatar.cc/150?img=9",
-    verified: false,
-    pinned: false,
-  },
-  {
-    id: 7,
-    name: "Carlos Mendez",
-    country: "Mexico",
-    status: "offline",
-    gender: "male",
-    avatar: "https://i.pravatar.cc/150?img=10",
-    verified: false,
-    pinned: false,
-  },
-  {
-    id: 8,
-    name: "Maya Patel",
-    country: "India",
-    status: "online",
-    gender: "female",
-    avatar: "https://i.pravatar.cc/150?img=12",
-    verified: true,
-    pinned: false,
-  },
-  {
-    id: 9,
-    name: "Yuki Arai",
-    country: "Japan",
-    status: "offline",
-    gender: "female",
-    avatar: "https://i.pravatar.cc/150?img=14",
-    verified: false,
-  },
-  {
-    id: 10,
-    name: "Leo Rossi",
-    country: "Italy",
-    status: "online",
-    gender: "male",
-    avatar: "https://i.pravatar.cc/150?img=15",
-    verified: true,
-  },
-];
 
 const countryNameToCode = {
   IN: "IN",
-  US: "US",
   US: "US",
   GB: "GB",
   CA: "CA",
@@ -190,8 +81,7 @@ const ChatList = () => {
   const [showCountryTabs, setShowCountryTabs] = useState(false);
   const [loading, setLoading] = useState(true);
   const user = JSON.parse(localStorage.getItem("user"));
-  const status = useStatusTracker(user);
-  const countries = [...new Set(users?.map((u) => u.country))];
+  const [countries, setCountries] = useState([]);
   const [unreadCounts, setUnreadCounts] = useState({});
 
   useEffect(() => {
@@ -226,10 +116,16 @@ const ChatList = () => {
   };
 
   useEffect(() => {
+    if (users.length > 0) {
+      const uniqueCountries = [...new Set(users.map((u) => u.country))];
+      setCountries(uniqueCountries);
+    }
+  }, [users]);
+  useEffect(() => {
     const fetchUsers = async () => {
       const { data: allUsers, error } = await supabase
         .from("users")
-        .select("id, name, profile_pic, country, gender, status");
+        .select("id, name, profile_pic, country, gender, status, age");
 
       let pinnedIds = [];
       if (user) {
@@ -250,7 +146,7 @@ const ChatList = () => {
           .filter((u) => u.id !== user.id) // 👈 Hide current user
           .map((user) => ({
             ...user,
-            avatar: user.profile_pic || empty + user.id,
+            avatar: user.profile_pic || empty,
             notifications: user.notifications || 0,
             pinned: pinnedIds.includes(user.id),
             status: user.status || "offline",
@@ -295,17 +191,21 @@ const ChatList = () => {
       return genderMatch && countryMatch && searchMatch && pinMatch;
     })
     .sort((a, b) => {
+      // 1️⃣ Priority: Notification count
       const aCount = unreadCounts[a.id] || 0;
       const bCount = unreadCounts[b.id] || 0;
-
-      // First, sort by unread count DESC
       if (bCount !== aCount) return bCount - aCount;
 
-      // Then by online status
+      // 2️⃣ Then: Users with a profile picture
+      const aHasPic = a.profile_pic ? 1 : 0;
+      const bHasPic = b.profile_pic ? 1 : 0;
+      if (bHasPic !== aHasPic) return bHasPic - aHasPic;
+
+      // 3️⃣ Then: Online status
       if (a.status === "online" && b.status !== "online") return -1;
       if (a.status !== "online" && b.status === "online") return 1;
 
-      // Then by verification + pinned priority
+      // 4️⃣ Then: Verified & pinned priority
       const getPriority = (u) => {
         if (u.verified && u.pinned) return 4000;
         if (u.verified) return 3000;
@@ -451,19 +351,11 @@ const ChatList = () => {
                           e.stopPropagation(); // 👈 prevent parent click
                         }}
                       >
-                        {user.img ? (
-                          <img
-                            src={user.avatar}
-                            alt="white area"
-                            className="user-avatar"
-                          />
-                        ) : (
-                          <img
-                            src={empty}
-                            alt="white area"
-                            className="user-avatar"
-                          />
-                        )}
+                        <img
+                          src={user.avatar}
+                          alt="avatar"
+                          className="user-avatar"
+                        />
                       </Link>
 
                       {unreadCounts[user.id] > 0 && (
@@ -504,19 +396,33 @@ const ChatList = () => {
                           )}
                           {user.country || "Hidden"}
                         </span>
+                        {user.age && (
+                          <span
+                            className="user-age"
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              marginLeft: "8px",
+                              fontSize: "0.95em",
+                            }}
+                          >
+                            {user.age}
+                          </span>
+                        )}
 
                         {user.gender === "male" ? (
                           <FaMars className="gender-icon male" />
                         ) : (
                           <FaVenus className="gender-icon female" />
                         )}
-                        <span
+                        {/*     <span
                           className={`status-dot ${
                             user.status === "online" ? "online" : "offline"
                           }`}
                         >
                           <FaCircle />
-                        </span>
+                        </span>*/}
 
                         <div className="spacer" />
                         <FaThumbtack
@@ -647,7 +553,13 @@ const ChatList = () => {
                       setShowCountryTabs(false);
                     }}
                   >
-                    {country}
+                    {country}{" "}
+                    {countryNameToCode[country] && (
+                      <ReactCountryFlag
+                        countryCode={countryNameToCode[country]}
+                        svg
+                      />
+                    )}
                   </button>
                 ))}
               </div>

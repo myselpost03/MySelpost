@@ -11,6 +11,7 @@ const Register = () => {
     email: "",
     password: "",
     gender: "",
+    age: "",
   });
 
   const [step, setStep] = useState(1);
@@ -22,15 +23,14 @@ const Register = () => {
   const [nameTaken, setNameTaken] = useState(false);
   const navigate = useNavigate();
 
- useEffect(() => {
-  fetch("https://ipwho.is/?fields=country_code")
-    .then((res) => res.json())
-    .then((response) => {
-      setCountry(response.country_code || "Hidden");
-    })
-    .catch(() => setCountry("Hidden"));
-}, []);
-
+  useEffect(() => {
+    fetch("https://ipwho.is/?fields=country_code")
+      .then((res) => res.json())
+      .then((response) => {
+        setCountry(response.country_code || "Hidden");
+      })
+      .catch(() => setCountry("Hidden"));
+  }, []);
 
   const getDeviceId = () => {
     const key = "device_id";
@@ -104,6 +104,7 @@ const Register = () => {
     formData.email &&
     formData.password &&
     formData.gender &&
+    formData.age &&
     emailValid &&
     !nameTaken;
 
@@ -112,7 +113,7 @@ const Register = () => {
     setLoading(true);
     setError("");
 
-    const { name, email, password, gender } = formData;
+    const { name, email, password, gender, age } = formData;
     const deviceId = getDeviceId();
     try {
       const { data: existingUsers } = await supabase
@@ -133,6 +134,7 @@ const Register = () => {
           email,
           password: hashedPassword,
           gender,
+          age: parseInt(age),
           country,
           device_id: deviceId,
         },
@@ -186,13 +188,9 @@ const Register = () => {
                 className={!emailValid ? "invalid" : ""}
               />
               {!emailValid && (
-                <p className="error-msg">
-                  Please enter a valid email address.
-                </p>
+                <p className="error-msg">Please enter a valid email address.</p>
               )}
-              <p className="step-indicator">
-                Step 1 of 2 ✅
-              </p>
+              <p className="step-indicator">Step 1 of 2 ✅</p>
             </>
           )}
 
@@ -206,6 +204,16 @@ const Register = () => {
                 onChange={handleChange}
                 required
               />
+<input
+  type="number"
+  name="age"
+  placeholder="Age"
+  value={formData.age}
+  onChange={handleChange}
+  required
+  min="1"
+  max="120"
+/>
 
               <div className="gender-group">
                 <label className="gender-option">
@@ -240,9 +248,7 @@ const Register = () => {
                 Already have an account? <Link to="/login">Login</Link>
               </p>
 
-              <p className="step-indicator">
-                Step 2 of 2 🧩
-              </p>
+              <p className="step-indicator">Step 2 of 2 🧩</p>
             </>
           )}
         </form>
