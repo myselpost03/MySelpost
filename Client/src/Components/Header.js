@@ -59,6 +59,7 @@ const Header = () => {
       setChecking(false);
     }
   };
+  
   const handleClick = () => {
     setLoading(true);
     // Simulate loading (optional)
@@ -66,6 +67,11 @@ const Header = () => {
       navigate(`/profile/${user.id}`);
     }, 500); // Optional delay
   };
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     const updatedForm = { ...formData, [name]: value };
@@ -116,14 +122,7 @@ const Header = () => {
   };
 
   const handleChat = () => {
-    if (!user) {
-      setAlertMessage({
-        text: "🚫 You need to register or log in to access the chat featue.",
-        withButton: true,
-      });
-      return;
-    }
-    navigate("/chat-list");
+    navigate("/register");
   };
 
   const handleMobileRedirect = (path) => {
@@ -182,13 +181,6 @@ const Header = () => {
                 <Link to="/register" className="profile-button">
                   Register
                 </Link>
-                <button
-                  type="button"
-                  onClick={handleChat}
-                  className="profile-button"
-                >
-                  Chat
-                </button>
               </nav>
             </>
           ) : (
@@ -205,15 +197,15 @@ const Header = () => {
                 onClick={handleChat}
                 className="profile-button"
               >
-                Chat
+                Register
               </button>
             </nav>
           )}
         </form>
       ) : (
         <div className="nav-logged-in">
-          <button onClick={handleChat} className="profile-button">
-            Chat
+          <button onClick={handleLogout} className="profile-button">
+            Logout
           </button>
           <Link
             style={{ textDecoration: "none" }}

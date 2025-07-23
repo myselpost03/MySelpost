@@ -32,7 +32,8 @@ const Register = () => {
       .catch(() => setCountry("Hidden"));
   }, []);
 
-  const getDeviceId = () => {
+  {
+    /*const getDeviceId = () => {
     const key = "device_id";
     if (typeof window === "undefined") return "";
     const stored = localStorage.getItem(key);
@@ -48,7 +49,8 @@ const Register = () => {
     const deviceId = btoa(id).slice(0, 32);
     localStorage.setItem(key, deviceId);
     return deviceId;
-  };
+  };*/
+  }
 
   const isEmailValid = (email) => {
     const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -114,9 +116,10 @@ const Register = () => {
     setError("");
 
     const { name, email, password, gender, age } = formData;
-    const deviceId = getDeviceId();
+    //const deviceId = getDeviceId();
     try {
-      const { data: existingUsers } = await supabase
+      {
+        /*   const { data: existingUsers } = await supabase
         .from("users")
         .select("id")
         .eq("device_id", deviceId);
@@ -125,6 +128,7 @@ const Register = () => {
         setError("This device has already been used to register.");
         setLoading(false);
         return;
+   */
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -136,7 +140,7 @@ const Register = () => {
           gender,
           age: parseInt(age),
           country,
-          device_id: deviceId,
+          //     device_id: deviceId,
         },
       ]);
 
@@ -204,16 +208,16 @@ const Register = () => {
                 onChange={handleChange}
                 required
               />
-<input
-  type="number"
-  name="age"
-  placeholder="Age"
-  value={formData.age}
-  onChange={handleChange}
-  required
-  min="1"
-  max="120"
-/>
+              <input
+                type="number"
+                name="age"
+                placeholder="Age"
+                value={formData.age}
+                onChange={handleChange}
+                required
+                min="1"
+                max="120"
+              />
 
               <div className="gender-group">
                 <label className="gender-option">

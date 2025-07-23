@@ -3,9 +3,9 @@
 
 * {
   -webkit-user-select: none; /* Safari */
-  -moz-user-select: none;    /* Firefox */
-  -ms-user-select: none;     /* Internet Explorer/Edge */
-   user-select: none;         /* Standard */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Standard */
 }
 
 /* Hide scrollbar but keep scroll functionality */
@@ -34,8 +34,6 @@ body::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
 
-
-
 .center-wrapper {
   height: calc(100vh - 150px);
   display: flex;
@@ -52,9 +50,26 @@ body::-webkit-scrollbar {
   margin-top: 1px;
 }
 
-
-
 .sketchy-button {
+  font-family: "love ya like a sister", cursive;
+  font-size: 1.8rem;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  width: 220px;
+  padding: 12px 24px;
+  color: #000;
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 18px;
+  box-shadow: -3px 3px 0 #000;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.sketchy-button-alert {
   font-family: "love ya like a sister", cursive;
   font-size: 1.8rem;
   -webkit-tap-highlight-color: transparent;
@@ -82,7 +97,6 @@ body::-webkit-scrollbar {
   transform: translate(0, 0);
   box-shadow: none;
 }
-
 
 .or-text {
   font-family: "Patrick Hand", cursive;
@@ -188,7 +202,7 @@ body::-webkit-scrollbar {
   border-radius: 20px;
   box-shadow: -4px 4px 0px #222;
   padding: 20px 25px;
-  width: 260px;
+  width: 350px;
   text-align: center;
   position: relative;
   transition: all 0.2s ease-in-out;
@@ -215,21 +229,68 @@ body::-webkit-scrollbar {
 }
 
 /* Button inside alert */
-.sketchy-close-btn {
-  margin-top: 20px;
-  background-color: #333;
-  color: #fff;
-  font-family: "Patrick Hand", cursive;
-  font-size: 1rem;
-  padding: 10px 16px;
-  border: 3px solid #000;
-  border-radius: 12px;
-  cursor: pointer;
-  box-shadow: -3px 3px 0px #000;
-  transition: all 0.1s ease-in-out;
-}
 
 .sketchy-close-btn:hover {
   transform: translateY(-2px);
   box-shadow: -1px 1px 0px #000;
+}
+
+/* Build App Modal */
+.build-app-modal h3 {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+  color: #2a2a2a;
+}
+
+.build-app-modal .modal-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center buttons horizontally */
+  gap: 10px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.build-app-modal .sketchy-button {
+  width: 150px; /* smaller fixed width */
+  padding: 8px 12px;
+  font-size: 20px;
+  border: 2px dashed #333;
+  background-color: #fefefe;
+  font-family: "love ya like a sister", cursive;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #000;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.build-app-modal .sketchy-button:hover {
+  background-color: #e0ffe0;
+  transform: scale(1.02);
+}
+
+/* Register Alert Modal */
+.register-alert-modal {
+  background-color: #fff5f5;
+  border-color: #cc0000;
+}
+
+.register-alert-modal p {
+  color: #cc0000;
+  margin-bottom: 12px;
+}
+
+.register-alert-modal .sketchy-link {
+  color: #0000cc;
+  text-decoration: underline;
+}
+
+.sketchy-close-btn {
+  margin-top: 10px;
+  background-color: #ffe;
+  border: 2px dashed #333;
+  padding: 6px 12px;
+  font-family: "patrick hand", cursive;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #000;
 }
