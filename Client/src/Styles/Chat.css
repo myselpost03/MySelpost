@@ -404,6 +404,7 @@ body.theme-dark .fixed-theme-toggle {
   padding: 0.3rem 0.8rem;
   font-size: 1rem;
   border-radius: 10px;
+  font-family: "patrick hand", serif;
   cursor: pointer;
   color: #c33;
   margin: 0.5rem auto;
@@ -414,10 +415,6 @@ body.theme-dark .fixed-theme-toggle {
 .block-btn:hover {
   transform: scale(1.05);
   background: #fcc;
-}
-
-.top-actions {
-  text-align: right;
 }
 
 .input-area .icon-btn {
@@ -459,14 +456,6 @@ body.theme-dark .fixed-theme-toggle {
   }
 }
 
-.typing-indicator {
-  font-style: italic;
-  font-size: 0.9rem;
-  margin-left: 1rem;
-  color: #888;
-  animation: fadeBlink 1s ease-in-out infinite;
-}
-
 @keyframes fadeBlink {
   0% {
     opacity: 0.3;
@@ -477,10 +466,6 @@ body.theme-dark .fixed-theme-toggle {
   100% {
     opacity: 0.3;
   }
-}
-
-.Chat-UI.dark .typing-indicator {
-  color: #ccc;
 }
 
 .empty-chat-img {
@@ -531,4 +516,79 @@ body.theme-dark .fixed-theme-toggle {
     opacity: 15;
     transform: rotate(6deg) scale(1.05);
   }
+}
+
+.top-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px dashed #222;
+}
+
+.left-actions .block-btn {
+  padding: 0.4rem 1rem;
+  border: 2px dashed #333;
+  background-color: #ffe2e2;
+  font-family: "patrick hand", cursive, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 2px 2px 0px #000;
+}
+
+.left-actions .block-btn:hover {
+  background-color: #ffbbbb;
+}
+
+.auto-delete-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.toggle-label {
+  font-size: 0.85rem;
+  font-weight: bold;
+  font-family: "patrick hand", cursive, sans-serif;
+  color: var(--chat-label-color, #333); /* Will adapt if dark mode is active */
+}
+
+.Chat-UI.theme-dark .toggle-label {
+  color: #eee;
+}
+
+.toggle-switch {
+  width: 50px;
+  height: 26px;
+  background-color: #ccc;
+  border-radius: 30px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  box-shadow: 2px 2px 0px #000;
+}
+
+.toggle-switch.on {
+  background-color: #16c47f;
+}
+
+.toggle-switch.off {
+  background-color: #bbb;
+}
+
+.toggle-thumb {
+  width: 22px;
+  height: 22px;
+  background-color: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: all 0.3s ease;
+  box-shadow: 1px 1px 0px #000;
+}
+
+.toggle-switch.on .toggle-thumb {
+  transform: translateX(24px);
 }

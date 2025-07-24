@@ -10,58 +10,23 @@ const Register = () => {
     name: "",
     email: "",
     password: "",
-    gender: "",
-    age: "",
+    profilePic: null,
   });
 
   const [step, setStep] = useState(1);
   const [emailValid, setEmailValid] = useState(true);
-  const [country, setCountry] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [country, setCountry] = useState("Hidden");
+
   const [nameTaken, setNameTaken] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch("https://ipwho.is/?fields=country_code")
-      .then((res) => res.json())
-      .then((response) => {
-        setCountry(response.country_code || "Hidden");
-      })
-      .catch(() => setCountry("Hidden"));
-  }, []);
-
-  {
-    /*const getDeviceId = () => {
-    const key = "device_id";
-    if (typeof window === "undefined") return "";
-    const stored = localStorage.getItem(key);
-    if (stored) return stored;
-    const idParts = [
-      navigator.userAgent,
-      window.screen?.width,
-      window.screen?.height,
-      navigator.language,
-      Intl.DateTimeFormat().resolvedOptions().timeZone,
-    ];
-    const id = idParts.join("-");
-    const deviceId = btoa(id).slice(0, 32);
-    localStorage.setItem(key, deviceId);
-    return deviceId;
-  };*/
-  }
-
-  const isEmailValid = (email) => {
-    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return pattern.test(email);
-  };
+  const isEmailValid = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const checkNameExists = async (name) => {
-    if (!name) {
-      setNameTaken(false);
-      return;
-    }
+    if (!name) return;
     const { data } = await supabase
       .from("users")
       .select("name")
@@ -70,7 +35,7 @@ const Register = () => {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, files } = e.target;
 
     if (name === "email") {
       setEmailValid(isEmailValid(value));
@@ -82,9 +47,18 @@ const Register = () => {
 
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: files ? files[0] : value,
     }));
   };
+
+  useEffect(() => {
+    fetch("https://ipwho.is/?fields=country_code")
+      .then((res) => res.json())
+      .then((response) => {
+        setCountry(response.country_code || "Hidden");
+      })
+      .catch(() => setCountry("Hidden"));
+  }, []);
 
   useEffect(() => {
     if (
@@ -96,7 +70,7 @@ const Register = () => {
     ) {
       const delay = setTimeout(() => {
         setStep(2);
-      }, 500); // Smooth transition
+      }, 500);
       return () => clearTimeout(delay);
     }
   }, [formData.name, formData.email, emailValid, nameTaken, step]);
@@ -105,8 +79,7 @@ const Register = () => {
     formData.name &&
     formData.email &&
     formData.password &&
-    formData.gender &&
-    formData.age &&
+    formData.profilePic &&
     emailValid &&
     !nameTaken;
 
@@ -115,32 +88,35 @@ const Register = () => {
     setLoading(true);
     setError("");
 
-    const { name, email, password, gender, age } = formData;
-    //const deviceId = getDeviceId();
     try {
-      {
-        /*   const { data: existingUsers } = await supabase
-        .from("users")
-        .select("id")
-        .eq("device_id", deviceId);
+      const hashedPassword = await bcrypt.hash(formData.password, 10);
 
-      if (existingUsers.length > 0) {
-        setError("This device has already been used to register.");
-        setLoading(false);
-        return;
-   */
+      let profilePicUrl = null;
+      if (formData.profilePic) {
+        const fileExt = formData.profilePic.name.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `avatars/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("profile-pics")
+          .upload(filePath, formData.profilePic);
+
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabase.storage
+          .from("profile-pics")
+          .getPublicUrl(filePath);
+
+        profilePicUrl = publicUrlData.publicUrl;
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
       const { error } = await supabase.from("users").insert([
         {
-          name,
-          email,
+          name: formData.name,
+          email: formData.email,
           password: hashedPassword,
-          gender,
-          age: parseInt(age),
-          country,
-          //     device_id: deviceId,
+          profile_pic: profilePicUrl,
+          country: country,
         },
       ]);
 
@@ -208,39 +184,15 @@ const Register = () => {
                 onChange={handleChange}
                 required
               />
+
+              <label style={{ marginTop: "10px" }}>Profile Pic</label>
               <input
-                type="number"
-                name="age"
-                placeholder="Age"
-                value={formData.age}
+                type="file"
+                name="profilePic"
+                accept="image/*"
                 onChange={handleChange}
                 required
-                min="1"
-                max="120"
               />
-
-              <div className="gender-group">
-                <label className="gender-option">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="male"
-                    checked={formData.gender === "male"}
-                    onChange={handleChange}
-                  />
-                  <span>♂ Male</span>
-                </label>
-                <label className="gender-option">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="female"
-                    checked={formData.gender === "female"}
-                    onChange={handleChange}
-                  />
-                  <span>♀ Female</span>
-                </label>
-              </div>
 
               {error && <p className="error-msg">{error}</p>}
 
@@ -252,7 +204,7 @@ const Register = () => {
                 Already have an account? <Link to="/login">Login</Link>
               </p>
 
-              <p className="step-indicator">Step 2 of 2 🧩</p>
+              <p className="step-indicator">Step 2 of 2 📸</p>
             </>
           )}
         </form>

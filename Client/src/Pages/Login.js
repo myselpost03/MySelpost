@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: "",
+    identifier: "",
     password: "",
   });
 
@@ -21,8 +21,8 @@ const Login = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "email") {
-      setEmailValid(isEmailValid(value));
+    if (name === "identifier") {
+    setEmailValid(value === "" || isEmailValid(value));
     }
 
     setFormData((prev) => ({
@@ -31,49 +31,49 @@ const Login = () => {
     }));
   };
 
-  const isFormValid = formData.email && formData.password && emailValid;
+  const isFormValid = formData.identifier && formData.password;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    const { email, password } = formData;
+    const { identifier, password } = formData;
 
-    try {
-      const { data, error: fetchError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("email", email)
-        .single();
+     try {
+    // Fetch user by either email or name
+    const { data, error: fetchError } = await supabase
+      .from("users")
+      .select("*")
+      .or(`email.eq.${identifier},name.eq.${identifier}`)
+      .single();
 
-      if (fetchError || !data) {
-        throw new Error("Invalid email or user not found.");
-      }
-
-      const passwordMatch = await bcrypt.compare(password, data.password);
-      if (!passwordMatch) {
-        throw new Error("Incorrect password.");
-      }
-
-      // ✅ Store logged-in user data in localStorage
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: data.id,
-          name: data.name,
-          email: data.email,
-          coins: data.reward_coins ?? 0, // fallback to 0
-          rewardTime: data.last_coin_award_time ?? null,
-        })
-      );
-
-      navigate("/");
-    } catch (err) {
-      setError(err.message || "Login failed.");
-    } finally {
-      setLoading(false);
+    if (fetchError || !data) {
+      throw new Error("Invalid username/email or user not found.");
     }
+
+    const passwordMatch = await bcrypt.compare(password, data.password);
+    if (!passwordMatch) {
+      throw new Error("Incorrect password.");
+    }
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        coins: data.reward_coins ?? 0,
+        rewardTime: data.last_coin_award_time ?? null,
+      })
+    );
+
+    navigate("/");
+  } catch (err) {
+    setError(err.message || "Login failed.");
+  } finally {
+    setLoading(false);
+  }
   };
 
   return (
@@ -82,18 +82,19 @@ const Login = () => {
       <div className="login-container">
         <form className="login-form" onSubmit={handleSubmit}>
           <h2>Log In</h2>
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className={!emailValid ? "invalid" : ""}
-          />
-          {!emailValid && (
-            <p className="error-msg">Please enter a valid email address.</p>
-          )}
+        <input
+  type="text"
+  name="identifier"
+  placeholder="Email or Name"
+  value={formData.identifier}
+  onChange={handleChange}
+  required
+  className={!emailValid ? "invalid" : ""}
+/>
+{!emailValid && (
+  <p className="error-msg">Email format invalid (if you're entering an email)</p>
+)}
+
           <input
             type="password"
             name="password"

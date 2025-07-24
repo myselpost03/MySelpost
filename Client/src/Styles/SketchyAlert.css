@@ -4,6 +4,7 @@
 .sketchy-alert-new {
   position: fixed;
   top: 50%;
+  max-width: 90vw;
   left: 50%;
   transform: translate(-50%, -50%);
   background: #eee;
@@ -17,7 +18,24 @@
 }
 
 .alert-msg{
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+}
+
+@media (max-width: 480px) {
+  .sketchy-alert-new {
+    padding: 15px 20px;
+  }
+
+  .sketchy-alert-new .alert-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .sketchy-alert-new button {
+    width: 100%;
+    margin: 5px 0;
+  }
 }
 
 /* Button styles */
@@ -45,5 +63,11 @@
 .sketchy-alert-new .close-btn {
   background-color: #000000;
   color: white;
+  border: 2px solid #eee;
+}
+
+.sketchy-alert-new .pay-btn {
+  background-color: #16C47F;
+  color: #fff;
   border: 2px solid #eee;
 }

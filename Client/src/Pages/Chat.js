@@ -9,8 +9,6 @@ import bannedData from "../Utils/bannedWords.json";
 import SketchyAlert from "../Components/SketchyAlert";
 import "../Styles/Chat.css";
 
-const emojis = ["😊", "😂", "👍", "❤️", "🔥", "😎", "🎨", "💬"];
-
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -23,23 +21,140 @@ const Chat = () => {
   const [audioPermission, setAudioPermission] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
-  const [isTyping, setIsTyping] = useState(false);
+  const [autoDeleteEnabled, setAutoDeleteEnabled] = useState(true);
   const [hasInvitedFriend, setHasInvitedFriend] = useState(false); // NEW
   const { id: targetId } = useParams();
   const { state } = useLocation();
   const currentUser = JSON.parse(localStorage.getItem("user"));
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
+  const [hasAccess, setHasAccess] = useState(false);
 
   const targetUser = state?.targetUser;
-  const typingTimeoutRef = useRef(null);
   const navigate = useNavigate();
-  const [showEmojis, setShowEmojis] = useState(false);
   const messagesEndRef = useRef(null);
+  const [showPayPal, setShowPayPal] = useState(false);
 
-  const handleThemeToggle = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
-  };
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (!currentUser?.id) return;
+      const { data, error } = await supabase
+        .from("users")
+        .select("self_destruct_pricing")
+        .eq("id", currentUser.id)
+        .single();
+
+      if (!error && data?.self_destruct_pricing === "paid") {
+        setHasAccess(true);
+      } else {
+        setHasAccess(false);
+      }
+    };
+
+    checkAccess();
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    if (showPayPal && window.paypal && currentUser) {
+      if (
+        document.getElementById("paypal-button-container").childElementCount ===
+        0
+      ) {
+        window.paypal
+          .Buttons({
+            style: {
+              layout: "vertical",
+              color: "blue",
+              shape: "pill",
+              label: "paypal",
+            },
+            createOrder: (data, actions) => {
+              return actions.order.create({
+                purchase_units: [{ amount: { value: "1.00" } }],
+              });
+            },
+            onApprove: async (data, actions) => {
+              await actions.order.capture();
+
+              setAlertMessage({
+                text: "✅ Payment successful! Now you can chat with premium country user.",
+                withButton: true,
+              });
+
+              const user = JSON.parse(localStorage.getItem("user"));
+              const id = user?.id;
+
+              if (id) {
+                await supabase
+                  .from("users")
+                  .update({ self_destruct_pricing: "paid" })
+                  .eq("id", id);
+
+                setHasAccess(true);
+                setAutoDeleteEnabled(false);
+              }
+            },
+            onError: (err) => {
+              console.error("PayPal error:", err);
+              setAlertMessage({
+                text: `❌ Payment Failed.`,
+                withButton: true,
+              });
+            },
+          })
+          .render("#paypal-button-container");
+      }
+    }
+  }, [showPayPal, currentUser]);
+
+  useEffect(() => {
+    if (showPayPal && window.paypal && currentUser) {
+      if (
+        document.getElementById("paypal-button-container").childElementCount ===
+        0
+      ) {
+        window.paypal
+          .Buttons({
+            style: {
+              layout: "vertical",
+              color: "blue",
+              shape: "pill",
+              label: "paypal",
+            },
+            createOrder: (data, actions) => {
+              return actions.order.create({
+                purchase_units: [{ amount: { value: "1.00" } }],
+              });
+            },
+            onApprove: async (data, actions) => {
+              await actions.order.capture();
+
+              setAlertMessage({
+                text: "✅ Payment successful! Now you can chat with premium country user.",
+                withButton: true,
+              });
+
+              const user = JSON.parse(localStorage.getItem("user"));
+              const id = user?.id;
+
+              if (id) {
+                await supabase
+                  .from("users")
+                  .update({ self_destruct_pricing: "paid" })
+                  .eq("id", id);
+              }
+            },
+            onError: (err) => {
+              console.error("PayPal error:", err);
+              setAlertMessage({
+                text: `❌ Payment Failed.`,
+                withButton: true,
+              });
+            },
+          })
+          .render("#paypal-button-container");
+      }
+    }
+  }, [showPayPal, currentUser]);
 
   useEffect(() => {
     const checkIfBlocked = async () => {
@@ -115,6 +230,15 @@ const Chat = () => {
 
     checkBlockStatus();
   }, [currentUser.id, targetId]);
+
+  const chatStorageKey = `chat_${currentUser.id}_${targetId}`;
+
+// Load from localStorage on mount
+useEffect(() => {
+  const localData = JSON.parse(localStorage.getItem(chatStorageKey)) || [];
+  setMessages(localData);
+}, [currentUser.id, targetId]);
+
 
   useEffect(() => {
     const loadInitialMessages = async () => {
@@ -271,71 +395,97 @@ const Chat = () => {
     return "just now";
   }
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
+ const sendMessage = async () => {
+  if (!input.trim()) return;
 
-    setIsSending(true);
-    const newMessage = {
-      sender_id: currentUser.id,
-      receiver_id: targetId,
-      message: input.trim(),
-      reply_to: replyTo?.id || null, // optional, if you have reply feature
+  setIsSending(true);
+
+  const messageText = input.trim();
+  const timestamp = new Date().toISOString();
+  const tempId = Date.now(); // Temporary unique ID
+
+  // Create a temporary local message
+  const localMsg = {
+    id: tempId,
+    text: messageText,
+    type: "sent",
+    time: new Date().toLocaleTimeString(),
+    timestamp,
+  };
+
+  // Add to messages state and localStorage immediately
+  setMessages((prev) => {
+    const updated = [...prev, localMsg];
+    localStorage.setItem(chatStorageKey, JSON.stringify(updated));
+    return updated;
+  });
+
+  setInput(""); // Clear input
+
+  const newMessage = {
+    sender_id: currentUser.id,
+    receiver_id: targetId,
+    message: messageText,
+    reply_to: replyTo?.id || null,
+  };
+
+  // Insert into Supabase
+  const { data, error } = await supabase.from("chats").insert([newMessage]).select();
+
+  if (error) {
+    console.error("❌ Supabase insert error:", error.message);
+    setIsSending(false);
+    return;
+  }
+
+  // If insert succeeded, replace local temp message with Supabase-confirmed one
+  if (data && data[0]) {
+    const dbMsg = {
+      id: data[0].id,
+      text: data[0].message,
+      type: "sent",
+      time: new Date(data[0].created_at).toLocaleTimeString(),
+      timestamp: data[0].created_at,
     };
 
-    // Insert into Supabase
-    const { data, error } = await supabase.from("chats").insert([newMessage]);
+    setMessages((prev) => {
+      const filtered = prev.filter((m) => m.id !== tempId);
+      const updated = [...filtered, dbMsg];
+      localStorage.setItem(chatStorageKey, JSON.stringify(updated));
+      return updated;
+    });
+  }
 
-    if (error) {
-      console.error("❌ Supabase insert error:", error.message);
-      return;
-    } else {
-      setInput("");
-    }
-    // Update unread count
-    await supabase.rpc("increment_unread_count", {
-      sender: currentUser.id,
-      receiver: targetId,
+  // Optional: Update unread count
+  await supabase
+    .from("unread_counts")
+    .upsert(
+      {
+        sender_id: currentUser.id,
+        receiver_id: targetId,
+        count: 1,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: ["sender_id", "receiver_id"] }
+    )
+    .select()
+    .then(async ({ data, error }) => {
+      if (!error && data?.[0]) {
+        await supabase
+          .from("unread_counts")
+          .update({
+            count: data[0].count + 1,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("sender_id", currentUser.id)
+          .eq("receiver_id", targetId);
+      }
     });
 
-    // Instead of using RPC, we'll just do raw upsert manually:
-    await supabase
-      .from("unread_counts")
-      .upsert(
-        {
-          sender_id: currentUser.id,
-          receiver_id: targetId,
-          count: 1, // initial
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: ["sender_id", "receiver_id"],
-          ignoreDuplicates: false,
-        }
-      )
-      .select()
-      .then(async ({ data, error }) => {
-        if (!error) {
-          // Increment count manually if exists
-          const existing = data[0];
-          if (existing) {
-            await supabase
-              .from("unread_counts")
-              .update({
-                count: existing.count + 1,
-                updated_at: new Date().toISOString(),
-              })
-              .eq("sender_id", currentUser.id)
-              .eq("receiver_id", targetId);
-          }
-        }
-      });
-    console.log("✅ Message sent to Supabase:", data);
+  setReplyTo(null);
+  setIsSending(false);
+};
 
-    // Don’t update local messages state manually to avoid duplication
-    setInput("");
-    setIsSending(false);
-    setReplyTo(null);
-  };
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
@@ -476,18 +626,6 @@ const Chat = () => {
     }
   };
 
-  const updateTypingStatus = async (typing) => {
-    await supabase.from("typing_status").upsert(
-      {
-        user_id: currentUser.id,
-        target_id: targetId,
-        is_typing: typing,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: ["user_id", "target_id"] }
-    );
-  };
-
   const handleInputChange = (e) => {
     const newText = e.target.value;
     const lowerText = newText.toLowerCase();
@@ -506,9 +644,12 @@ const Chat = () => {
     );
 
     if (hasAbuse) {
-      setAlertMessage("🚫 Abusive words are not allowed.");
+      setAlertMessage({
+        text: "🚫 Abusive words are not allowed.",
+        buttons: ["close"], // only close
+      });
+
       setInput("");
-      updateTypingStatus(false);
       return;
     }
 
@@ -520,39 +661,13 @@ const Chat = () => {
     if (hasLink) {
       setAlertMessage("🚫 Links or obfuscated links are not allowed.");
       setInput("");
-      updateTypingStatus(false);
+
       return;
     }
 
-    // Passed checks, allow typing
     setInput(newText);
-    updateTypingStatus(true);
-
-    clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
-      updateTypingStatus(false);
-    }, 1500);
   };
 
-  //Is typing functionality
-  {
-    /*useEffect(() => {
-    const interval = setInterval(async () => {
-      const { data, error } = await supabase
-        .from("typing_status")
-        .select("is_typing")
-        .eq("user_id", targetId)
-        .eq("target_id", currentUser.id)
-        .single();
-
-      if (!error && data) {
-        setIsTyping(data.is_typing);
-      }
-    }, 1000); // Check every second
-
-    return () => clearInterval(interval);
-  }, [targetId, currentUser.id]);*/
-  }
   const handleBack = () => {
     navigate(-1);
   };
@@ -570,10 +685,38 @@ const Chat = () => {
   return (
     <div className={`Chat-UI ${theme}`}>
       <SketchyHeader title="Chat" onBack={handleBack} />
-      {alertMessage && (
+      {alertMessage && !hasAccess && (
         <SketchyAlert
-          message={alertMessage}
-          onClose={() => setAlertMessage(null)}
+          message={
+            showPayPal ? (
+              <div>
+                <div>💳 Complete your payment below:</div>
+                <div
+                  id="paypal-button-container"
+                  style={{ marginTop: "1rem" }}
+                ></div>
+              </div>
+            ) : typeof alertMessage === "string" ? (
+              alertMessage
+            ) : (
+              alertMessage.text
+            )
+          }
+          buttons={
+            showPayPal
+              ? ["close"]
+              : typeof alertMessage === "object" &&
+                Array.isArray(alertMessage.buttons)
+              ? alertMessage.buttons
+              : ["close"]
+          }
+          onClose={() => {
+            setAlertMessage(null);
+            setShowPayPal(false);
+          }}
+          onPay={() => {
+            setShowPayPal(true);
+          }}
         />
       )}
 
@@ -584,9 +727,30 @@ const Chat = () => {
       <div className="chat-container">
         <div className="chat-box">
           <div className="top-actions">
-            <button className="block-btn" onClick={handleBlockToggle}>
-              {isBlocked ? "Unblock" : "Block"}
-            </button>
+            <div className="left-actions">
+              <button className="block-btn" onClick={handleBlockToggle}>
+                {isBlocked ? "Unblock" : "Block"}
+              </button>
+            </div>
+
+            <div className="right-actions auto-delete-toggle">
+              <label className="toggle-label">Self-Destruct: 24h</label>
+              <div
+                className={`toggle-switch ${autoDeleteEnabled ? "on" : "off"}`}
+                onClick={() => {
+                  if (hasAccess) {
+                    setAutoDeleteEnabled(!autoDeleteEnabled);
+                  } else {
+                    setAlertMessage({
+                      text: "⚠️ Pay $1 to disable self-destruct mode.",
+                      buttons: ["pay", "close"],
+                    });
+                  }
+                }}
+              >
+                <div className="toggle-thumb" />
+              </div>
+            </div>
           </div>
 
           {blockedByOtherUser || iBlockedOtherUser ? (
@@ -660,9 +824,6 @@ const Chat = () => {
                     </div>
                   </div>
                 ))}
-                {isTyping && (
-                  <div className="typing-indicator">✍️ User is typing...</div>
-                )}
 
                 <div ref={messagesEndRef} />
                 <div ref={messagesEndRef} />

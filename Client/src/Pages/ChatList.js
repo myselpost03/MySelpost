@@ -16,59 +16,201 @@ import LoadingIndicator from "../Components/LoadingIndicator";
 import ReactCountryFlag from "react-country-flag";
 
 const countryNameToCode = {
-  IN: "IN",
-  US: "US",
-  GB: "GB",
-  CA: "CA",
-  AU: "AU",
-  DE: "DE",
-  FR: "FR",
-  IT: "IT",
-  ES: "ES",
-  JP: "JP",
-  CN: "CN",
-  RU: "RU",
-  BR: "BR",
-  MX: "MX",
-  KR: "KR",
-  ID: "ID",
-  NL: "NL",
-  SE: "SE",
-  NO: "NO",
-  DK: "DK",
-  CH: "CH",
-  AE: "AE",
-  SA: "SA",
-  ZA: "ZA",
-  EG: "EG",
-  TR: "TR",
-  TH: "TH",
-  VN: "VN",
+  AF: "AF",
+  AL: "AL",
+  DZ: "DZ",
+  AD: "AD",
+  AO: "AO",
+  AG: "AG",
   AR: "AR",
-  CL: "CL",
-  IE: "IE",
-  SG: "SG",
-  MY: "MY",
-  PH: "PH",
-  IL: "IL",
-  UA: "UA",
-  BE: "BE",
+  AM: "AM",
+  AU: "AU",
   AT: "AT",
+  AZ: "AZ",
+  BS: "BS",
+  BH: "BH",
+  BD: "BD",
+  BB: "BB",
+  BY: "BY",
+  BE: "BE",
+  BZ: "BZ",
+  BJ: "BJ",
+  BT: "BT",
+  BO: "BO",
+  BA: "BA",
+  BW: "BW",
+  BR: "BR",
+  BN: "BN",
+  BG: "BG",
+  BF: "BF",
+  BI: "BI",
+  CV: "CV",
+  KH: "KH",
+  CM: "CM",
+  CA: "CA",
+  CF: "CF",
+  TD: "TD",
+  CL: "CL",
+  CN: "CN",
+  CO: "CO",
+  KM: "KM",
+  CD: "CD",
+  CG: "CG",
+  CR: "CR",
+  CI: "CI",
+  HR: "HR",
+  CU: "CU",
+  CY: "CY",
+  CZ: "CZ",
+  DK: "DK",
+  DJ: "DJ",
+  DM: "DM",
+  DO: "DO",
+  EC: "EC",
+  EG: "EG",
+  SV: "SV",
+  GQ: "GQ",
+  ER: "ER",
+  EE: "EE",
+  SZ: "SZ",
+  ET: "ET",
+  FJ: "FJ",
   FI: "FI",
+  FR: "FR",
+  GA: "GA",
+  GM: "GM",
+  GE: "GE",
+  DE: "DE",
+  GH: "GH",
+  GR: "GR",
+  GD: "GD",
+  GT: "GT",
+  GN: "GN",
+  GW: "GW",
+  GY: "GY",
+  HT: "HT",
+  HN: "HN",
+  HU: "HU",
+  IS: "IS",
+  IN: "IN",
+  ID: "ID",
+  IR: "IR",
+  IQ: "IQ",
+  IE: "IE",
+  IL: "IL",
+  IT: "IT",
+  JM: "JM",
+  JP: "JP",
+  JO: "JO",
+  KZ: "KZ",
+  KE: "KE",
+  KI: "KI",
+  KP: "KP",
+  KR: "KR",
+  KW: "KW",
+  KG: "KG",
+  LA: "LA",
+  LV: "LV",
+  LB: "LB",
+  LS: "LS",
+  LR: "LR",
+  LY: "LY",
+  LI: "LI",
+  LT: "LT",
+  LU: "LU",
+  MG: "MG",
+  MW: "MW",
+  MY: "MY",
+  MV: "MV",
+  ML: "ML",
+  MT: "MT",
+  MH: "MH",
+  MR: "MR",
+  MU: "MU",
+  MX: "MX",
+  FM: "FM",
+  MD: "MD",
+  MC: "MC",
+  MN: "MN",
+  ME: "ME",
+  MA: "MA",
+  MZ: "MZ",
+  MM: "MM",
+  NA: "NA",
+  NR: "NR",
+  NP: "NP",
+  NL: "NL",
+  NZ: "NZ",
+  NI: "NI",
+  NE: "NE",
+  NG: "NG",
+  MK: "MK",
+  NO: "NO",
+  OM: "OM",
+  PK: "PK",
+  PW: "PW",
+  PS: "PS",
+  PA: "PA",
+  PG: "PG",
+  PY: "PY",
+  PE: "PE",
+  PH: "PH",
   PL: "PL",
   PT: "PT",
-  GR: "GR",
-  PK: "PK",
-  BD: "BD",
-  NG: "NG",
-  KE: "KE",
-  MA: "MA",
-  NZ: "NZ",
-  CO: "CO",
-  PE: "PE",
-  CZ: "CZ",
-  HU: "HU",
+  QA: "QA",
   RO: "RO",
+  RU: "RU",
+  RW: "RW",
+  KN: "KN",
+  LC: "LC",
+  VC: "VC",
+  WS: "WS",
+  SM: "SM",
+  ST: "ST",
+  SA: "SA",
+  SN: "SN",
+  RS: "RS",
+  SC: "SC",
+  SL: "SL",
+  SG: "SG",
+  SK: "SK",
+  SI: "SI",
+  SB: "SB",
+  SO: "SO",
+  ZA: "ZA",
+  SS: "SS",
+  ES: "ES",
+  LK: "LK",
+  SD: "SD",
+  SR: "SR",
+  SE: "SE",
+  CH: "CH",
+  SY: "SY",
+  TJ: "TJ",
+  TZ: "TZ",
+  TH: "TH",
+  TL: "TL",
+  TG: "TG",
+  TO: "TO",
+  TT: "TT",
+  TN: "TN",
+  TR: "TR",
+  TM: "TM",
+  TV: "TV",
+  UG: "UG",
+  UA: "UA",
+  AE: "AE",
+  GB: "GB",
+  US: "US",
+  UY: "UY",
+  UZ: "UZ",
+  VU: "VU",
+  VA: "VA",
+  VE: "VE",
+  VN: "VN",
+  YE: "YE",
+  ZM: "ZM",
+  ZW: "ZW",
 };
 
 const ChatList = () => {
@@ -177,25 +319,24 @@ const ChatList = () => {
     e.preventDefault();
     const isLoggedIn = localStorage.getItem("user");
 
-   if (isLoggedIn) {
-  console.log("Logged in user:", user);
+    if (isLoggedIn) {
+      console.log("Logged in user:", user);
 
-  // 🚫 Restrict if non-US user (except Akriti) tries to chat with US user
-  const isNotUS = user.country !== "US";
-  const isNotAkriti = user.name?.trim().toLowerCase() !== "akriti";
-  const isTargetUS = targetUser?.country === "US";
+      // 🚫 Restrict if non-US user (except Akriti) tries to chat with US user
+      const isNotUS = user.country !== "US";
+      const isNotAkriti = user.name?.trim().toLowerCase() !== "akriti";
+      const isTargetUS = targetUser?.country === "US";
 
-  if (isNotUS && isNotAkriti && isTargetUS && !hasPaidPremium) {
-    setPremiumTargetUser(targetUser);
-    setShowPremiumNotice(true);
-    return;
-  }
+      if (isNotUS && isNotAkriti && isTargetUS && !hasPaidPremium) {
+        setPremiumTargetUser(targetUser);
+        setShowPremiumNotice(true);
+        return;
+      }
 
-  navigate(path, { state: { targetUser } }); // 👈 Pass clicked user to next screen
-} else {
-  navigate("/register");
-}
-
+      navigate(path, { state: { targetUser } }); // 👈 Pass clicked user to next screen
+    } else {
+      navigate("/register");
+    }
   };
 
   useEffect(() => {
@@ -460,13 +601,13 @@ const ChatList = () => {
                         ) : (
                           <FaVenus className="gender-icon female" />
                         )}
-                        {/*     <span
+                        <span
                           className={`status-dot ${
                             user.status === "online" ? "online" : "offline"
                           }`}
                         >
                           <FaCircle />
-                        </span>*/}
+                        </span>
 
                         <div className="spacer" />
                         <FaThumbtack

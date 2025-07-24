@@ -1,28 +1,24 @@
-// src/Components/SketchyAlert.js
-import React, { useEffect } from "react";
+// SketchyAlert.jsx
+import React from "react";
 import "../Styles/SketchyAlert.css";
 
-const SketchyAlert = ({ message, onClose, buttonText, onButtonClick  }) => {
-  useEffect(() => {
-    const timer = setTimeout(onClose, 3000); // Auto-dismiss after 3 sec
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
+const SketchyAlert = ({ message, buttons = ["close"], onClose, onPay }) => {
   return (
-   <div className="sketchy-alert-new">
-      <p className="alert-msg">{message}</p>
-      <div style={{ marginTop: "10px" }}>
-        {buttonText && (
-          <button
-            className="sketchy-coin-btn"
-            onClick={onButtonClick}
-          >
-            {buttonText}
-          </button>
-        )}
-        <button className="close-btn" onClick={onClose}>
-          Close
-        </button>
+    <div className="sketchy-alert-new">
+      <div className="alert-content">
+        <p>{message}</p>
+        <div className="alert-buttons">
+          {buttons.includes("pay") && (
+            <button className="pay-btn" onClick={onPay}>
+              Pay $1
+            </button>
+          )}
+          {buttons.includes("close") && (
+            <button className="close-btn" onClick={onClose}>
+              Close
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

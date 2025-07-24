@@ -14,6 +14,46 @@ const Home = () => {
   const [showBuildModal, setShowBuildModal] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
   const [user, setUser] = useState(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileForm, setProfileForm] = useState({ gender: "", age: "" });
+
+useEffect(() => {
+  if (user && (!user.gender || !user.age)) {
+    const alertKey = `profileAlertShown_${user.id}`;
+    const alreadyShown = localStorage.getItem(alertKey);
+
+    if (!alreadyShown) {
+      setShowProfileModal(true);
+      localStorage.setItem(alertKey, "true");
+    }
+  }
+}, [user]);
+
+  const handleProfileChange = (e) => {
+    const { name, value } = e.target;
+    setProfileForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleProfileSubmit = async () => {
+    if (!profileForm.gender || !profileForm.age) return;
+
+    const { error } = await supabase
+      .from("users")
+      .update({
+        gender: profileForm.gender,
+        age: parseInt(profileForm.age),
+      })
+      .eq("id", user.id);
+
+    if (!error) {
+      const updatedUser = { ...user, ...profileForm };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser(updatedUser);
+      setShowProfileModal(false);
+    } else {
+      console.error("Update failed:", error.message);
+    }
+  };
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -158,6 +198,52 @@ const Home = () => {
           withButton={alertMessage.withButton}
           onClose={() => setAlertMessage(null)}
         />
+      )}
+      {showProfileModal && (
+        <div className="popup-wrapper">
+          <div className="popup-card">
+            <h3 className="popup-title">Hey there!</h3>
+            <p className="popup-text">
+              Tell us your age and gender to continue.
+            </p>
+
+            <div className="option-row">
+              <label className="option-box">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="male"
+                  checked={profileForm.gender === "male"}
+                  onChange={handleProfileChange}
+                />{" "}
+                Male
+              </label>
+              <label className="option-box">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="female"
+                  checked={profileForm.gender === "female"}
+                  onChange={handleProfileChange}
+                />{" "}
+                Female
+              </label>
+            </div>
+
+            <input
+              type="number"
+              className="input-field"
+              placeholder="Enter your age"
+              name="age"
+              value={profileForm.age}
+              onChange={handleProfileChange}
+            />
+
+            <button className="submit-funky-btn" onClick={handleProfileSubmit}>
+              Submit
+            </button>
+          </div>
+        </div>
       )}
 
       {user && <InviteFAB />}

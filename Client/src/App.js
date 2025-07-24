@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, useLocation, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./Utils/ProtectedRoute";
 import {
   Home,
@@ -56,6 +56,39 @@ const publicRoutes = [
   { path: "/demo", component: Demo },
 ];
 
+const useUserStatusSync = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser || !storedUser.id) return;
+
+    const updateStatus = async (status) => {
+      await supabase
+        .from("users")
+        .update({ status })
+        .eq("id", storedUser.id);
+    };
+
+    const isOnline =
+      location.pathname === "/chat-list" ||
+      /^\/chat\/[^/]+$/.test(location.pathname);
+
+    updateStatus(isOnline ? "online" : "offline");
+
+    return () => {
+      updateStatus("offline");
+    };
+  }, [location]);
+};
+
+
+function UserStatusWrapper() {
+  useUserStatusSync();
+  return null;
+}
+
+
 function App() {
   const [alertMessage, setAlertMessage] = useState(null);
 
@@ -93,6 +126,7 @@ function App() {
 
   return (
     <Router>
+       <UserStatusWrapper />
       <Routes>
         {publicRoutes.map(({ path, component: Component }) => (
           <Route key={path} path={path} element={<Component />} />
