@@ -287,7 +287,9 @@ const ChatList = () => {
       const offset = page * limit;
       const { data: allUsers, error } = await supabase
         .from("users")
-        .select("id, name, profile_pic, country, gender, status, age")
+        .select(
+          "id, name, profile_pic, country, gender, status, age, decency_rating"
+        )
         .range(offset, offset + limit - 1); // only 10 items
 
       // Get pinned IDs
@@ -419,44 +421,42 @@ const ChatList = () => {
     navigate(`/payments/${user.id}`);
   };
 
-
   const filteredUsers = useMemo(() => {
-  return users
-    .filter((user) => {
-      const genderMatch =
-        genderFilter === "all" || user.gender === genderFilter;
-      const countryMatch =
-        countryFilter === "all" || user.country === countryFilter;
-      const searchMatch = user.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      const pinMatch = activeTab === "pinned" ? user.pinned : true;
-      return genderMatch && countryMatch && searchMatch && pinMatch;
-    })
-    .sort((a, b) => {
-      const aCount = unreadCounts[a.id] || 0;
-      const bCount = unreadCounts[b.id] || 0;
-      if (bCount !== aCount) return bCount - aCount;
+    return users
+      .filter((user) => {
+        const genderMatch =
+          genderFilter === "all" || user.gender === genderFilter;
+        const countryMatch =
+          countryFilter === "all" || user.country === countryFilter;
+        const searchMatch = user.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+        const pinMatch = activeTab === "pinned" ? user.pinned : true;
+        return genderMatch && countryMatch && searchMatch && pinMatch;
+      })
+      .sort((a, b) => {
+        const aCount = unreadCounts[a.id] || 0;
+        const bCount = unreadCounts[b.id] || 0;
+        if (bCount !== aCount) return bCount - aCount;
 
-      if (a.status === "online" && b.status !== "online") return -1;
-      if (a.status !== "online" && b.status === "online") return 1;
+        if (a.status === "online" && b.status !== "online") return -1;
+        if (a.status !== "online" && b.status === "online") return 1;
 
-      const aHasPic = a.profile_pic ? 1 : 0;
-      const bHasPic = b.profile_pic ? 1 : 0;
-      if (bHasPic !== aHasPic) return bHasPic - aHasPic;
+        const aHasPic = a.profile_pic ? 1 : 0;
+        const bHasPic = b.profile_pic ? 1 : 0;
+        if (bHasPic !== aHasPic) return bHasPic - aHasPic;
 
-      const getPriority = (u) => {
-        if (u.verified && u.pinned) return 4000;
-        if (u.verified) return 3000;
-        if (u.pinned) return 2000;
-        return 1000;
-      };
+        const getPriority = (u) => {
+          if (u.verified && u.pinned) return 4000;
+          if (u.verified) return 3000;
+          if (u.pinned) return 2000;
+          return 1000;
+        };
 
-      return getPriority(b) - getPriority(a);
-    });
-}, [users, genderFilter, countryFilter, searchTerm, activeTab, unreadCounts]);
+        return getPriority(b) - getPriority(a);
+      });
+  }, [users, genderFilter, countryFilter, searchTerm, activeTab, unreadCounts]);
 
-  
   const togglePin = async (targetUserId) => {
     const user = JSON.parse(localStorage.getItem("user"));
 
@@ -503,58 +503,59 @@ const ChatList = () => {
   );
 
   useEffect(() => {
-  const controller = new AbortController();
-  const delayDebounce = setTimeout(() => {
-    const fetchSearchResults = async () => {
-      if (searchTerm.trim() === "") return;
+    const controller = new AbortController();
+    const delayDebounce = setTimeout(() => {
+      const fetchSearchResults = async () => {
+        if (searchTerm.trim() === "") return;
 
-      setLoading(true); // Set loading true immediately
+        setLoading(true); // Set loading true immediately
 
-      try {
-        const { data, error } = await supabase
-          .from("users")
-          .select("id, name, profile_pic, country, gender, status, age")
-          .ilike("name", `%${searchTerm}%`)
-          .abortSignal(controller.signal);
+        try {
+          const { data, error } = await supabase
+            .from("users")
+            .select("id, name, profile_pic, country, gender, status, age")
+            .ilike("name", `%${searchTerm}%`)
+            .abortSignal(controller.signal);
 
-        if (error) throw error;
+          if (error) throw error;
 
-        const pinnedData = await supabase
-          .from("pinned_users")
-          .select("pinned_user_id")
-          .eq("user_id", user.id);
+          const pinnedData = await supabase
+            .from("pinned_users")
+            .select("pinned_user_id")
+            .eq("user_id", user.id);
 
-        const pinnedIds = pinnedData.data?.map((row) => row.pinned_user_id) || [];
+          const pinnedIds =
+            pinnedData.data?.map((row) => row.pinned_user_id) || [];
 
-        const processed = data
-          .filter((u) => u.id !== user.id)
-          .map((user) => ({
-            ...user,
-            avatar: user.profile_pic || empty,
-            notifications: unreadCounts[user.id] || 0,
-            pinned: pinnedIds.includes(user.id),
-            status: user.status || "offline",
-          }));
+          const processed = data
+            .filter((u) => u.id !== user.id)
+            .map((user) => ({
+              ...user,
+              avatar: user.profile_pic || empty,
+              notifications: unreadCounts[user.id] || 0,
+              pinned: pinnedIds.includes(user.id),
+              status: user.status || "offline",
+            }));
 
-        setUsers(processed);
-        setHasMore(false);
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          console.error("Search error:", err);
+          setUsers(processed);
+          setHasMore(false);
+        } catch (err) {
+          if (err.name !== "AbortError") {
+            console.error("Search error:", err);
+          }
+        } finally {
+          setLoading(false);
         }
-      } finally {
-        setLoading(false);
-      }
+      };
+
+      fetchSearchResults();
+    }, 500);
+
+    return () => {
+      clearTimeout(delayDebounce);
+      controller.abort(); // cancel previous fetch if user types again
     };
-
-    fetchSearchResults();
-  }, 500);
-
-  return () => {
-    clearTimeout(delayDebounce);
-    controller.abort(); // cancel previous fetch if user types again
-  };
-}, [searchTerm]);
+  }, [searchTerm]);
 
   useEffect(() => {
     if (searchTerm.trim() === "") {
@@ -680,6 +681,12 @@ const ChatList = () => {
                           <span className="user-name">{user.name}</span>
                           {user.verified && (
                             <FaCheckCircle className="verified-icon" />
+                          )}
+                          {user.decency_rating && (
+                            <div className="decency-label">
+                            <span className="star">★</span>
+                            <span className="rating">{user.decency_rating}</span>
+                          </div>
                           )}
                         </div>
 

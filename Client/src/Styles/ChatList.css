@@ -269,6 +269,39 @@
 }
 
 
+.decency-stars {
+  margin-left: 8px;
+  font-size: 0.9em;
+}
+
+.decency-label {
+  display: inline-flex;
+  align-items: center;
+  background-color: #fffbe7;
+  border: 1px solid #f7d774;
+  color: #333;
+  font-weight: bold;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-top: 4px;
+  width: fit-content;
+  gap: 4px;
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+  margin-left: auto;
+}
+
+.decency-label .star {
+  background: linear-gradient(45deg, gold, orange, red);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 1rem;
+}
+
+.decency-label .rating {
+  font-size: 0.85rem;
+  color: #d08900;
+}
 
 
 @media (max-width: 768px) {

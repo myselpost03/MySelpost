@@ -648,7 +648,7 @@ const Chat = () => {
   const recentMessages = useRef([]);
   const lastPasted = useRef("");
 
-  const handleInputChange = (e) => {
+  const handleInputChange = async (e) => {
     const newText = e.target.value;
     const lowerText = newText.toLowerCase();
 
@@ -675,6 +675,13 @@ const Chat = () => {
         text: "🚫 Special characters are not allowed.",
         withButton: true,
       });
+       const { data, error } = await supabase.rpc("decrement_decency", {
+        user_id_input: currentUser.id,
+      });
+
+      if (error) {
+        console.error("❌ RPC error:", error.message);
+      }
       return;
     }
 
@@ -684,6 +691,15 @@ const Chat = () => {
         buttons: ["close"],
       });
       setInput("");
+
+      const { data, error } = await supabase.rpc("decrement_decency", {
+        user_id_input: currentUser.id,
+      });
+
+      if (error) {
+        console.error("❌ RPC error:", error.message);
+      }
+
       return;
     }
 
@@ -695,6 +711,13 @@ const Chat = () => {
     if (hasLink) {
       setAlertMessage("🚫 Links or obfuscated links are not allowed.");
       setInput("");
+       const { data, error } = await supabase.rpc("decrement_decency", {
+        user_id_input: currentUser.id,
+      });
+
+      if (error) {
+        console.error("❌ RPC error:", error.message);
+      }
       return;
     }
 
@@ -706,6 +729,13 @@ const Chat = () => {
         buttons: ["close"],
       });
       setInput("");
+       const { data, error } = await supabase.rpc("decrement_decency", {
+        user_id_input: currentUser.id,
+      });
+
+      if (error) {
+        console.error("❌ RPC error:", error.message);
+      }
       return;
     }
 
@@ -730,6 +760,13 @@ const Chat = () => {
         buttons: ["close"],
       });
       setInput("");
+       const { data, error } = await supabase.rpc("decrement_decency", {
+        user_id_input: currentUser.id,
+      });
+
+      if (error) {
+        console.error("❌ RPC error:", error.message);
+      }
       return;
     }
 
@@ -741,19 +778,33 @@ const Chat = () => {
         buttons: ["close"],
       });
       setInput("");
+       const { data, error } = await supabase.rpc("decrement_decency", {
+        user_id_input: currentUser.id,
+      });
+
+      if (error) {
+        console.error("❌ RPC error:", error.message);
+      }
       return;
     }
 
     setInput(newText);
   };
 
-  const handlePaste = (e) => {
+  const handlePaste = async (e) => {
     const pastedText = e.clipboardData.getData("text/plain").toLowerCase();
     if (pastedText) {
       setAlertMessage({
         text: "Pasting is not allowed",
         withButton: true,
       });
+       const { data, error } = await supabase.rpc("decrement_decency", {
+        user_id_input: currentUser.id,
+      });
+
+      if (error) {
+        console.error("❌ RPC error:", error.message);
+      }
     }
   };
 
