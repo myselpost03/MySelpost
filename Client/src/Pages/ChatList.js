@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import "../Styles/ChatList.css";
@@ -217,7 +217,6 @@ const ChatList = () => {
   const [users, setUsers] = useState([]);
   const [genderFilter, setGenderFilter] = useState("all");
   const [countryFilter, setCountryFilter] = useState("all");
-  const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [showGenderTabs, setShowGenderTabs] = useState(false);
   const [showCountryTabs, setShowCountryTabs] = useState(false);
@@ -229,11 +228,13 @@ const ChatList = () => {
   const [page, setPage] = useState(0); // pagination page
   const [hasMore, setHasMore] = useState(true); // track if more users exist
   const [loadingMore, setLoadingMore] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [unreadCounts, setUnreadCounts] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user"));
-  
+
+  const listRef = useRef(null);
 
   useEffect(() => {
     const fetchUnreadCounts = async () => {
@@ -375,7 +376,7 @@ const ChatList = () => {
     const isLoggedIn = localStorage.getItem("user");
 
     if (isLoggedIn) {
-     // console.log("Logged in user:", user);
+      // console.log("Logged in user:", user);
 
       // 🚫 Restrict if non-US user (except Akriti) tries to chat with US user
       const isNotUS = user.country !== "US";
@@ -458,7 +459,7 @@ const ChatList = () => {
 
   const togglePin = async (targetUserId) => {
     const user = JSON.parse(localStorage.getItem("user"));
-   
+
     if (!user) return;
 
     const alreadyPinned = users.find((u) => u.id === targetUserId && u.pinned);
@@ -501,7 +502,59 @@ const ChatList = () => {
     (u) => u.pinned && unreadCounts[u.id] > 0
   );
 
-  
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      const fetchSearchResults = async () => {
+        if (searchTerm.trim() === "") return;
+
+        //setLoading(true);
+        const { data, error } = await supabase
+          .from("users")
+          .select("id, name, profile_pic, country, gender, status, age")
+          .ilike("name", `%${searchTerm}%`);
+
+        if (!error && data) {
+          const pinnedData = await supabase
+            .from("pinned_users")
+            .select("pinned_user_id")
+            .eq("user_id", user.id);
+
+          const pinnedIds =
+            pinnedData.data?.map((row) => row.pinned_user_id) || [];
+
+          const processed = data
+            .filter((u) => u.id !== user.id)
+            .map((user) => ({
+              ...user,
+              avatar: user.profile_pic || empty,
+              notifications: unreadCounts[user.id] || 0,
+              pinned: pinnedIds.includes(user.id),
+              status: user.status || "offline",
+            }));
+
+          setUsers(processed);
+          setHasMore(false); // Disable load more for search
+        }
+
+        setLoading(false);
+      };
+
+      if (searchTerm.trim() !== "") {
+        fetchSearchResults();
+      }
+    }, 500); // wait 500ms after last keystroke
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setPage(0); // reset pagination
+      setUsers([]);
+      setHasMore(true);
+    }
+  }, [searchTerm]);
+
   return (
     <div className="chatlist-container">
       <Header />
@@ -510,13 +563,18 @@ const ChatList = () => {
         <LoadingIndicator />
       ) : (
         <>
-          <input
-            type="text"
-            className="sketchy-search"
-            placeholder="🔍 Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <div className="sketchy-search-wrapper">
+            <input
+              type="text"
+              className="sketchy-search"
+              placeholder="🔍 Search users..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+              }}
+            />
+          </div>
+
           <div className="tab-bar">
             <button
               className={`sketchy-tab ${activeTab === "all" ? "active" : ""}`}
@@ -570,7 +628,7 @@ const ChatList = () => {
             </button>
           </div>
 
-          <div className="sketchy-list-scrollable">
+          <div ref={listRef} className="sketchy-list-scrollable">
             {filteredUsers.length > 0 ? (
               <>
                 {filteredUsers

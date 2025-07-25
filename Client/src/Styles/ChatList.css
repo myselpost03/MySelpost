@@ -573,26 +573,21 @@
   transform: scale(1.05);
 }
 
-.search-input-wrapper {
+.sketchy-search-wrapper {
   position: relative;
-  width: 100%;
 }
 
-.search-input-wrapper input {
-  padding-right: 30px; /* space for the spinner */
-}
-
-.mini-spinner {
+.search-spinner {
   position: absolute;
+  right: 12px;
   top: 50%;
-  right: 10px;
   transform: translateY(-50%);
-  width: 14px;
   height: 14px;
-  border: 2px solid #ccc;
-  border-top: 2px solid #333;
+  width: 14px;
+  border: 2px solid #666;
+  border-top: 2px solid transparent;
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  animation: spin 0.6s linear infinite;
 }
 
 @keyframes spin {

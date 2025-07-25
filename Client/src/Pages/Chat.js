@@ -667,16 +667,16 @@ const Chat = () => {
 
     const words = lowerText.split(/\s+/);
 
-// Regex: match any word that contains at least one special character
-const hasSpecialCharacter = words.some(word => /[^a-z0-9]/i.test(word));
+    // Regex: match any word that contains at least one special character
+    const hasSpecialCharacter = words.some((word) => /[^a-z0-9?]/i.test(word));
 
-if (hasSpecialCharacter) {
-  setAlertMessage({
-    text: "🚫 Special characters are not allowed.",
-    withButton: true,
-  });
-  return;
-}
+    if (hasSpecialCharacter) {
+      setAlertMessage({
+        text: "🚫 Special characters are not allowed.",
+        withButton: true,
+      });
+      return;
+    }
 
     if (hasAbuse) {
       setAlertMessage({
@@ -722,16 +722,16 @@ if (hasSpecialCharacter) {
       "house",
       "block",
     ];
-   const wordPattern = new RegExp(`\\b(${addressKeywords.join("|")})\\b`, "i");
+    const wordPattern = new RegExp(`\\b(${addressKeywords.join("|")})\\b`, "i");
 
-if (wordPattern.test(newText)) {
-  setAlertMessage({
-    text: "🚫 Sharing address information is not allowed.",
-    buttons: ["close"],
-  });
-  setInput("");
-  return;
-}
+    if (wordPattern.test(newText)) {
+      setAlertMessage({
+        text: "🚫 Sharing address information is not allowed.",
+        buttons: ["close"],
+      });
+      setInput("");
+      return;
+    }
 
     // Detect copy-paste if large jump in text length
     if (newText.length - input.length > 10 && newText !== lastPasted.current) {
