@@ -91,7 +91,12 @@
   background-color: #000000;
   outline: none;
   text-decoration: none;
+  display: inline-flex; /* ✅ forces same alignment */
+  align-items: center;  /* ✅ aligns text baseline */
+  justify-content: center;
+  height: 40px;         /* ✅ forces consistent height */
 }
+
 
 .header {
   position: fixed;
@@ -102,7 +107,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px; /* Reduced padding to prevent overflow */
+  padding: 8px 12px; /* Reduced padding to prevent overflow */
   background-color: #000000;
   flex-wrap: wrap; /* allow wrapping on small screens */
   box-sizing: border-box;
@@ -129,7 +134,7 @@
   }
 
   .header {
-    padding: 12px 16px;
+    padding: 8px 12px;
   }
 }
 
@@ -233,6 +238,7 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   font-weight: bold;
   margin-left: 1rem;
+  color: #222;
 }
 
 .sketchy-feature-button:hover {
@@ -265,7 +271,4 @@
 
 
 
-.sketchy-feature-button:hover {
-  transform: scale(1.05);
-  box-shadow: 4px 4px 0 #000;
-}
+

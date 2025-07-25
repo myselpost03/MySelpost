@@ -233,12 +233,11 @@ const Chat = () => {
 
   const chatStorageKey = `chat_${currentUser.id}_${targetId}`;
 
-// Load from localStorage on mount
-useEffect(() => {
-  const localData = JSON.parse(localStorage.getItem(chatStorageKey)) || [];
-  setMessages(localData);
-}, [currentUser.id, targetId]);
-
+  // Load from localStorage on mount
+  useEffect(() => {
+    const localData = JSON.parse(localStorage.getItem(chatStorageKey)) || [];
+    setMessages(localData);
+  }, [currentUser.id, targetId]);
 
   useEffect(() => {
     const loadInitialMessages = async () => {
@@ -395,97 +394,117 @@ useEffect(() => {
     return "just now";
   }
 
- const sendMessage = async () => {
-  if (!input.trim()) return;
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+    // Detect repeated messages in short time
+    const now = Date.now();
+    const recent = recentMessages.current;
 
-  setIsSending(true);
+    // Remove messages older than 15 seconds
+    recentMessages.current = recent.filter((msg) => now - msg.time < 15000);
 
-  const messageText = input.trim();
-  const timestamp = new Date().toISOString();
-  const tempId = Date.now(); // Temporary unique ID
+    // Check for same message sent recently
+    if (recentMessages.current.some((msg) => msg.text === input.trim())) {
+      setAlertMessage({
+        text: "⚠️ You are sending the same message repeatedly.",
+        buttons: ["close"],
+      });
+      return;
+    }
 
-  // Create a temporary local message
-  const localMsg = {
-    id: tempId,
-    text: messageText,
-    type: "sent",
-    time: new Date().toLocaleTimeString(),
-    timestamp,
-  };
+    // Record this message
+    recentMessages.current.push({ text: input.trim(), time: now });
 
-  // Add to messages state and localStorage immediately
-  setMessages((prev) => {
-    const updated = [...prev, localMsg];
-    localStorage.setItem(chatStorageKey, JSON.stringify(updated));
-    return updated;
-  });
+    setIsSending(true);
 
-  setInput(""); // Clear input
+    const messageText = input.trim();
+    const timestamp = new Date().toISOString();
+    const tempId = Date.now(); // Temporary unique ID
 
-  const newMessage = {
-    sender_id: currentUser.id,
-    receiver_id: targetId,
-    message: messageText,
-    reply_to: replyTo?.id || null,
-  };
-
-  // Insert into Supabase
-  const { data, error } = await supabase.from("chats").insert([newMessage]).select();
-
-  if (error) {
-    console.error("❌ Supabase insert error:", error.message);
-    setIsSending(false);
-    return;
-  }
-
-  // If insert succeeded, replace local temp message with Supabase-confirmed one
-  if (data && data[0]) {
-    const dbMsg = {
-      id: data[0].id,
-      text: data[0].message,
+    // Create a temporary local message
+    const localMsg = {
+      id: tempId,
+      text: messageText,
       type: "sent",
-      time: new Date(data[0].created_at).toLocaleTimeString(),
-      timestamp: data[0].created_at,
+      time: new Date().toLocaleTimeString(),
+      timestamp,
     };
 
+    // Add to messages state and localStorage immediately
     setMessages((prev) => {
-      const filtered = prev.filter((m) => m.id !== tempId);
-      const updated = [...filtered, dbMsg];
+      const updated = [...prev, localMsg];
       localStorage.setItem(chatStorageKey, JSON.stringify(updated));
       return updated;
     });
-  }
 
-  // Optional: Update unread count
-  await supabase
-    .from("unread_counts")
-    .upsert(
-      {
-        sender_id: currentUser.id,
-        receiver_id: targetId,
-        count: 1,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: ["sender_id", "receiver_id"] }
-    )
-    .select()
-    .then(async ({ data, error }) => {
-      if (!error && data?.[0]) {
-        await supabase
-          .from("unread_counts")
-          .update({
-            count: data[0].count + 1,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("sender_id", currentUser.id)
-          .eq("receiver_id", targetId);
-      }
-    });
+    setInput(""); // Clear input
 
-  setReplyTo(null);
-  setIsSending(false);
-};
+    const newMessage = {
+      sender_id: currentUser.id,
+      receiver_id: targetId,
+      message: messageText,
+      reply_to: replyTo?.id || null,
+    };
 
+    // Insert into Supabase
+    const { data, error } = await supabase
+      .from("chats")
+      .insert([newMessage])
+      .select();
+
+    if (error) {
+      console.error("❌ Supabase insert error:", error.message);
+      setIsSending(false);
+      return;
+    }
+
+    // If insert succeeded, replace local temp message with Supabase-confirmed one
+    if (data && data[0]) {
+      const dbMsg = {
+        id: data[0].id,
+        text: data[0].message,
+        type: "sent",
+        time: new Date(data[0].created_at).toLocaleTimeString(),
+        timestamp: data[0].created_at,
+      };
+
+      setMessages((prev) => {
+        const filtered = prev.filter((m) => m.id !== tempId);
+        const updated = [...filtered, dbMsg];
+        localStorage.setItem(chatStorageKey, JSON.stringify(updated));
+        return updated;
+      });
+    }
+
+    // Optional: Update unread count
+    await supabase
+      .from("unread_counts")
+      .upsert(
+        {
+          sender_id: currentUser.id,
+          receiver_id: targetId,
+          count: 1,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: ["sender_id", "receiver_id"] }
+      )
+      .select()
+      .then(async ({ data, error }) => {
+        if (!error && data?.[0]) {
+          await supabase
+            .from("unread_counts")
+            .update({
+              count: data[0].count + 1,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("sender_id", currentUser.id)
+            .eq("receiver_id", targetId);
+        }
+      });
+
+    setReplyTo(null);
+    setIsSending(false);
+  };
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
@@ -626,34 +645,49 @@ useEffect(() => {
     }
   };
 
+  const recentMessages = useRef([]);
+  const lastPasted = useRef("");
+
   const handleInputChange = (e) => {
     const newText = e.target.value;
     const lowerText = newText.toLowerCase();
 
     // Normalize input for smart detection
     const normalizedText = lowerText
-      .replace(/\s+/g, "") // Remove all spaces
-      .replace(/[\-.:\/]/g, "") // Remove separators like '-', '.', ':', '/'
-      .replace(/dot/g, "."); // Replace 'dot' with '.'
+      .replace(/\s+/g, "")
+      .replace(/[\-.:\/]/g, "")
+      .replace(/dot/g, ".");
 
     const textsToCheck = [lowerText, normalizedText];
 
-    // Check for abusive words
+    // Abusive check
     const hasAbuse = bannedData.abusiveWords.some((word) =>
       textsToCheck.some((text) => text.includes(word.toLowerCase()))
     );
 
+    const words = lowerText.split(/\s+/);
+
+// Regex: match any word that contains at least one special character
+const hasSpecialCharacter = words.some(word => /[^a-z0-9]/i.test(word));
+
+if (hasSpecialCharacter) {
+  setAlertMessage({
+    text: "🚫 Special characters are not allowed.",
+    withButton: true,
+  });
+  return;
+}
+
     if (hasAbuse) {
       setAlertMessage({
         text: "🚫 Abusive words are not allowed.",
-        buttons: ["close"], // only close
+        buttons: ["close"],
       });
-
       setInput("");
       return;
     }
 
-    // Check for banned links/domains/keywords
+    // Link check
     const hasLink = bannedData.bannedLinks.some((link) =>
       textsToCheck.some((text) => text.includes(link.toLowerCase()))
     );
@@ -661,11 +695,66 @@ useEffect(() => {
     if (hasLink) {
       setAlertMessage("🚫 Links or obfuscated links are not allowed.");
       setInput("");
+      return;
+    }
 
+    // Phone number check
+    const phonePattern = /\b\d{10,13}\b/;
+    if (phonePattern.test(newText.replace(/[\s\-]/g, ""))) {
+      setAlertMessage({
+        text: "🚫 Sharing phone numbers is not allowed.",
+        buttons: ["close"],
+      });
+      setInput("");
+      return;
+    }
+
+    // Address check (simple detection using common address keywords)
+    const addressKeywords = [
+      "st",
+      "street",
+      "district",
+      "road",
+      "avenue",
+      "colony",
+      "sector",
+      "lane",
+      "house",
+      "block",
+    ];
+   const wordPattern = new RegExp(`\\b(${addressKeywords.join("|")})\\b`, "i");
+
+if (wordPattern.test(newText)) {
+  setAlertMessage({
+    text: "🚫 Sharing address information is not allowed.",
+    buttons: ["close"],
+  });
+  setInput("");
+  return;
+}
+
+    // Detect copy-paste if large jump in text length
+    if (newText.length - input.length > 10 && newText !== lastPasted.current) {
+      lastPasted.current = newText;
+      setAlertMessage({
+        text: "⚠️ Pasting long text is not allowed.",
+        buttons: ["close"],
+      });
+      setInput("");
       return;
     }
 
     setInput(newText);
+  };
+
+  const handlePaste = (e) => {
+    const pastedText = e.clipboardData.getData("text/plain").toLowerCase();
+    if (pastedText) {
+      setAlertMessage({
+        text: "Pasting is not allowed",
+        withButton: true,
+      });
+    }
   };
 
   const handleBack = () => {
@@ -850,6 +939,7 @@ useEffect(() => {
                   value={input}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
+                  onPaste={handlePaste}
                 />
 
                 <button

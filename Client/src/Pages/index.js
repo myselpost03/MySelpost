@@ -20,3 +20,5 @@ export { default as ChatList } from "./ChatList";
 export { default as Profile } from "./Profile";
 export { default as Coins } from "./Coins";
 export { default as PaymentPage } from "./PaymentPage";
+export { default as ChatEntrance } from "./ChatEntrance";
+export { default as GuestUser } from "./GuestUser";

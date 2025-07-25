@@ -390,14 +390,14 @@ const AppDoodle = () => {
           });
 
         if (error) {
-          console.error("Upload error:", error.message);
+          //console.error("Upload error:", error.message);
           setShowDoodleAlert(false);
         } else {
-          console.log("Upload success:", data);
+          //console.log("Upload success:", data);
           setShowDoodleAlert(true);
         }
       } catch (err) {
-        console.error("Error preparing upload:", err);
+        //console.error("Error preparing upload:", err);
         alert("Something went wrong. Try again.");
       } finally {
         setIsSubmitting(false);

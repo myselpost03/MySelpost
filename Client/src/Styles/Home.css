@@ -287,11 +287,12 @@ body::-webkit-scrollbar {
 
 .sketchy-close-btn {
   margin-top: 10px;
-  background-color: #ffe;
+  background-color: #222;
   border: 2px dashed #333;
   padding: 6px 12px;
   font-family: "patrick hand", cursive;
   cursor: pointer;
+  color: #fff;
   box-shadow: 2px 2px 0 #000;
 }
 
@@ -378,11 +379,13 @@ body::-webkit-scrollbar {
 
 .submit-funky-btn {
   margin-top: 1rem;
-  background: #eee;
+  background: #ffe600;
+  color: #fff;
   border: 2px solid #000;
   font-size: 1.1rem;
   padding: 0.6rem 1.4rem;
   border-radius: 10px;
+  font-weight: bold;
   cursor: pointer;
   box-shadow: 4px 4px 0 #000;
   font-family: 'Comic Neue', cursive;

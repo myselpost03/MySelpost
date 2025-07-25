@@ -29,7 +29,7 @@ const Coins = () => {
         .eq("id", id)
         .single();
 
-      if (error) console.error("Error fetching user:", error.message);
+      if (error); // console.error("Error fetching user:", error.message)*/};
       else setUser(data);
     };
 
@@ -42,13 +42,13 @@ const Coins = () => {
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
-      console.log("👍 beforeinstallprompt fired");
+      // console.log("👍 beforeinstallprompt fired");
       setDeferredPrompt(e);
       setShowPrompt(true);
     };
 
     const handleAppInstalled = async () => {
-      console.log("App installed successfully");
+      // console.log("App installed successfully");
       setShowPrompt(false);
     };
 
@@ -84,9 +84,9 @@ const Coins = () => {
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then((choiceResult) => {
         if (choiceResult.outcome === "accepted") {
-          console.log("User accepted the install prompt");
+          // console.log("User accepted the install prompt");
         } else {
-          console.log("User dismissed the install prompt");
+          // console.log("User dismissed the install prompt");
         }
         setDeferredPrompt(null);
       });
@@ -99,7 +99,7 @@ const Coins = () => {
   };
 
   const cancelInstall = () => {
-    console.log("User cancelled install prompt");
+    // console.log("User cancelled install prompt");
     setShowPrompt(false);
   };
 
@@ -120,7 +120,7 @@ const Coins = () => {
 
     if (fetchError && fetchError.code !== "PGRST116") {
       // Only log unexpected errors, not "row not found"
-      console.error("Error checking existing invite:", fetchError.message);
+      // console.error("Error checking existing invite:", fetchError.message);
       setAlertMessage({
         text: "❌ Something went wrong. Try again later.",
         withButton: true,
@@ -148,7 +148,7 @@ const Coins = () => {
     }
 
     if (response.error) {
-      console.error("Error saving invite code:", response.error.message);
+      // console.error("Error saving invite code:", response.error.message);
       setAlertMessage({
         text: "❌ Failed to generate invite code. Try again.",
         withButton: true,
@@ -193,7 +193,7 @@ const Coins = () => {
                 );
 
                 if (rpcError) {
-                  console.error("❌ RPC update error:", rpcError.message);
+                  // console.error("❌ RPC update error:", rpcError.message);
                   setAlertMessage({
                     text: "❌ Failed to add coins.",
                     withButton: true,
@@ -211,7 +211,7 @@ const Coins = () => {
 
                 setShowPayPal(false);
               } catch (err) {
-                console.error("❗ Unexpected RPC error:", err);
+                // console.error("❗ Unexpected RPC error:", err);
                 setAlertMessage({
                   text: "❌ Something went wrong while adding coins.",
                   withButton: true,
@@ -219,7 +219,7 @@ const Coins = () => {
               }
             },
             onError: (err) => {
-              console.error("PayPal error:", err);
+              // console.error("PayPal error:", err);
               setAlertMessage({
                 text: `❌ Payment Failed.`,
                 withButton: true,

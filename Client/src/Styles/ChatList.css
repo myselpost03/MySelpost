@@ -165,14 +165,13 @@
   box-sizing: border-box;
 
   /* Hide scrollbar – Chrome, Safari */
-  scrollbar-width: none;         /* Firefox */
-  -ms-overflow-style: none;      /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
 
 .modal-content::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
 }
-
 
 .modal-btn {
   display: block;
@@ -183,7 +182,7 @@
   color: #fff;
   background: #d4d0d0;
   cursor: pointer;
-  font-family: 'comic neue', serif;
+  font-family: "comic neue", serif;
   border-radius: 6px;
   font-weight: bold;
   width: 100%;
@@ -192,7 +191,6 @@
 .modal-btn.active {
   background-color: #080808;
 }
-
 
 .sketchy-list-scrollable {
   display: flex;
@@ -445,15 +443,12 @@
   border-color: #333;
 }
 
-
-
 .pin-icon {
   cursor: pointer;
   color: gray;
   margin-right: 8px;
   transition: transform 0.2s ease, color 0.2s ease;
 }
-
 
 .pin-icon:hover {
   color: #2b6cb0;
@@ -476,7 +471,7 @@
   background-color: #fdf6b2;
   color: #333;
   border: 2px dashed #000;
-  font-family: 'Comic Sans MS', cursive;
+  font-family: "Comic Sans MS", cursive;
   font-size: 1rem;
   text-align: center;
   animation: flicker 0.3s infinite alternate;
@@ -491,7 +486,6 @@
     opacity: 0.6;
   }
 }
-
 
 .premium-modal-overlay {
   position: fixed;
@@ -513,7 +507,7 @@
   padding: 2rem;
   width: 90%;
   max-width: 400px;
-  font-family: 'Lilita One', cursive;
+  font-family: "Lilita One", cursive;
   text-align: center;
   box-shadow: 5px 5px 0 #000;
 }
@@ -550,4 +544,59 @@
 
 .premium-cancel-btn {
   background-color: #ffadad;
+}
+
+.disabled-user-card {
+  pointer-events: none;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.disabled-envelope {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sketchy-load-more {
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  background-color: #f0f0f0;
+  border: 2px dashed #444;
+  cursor: pointer;
+  color: #222;
+  font-family: "patrick hand", serif;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+.sketchy-load-more:hover {
+  background-color: #fff4cc;
+  transform: scale(1.05);
+}
+
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-input-wrapper input {
+  padding-right: 30px; /* space for the spinner */
+}
+
+.mini-spinner {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border: 2px solid #ccc;
+  border-top: 2px solid #333;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
 }

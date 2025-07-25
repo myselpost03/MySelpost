@@ -1,45 +1,62 @@
-.pencil-bg {
-  height: 100vh;
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.game-container {
+  text-align: center;
+  font-family: 'Arial';
+  margin-top: 20px;
+}
+
+.road {
+  width: 90%;
+  margin: auto;
+  border: 2px solid #333;
+  border-radius: 8px;
   overflow: hidden;
 }
 
-.doodle {
-  width: 400px;
-  height: 400px;
-  stroke: black;
-  fill: none;
+.lane {
+  display: flex;
+  position: relative;
+  height: 60px;
+  border-bottom: 1px solid #ccc;
+  background: #f0f0f0;
+  align-items: center;
 }
 
-.sketch-line {
-  stroke-width: 2;
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-  animation: draw 3s forwards ease-in-out;
+.lane:last-child {
+  border-bottom: none;
 }
 
-.sketch-line:nth-child(2) {
-  animation-delay: 0.5s;
-}
-.sketch-line:nth-child(3) {
-  animation-delay: 1s;
-}
-
-@keyframes draw {
-  to {
-    stroke-dashoffset: 0;
-  }
+.boy, .girl {
+  position: absolute;
+  left: 10%;
+  font-size: 30px;
 }
 
-.sketchy-text {
-  font-family: 'Comic Sans MS', cursive;
-  font-size: 1.5rem;
+.girl {
+  left: 85%;
+}
+
+.obstacle {
+  position: absolute;
+  font-size: 25px;
+  background: brown;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.overlay {
   margin-top: 20px;
-  border: 2px dashed black;
+}
+
+button {
   padding: 10px 20px;
-  box-shadow: 3px 3px 0 black;
+  margin-top: 10px;
+  font-size: 16px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }

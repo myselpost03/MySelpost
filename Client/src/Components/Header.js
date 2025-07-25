@@ -11,6 +11,7 @@ const Header = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [emailValid, setEmailValid] = useState(true);
   const [credentialsValid, setCredentialsValid] = useState(false);
+  const [loggingIn, setLoggingIn] = useState(false); // 👈 Add this
   const [checking, setChecking] = useState(false);
   const [loading, setLoading] = useState(true);
   const [alertMessage, setAlertMessage] = useState(null);
@@ -59,7 +60,7 @@ const Header = () => {
       setChecking(false);
     }
   };
-  
+
   const handleClick = () => {
     setLoading(true);
     // Simulate loading (optional)
@@ -98,6 +99,7 @@ const Header = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoggingIn(true);
     const { email, password } = formData;
 
     try {
@@ -118,6 +120,8 @@ const Header = () => {
       navigate("/");
     } catch (err) {
       alert(err.message);
+    } finally {
+      setLoggingIn(false);
     }
   };
 
@@ -174,13 +178,22 @@ const Header = () => {
                 <button
                   type="submit"
                   className="profile-button"
-                  disabled={checking} // ✅ Now allows clicking if not checking
+                  disabled={checking || loggingIn}
                 >
-                  {checking ? "Checking..." : "Login"}
+                  {loggingIn
+                    ? "Logging in..."
+                    : checking
+                    ? "Checking..."
+                    : "Login"}
                 </button>
-                <Link to="/register" className="profile-button">
+
+                <button
+                  type="button"
+                  className="profile-button"
+                  onClick={() => navigate("/register")}
+                >
                   Register
-                </Link>
+                </button>
               </nav>
             </>
           ) : (
@@ -207,13 +220,13 @@ const Header = () => {
           <button onClick={handleLogout} className="profile-button">
             Logout
           </button>
-          <Link
+          <button
             style={{ textDecoration: "none" }}
-            onClick={handleClick}
+            onClick={() => navigate(`/profile/${user.id}`)}
             className="profile-button"
           >
             Profile
-          </Link>
+          </button>
         </div>
       )}
       {alertMessage && (

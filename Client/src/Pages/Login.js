@@ -22,7 +22,7 @@ const Login = () => {
     const { name, value } = e.target;
 
     if (name === "identifier") {
-    setEmailValid(value === "" || isEmailValid(value));
+      setEmailValid(value === "" || isEmailValid(value));
     }
 
     setFormData((prev) => ({
@@ -40,40 +40,40 @@ const Login = () => {
 
     const { identifier, password } = formData;
 
-     try {
-    // Fetch user by either email or name
-    const { data, error: fetchError } = await supabase
-      .from("users")
-      .select("*")
-      .or(`email.eq.${identifier},name.eq.${identifier}`)
-      .single();
+    try {
+      // Fetch user by either email or name
+      const { data, error: fetchError } = await supabase
+        .from("users")
+        .select("*")
+        .or(`email.eq.${identifier},name.eq.${identifier}`)
+        .single();
 
-    if (fetchError || !data) {
-      throw new Error("Invalid username/email or user not found.");
+      if (fetchError || !data) {
+        throw new Error("Invalid email or user not found.");
+      }
+
+      const passwordMatch = await bcrypt.compare(password, data.password);
+      if (!passwordMatch) {
+        throw new Error("Incorrect password.");
+      }
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          coins: data.reward_coins ?? 0,
+          rewardTime: data.last_coin_award_time ?? null,
+        })
+      );
+
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Login failed.");
+    } finally {
+      setLoading(false);
     }
-
-    const passwordMatch = await bcrypt.compare(password, data.password);
-    if (!passwordMatch) {
-      throw new Error("Incorrect password.");
-    }
-
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        id: data.id,
-        name: data.name,
-        email: data.email,
-        coins: data.reward_coins ?? 0,
-        rewardTime: data.last_coin_award_time ?? null,
-      })
-    );
-
-    navigate("/");
-  } catch (err) {
-    setError(err.message || "Login failed.");
-  } finally {
-    setLoading(false);
-  }
   };
 
   return (
@@ -82,18 +82,16 @@ const Login = () => {
       <div className="login-container">
         <form className="login-form" onSubmit={handleSubmit}>
           <h2>Log In</h2>
-        <input
-  type="text"
-  name="identifier"
-  placeholder="Email or Name"
-  value={formData.identifier}
-  onChange={handleChange}
-  required
-  className={!emailValid ? "invalid" : ""}
-/>
-{!emailValid && (
-  <p className="error-msg">Email format invalid (if you're entering an email)</p>
-)}
+          <input
+            type="text"
+            name="identifier"
+            placeholder="Email or Name"
+            value={formData.identifier}
+            onChange={handleChange}
+            required
+            className={!emailValid ? "invalid" : ""}
+          />
+          {!emailValid && <p className="error-msg">Email format invalid</p>}
 
           <input
             type="password"

@@ -69,7 +69,7 @@ useEffect(() => {
     const rewardKey = `${storedUser.id}`;
 
     if (isRunningAsPWA() && !localStorage.getItem(rewardKey)) {
-      console.log("🚀 PWA detected – rewarding 30 coins");
+      //console.log("🚀 PWA detected – rewarding 30 coins");
 
       (async () => {
         try {
@@ -79,7 +79,7 @@ useEffect(() => {
           });
 
           if (error) {
-            console.error("❌ PWA reward error:", error.message);
+           // console.error("❌ PWA reward error:", error.message);
           } else {
             localStorage.setItem(rewardKey, "true");
             setAlertMessage({
@@ -88,14 +88,14 @@ useEffect(() => {
             });
           }
         } catch (err) {
-          console.error("❗ Unexpected PWA reward error:", err);
+         // console.error("❗ Unexpected PWA reward error:", err);
         }
       })();
     }
   }, []);
 
   const handleChatClick = () => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
+    {/*const storedUser = JSON.parse(localStorage.getItem("user"));
 
     // No user found in localStorage
     if (!storedUser || !storedUser.id) {
@@ -104,10 +104,10 @@ useEffect(() => {
         withButton: true,
       });
       return;
-    }
+    }*/}
 
     // Valid user, proceed to chat
-    navigate("/chat-list");
+    navigate("/chat-entrance");
   };
 
   const handleBuildAppClick = () => {

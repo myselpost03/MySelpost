@@ -117,10 +117,10 @@
           navigator.serviceWorker
             .register("./service-worker.js", { scope: "/" })
             .then(function (registration) {
-              console.log("Service Worker Registered!");
+              // console.log("Service Worker Registered!");
             })
             .catch(function (error) {
-              console.log("Service Worker Registration Failed:", error);
+              // console.log("Service Worker Registration Failed:", error);
             });
         });
       }
@@ -128,14 +128,14 @@
       window.addEventListener("DOMContentLoaded", () => {
         window.addEventListener("beforeinstallprompt", (event) => {
           event.preventDefault();
-          console.log("👍 beforeinstallprompt fired");
+          // console.log("👍 beforeinstallprompt fired");
           window.deferredPrompt = event;
           document.getElementById("install-popup").style.display = "block";
         });
       });
 
       window.addEventListener("appinstalled", function (event) {
-        console.log("App installed successfully");
+        // console.log("App installed successfully");
         document.getElementById("install-popup").style.display = "none";
       });
 
@@ -146,9 +146,9 @@
           window.deferredPrompt.prompt();
           window.deferredPrompt.userChoice.then(function (choiceResult) {
             if (choiceResult.outcome === "accepted") {
-              console.log("User accepted the install prompt");
+              // console.log("User accepted the install prompt");
             } else {
-              console.log("User dismissed the install prompt");
+              // console.log("User dismissed the install prompt");
             }
             window.deferredPrompt = null;
           });

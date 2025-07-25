@@ -20,6 +20,8 @@ import {
   DoodleExample,
   Demo,
   Chat,
+  ChatEntrance,
+  GuestUser,
   ChatList,
   Profile,
   Coins,
@@ -29,12 +31,14 @@ import { supabase } from "./Utils/supabaseClient";
 import SketchyAlert from "./Components/SketchyAlert";
 import InternetStatusAlert from "./Components/InternetStatusAlert";
 
+
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
   { path: "/app-doodle", component: AppDoodle },
   { path: "/web-doodle", component: WebDoodle },
   { path: "/doodle-example", component: DoodleExample },
   { path: "/chat/:id", component: Chat },
+  
   { path: "/profile/:id", component: Profile },
   { path: "/coins/:id", component: Coins },
   { path: "/payments/:id", component: PaymentPage },
@@ -47,6 +51,9 @@ const publicRoutes = [
   { path: "/sketch", component: Sketch },
   { path: "/about", component: About },
   { path: "/terms", component: Terms },
+  { path: "/chat-entrance", component: ChatEntrance },
+  { path: "/guest-user", component: GuestUser },
+  
   { path: "/privacy", component: Privacy },
   { path: "/contact-us", component: Contact },
   { path: "/pricing", component: Pricing },
@@ -96,7 +103,7 @@ function App() {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser || !storedUser.id) return;
 
-    console.log("🎯 Reward coin interval started");
+    //console.log("🎯 Reward coin interval started");
 
     const interval = setInterval(async () => {
       try {
@@ -106,7 +113,7 @@ function App() {
         });
 
         if (error) {
-          console.error("❌ RPC update error:", error);
+          //console.error("❌ RPC update error:", error);
         } else {
           setAlertMessage({
             text: "✅ You got 3 coins for spending an hour.",
@@ -114,13 +121,13 @@ function App() {
           });
         }
       } catch (err) {
-        console.error("❗ Unexpected RPC error:", err);
+        //console.error("❗ Unexpected RPC error:", err);
       }
     }, 3600000); // 1 hour (use 5000 for testing)
 
     return () => {
       clearInterval(interval);
-      console.log("🧼 Interval cleared");
+      //console.log("🧼 Interval cleared");
     };
   }, []);
 
@@ -133,6 +140,7 @@ function App() {
         ))}
 
         {protectedRoutes.map(({ path, component: Component }) => (
+          
           <Route
             key={path}
             path={path}

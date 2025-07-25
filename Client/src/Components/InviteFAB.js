@@ -77,13 +77,13 @@ const InviteFAB = () => {
       );
 
       if (inviterError) {
-        console.error("❌ RPC error:", inviterError);
+        //console.error("❌ RPC error:", inviterError);
         setAlertMessage({
           text: "❌ Failed to reward inviter or user.",
           withButton: true,
         });
       } else {
-        console.log("✅ Coins rewarded: 50 to inviter");
+        //console.log("✅ Coins rewarded: 50 to inviter");
         setAlertMessage({
           text: "✅ Invite code accepted! Inviter rewarded with 50 coins.",
           withButton: true,
@@ -94,13 +94,13 @@ const InviteFAB = () => {
           .eq("code", inviteInput.trim().toUpperCase());
 
         if (deleteError) {
-          console.error("⚠️ Failed to delete used code:", deleteError);
+          //console.error("⚠️ Failed to delete used code:", deleteError);
         }
         setInviteInput("");
         setShowPopup(false);
       }
     } catch (err) {
-      console.error("❗ Unexpected RPC error:", err);
+      //console.error("❗ Unexpected RPC error:", err);
     }
 
     setIsRedeeming(false);

@@ -173,7 +173,7 @@ const WebSketch = () => {
             await Promise.all(updatePromises);
           }
 
-          console.log(`Served waitlist user: ${nextUser.email}`);
+         // console.log(`Served waitlist user: ${nextUser.email}`);
         }
       }
     };
