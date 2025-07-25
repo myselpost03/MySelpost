@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import "../Styles/ChatList.css";
@@ -419,7 +419,9 @@ const ChatList = () => {
     navigate(`/payments/${user.id}`);
   };
 
-  const filteredUsers = users
+
+  const filteredUsers = useMemo(() => {
+  return users
     .filter((user) => {
       const genderMatch =
         genderFilter === "all" || user.gender === genderFilter;
@@ -432,21 +434,17 @@ const ChatList = () => {
       return genderMatch && countryMatch && searchMatch && pinMatch;
     })
     .sort((a, b) => {
-      // 1️⃣ Priority: Notification count
       const aCount = unreadCounts[a.id] || 0;
       const bCount = unreadCounts[b.id] || 0;
       if (bCount !== aCount) return bCount - aCount;
 
-      // 2️⃣ Then: Online status
       if (a.status === "online" && b.status !== "online") return -1;
       if (a.status !== "online" && b.status === "online") return 1;
 
-      // 3️⃣ Then: Users with a profile picture
       const aHasPic = a.profile_pic ? 1 : 0;
       const bHasPic = b.profile_pic ? 1 : 0;
       if (bHasPic !== aHasPic) return bHasPic - aHasPic;
 
-      // 4️⃣ Then: Verified & pinned priority
       const getPriority = (u) => {
         if (u.verified && u.pinned) return 4000;
         if (u.verified) return 3000;
@@ -456,7 +454,9 @@ const ChatList = () => {
 
       return getPriority(b) - getPriority(a);
     });
+}, [users, genderFilter, countryFilter, searchTerm, activeTab, unreadCounts]);
 
+  
   const togglePin = async (targetUserId) => {
     const user = JSON.parse(localStorage.getItem("user"));
 
@@ -503,49 +503,58 @@ const ChatList = () => {
   );
 
   useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      const fetchSearchResults = async () => {
-        if (searchTerm.trim() === "") return;
+  const controller = new AbortController();
+  const delayDebounce = setTimeout(() => {
+    const fetchSearchResults = async () => {
+      if (searchTerm.trim() === "") return;
 
-        //setLoading(true);
+      setLoading(true); // Set loading true immediately
+
+      try {
         const { data, error } = await supabase
           .from("users")
           .select("id, name, profile_pic, country, gender, status, age")
-          .ilike("name", `%${searchTerm}%`);
+          .ilike("name", `%${searchTerm}%`)
+          .abortSignal(controller.signal);
 
-        if (!error && data) {
-          const pinnedData = await supabase
-            .from("pinned_users")
-            .select("pinned_user_id")
-            .eq("user_id", user.id);
+        if (error) throw error;
 
-          const pinnedIds =
-            pinnedData.data?.map((row) => row.pinned_user_id) || [];
+        const pinnedData = await supabase
+          .from("pinned_users")
+          .select("pinned_user_id")
+          .eq("user_id", user.id);
 
-          const processed = data
-            .filter((u) => u.id !== user.id)
-            .map((user) => ({
-              ...user,
-              avatar: user.profile_pic || empty,
-              notifications: unreadCounts[user.id] || 0,
-              pinned: pinnedIds.includes(user.id),
-              status: user.status || "offline",
-            }));
+        const pinnedIds = pinnedData.data?.map((row) => row.pinned_user_id) || [];
 
-          setUsers(processed);
-          setHasMore(false); // Disable load more for search
+        const processed = data
+          .filter((u) => u.id !== user.id)
+          .map((user) => ({
+            ...user,
+            avatar: user.profile_pic || empty,
+            notifications: unreadCounts[user.id] || 0,
+            pinned: pinnedIds.includes(user.id),
+            status: user.status || "offline",
+          }));
+
+        setUsers(processed);
+        setHasMore(false);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Search error:", err);
         }
-
+      } finally {
         setLoading(false);
-      };
-
-      if (searchTerm.trim() !== "") {
-        fetchSearchResults();
       }
-    }, 500); // wait 500ms after last keystroke
+    };
 
-    return () => clearTimeout(delayDebounce);
-  }, [searchTerm]);
+    fetchSearchResults();
+  }, 500);
+
+  return () => {
+    clearTimeout(delayDebounce);
+    controller.abort(); // cancel previous fetch if user types again
+  };
+}, [searchTerm]);
 
   useEffect(() => {
     if (searchTerm.trim() === "") {
