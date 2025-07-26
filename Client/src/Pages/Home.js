@@ -19,13 +19,9 @@ const Home = () => {
 
 useEffect(() => {
   if (user && (!user.gender || !user.age)) {
-    const alertKey = `profileAlertShown_${user.id}`;
-    const alreadyShown = localStorage.getItem(alertKey);
+   
+    setShowProfileModal(true);
 
-    if (!alreadyShown) {
-      setShowProfileModal(true);
-      localStorage.setItem(alertKey, "true");
-    }
   }
 }, [user]);
 

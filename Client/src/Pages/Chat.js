@@ -409,6 +409,13 @@ const Chat = () => {
         text: "⚠️ You are sending the same message repeatedly.",
         buttons: ["close"],
       });
+      const { error } = await supabase.rpc("decrement_decency", {
+        user_id_input: currentUser.id,
+      });
+
+      if (error) {
+        console.error("❌ RPC error:", error.message);
+      }
       return;
     }
 
@@ -668,14 +675,16 @@ const Chat = () => {
     const words = lowerText.split(/\s+/);
 
     // Regex: match any word that contains at least one special character
-    const hasSpecialCharacter = words.some((word) => /[^a-z0-9?]/i.test(word));
+    const hasSpecialCharacter = words.some((word) =>
+      /[@&#$%*()\[\]{};:"<>^\/\\|]/.test(word)
+    );
 
     if (hasSpecialCharacter) {
       setAlertMessage({
         text: "🚫 Special characters are not allowed.",
         withButton: true,
       });
-       const { data, error } = await supabase.rpc("decrement_decency", {
+      const { error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
 
@@ -711,7 +720,7 @@ const Chat = () => {
     if (hasLink) {
       setAlertMessage("🚫 Links or obfuscated links are not allowed.");
       setInput("");
-       const { data, error } = await supabase.rpc("decrement_decency", {
+      const { data, error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
 
@@ -729,38 +738,7 @@ const Chat = () => {
         buttons: ["close"],
       });
       setInput("");
-       const { data, error } = await supabase.rpc("decrement_decency", {
-        user_id_input: currentUser.id,
-      });
-
-      if (error) {
-        console.error("❌ RPC error:", error.message);
-      }
-      return;
-    }
-
-    // Address check (simple detection using common address keywords)
-    const addressKeywords = [
-      "st",
-      "street",
-      "district",
-      "road",
-      "avenue",
-      "colony",
-      "sector",
-      "lane",
-      "house",
-      "block",
-    ];
-    const wordPattern = new RegExp(`\\b(${addressKeywords.join("|")})\\b`, "i");
-
-    if (wordPattern.test(newText)) {
-      setAlertMessage({
-        text: "🚫 Sharing address information is not allowed.",
-        buttons: ["close"],
-      });
-      setInput("");
-       const { data, error } = await supabase.rpc("decrement_decency", {
+      const { data, error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
 
@@ -778,7 +756,7 @@ const Chat = () => {
         buttons: ["close"],
       });
       setInput("");
-       const { data, error } = await supabase.rpc("decrement_decency", {
+      const { data, error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
 
@@ -798,7 +776,7 @@ const Chat = () => {
         text: "Pasting is not allowed",
         withButton: true,
       });
-       const { data, error } = await supabase.rpc("decrement_decency", {
+      const { data, error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
 

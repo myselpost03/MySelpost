@@ -243,14 +243,64 @@ const ChatList = () => {
         .select("sender_id, receiver_id, count")
         .eq("receiver_id", user.id);
 
-      if (!error) {
+      if (!error && data) {
         const countMap = {};
+        const missingUserIds = [];
+
         data.forEach((item) => {
           if (item.count > 0) {
             countMap[item.sender_id] = item.count;
+
+            const exists = users.some((u) => u.id === item.sender_id);
+            if (!exists) missingUserIds.push(item.sender_id);
           }
         });
+
         setUnreadCounts(countMap);
+
+        if (missingUserIds.length > 0) {
+          const { data: newUsers, error: userErr } = await supabase
+            .from("users")
+            .select(
+              "id, name, profile_pic, country, gender, status, age, decency_rating"
+            )
+            .in("id", missingUserIds);
+
+          if (!userErr && newUsers) {
+            const { data: pinnedData } = await supabase
+              .from("pinned_users")
+              .select("pinned_user_id")
+              .eq("user_id", user.id);
+
+            const pinnedIds =
+              pinnedData?.map((row) => row.pinned_user_id) || [];
+
+            const processed = newUsers.map((user) => ({
+              ...user,
+              avatar: user.profile_pic || empty,
+              notifications: countMap[user.id] || 0,
+              pinned: pinnedIds.includes(user.id),
+              status: user.status || "offline",
+            }));
+
+            // merge and remove duplicates
+            setUsers((prev) => {
+              const allUsers = [...prev, ...processed];
+
+              const uniqueUsers = [];
+              const seen = new Set();
+
+              for (const user of allUsers) {
+                if (!seen.has(user.id)) {
+                  seen.add(user.id);
+                  uniqueUsers.push(user);
+                }
+              }
+
+              return uniqueUsers;
+            });
+          }
+        }
       }
     };
 
@@ -321,8 +371,19 @@ const ChatList = () => {
           return [...prev, ...newUsers];
         });
 
-        if (allUsers.length < limit) {
-          setHasMore(false);
+        if (activeTab === "pinned") {
+          const totalPinnedUsers = processed.filter((u) => u.pinned).length;
+          if (totalPinnedUsers < limit) {
+            setHasMore(false);
+          } else {
+            setHasMore(true);
+          }
+        } else {
+          if (allUsers.length < limit) {
+            setHasMore(false);
+          } else {
+            setHasMore(true);
+          }
         }
       }
 
@@ -338,7 +399,9 @@ const ChatList = () => {
     const refreshUsers = async () => {
       const { data: allUsers, error } = await supabase
         .from("users")
-        .select("id, name, profile_pic, country, gender, status, age");
+        .select(
+          "id, name, profile_pic, country, gender, status, age, decency_rating"
+        );
 
       if (!error && allUsers) {
         const pinnedIdsResp = await supabase
@@ -513,7 +576,9 @@ const ChatList = () => {
         try {
           const { data, error } = await supabase
             .from("users")
-            .select("id, name, profile_pic, country, gender, status, age")
+            .select(
+              "id, name, profile_pic, country, gender, status, age, decency_rating"
+            )
             .ilike("name", `%${searchTerm}%`)
             .abortSignal(controller.signal);
 
@@ -559,11 +624,116 @@ const ChatList = () => {
 
   useEffect(() => {
     if (searchTerm.trim() === "") {
-      setPage(0); // reset pagination
+      setPage(0);
       setUsers([]);
       setHasMore(true);
     }
   }, [searchTerm]);
+
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setPage(0); // reset pagination
+      setUsers([]);
+      setHasMore(true);
+
+      // Trigger re-fetch of initial user list
+      const fetchInitialUsers = async () => {
+        setLoading(true);
+        const limit = 10;
+        const offset = 0;
+        const { data: allUsers, error } = await supabase
+          .from("users")
+          .select(
+            "id, name, profile_pic, country, gender, status, age, decency_rating"
+          )
+          .range(offset, offset + limit - 1);
+
+        if (!error && allUsers) {
+          const { data: pinnedData } = await supabase
+            .from("pinned_users")
+            .select("pinned_user_id")
+            .eq("user_id", user.id);
+
+          const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
+
+          const processed = allUsers
+            .filter((u) => u.id !== user.id)
+            .map((user) => ({
+              ...user,
+              avatar: user.profile_pic || empty,
+              notifications: user.notifications || 0,
+              pinned: pinnedIds.includes(user.id),
+              status: user.status || "offline",
+            }));
+
+          setUsers(processed);
+          if (allUsers.length < limit) {
+            setHasMore(false);
+          }
+        }
+
+        setLoading(false);
+      };
+
+      fetchInitialUsers();
+    }
+  }, [searchTerm]);
+
+  useEffect(() => {
+    if (activeTab === "all" && users.length === 0 && !loading) {
+      setPage(0);
+      setHasMore(true);
+      const fetchInitialUsers = async () => {
+        setLoading(true);
+        const limit = 10;
+        const offset = 0;
+        const { data: allUsers, error } = await supabase
+          .from("users")
+          .select(
+            "id, name, profile_pic, country, gender, status, age, decency_rating"
+          )
+          .range(offset, offset + limit - 1);
+
+        if (!error && allUsers) {
+          const { data: pinnedData } = await supabase
+            .from("pinned_users")
+            .select("pinned_user_id")
+            .eq("user_id", user.id);
+
+          const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
+
+          const processed = allUsers
+            .filter((u) => u.id !== user.id)
+            .map((user) => ({
+              ...user,
+              avatar: user.profile_pic || empty,
+              notifications: user.notifications || 0,
+              pinned: pinnedIds.includes(user.id),
+              status: user.status || "offline",
+            }));
+
+          setUsers(processed);
+          if (allUsers.length < limit) setHasMore(false);
+        }
+
+        setLoading(false);
+      };
+
+      fetchInitialUsers();
+    }
+  }, [activeTab, users, loading]);
+
+  const handlePinToggle = (e, userId) => {
+  e.preventDefault(); // Stop navigation
+  e.stopPropagation(); // Prevent click bubbling
+
+  setUsers((prevUsers) =>
+    prevUsers.map((user) =>
+      user.id === userId ? { ...user, pinned: !user.pinned } : user
+    )
+  );
+};
+
 
   return (
     <div className="chatlist-container">
@@ -684,9 +854,11 @@ const ChatList = () => {
                           )}
                           {user.decency_rating && (
                             <div className="decency-label">
-                            <span className="star">★</span>
-                            <span className="rating">{user.decency_rating}</span>
-                          </div>
+                              <span className="star">★</span>
+                              <span className="rating">
+                                {user.decency_rating}
+                              </span>
+                            </div>
                           )}
                         </div>
 
@@ -747,10 +919,8 @@ const ChatList = () => {
                             className={`pin-icon ${
                               user.pinned ? "pinned" : ""
                             }`}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              togglePin(user.id);
-                            }}
+                                  onClick={(e) => handlePinToggle(e, user.id)}
+
                           />
                           <FaEnvelope
                             className="dm-envelope"
