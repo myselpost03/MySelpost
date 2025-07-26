@@ -15,6 +15,7 @@ import { supabase } from "../Utils/supabaseClient";
 import LoadingIndicator from "../Components/LoadingIndicator";
 import ReactCountryFlag from "react-country-flag";
 import LazyProfileImage from "../Components/LazyProfileImage";
+import MiniSpinner from "../Components/MiniSpinner";
 
 const countryNameToCode = {
   AF: "AF",
@@ -230,12 +231,16 @@ const ChatList = () => {
   const [hasMore, setHasMore] = useState(true); // track if more users exist
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showAllTabs, setShowAllTabs] = useState(false);
+  const [allFilter, setAllFilter] = useState("all"); // 'all' or 'online'
 
   const [unreadCounts, setUnreadCounts] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user"));
 
   const listRef = useRef(null);
+
+  const observerRef = useRef();
 
   useEffect(() => {
     const fetchUnreadCounts = async () => {
@@ -341,6 +346,7 @@ const ChatList = () => {
         .select(
           "id, name, profile_pic, country, gender, status, age, decency_rating"
         )
+        .order("id", { ascending: true })
         .range(offset, offset + limit - 1); // only 10 items
 
       // Get pinned IDs
@@ -387,7 +393,7 @@ const ChatList = () => {
           }
         }
       }
-
+      setHasMore(allUsers.length === limit);
       setLoading(false);
       setLoadingMore(false);
     };
@@ -496,15 +502,16 @@ const ChatList = () => {
           .toLowerCase()
           .includes(searchTerm.toLowerCase());
         const pinMatch = activeTab === "pinned" ? user.pinned : true;
-        return genderMatch && countryMatch && searchMatch && pinMatch;
+        const onlineMatch =
+          activeTab === "online" ? user.status === "online" : true;
+        return (
+          genderMatch && countryMatch && searchMatch && pinMatch && onlineMatch
+        );
       })
       .sort((a, b) => {
         const aCount = unreadCounts[a.id] || 0;
         const bCount = unreadCounts[b.id] || 0;
         if (bCount !== aCount) return bCount - aCount;
-
-        if (a.status === "online" && b.status !== "online") return -1;
-        if (a.status !== "online" && b.status === "online") return 1;
 
         const aHasPic = a.profile_pic ? 1 : 0;
         const bHasPic = b.profile_pic ? 1 : 0;
@@ -519,7 +526,15 @@ const ChatList = () => {
 
         return getPriority(b) - getPriority(a);
       });
-  }, [users, genderFilter, countryFilter, searchTerm, activeTab, unreadCounts]);
+  }, [
+    users,
+    genderFilter,
+    countryFilter,
+    searchTerm,
+    activeTab,
+    unreadCounts,
+    allFilter,
+  ]);
 
   const togglePin = async (targetUserId) => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -681,60 +696,80 @@ const ChatList = () => {
   }, [searchTerm]);
 
   useEffect(() => {
-    if (activeTab === "all" && users.length === 0 && !loading) {
-      setPage(0);
-      setHasMore(true);
-      const fetchInitialUsers = async () => {
-        setLoading(true);
-        const limit = 10;
-        const offset = 0;
-        const { data: allUsers, error } = await supabase
-          .from("users")
-          .select(
-            "id, name, profile_pic, country, gender, status, age, decency_rating"
-          )
-          .range(offset, offset + limit - 1);
+    const fetchInitialUsers = async () => {
+      setLoading(true);
+      const limit = 10;
+      const offset = 0;
+      const { data: allUsers, error } = await supabase
+        .from("users")
+        .select(
+          "id, name, profile_pic, country, gender, status, age, decency_rating"
+        )
+        .range(offset, offset + limit - 1);
 
-        if (!error && allUsers) {
-          const { data: pinnedData } = await supabase
-            .from("pinned_users")
-            .select("pinned_user_id")
-            .eq("user_id", user.id);
+      if (!error && allUsers) {
+        const { data: pinnedData } = await supabase
+          .from("pinned_users")
+          .select("pinned_user_id")
+          .eq("user_id", user.id);
 
-          const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
+        const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
 
-          const processed = allUsers
-            .filter((u) => u.id !== user.id)
-            .map((user) => ({
-              ...user,
-              avatar: user.profile_pic || empty,
-              notifications: user.notifications || 0,
-              pinned: pinnedIds.includes(user.id),
-              status: user.status || "offline",
-            }));
+        const processed = allUsers
+          .filter((u) => u.id !== user.id)
+          .map((user) => ({
+            ...user,
+            avatar: user.profile_pic || empty,
+            notifications: user.notifications || 0,
+            pinned: pinnedIds.includes(user.id),
+            status: user.status || "offline",
+          }));
 
-          setUsers(processed);
-          if (allUsers.length < limit) setHasMore(false);
-        }
+        setUsers(processed);
+        setPage(0);
+        setHasMore(allUsers.length === limit);
+      }
 
-        setLoading(false);
-      };
+      setLoading(false);
+    };
 
+    if (searchTerm.trim() === "") {
+      setUsers([]); // Clear previous list for clean switch
       fetchInitialUsers();
     }
-  }, [activeTab, users, loading]);
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!hasMore || loadingMore || loading || searchTerm.trim() !== "") return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      {
+        threshold: 1.0,
+      }
+    );
+
+    if (observerRef.current) observer.observe(observerRef.current);
+
+    return () => {
+      if (observerRef.current) observer.unobserve(observerRef.current);
+    };
+  }, [hasMore, loadingMore, loading, searchTerm]);
 
   const handlePinToggle = (e, userId) => {
-  e.preventDefault(); // Stop navigation
-  e.stopPropagation(); // Prevent click bubbling
+    e.preventDefault(); // Stop navigation
+    e.stopPropagation(); // Prevent click bubbling
 
-  setUsers((prevUsers) =>
-    prevUsers.map((user) =>
-      user.id === userId ? { ...user, pinned: !user.pinned } : user
-    )
-  );
-};
-
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === userId ? { ...user, pinned: !user.pinned } : user
+      )
+    );
+  };
 
   return (
     <div className="chatlist-container">
@@ -787,6 +822,18 @@ const ChatList = () => {
                   !
                 </span>
               )}
+            </button>
+            <button
+              className={`sketchy-tab ${
+                activeTab === "online" ? "active" : ""
+              }`}
+              onClick={() => {
+                const newTab = activeTab === "online" ? "all" : "online";
+                setActiveTab(newTab);
+                setAllFilter(newTab === "online" ? "online" : "all");
+              }}
+            >
+              Online
             </button>
 
             <button
@@ -920,8 +967,10 @@ const ChatList = () => {
                             className={`pin-icon ${
                               user.pinned ? "pinned" : ""
                             }`}
-                                  onClick={(e) => {handlePinToggle(e, user.id); togglePin(user.id)}}
-
+                            onClick={(e) => {
+                              handlePinToggle(e, user.id);
+                              togglePin(user.id);
+                            }}
                           />
                           <FaEnvelope
                             className="dm-envelope"
@@ -938,17 +987,16 @@ const ChatList = () => {
                     </Link>
                   ))}
                 {hasMore && (
-                  <div style={{ textAlign: "center", margin: "-10px 0" }}>
-                    <button
-                      className="sketchy-load-more"
-                      onClick={() => {
-                        setLoadingMore(true);
-                        setPage((prev) => prev + 1);
-                      }}
-                      disabled={loadingMore}
-                    >
-                      {loadingMore ? "Loading..." : "🌀 Load More"}
-                    </button>
+                  <div
+                    ref={observerRef}
+                    style={{
+                      textAlign: "center",
+                      margin: "20px 0",
+                      paddingBottom: "1rem",
+                    }}
+                  >
+                    {loadingMore && <MiniSpinner />}{" "}
+                    {/* Use your custom spinner */}
                   </div>
                 )}
               </>
