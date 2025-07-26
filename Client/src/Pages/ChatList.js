@@ -14,6 +14,7 @@ import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
 import LoadingIndicator from "../Components/LoadingIndicator";
 import ReactCountryFlag from "react-country-flag";
+import LazyProfileImage from "../Components/LazyProfileImage";
 
 const countryNameToCode = {
   AF: "AF",
@@ -832,7 +833,7 @@ const ChatList = () => {
                             e.stopPropagation(); // 👈 prevent parent click
                           }}
                         >
-                          <img
+                          <LazyProfileImage
                             src={user.avatar}
                             alt="avatar"
                             className="user-avatar"
@@ -919,7 +920,7 @@ const ChatList = () => {
                             className={`pin-icon ${
                               user.pinned ? "pinned" : ""
                             }`}
-                                  onClick={(e) => handlePinToggle(e, user.id)}
+                                  onClick={(e) => {handlePinToggle(e, user.id); togglePin(user.id)}}
 
                           />
                           <FaEnvelope

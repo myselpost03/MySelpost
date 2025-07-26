@@ -548,6 +548,11 @@
   box-shadow: 5px 5px 0 #000;
 }
 
+.no-pinned-users{
+  background-color: #faf8f2;
+  height: 100vh;
+}
+
 .premium-modal-title {
   font-size: 1.5rem;
   margin-bottom: 1rem;

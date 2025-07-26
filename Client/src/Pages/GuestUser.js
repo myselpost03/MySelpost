@@ -13,6 +13,7 @@ import { supabase } from "../Utils/supabaseClient";
 import LoadingIndicator from "../Components/LoadingIndicator";
 import ReactCountryFlag from "react-country-flag";
 import SketchyAlert from "../Components/SketchyAlert";
+import LazyProfileImage from "../Components/LazyProfileImage";
 
 const countryNameToCode = {
   AF: "AF",
@@ -231,7 +232,7 @@ const GuestUser = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from("users")
-        .select("*")
+        .select("id, name, gender, age, country, status, decency_rating, profile_pic")
         .order("created_at", { ascending: false })
         .range(page * 10, page * 10 + 9); // Pagination: 10 users per page
 
@@ -335,7 +336,7 @@ const GuestUser = () => {
                   <>
                     <div className="user-card" onClick={handleAlert}>
                       <div className="user-avatar-wrapper">
-                        <img
+                        <LazyProfileImage
                           src={user.profile_pic || empty}
                           alt="avatar"
                           className="user-avatar"
@@ -346,6 +347,14 @@ const GuestUser = () => {
                       <div className="user-info">
                         <div className="user-top-row">
                           <span className="user-name">{user.name}</span>
+                            {user.decency_rating && (
+                            <div className="decency-label">
+                              <span className="star">★</span>
+                              <span className="rating">
+                                {user.decency_rating}
+                              </span>
+                            </div>
+                          )}
                         </div>
                         <div className="user-bottom-row">
                           <span
@@ -417,7 +426,6 @@ const GuestUser = () => {
                     <button
                       className="sketchy-load-more"
                       onClick={handleAlert}
-                      disabled={loadingMore}
                     >
                       {loadingMore ? "Loading..." : "🌀 Load More"}
                     </button>
