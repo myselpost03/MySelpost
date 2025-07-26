@@ -898,14 +898,29 @@ const ChatList = () => {
                           {user.verified && (
                             <FaCheckCircle className="verified-icon" />
                           )}
-                          {user.decency_rating && (
-                            <div className="decency-label">
-                              <span className="star">★</span>
-                              <span className="rating">
-                                {user.decency_rating}
-                              </span>
-                            </div>
-                          )}
+                          {user.decency_rating !== null && user.decency_rating !== undefined && (
+  <div className="decency-label">
+    <span
+      className={` ${
+        user.decency_rating >= 8
+          ? "star"
+          : user.decency_rating >= 5
+          ? "medium-rating"
+          : "low-rating"
+      }`}
+    >
+      ★
+    </span>
+    <span       className={` ${
+        user.decency_rating >= 8
+          ? "star-rating"
+          : user.decency_rating >= 5
+          ? "medium-number-rating"
+          : "low-number-rating"
+      }`}>{user.decency_rating}</span>
+  </div>
+)}
+
                         </div>
 
                         <div className="user-bottom-row">
