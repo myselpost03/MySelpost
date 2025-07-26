@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import "../Styles/Register.css";
 import bcrypt from "bcryptjs";
+import imageCompression from "browser-image-compression";
 import { supabase } from "../Utils/supabaseClient";
 
 const Register = () => {
@@ -34,7 +35,7 @@ const Register = () => {
     setNameTaken(data && data.length > 0);
   };
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { name, value, files } = e.target;
 
     if (name === "email") {
@@ -45,10 +46,44 @@ const Register = () => {
       checkNameExists(value);
     }
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: files ? files[0] : value,
-    }));
+    if (name === "profilePic" && files && files[0]) {
+      const originalFile = files[0];
+      console.log(
+        `🖼️ Original file size: ${(originalFile.size / 1024 / 1024).toFixed(
+          2
+        )} MB`
+      );
+
+      try {
+        const options = {
+          maxSizeMB: 0.5, // Limit to 0.5 MB
+          maxWidthOrHeight: 1024,
+          useWebWorker: true,
+        };
+
+        const compressedFile = await imageCompression(originalFile, options);
+
+        console.log(
+          `📉 Compressed file size: ${(
+            compressedFile.size /
+            1024 /
+            1024
+          ).toFixed(2)} MB`
+        );
+
+        setFormData((prev) => ({
+          ...prev,
+          profilePic: compressedFile,
+        }));
+      } catch (error) {
+        console.error("❌ Image compression error:", error);
+      }
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   useEffect(() => {

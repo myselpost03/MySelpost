@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Header from "../Components/Header";
-import { Link, useNavigate } from "react-router-dom";
 import first from "../Assets/doodle.png";
 import second from "../Assets/doodle-result.jpg";
 import Lottie from "lottie-react";
 import arrow from "../Assets/arrow.json";
-import draw from "../Assets/draw.png"; // Add your image for the new FAB
 import "../Styles/Sketch.css";
 
 const DoodleExample = () => {
-  const [count, setCount] = useState(0);
 
   return (
     <div>
