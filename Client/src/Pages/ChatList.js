@@ -347,7 +347,7 @@ const ChatList = () => {
         .select(
           "id, name, profile_pic, country, gender, status, age, decency_rating"
         )
-        .order("id", { ascending: true })
+        .order("id", { ascending: false }) //ascending: true will fetch oldest user list
         .range(offset, offset + limit - 1); // only 10 items
 
       // Get pinned IDs
