@@ -9,6 +9,7 @@ import {
   FaCheckCircle,
   FaEnvelope,
   FaThumbtack,
+  FaSearch,
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
@@ -581,62 +582,51 @@ const ChatList = () => {
     (u) => u.pinned && unreadCounts[u.id] > 0
   );
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const delayDebounce = setTimeout(() => {
-      const fetchSearchResults = async () => {
-        if (searchTerm.trim() === "") return;
+  const handleSearchSubmit = async () => {
+    if (searchTerm.trim() === "") {
+      setPage(0);
+      setUsers([]);
+      setHasMore(true);
+      return;
+    }
 
-        setLoading(true); // Set loading true immediately
+    setLoading(true);
 
-        try {
-          const { data, error } = await supabase
-            .from("users")
-            .select(
-              "id, name, profile_pic, country, gender, status, age, decency_rating"
-            )
-            .ilike("name", `%${searchTerm}%`)
-            .abortSignal(controller.signal);
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select(
+          "id, name, profile_pic, country, gender, status, age, decency_rating"
+        )
+        .ilike("name", `%${searchTerm}%`);
 
-          if (error) throw error;
+      if (error) throw error;
 
-          const pinnedData = await supabase
-            .from("pinned_users")
-            .select("pinned_user_id")
-            .eq("user_id", user.id);
+      const { data: pinnedData } = await supabase
+        .from("pinned_users")
+        .select("pinned_user_id")
+        .eq("user_id", user.id);
 
-          const pinnedIds =
-            pinnedData.data?.map((row) => row.pinned_user_id) || [];
+      const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
 
-          const processed = data
-            .filter((u) => u.id !== user.id)
-            .map((user) => ({
-              ...user,
-              avatar: user.profile_pic || empty,
-              notifications: unreadCounts[user.id] || 0,
-              pinned: pinnedIds.includes(user.id),
-              status: user.status || "offline",
-            }));
+      const processed = data
+        .filter((u) => u.id !== user.id)
+        .map((user) => ({
+          ...user,
+          avatar: user.profile_pic || empty,
+          notifications: unreadCounts[user.id] || 0,
+          pinned: pinnedIds.includes(user.id),
+          status: user.status || "offline",
+        }));
 
-          setUsers(processed);
-          setHasMore(false);
-        } catch (err) {
-          if (err.name !== "AbortError") {
-            console.error("Search error:", err);
-          }
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchSearchResults();
-    }, 500);
-
-    return () => {
-      clearTimeout(delayDebounce);
-      controller.abort(); // cancel previous fetch if user types again
-    };
-  }, [searchTerm]);
+      setUsers(processed);
+      setHasMore(false); // No infinite scroll during search
+    } catch (err) {
+      console.error("Search error:", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (searchTerm.trim() === "") {
@@ -788,7 +778,15 @@ const ChatList = () => {
               onChange={(e) => {
                 setSearchTerm(e.target.value);
               }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearchSubmit();
+                }
+              }}
             />
+            <button className="search-button" onClick={handleSearchSubmit}>
+              <FaSearch />
+            </button>
           </div>
 
           <div className="tab-bar">
