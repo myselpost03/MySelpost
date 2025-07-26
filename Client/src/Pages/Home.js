@@ -18,12 +18,41 @@ const Home = () => {
   const [profileForm, setProfileForm] = useState({ gender: "", age: "" });
 
 useEffect(() => {
-  if (user && (!user.gender || !user.age)) {
-   
-    setShowProfileModal(true);
+  const fetchAndSetUser = async () => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
 
-  }
-}, [user]);
+    if (!storedUser?.id) {
+      setUser(null);
+      return;
+    }
+
+    // Fetch fresh user data from Supabase
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", storedUser.id)
+      .single();
+
+    if (error) {
+      console.error("Failed to fetch user from DB:", error.message);
+      setUser(null);
+      return;
+    }
+
+    localStorage.setItem("user", JSON.stringify(data));
+    setUser(data);
+
+    // Show profile modal only if age or gender is missing/null/empty
+    if (!data.gender || !data.age) {
+      setShowProfileModal(true);
+    } else {
+      setShowProfileModal(false);
+    }
+  };
+
+  fetchAndSetUser();
+}, []);
+
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;

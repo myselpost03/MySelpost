@@ -7,6 +7,7 @@ import {
   FaVenus,
   FaEnvelope,
   FaThumbtack,
+  FaSearch,
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
@@ -232,7 +233,9 @@ const GuestUser = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from("users")
-        .select("id, name, gender, age, country, status, decency_rating, profile_pic")
+        .select(
+          "id, name, gender, age, country, status, decency_rating, profile_pic"
+        )
         .order("created_at", { ascending: false })
         .range(page * 10, page * 10 + 9); // Pagination: 10 users per page
 
@@ -292,12 +295,20 @@ const GuestUser = () => {
         <LoadingIndicator />
       ) : (
         <>
-          <input
-            type="text"
-            className="sketchy-search"
-            placeholder="🔍 Search users..."
-            onChange={handleAlert}
-          />
+          <div className="sketchy-search-wrapper">
+            <input
+              type="text"
+              className="sketchy-search"
+              placeholder="🔍 Search users..."
+              value={searchTerm}
+              onChange={(e) => {
+                handleAlert();
+              }}
+            />
+            <button className="search-button" onClick={handleAlert}>
+              <FaSearch />
+            </button>
+          </div>
           <div className="tab-bar">
             <button className={`sketchy-tab`}>All</button>
             <button
@@ -347,14 +358,33 @@ const GuestUser = () => {
                       <div className="user-info">
                         <div className="user-top-row">
                           <span className="user-name">{user.name}</span>
-                            {user.decency_rating && (
-                            <div className="decency-label">
-                              <span className="star">★</span>
-                              <span className="rating">
-                                {user.decency_rating}
-                              </span>
-                            </div>
-                          )}
+                          {user.decency_rating !== null &&
+                            user.decency_rating !== undefined && (
+                              <div className="decency-label">
+                                <span
+                                  className={` ${
+                                    user.decency_rating >= 8
+                                      ? "star"
+                                      : user.decency_rating >= 5
+                                      ? "medium-rating"
+                                      : "low-rating"
+                                  }`}
+                                >
+                                  ★
+                                </span>
+                                <span
+                                  className={` ${
+                                    user.decency_rating >= 8
+                                      ? "star-rating"
+                                      : user.decency_rating >= 5
+                                      ? "medium-number-rating"
+                                      : "low-number-rating"
+                                  }`}
+                                >
+                                  {user.decency_rating}
+                                </span>
+                              </div>
+                            )}
                         </div>
                         <div className="user-bottom-row">
                           <span
@@ -415,7 +445,10 @@ const GuestUser = () => {
                             }`}
                             onClick={handleAlert}
                           />
-                          <FaEnvelope className="dm-envelope" onClick={handleAlert} />
+                          <FaEnvelope
+                            className="dm-envelope"
+                            onClick={handleAlert}
+                          />
                         </div>
                       </div>
                     </div>
@@ -423,10 +456,7 @@ const GuestUser = () => {
                 ))}
                 {hasMore && (
                   <div style={{ textAlign: "center", margin: "-10px 0" }}>
-                    <button
-                      className="sketchy-load-more"
-                      onClick={handleAlert}
-                    >
+                    <button className="sketchy-load-more" onClick={handleAlert}>
                       {loadingMore ? "Loading..." : "🌀 Load More"}
                     </button>
                   </div>
