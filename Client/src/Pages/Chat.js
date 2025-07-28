@@ -34,7 +34,46 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
   const [showPayPal, setShowPayPal] = useState(false);
 
-  
+  useEffect(() => {
+    if (!targetId || !currentUser?.id) return;
+
+    const resetUnreadCount = async () => {
+      const { error } = await supabase
+        .from("unread_counts")
+        .update({ count: 0 })
+        .eq("sender_id", targetId)
+        .eq("receiver_id", currentUser.id);
+
+      if (error) {
+        console.error("Error resetting unread count:", error);
+      }
+    };
+
+    resetUnreadCount();
+  }, [targetId, currentUser]);
+
+  useEffect(() => {
+    const updateOnlineStatus = async (status) => {
+      if (!currentUser?.id) return;
+
+      const { error } = await supabase
+        .from("users")
+        .update({ online: status }) // status will be "online" or "offline"
+        .eq("id", currentUser.id);
+
+      if (error) {
+        console.error("Failed to update online status:", error.message);
+      }
+    };
+
+    // Set user as "online" when component mounts
+    updateOnlineStatus("online");
+
+    // Set user as "offline" when component unmounts
+    return () => {
+      updateOnlineStatus("offline");
+    };
+  }, [currentUser?.id]);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -56,151 +95,90 @@ const Chat = () => {
   }, [currentUser?.id]);
 
   useEffect(() => {
-    if (showPayPal && window.paypal && currentUser) {
-      if (
-        document.getElementById("paypal-button-container").childElementCount ===
-        0
-      ) {
-        window.paypal
-          .Buttons({
-            style: {
-              layout: "vertical",
-              color: "blue",
-              shape: "pill",
-              label: "paypal",
-            },
-            createOrder: (data, actions) => {
-              return actions.order.create({
-                purchase_units: [{ amount: { value: "1.00" } }],
-              });
-            },
-            onApprove: async (data, actions) => {
-              await actions.order.capture();
+  if (showPayPal && window.paypal && currentUser) {
+    if (
+      document.getElementById("paypal-button-container").childElementCount === 0
+    ) {
+      window.paypal
+        .Buttons({
+          style: {
+            layout: "vertical",
+            color: "blue",
+            shape: "pill",
+            label: "paypal",
+          },
+          createOrder: (data, actions) => {
+            return actions.order.create({
+              purchase_units: [{ amount: { value: "1.00" } }],
+            });
+          },
+          onApprove: async (data, actions) => {
+            await actions.order.capture();
 
-              setAlertMessage({
-                text: "✅ Payment successful! Now you can chat with premium country user.",
-                withButton: true,
-              });
+            setAlertMessage({
+              text: "✅ Payment successful! Now you can chat with premium country user.",
+              withButton: true,
+            });
 
-              const user = JSON.parse(localStorage.getItem("user"));
-              const id = user?.id;
+            const user = JSON.parse(localStorage.getItem("user"));
+            const id = user?.id;
 
-              if (id) {
-                await supabase
-                  .from("users")
-                  .update({ self_destruct_pricing: "paid" })
-                  .eq("id", id);
+            if (id) {
+              await supabase
+                .from("users")
+                .update({ self_destruct_pricing: "paid" })
+                .eq("id", id);
 
-                setHasAccess(true);
-                setAutoDeleteEnabled(false);
-              }
-            },
-            onError: (err) => {
-              console.error("PayPal error:", err);
-              setAlertMessage({
-                text: `❌ Payment Failed.`,
-                withButton: true,
-              });
-            },
-          })
-          .render("#paypal-button-container");
+              setHasAccess(true);
+              setAutoDeleteEnabled(false);
+            }
+          },
+          onError: (err) => {
+            console.error("PayPal error:", err);
+            setAlertMessage({
+              text: `❌ Payment Failed.`,
+              withButton: true,
+            });
+          },
+        })
+        .render("#paypal-button-container");
+    }
+  }
+}, [showPayPal, currentUser]);
+
+useEffect(() => {
+  const checkBlockStatus = async () => {
+    try {
+      const [{ data: blockedByMe }, { data: blockedMe }] = await Promise.all([
+        supabase
+          .from("blocked_users")
+          .select("*")
+          .eq("blocker_id", currentUser.id)
+          .eq("blocked_id", targetId)
+          .single(),
+
+        supabase
+          .from("blocked_users")
+          .select("*")
+          .eq("blocker_id", targetId)
+          .eq("blocked_id", currentUser.id)
+          .single(),
+      ]);
+
+      setIsBlocked(!!blockedByMe);
+      setIBlockedOtherUser(!!blockedByMe);
+      setBlockedByOtherUser(!!blockedMe);
+    } catch (err) {
+      if (err.message !== "PGRST116") {
+        console.error("Block status check failed:", err.message);
       }
     }
-  }, [showPayPal, currentUser]);
+  };
 
-  useEffect(() => {
-    if (showPayPal && window.paypal && currentUser) {
-      if (
-        document.getElementById("paypal-button-container").childElementCount ===
-        0
-      ) {
-        window.paypal
-          .Buttons({
-            style: {
-              layout: "vertical",
-              color: "blue",
-              shape: "pill",
-              label: "paypal",
-            },
-            createOrder: (data, actions) => {
-              return actions.order.create({
-                purchase_units: [{ amount: { value: "1.00" } }],
-              });
-            },
-            onApprove: async (data, actions) => {
-              await actions.order.capture();
-
-              setAlertMessage({
-                text: "✅ Payment successful! Now you can chat with premium country user.",
-                withButton: true,
-              });
-
-              const user = JSON.parse(localStorage.getItem("user"));
-              const id = user?.id;
-
-              if (id) {
-                await supabase
-                  .from("users")
-                  .update({ self_destruct_pricing: "paid" })
-                  .eq("id", id);
-              }
-            },
-            onError: (err) => {
-              console.error("PayPal error:", err);
-              setAlertMessage({
-                text: `❌ Payment Failed.`,
-                withButton: true,
-              });
-            },
-          })
-          .render("#paypal-button-container");
-      }
-    }
-  }, [showPayPal, currentUser]);
-
-  useEffect(() => {
-    const checkIfBlocked = async () => {
-      const { data, error } = await supabase
-        .from("blocked_users")
-        .select("*")
-        .eq("blocker_id", currentUser.id)
-        .eq("blocked_id", targetId)
-        .single();
-
-      if (error && error.code !== "PGRST116") {
-        console.error("Block check failed:", error.message);
-      } else {
-        setIsBlocked(!!data);
-      }
-    };
-
-    checkIfBlocked();
-  }, [currentUser.id, targetId]);
-
-  useEffect(() => {
-    const checkBlockStatus = async () => {
-      const { data: blockedByMe, error: error1 } = await supabase
-        .from("blocked_users")
-        .select("*")
-        .eq("blocker_id", currentUser.id)
-        .eq("blocked_id", targetId)
-        .single();
-
-      const { data: blockedMe, error: error2 } = await supabase
-        .from("blocked_users")
-        .select("*")
-        .eq("blocker_id", targetId)
-        .eq("blocked_id", currentUser.id)
-        .single();
-
-      if (error1 && error1.code !== "PGRST116")
-        console.error("Error1:", error1.message);
-      if (error2 && error2.code !== "PGRST116")
-        console.error("Error2:", error2.message);
-    };
-
+  if (currentUser?.id && targetId) {
     checkBlockStatus();
-  }, [currentUser.id, targetId]);
+  }
+}, [currentUser.id, targetId]);
 
   const [blockedByOtherUser, setBlockedByOtherUser] = useState(false);
   const [iBlockedOtherUser, setIBlockedOtherUser] = useState(false);

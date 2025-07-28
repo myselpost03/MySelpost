@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Header from "../Components/Header";
 import "../Styles/ChatList.css";
 import {
@@ -222,8 +222,6 @@ const ChatList = () => {
   const [genderFilter, setGenderFilter] = useState("all");
   const [countryFilter, setCountryFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("all");
-  const [showGenderTabs, setShowGenderTabs] = useState(false);
-  const [showCountryTabs, setShowCountryTabs] = useState(false);
   const [loading, setLoading] = useState(true);
   const [countries, setCountries] = useState([]);
   const [showPremiumNotice, setShowPremiumNotice] = useState(false);
@@ -244,6 +242,8 @@ const ChatList = () => {
   const listRef = useRef(null);
 
   const observerRef = useRef();
+  const location = useLocation();
+
 
   useEffect(() => {
     const fetchUnreadCounts = async () => {
