@@ -3,91 +3,185 @@ import SketchyHeader from "../Components/SketchyHeader";
 import "../Styles/Roast.css";
 import { useNavigate } from "react-router-dom";
 import { useSwipeable } from "react-swipeable";
+import LoadingIndicator from "../Components/LoadingIndicator";
+import { supabase } from "../Utils/supabaseClient"; // Update path if needed
 
 function Roast() {
   const navigate = useNavigate();
-  const [showExplosion, setShowExplosion] = useState(false);
-
-  const [cards, setCards] = useState([
-    {
-      image:
-        "https://cdn.pixabay.com/photo/2025/07/23/00/56/ai-generated-9729388_640.jpg",
-      roasts: [
-        { text: "Looks like a villain from a silent film.", votes: 5 },
-        { text: "Face says 'Error 404: Swag not found.'", votes: 3 },
-      ],
-      newRoast: "",
-    },
-    {
-      image:
-        "https://cdn.pixabay.com/photo/2015/04/24/20/58/girl-738303_640.jpg",
-      roasts: [
-        { text: "His mirror must be legally blind.", votes: 2 },
-        { text: "Looks like WiFi dropped on his style update.", votes: 4 },
-      ],
-      newRoast: "",
-    },
-  ]);
-
+  const [cards, setCards] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showOverlay, setShowOverlay] = useState(true); // 👈 Overlay visibility
-  const [items, setItems] = useState([]);
+  const [showOverlay, setShowOverlay] = useState(true);
 
   useEffect(() => {
-    fetch(
-      "https://gist.githubusercontent.com/myselpost03/11b01194cf415890dea341c198678293/raw/0930118a8e61b9a7a56b7ef09c84dcf36a1a95b7/data.json"
-    )
-      .then((res) => res.json())
-      .then((data) => setItems(data))
-      .catch((err) => console.error("Error fetching JSON:", err));
+    const fetchData = async () => {
+      const { data: images, error: imageErr } = await supabase
+        .from("images")
+        .select("id, image_url, user_id")
+        .order("created_at", { ascending: false });
+
+      if (imageErr) {
+        console.error("Error fetching images:", imageErr);
+        return;
+      }
+
+      const cardsWithRoasts = await Promise.all(
+        images.map(async (img) => {
+          const { data: roasts, error: roastErr } = await supabase
+            .from("roasts")
+            .select("id, text, user_id")
+            .eq("image_id", img.id)
+            .order("created_at", { ascending: false });
+
+          if (roastErr) {
+            console.error("Error fetching roasts:", roastErr);
+            return { ...img, roasts: [], newRoast: "" };
+          }
+
+          const roastsWithVotes = await Promise.all(
+            roasts.map(async (r) => {
+              const { count, error: voteErr } = await supabase
+                .from("votes")
+                .select("*", { count: "exact", head: true })
+                .eq("roast_id", r.id)
+                .eq("vote_type", "up");
+
+              if (voteErr) {
+                console.error("Vote error:", voteErr);
+                return { ...r, votes: 0 };
+              }
+
+              return { ...r, votes: count || 0 };
+            })
+          );
+
+          return {
+            image: img.image_url,
+            roasts: roastsWithVotes,
+            newRoast: "",
+            image_id: img.id,
+          };
+        })
+      );
+
+      setCards(cardsWithRoasts);
+    };
+
+    fetchData();
   }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowOverlay(false);
-    }, 4000); // auto-hide after 4s
+    }, 4000);
     return () => clearTimeout(timer);
   }, []);
 
-  const upvote = (cardIndex, roastIndex) => {
+  const upvote = async (cardIndex, roastIndex) => {
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+    const userId = currentUser?.id;
+    if (!userId) return;
+
+    const roast = cards[cardIndex].roasts[roastIndex];
+
+    // 1. Check if this user has already voted for this roast
+    const { data: existingVote, error: checkError } = await supabase
+      .from("votes")
+      .select("id")
+      .eq("roast_id", roast.id)
+      .eq("user_id", userId)
+      .limit(1)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error("Error checking existing vote:", checkError);
+      return;
+    }
+
+    if (existingVote) {
+      // User already voted for this roast
+      console.log("User has already voted.");
+      return;
+    }
+
+    // 2. Insert vote if not voted before
+    const { error: voteError } = await supabase.from("votes").insert({
+      roast_id: roast.id,
+      user_id: userId,
+      vote_type: "up",
+    });
+
+    if (voteError) {
+      console.error("Error voting:", voteError);
+      return;
+    }
+
+    // 3. Update UI
     const updatedCards = [...cards];
     updatedCards[cardIndex].roasts[roastIndex].votes++;
     setCards(updatedCards);
 
-    // Fire trail animation
     const btn = document.querySelectorAll(".vote-button")[roastIndex];
     btn.classList.add("fire-animate");
     setTimeout(() => btn.classList.remove("fire-animate"), 400);
   };
-  const addRoast = (cardIndex) => {
+
+  const addRoast = async (cardIndex) => {
     const trimmed = cards[cardIndex].newRoast.trim();
     if (!trimmed) return;
 
-    const updatedCards = cards.map((card, index) =>
-      index === cardIndex
-        ? {
-            ...card,
-            roasts: [...card.roasts, { text: trimmed, votes: 0 }],
-            newRoast: "",
-          }
-        : card
-    );
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+    const userId = currentUser?.id;
+    if (!userId) return;
+
+    const imageId = cards[cardIndex].image_id;
+
+    // ✅ Check if the user has already roasted this image
+    const { data: existingRoast, error: checkError } = await supabase
+      .from("roasts")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("image_id", imageId)
+      .limit(1)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error("Error checking existing roast:", checkError);
+      return;
+    }
+
+    if (existingRoast) {
+      alert("You’ve already roasted this image!");
+      return;
+    }
+
+    // ✅ Insert new roast
+    const { data, error } = await supabase.from("roasts").insert({
+      image_id: imageId,
+      user_id: userId,
+      text: trimmed,
+    });
+
+    if (error) {
+      console.error("Error adding roast:", error);
+      return;
+    }
+
+    const updatedCards = [...cards];
+    updatedCards[cardIndex].roasts.push({ text: trimmed, votes: 0 });
+    updatedCards[cardIndex].newRoast = "";
     setCards(updatedCards);
   };
 
   const handleInputChange = (e, cardIndex) => {
-    const updatedCards = cards.map((card, index) =>
-      index === cardIndex ? { ...card, newRoast: e.target.value } : card
-    );
+    const updatedCards = [...cards];
+    updatedCards[cardIndex].newRoast = e.target.value;
     setCards(updatedCards);
   };
 
-  const handleBack = () => {
-    navigate(-1);
-  };
+  const handleBack = () => navigate(-1);
 
   const handleSwipe = (direction) => {
-    setShowOverlay(false); // hide overlay after swipe
+    setShowOverlay(false);
     if (direction === "Left" && currentIndex < cards.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else if (direction === "Right" && currentIndex > 0) {
@@ -101,30 +195,52 @@ function Roast() {
     preventScrollOnSwipe: true,
     trackMouse: true,
   });
-  // Find top roast across all cards
-  const topRoast = (() => {
+
+  const topRoastData = (() => {
     let top = null;
     cards.forEach((card) =>
       card.roasts.forEach((r) => {
         if (!top || r.votes > top.votes) {
-          top = r;
+          top = {
+            text: r.text,
+            votes: r.votes,
+            image: card.image,
+          };
         }
       })
     );
     return top;
   })();
 
+  if (!cards.length)
+    return (
+      <div className="roast-page">
+        <LoadingIndicator />
+      </div>
+    );
+
   return (
     <>
-      <SketchyHeader title="Roast Me 🔥" onBack={handleBack} />
+      <SketchyHeader title="Roast 🔥" onBack={handleBack} />
 
       <div className="roast-page" {...swipeHandlers}>
         <div className="roast-card-container">
-          {topRoast && (
+          {topRoastData && (
             <div className="roast-of-day">
-              <h3>🔥 Roast of the Day</h3>
-              <p>{topRoast.text}</p>
-              <span className="votes">🔥 {topRoast.votes}</span>
+              <div className="roast-content">
+                <div className="roast-text-column">
+                  <h3>Roast of the Day</h3>
+                  <div className="roast-row">
+                    <p className="roast-text">{topRoastData.text}</p>
+                    <span className="votes">🔥 {topRoastData.votes}</span>
+                  </div>
+                </div>
+                <img
+                  src={topRoastData.image}
+                  alt="Top Roast"
+                  className="top-roast-image tall-image"
+                />
+              </div>
             </div>
           )}
 
@@ -164,7 +280,7 @@ function Roast() {
                 type="text"
                 placeholder="Your roast..."
                 value={cards[currentIndex].newRoast}
-                maxLength={150} // ← change as needed
+                maxLength={150}
                 onChange={(e) => handleInputChange(e, currentIndex)}
                 className="roast-input"
               />

@@ -222,7 +222,7 @@ const Header = () => {
       ) : (
         <div className="nav-logged-in">
           <button onClick={handleRoast} className="profile-button">
-            RoastMe
+            Roast
           </button>
           <button
             style={{ textDecoration: "none" }}

@@ -1,17 +1,35 @@
+@import url("https://fonts.googleapis.com/css2?family=Spicy+Rice&family=Patrick+Hand&display=swap");
+@import url(https://fonts.googleapis.com/css?family=Nerko+One:regular);
 .roast-page {
   font-family: "Patrick Hand", cursive;
-  background-color: #f9f9f9;
-  color: #111;
   min-height: 100vh;
   margin-top: 5px;
-  background-image: linear-gradient(white 98%, #ccc 2%);
-  background-size: 100% 30px;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 40px;
   box-sizing: border-box;
   overflow: hidden;
+
+  background-color: #f0f0f0;
+  background-image:
+    /* Subtle paper grain */ repeating-linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.02) 0px,
+      rgba(0, 0, 0, 0.02) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    /* Diagonal sketchy lines */
+      repeating-linear-gradient(
+        -45deg,
+        rgba(0, 0, 0, 0.015) 0px,
+        rgba(0, 0, 0, 0.015) 2px,
+        transparent 2px,
+        transparent 6px
+      ),
+    linear-gradient(160deg, #ffffff, #dcdcdc);
+  background-blend-mode: multiply;
 }
 
 .roast-card-container {
@@ -24,17 +42,17 @@
 }
 
 .roast-card {
-  border: 2px solid black;
+  border: 3px dashed #111;
   border-radius: 16px;
   padding: 16px;
-  background-color: #fff;
-  box-shadow: 6px 6px 0 black;
+  background: linear-gradient(145deg, #fff 0%, #fef2f2 100%);
+  box-shadow: 6px 6px 0px #000;
   transition: transform 0.3s ease;
   width: 100%;
 }
 
 .roast-card:hover {
-  transform: scale(1.01);
+  transform: scale(1.015);
 }
 
 .roast-card.blurred {
@@ -47,7 +65,7 @@
   height: 180px;
   object-fit: cover;
   border-radius: 12px;
-  border: 2px dashed black;
+  border: 2px dashed #222;
   margin-bottom: 10px;
 }
 
@@ -56,71 +74,82 @@
   padding: 0;
   margin: 0;
   text-align: left;
-  max-height: 88px; /* height for 2 roast items */
+  max-height: 88px;
   overflow-y: auto;
   padding-right: 4px;
   margin-bottom: 8px;
-
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .roast-list::-webkit-scrollbar {
-  display: none; /* Chrome, Safari */
-}
-
-.roast-item span {
-  flex: 1;
-  overflow-wrap: break-word; /* allows breaking within words */
-  word-break: break-word;
-  white-space: normal; /* allows wrapping */
-  padding-right: 10px;
-}
-.roast-item span.long-roast {
-  font-size: 0.85rem;
+  display: none;
 }
 
 .roast-item {
   display: flex;
+  align-items: center; /* vertically align items */
   justify-content: space-between;
   padding: 6px 0;
-  border-bottom: 1px dashed black;
-  font-size: 0.9rem;
+  border-bottom: 1px dashed #999;
+  font-size: 0.92rem;
+  gap: 8px;
+}
+
+.roast-item span {
+  flex: 1;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  padding-right: 10px;
 }
 
 .vote-button {
-  background-color: #fff;
-  border: 1px solid black;
-  padding: 3px 6px;
+  flex-shrink: 0; /* prevent shrinking */
+  white-space: nowrap; /* prevent line wrap */
+  background-color: #fff5f5;
+  border: 2px solid black;
+  padding: 4px 8px;
   font-family: inherit;
   cursor: pointer;
-  border-radius: 4px;
-  box-shadow: 1px 1px 0 black;
+  border-radius: 6px;
+  box-shadow: 2px 2px 0 black;
+  transition: all 0.2s ease;
+  height: fit-content;
+  align-self: flex-start; /* optional: align button to top */
+}
+
+.vote-button:hover {
+  background-color: #ffe1e1;
 }
 
 .input-row {
   display: flex;
-  margin-top: 10px;
-  gap: 5px;
+  margin-top: 12px;
+  gap: 6px;
 }
 
 .roast-input {
   flex: 1;
   padding: 6px;
-  border: 1px dashed black;
+  border: 2px dashed black;
   font-family: inherit;
-  border-radius: 4px;
+  border-radius: 6px;
   background-color: #fff;
 }
 
 .roast-button {
-  padding: 6px 10px;
-  background-color: #fff;
-  border: 1px solid black;
-  font-family: inherit;
+  padding: 6px 12px;
+  background-color: #fff8f8;
+  border: 2px dashed #000;
+  font-family: "Spicy Rice", serif;
   cursor: pointer;
-  border-radius: 4px;
-  box-shadow: 1px 1px 0 black;
+  border-radius: 6px;
+  box-shadow: 2px 2px 0 black;
+  transition: background 0.2s ease;
+}
+.roast-button:hover {
+  background-color: #fff0f0;
 }
 
 .swipe-overlay {
@@ -129,14 +158,14 @@
   left: 0;
   width: 100%;
   height: 100%;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(3px);
   background-color: rgba(255, 255, 255, 0.85);
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 1.1rem;
   font-weight: bold;
-  border: 2px dashed black;
+  border: 3px double black;
   border-radius: 16px;
   z-index: 10;
   animation: pulseSwipe 1s infinite alternate;
@@ -152,6 +181,57 @@
   100% {
     transform: scale(1.03);
   }
+}
+.roast-content {
+  display: flex;
+  align-items: stretch; /* match image height with text column */
+  gap: 12px;
+  margin-top: 8px;
+  text-align: left;
+}
+
+.roast-text-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tall-image {
+  width: 100px;
+  height: auto;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid #f55;
+}
+
+.roast-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.roast-text {
+  flex: 1;
+  text-align: left;
+  font-size: 1rem;
+  color: #444;
+  word-break: break-word;
+}
+
+.roast-of-day .votes {
+  font-size: 1.1rem;
+  color: #d7263d;
+  font-weight: bold;
+  white-space: nowrap;
+  padding-left: 10px;
+}
+.top-roast-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  margin-right: 1px;
+  border-radius: 12px;
+  border: 2px solid #444;
 }
 
 .animated-card {
@@ -170,13 +250,13 @@
 }
 
 .roast-of-day {
-  background-color: #fff8dc;
+  background: linear-gradient(135deg, #fff5da, #ffebc2);
   border: 2px dashed black;
-  padding: 8px 12px; /* reduced from 12px 16px */
-  margin-bottom: 16px; /* optional: slightly smaller gap */
-  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  border-radius: 12px;
   text-align: center;
-  box-shadow: 4px 4px 0 black;
+  box-shadow: 5px 5px 0 black;
   font-family: "Patrick Hand", cursive;
   animation: highlightRoast 1s ease-in-out;
   width: 100%;
@@ -185,20 +265,16 @@
 
 .roast-of-day h3 {
   margin: 0;
-  font-size: 1.2rem;
-  color: #d2691e;
+  font-size: 1.3rem;
+  color: #b34c00;
+  white-space: nowrap;
+  overflow: hidden;
+  font-family: "nerko one", serif;
+  text-overflow: ellipsis;
 }
 
 .roast-of-day p {
   font-size: 1rem;
   margin: 6px 0;
-  color: #333;
-}
-
-.roast-of-day .votes {
-  display: inline-block;
-  font-size: 0.9rem;
-  margin-top: 4px;
-  color: #b22222;
-  font-weight: bold;
+  color: #444;
 }
