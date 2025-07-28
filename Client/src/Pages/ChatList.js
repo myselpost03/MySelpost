@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import "../Styles/ChatList.css";
 import {
@@ -242,9 +242,7 @@ const ChatList = () => {
   const listRef = useRef(null);
 
   const observerRef = useRef();
-  const location = useLocation();
-
-
+  
   useEffect(() => {
     const fetchUnreadCounts = async () => {
       const { data, error } = await supabase

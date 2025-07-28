@@ -95,90 +95,91 @@ const Chat = () => {
   }, [currentUser?.id]);
 
   useEffect(() => {
-  if (showPayPal && window.paypal && currentUser) {
-    if (
-      document.getElementById("paypal-button-container").childElementCount === 0
-    ) {
-      window.paypal
-        .Buttons({
-          style: {
-            layout: "vertical",
-            color: "blue",
-            shape: "pill",
-            label: "paypal",
-          },
-          createOrder: (data, actions) => {
-            return actions.order.create({
-              purchase_units: [{ amount: { value: "1.00" } }],
-            });
-          },
-          onApprove: async (data, actions) => {
-            await actions.order.capture();
+    if (showPayPal && window.paypal && currentUser) {
+      if (
+        document.getElementById("paypal-button-container").childElementCount ===
+        0
+      ) {
+        window.paypal
+          .Buttons({
+            style: {
+              layout: "vertical",
+              color: "blue",
+              shape: "pill",
+              label: "paypal",
+            },
+            createOrder: (data, actions) => {
+              return actions.order.create({
+                purchase_units: [{ amount: { value: "1.00" } }],
+              });
+            },
+            onApprove: async (data, actions) => {
+              await actions.order.capture();
 
-            setAlertMessage({
-              text: "✅ Payment successful! Now you can chat with premium country user.",
-              withButton: true,
-            });
+              setAlertMessage({
+                text: "✅ Payment successful! Now you can chat with premium country user.",
+                withButton: true,
+              });
 
-            const user = JSON.parse(localStorage.getItem("user"));
-            const id = user?.id;
+              const user = JSON.parse(localStorage.getItem("user"));
+              const id = user?.id;
 
-            if (id) {
-              await supabase
-                .from("users")
-                .update({ self_destruct_pricing: "paid" })
-                .eq("id", id);
+              if (id) {
+                await supabase
+                  .from("users")
+                  .update({ self_destruct_pricing: "paid" })
+                  .eq("id", id);
 
-              setHasAccess(true);
-              setAutoDeleteEnabled(false);
-            }
-          },
-          onError: (err) => {
-            console.error("PayPal error:", err);
-            setAlertMessage({
-              text: `❌ Payment Failed.`,
-              withButton: true,
-            });
-          },
-        })
-        .render("#paypal-button-container");
-    }
-  }
-}, [showPayPal, currentUser]);
-
-useEffect(() => {
-  const checkBlockStatus = async () => {
-    try {
-      const [{ data: blockedByMe }, { data: blockedMe }] = await Promise.all([
-        supabase
-          .from("blocked_users")
-          .select("*")
-          .eq("blocker_id", currentUser.id)
-          .eq("blocked_id", targetId)
-          .single(),
-
-        supabase
-          .from("blocked_users")
-          .select("*")
-          .eq("blocker_id", targetId)
-          .eq("blocked_id", currentUser.id)
-          .single(),
-      ]);
-
-      setIsBlocked(!!blockedByMe);
-      setIBlockedOtherUser(!!blockedByMe);
-      setBlockedByOtherUser(!!blockedMe);
-    } catch (err) {
-      if (err.message !== "PGRST116") {
-        console.error("Block status check failed:", err.message);
+                setHasAccess(true);
+                setAutoDeleteEnabled(false);
+              }
+            },
+            onError: (err) => {
+              console.error("PayPal error:", err);
+              setAlertMessage({
+                text: `❌ Payment Failed.`,
+                withButton: true,
+              });
+            },
+          })
+          .render("#paypal-button-container");
       }
     }
-  };
+  }, [showPayPal, currentUser]);
 
-  if (currentUser?.id && targetId) {
-    checkBlockStatus();
-  }
-}, [currentUser.id, targetId]);
+  useEffect(() => {
+    const checkBlockStatus = async () => {
+      try {
+        const [{ data: blockedByMe }, { data: blockedMe }] = await Promise.all([
+          supabase
+            .from("blocked_users")
+            .select("*")
+            .eq("blocker_id", currentUser.id)
+            .eq("blocked_id", targetId)
+            .single(),
+
+          supabase
+            .from("blocked_users")
+            .select("*")
+            .eq("blocker_id", targetId)
+            .eq("blocked_id", currentUser.id)
+            .single(),
+        ]);
+
+        setIsBlocked(!!blockedByMe);
+        setIBlockedOtherUser(!!blockedByMe);
+        setBlockedByOtherUser(!!blockedMe);
+      } catch (err) {
+        if (err.message !== "PGRST116") {
+          console.error("Block status check failed:", err.message);
+        }
+      }
+    };
+
+    if (currentUser?.id && targetId) {
+      checkBlockStatus();
+    }
+  }, [currentUser.id, targetId]);
 
   const [blockedByOtherUser, setBlockedByOtherUser] = useState(false);
   const [iBlockedOtherUser, setIBlockedOtherUser] = useState(false);
