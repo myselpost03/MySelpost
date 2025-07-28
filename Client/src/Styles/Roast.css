@@ -284,6 +284,10 @@
   color: #444;
 }
 
+.fab-upload:disabled{
+  opacity: 0.5
+}
+
 .fab-upload {
   position: fixed;
   bottom: 20px;
@@ -424,3 +428,45 @@
   color: #333;
 }
 
+.sketchy-share-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  justify-content: center;
+}
+
+.sketchy-share {
+  font-family: "Patrick Hand", cursive;
+  background-color: #fffdf5;
+  border: 2px dashed #111;
+  padding: 4px 10px;
+  border-radius: 6px;
+  box-shadow: 2px 2px 0 #000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sketchy-share:hover {
+  background-color: #fffbdf;
+  transform: scale(1.05);
+}
+
+
+.share-button-with-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 8px;
+}
+
+.myShareCountWrapper {
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  background: #fdf6e3;
+  border: 2px dashed #444;
+  padding: 2px 6px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #444;
+  border-radius: 4px;
+}

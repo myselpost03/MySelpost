@@ -3,8 +3,6 @@ import Header from "../Components/Header";
 import { Link, useNavigate } from "react-router-dom";
 import first from "../Assets/1.jpg";
 import second from "../Assets/2.jpg";
-import third from "../Assets/11.png";
-
 import Lottie from "lottie-react";
 import arrow from "../Assets/arrow.json";
 import draw from "../Assets/draw.png"; // Add your image for the new FAB

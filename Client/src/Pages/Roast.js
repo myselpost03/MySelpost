@@ -7,6 +7,12 @@ import LoadingIndicator from "../Components/LoadingIndicator";
 import SketchyAlert from "../Components/SketchyAlert";
 import { supabase } from "../Utils/supabaseClient"; // Update path if needed
 import { FaFire } from "react-icons/fa";
+import {
+  FacebookShareButton,
+  TwitterShareButton,
+  WhatsappShareButton,
+  RedditShareButton,
+} from "react-share";
 
 function Roast() {
   const navigate = useNavigate();
@@ -16,9 +22,19 @@ function Roast() {
   const [fabOpen, setFabOpen] = useState(false);
   const [showTopRoastPopup, setShowTopRoastPopup] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
-const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [hasSharedRoast, setHasSharedRoast] = useState(
+    localStorage.getItem("hasSharedRoast") === "true"
+  );
 
   const toggleFAB = () => setFabOpen((prev) => !prev);
+
+  const handleShare = () => {
+    if (!hasSharedRoast) {
+      setHasSharedRoast(true);
+      localStorage.setItem("hasSharedRoast", "true");
+    }
+  };
 
   const fetchCardsData = async () => {
     setLoading(true);
@@ -29,7 +45,7 @@ const [loading, setLoading] = useState(false);
 
     if (imageErr) {
       console.error("Error fetching images:", imageErr);
-      setLoading(false); 
+      setLoading(false);
       return;
     }
 
@@ -74,7 +90,7 @@ const [loading, setLoading] = useState(false);
 
     setCards(cardsWithRoasts);
     setCurrentIndex(0);
-    setLoading(false); 
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -329,6 +345,59 @@ const [loading, setLoading] = useState(false);
               alt="Roastee"
               className="roast-image"
             />
+
+            {/* Sketchy Share Buttons */}
+            <div className="sketchy-share-buttons">
+              <FacebookShareButton
+                url={window.location.href}
+                quote="🔥 Check this roast on myselpost!"
+                onClick={handleShare}
+              >
+                <button className="sketchy-share">
+                  Facebook{" "}
+                  {(count) => (
+                    <span className="myShareCountWrapper">{count}</span>
+                  )}
+                </button>
+              </FacebookShareButton>
+              <TwitterShareButton
+                url={window.location.href}
+                title="🔥 Check this roast on myselpost!"
+                onClick={handleShare}
+              >
+                <button className="sketchy-share">
+                  Twitter{" "}
+                  {(count) => (
+                    <span className="myShareCountWrapper">{count}</span>
+                  )}
+                </button>
+              </TwitterShareButton>
+              <WhatsappShareButton
+                url={window.location.href}
+                title="🔥 Check this roast on myselpost!"
+                onClick={handleShare}
+              >
+                <button className="sketchy-share">
+                  WhatsApp
+                  {(shareCount) => (
+                    <span className="myShareCountWrapper">{shareCount}</span>
+                  )}
+                </button>
+              </WhatsappShareButton>
+              <RedditShareButton
+                url={window.location.href}
+                title="🔥 Check this roast!"
+                onClick={handleShare}
+              >
+                <button className="sketchy-share">
+                  Reddit{" "}
+                  {(count) => (
+                    <span className="myShareCountWrapper">{count}</span>
+                  )}
+                </button>
+              </RedditShareButton>
+            </div>
+
             <ul className="roast-list">
               {cards[currentIndex].roasts
                 .sort((a, b) => b.votes - a.votes)
@@ -375,7 +444,20 @@ const [loading, setLoading] = useState(false);
       />
 
       {/* Main FAB */}
-      <button className="fab-upload" onClick={toggleFAB} title="Actions">
+      <button
+        className="fab-upload"
+        onClick={() => {
+          if (hasSharedRoast) {
+            toggleFAB();
+          } else {
+            setAlertMessage({
+              text: "You have to share one roast to access this feature.",
+              withButton: true,
+            });
+          }
+        }}
+        title="Actions"
+      >
         <FaFire />
       </button>
 
