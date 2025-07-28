@@ -1,0 +1,204 @@
+.roast-page {
+  font-family: "Patrick Hand", cursive;
+  background-color: #f9f9f9;
+  color: #111;
+  min-height: 100vh;
+  margin-top: 5px;
+  background-image: linear-gradient(white 98%, #ccc 2%);
+  background-size: 100% 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.roast-card-container {
+  position: relative;
+  width: 100%;
+  max-width: 350px;
+  min-width: 280px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.roast-card {
+  border: 2px solid black;
+  border-radius: 16px;
+  padding: 16px;
+  background-color: #fff;
+  box-shadow: 6px 6px 0 black;
+  transition: transform 0.3s ease;
+  width: 100%;
+}
+
+.roast-card:hover {
+  transform: scale(1.01);
+}
+
+.roast-card.blurred {
+  filter: blur(3px);
+  pointer-events: none;
+}
+
+.roast-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px dashed black;
+  margin-bottom: 10px;
+}
+
+.roast-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  max-height: 88px; /* height for 2 roast items */
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-bottom: 8px;
+
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.roast-list::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+.roast-item span {
+  flex: 1;
+  overflow-wrap: break-word; /* allows breaking within words */
+  word-break: break-word;
+  white-space: normal; /* allows wrapping */
+  padding-right: 10px;
+}
+.roast-item span.long-roast {
+  font-size: 0.85rem;
+}
+
+.roast-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px dashed black;
+  font-size: 0.9rem;
+}
+
+.vote-button {
+  background-color: #fff;
+  border: 1px solid black;
+  padding: 3px 6px;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 1px 1px 0 black;
+}
+
+.input-row {
+  display: flex;
+  margin-top: 10px;
+  gap: 5px;
+}
+
+.roast-input {
+  flex: 1;
+  padding: 6px;
+  border: 1px dashed black;
+  font-family: inherit;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.roast-button {
+  padding: 6px 10px;
+  background-color: #fff;
+  border: 1px solid black;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 1px 1px 0 black;
+}
+
+.swipe-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(2px);
+  background-color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: 2px dashed black;
+  border-radius: 16px;
+  z-index: 10;
+  animation: pulseSwipe 1s infinite alternate;
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+@keyframes pulseSwipe {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.03);
+  }
+}
+
+.animated-card {
+  animation: popIn 0.5s ease-out;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.roast-of-day {
+  background-color: #fff8dc;
+  border: 2px dashed black;
+  padding: 8px 12px; /* reduced from 12px 16px */
+  margin-bottom: 16px; /* optional: slightly smaller gap */
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 4px 4px 0 black;
+  font-family: "Patrick Hand", cursive;
+  animation: highlightRoast 1s ease-in-out;
+  width: 100%;
+  max-width: 330px;
+}
+
+.roast-of-day h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #d2691e;
+}
+
+.roast-of-day p {
+  font-size: 1rem;
+  margin: 6px 0;
+  color: #333;
+}
+
+.roast-of-day .votes {
+  display: inline-block;
+  font-size: 0.9rem;
+  margin-top: 4px;
+  color: #b22222;
+  font-weight: bold;
+}

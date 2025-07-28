@@ -10,6 +10,7 @@ import {
   WebSketch,
   Prompt,
   Pricing,
+  Roast,
   About,
   Contact,
   Terms,
@@ -38,7 +39,7 @@ const protectedRoutes = [
   { path: "/web-doodle", component: WebDoodle },
   { path: "/doodle-example", component: DoodleExample },
   { path: "/chat/:id", component: Chat },
-  
+  { path: "/roast", component: Roast },
   { path: "/profile/:id", component: Profile },
   { path: "/coins/:id", component: Coins },
   { path: "/payments/:id", component: PaymentPage },

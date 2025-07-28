@@ -129,6 +129,10 @@ const Header = () => {
     navigate("/register");
   };
 
+  const handleRoast = () => {
+    navigate('/roast')
+  }
+
   const handleMobileRedirect = (path) => {
     if (isMobile) navigate(path);
   };
@@ -217,8 +221,8 @@ const Header = () => {
         </form>
       ) : (
         <div className="nav-logged-in">
-          <button onClick={handleLogout} className="profile-button">
-            Logout
+          <button onClick={handleRoast} className="profile-button">
+            RoastMe
           </button>
           <button
             style={{ textDecoration: "none" }}

@@ -10,6 +10,7 @@ import {
   FaEnvelope,
   FaThumbtack,
   FaSearch,
+  FaFilter,
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
@@ -236,6 +237,7 @@ const ChatList = () => {
   const [allFilter, setAllFilter] = useState("all"); // 'all' or 'online'
 
   const [unreadCounts, setUnreadCounts] = useState({});
+  const [inboxUserIds, setInboxUserIds] = useState(new Set());
 
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -310,6 +312,26 @@ const ChatList = () => {
         }
       }
     };
+    const fetchInboxUserIds = async () => {
+      const { data: sentMsgs, error: sentErr } = await supabase
+        .from("messages")
+        .select("receiver_id")
+        .eq("sender_id", user.id);
+
+      const { data: receivedMsgs, error: recvErr } = await supabase
+        .from("messages")
+        .select("sender_id")
+        .eq("receiver_id", user.id);
+
+      const ids = new Set();
+
+      if (sentMsgs) sentMsgs.forEach((m) => ids.add(m.receiver_id));
+      if (receivedMsgs) receivedMsgs.forEach((m) => ids.add(m.sender_id));
+
+      setInboxUserIds(ids);
+    };
+
+    fetchInboxUserIds();
 
     fetchUnreadCounts();
     const interval = setInterval(fetchUnreadCounts, 3000);
@@ -330,77 +352,6 @@ const ChatList = () => {
       setCountries(uniqueCountries);
     }
   }, [users]);
-
-  // 1️⃣ Pagination or manual load
-  useEffect(() => {
-    const fetchUsers = async () => {
-      if (page === 0) {
-        setLoading(true);
-      } else {
-        setLoadingMore(true);
-      }
-
-      const limit = 10;
-      const offset = page * limit;
-      const { data: allUsers, error } = await supabase
-        .from("users")
-        .select(
-          "id, name, profile_pic, country, gender, status, age, decency_rating"
-        )
-        .order("id", { ascending: false }) //ascending: true will fetch oldest user list
-        .range(offset, offset + limit - 1); // only 10 items
-
-      // Get pinned IDs
-      let pinnedIds = [];
-      if (user) {
-        const { data: pinnedData, error: pinnedError } = await supabase
-          .from("pinned_users")
-          .select("pinned_user_id")
-          .eq("user_id", user.id);
-        if (!pinnedError && pinnedData) {
-          pinnedIds = pinnedData.map((row) => row.pinned_user_id);
-        }
-      }
-
-      if (!error && allUsers) {
-        const processed = allUsers
-          .filter((u) => u.id !== user.id)
-          .map((user) => ({
-            ...user,
-            avatar: user.profile_pic || empty,
-            notifications: user.notifications || 0,
-            pinned: pinnedIds.includes(user.id),
-            status: user.status || "offline",
-          }));
-
-        setUsers((prev) => {
-          const existingIds = new Set(prev.map((u) => u.id));
-          const newUsers = processed.filter((u) => !existingIds.has(u.id));
-          return [...prev, ...newUsers];
-        });
-
-        if (activeTab === "pinned") {
-          const totalPinnedUsers = processed.filter((u) => u.pinned).length;
-          if (totalPinnedUsers < limit) {
-            setHasMore(false);
-          } else {
-            setHasMore(true);
-          }
-        } else {
-          if (allUsers.length < limit) {
-            setHasMore(false);
-          } else {
-            setHasMore(true);
-          }
-        }
-      }
-      setHasMore(allUsers.length === limit);
-      setLoading(false);
-      setLoadingMore(false);
-    };
-
-    fetchUsers();
-  }, [page]);
 
   // 2️⃣ Background refresh for latest data, without showing loading indicator
   useEffect(() => {
@@ -492,6 +443,88 @@ const ChatList = () => {
     navigate(`/payments/${user.id}`);
   };
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (searchTerm.trim() === "" && page === 0) setLoading(true);
+      else setLoadingMore(true);
+
+      const limit = 10;
+      const offset = page * limit;
+
+      let query = supabase
+        .from("users")
+        .select(
+          "id, name, profile_pic, country, gender, status, age, decency_rating"
+        );
+
+      if (genderFilter !== "all") query = query.eq("gender", genderFilter);
+      if (countryFilter !== "all") query = query.eq("country", countryFilter);
+      if (activeTab === "online") query = query.eq("status", "online");
+
+      // Handle pinned tab separately
+      if (activeTab === "pinned") {
+        const { data: pinnedData } = await supabase
+          .from("pinned_users")
+          .select("pinned_user_id")
+          .eq("user_id", user.id);
+
+        const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
+        if (pinnedIds.length === 0) {
+          setUsers([]);
+          setHasMore(false);
+          setLoading(false);
+          setLoadingMore(false);
+          return;
+        }
+
+        query = query.in("id", pinnedIds);
+      }
+
+      if (searchTerm.trim() !== "") {
+        query = query.ilike("name", `%${searchTerm}%`);
+      }
+
+      const { data: fetchedUsers, error } = await query.range(
+        offset,
+        offset + limit - 1
+      );
+
+      if (!error && fetchedUsers) {
+        const { data: pinnedData } = await supabase
+          .from("pinned_users")
+          .select("pinned_user_id")
+          .eq("user_id", user.id);
+
+        const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
+
+        const processed = fetchedUsers
+          .filter((u) => u.id !== user.id)
+          .map((user) => ({
+            ...user,
+            avatar: user.profile_pic || empty,
+            notifications: unreadCounts[user.id] || 0,
+            pinned: pinnedIds.includes(user.id),
+            status: user.status || "offline",
+          }));
+
+        if (page === 0) setUsers(processed);
+        else
+          setUsers((prev) => {
+            const existingIds = new Set(prev.map((u) => u.id));
+            const newUsers = processed.filter((u) => !existingIds.has(u.id));
+            return [...prev, ...newUsers];
+          });
+
+        setHasMore(fetchedUsers.length === limit);
+      }
+
+      setLoading(false);
+      setLoadingMore(false);
+    };
+
+    fetchUsers();
+  }, [page, activeTab, genderFilter, countryFilter, searchTerm]);
+
   const filteredUsers = useMemo(() => {
     return users
       .filter((user) => {
@@ -502,7 +535,13 @@ const ChatList = () => {
         const searchMatch = user.name
           .toLowerCase()
           .includes(searchTerm.toLowerCase());
-        const pinMatch = activeTab === "pinned" ? user.pinned : true;
+        const pinMatch =
+          activeTab === "pinned"
+            ? user.pinned
+            : activeTab === "inbox"
+            ? unreadCounts[user.id] > 0
+            : !(unreadCounts[user.id] > 0); // 👈 Fix: show users only if no unread notifications
+
         const onlineMatch =
           activeTab === "online" ? user.status === "online" : true;
         return (
@@ -629,107 +668,6 @@ const ChatList = () => {
   };
 
   useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setPage(0);
-      setUsers([]);
-      setHasMore(true);
-    }
-  }, [searchTerm]);
-
-  useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setPage(0); // reset pagination
-      setUsers([]);
-      setHasMore(true);
-
-      // Trigger re-fetch of initial user list
-      const fetchInitialUsers = async () => {
-        setLoading(true);
-        const limit = 10;
-        const offset = 0;
-        const { data: allUsers, error } = await supabase
-          .from("users")
-          .select(
-            "id, name, profile_pic, country, gender, status, age, decency_rating"
-          )
-          .range(offset, offset + limit - 1);
-
-        if (!error && allUsers) {
-          const { data: pinnedData } = await supabase
-            .from("pinned_users")
-            .select("pinned_user_id")
-            .eq("user_id", user.id);
-
-          const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
-
-          const processed = allUsers
-            .filter((u) => u.id !== user.id)
-            .map((user) => ({
-              ...user,
-              avatar: user.profile_pic || empty,
-              notifications: user.notifications || 0,
-              pinned: pinnedIds.includes(user.id),
-              status: user.status || "offline",
-            }));
-
-          setUsers(processed);
-          if (allUsers.length < limit) {
-            setHasMore(false);
-          }
-        }
-
-        setLoading(false);
-      };
-
-      fetchInitialUsers();
-    }
-  }, [searchTerm]);
-
-  useEffect(() => {
-    const fetchInitialUsers = async () => {
-      setLoading(true);
-      const limit = 10;
-      const offset = 0;
-      const { data: allUsers, error } = await supabase
-        .from("users")
-        .select(
-          "id, name, profile_pic, country, gender, status, age, decency_rating"
-        )
-        .range(offset, offset + limit - 1);
-
-      if (!error && allUsers) {
-        const { data: pinnedData } = await supabase
-          .from("pinned_users")
-          .select("pinned_user_id")
-          .eq("user_id", user.id);
-
-        const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
-
-        const processed = allUsers
-          .filter((u) => u.id !== user.id)
-          .map((user) => ({
-            ...user,
-            avatar: user.profile_pic || empty,
-            notifications: user.notifications || 0,
-            pinned: pinnedIds.includes(user.id),
-            status: user.status || "offline",
-          }));
-
-        setUsers(processed);
-        setPage(0);
-        setHasMore(allUsers.length === limit);
-      }
-
-      setLoading(false);
-    };
-
-    if (searchTerm.trim() === "") {
-      setUsers([]); // Clear previous list for clean switch
-      fetchInitialUsers();
-    }
-  }, [activeTab]);
-
-  useEffect(() => {
     if (!hasMore || loadingMore || loading || searchTerm.trim() !== "") return;
 
     const observer = new IntersectionObserver(
@@ -813,14 +751,34 @@ const ChatList = () => {
                     right: "-6px",
                     fontSize: "0.7rem",
                     backgroundColor: "#e53935",
-                    padding: "2px 6px",
-                    borderRadius: "12px",
+                    padding: "0.4rem",
+                    borderRadius: "50px",
                   }}
-                >
-                  !
-                </span>
+                ></span>
               )}
             </button>
+            <button
+              className={`sketchy-tab ${activeTab === "inbox" ? "active" : ""}`}
+              onClick={() => setActiveTab("inbox")}
+              style={{ position: "relative" }}
+            >
+              Inbox
+              {Object.values(unreadCounts).some((count) => count > 0) && (
+                <span
+                  className="sketchy-badge pinned-tab-badge"
+                  style={{
+                    position: "absolute",
+                    top: "-6px",
+                    right: "-6px",
+                    fontSize: "0.7rem",
+                    backgroundColor: "#e53935",
+                    padding: "0.4rem",
+                    borderRadius: "50px",
+                  }}
+                ></span>
+              )}
+            </button>
+
             <button
               className={`sketchy-tab ${
                 activeTab === "online" ? "active" : ""
@@ -835,22 +793,11 @@ const ChatList = () => {
             </button>
 
             <button
-              className="sketchy-tab"
-              onClick={() => {
-                setShowGenderTabs(true);
-                setShowCountryTabs(false);
-              }}
+              className="fab-filter-button"
+              onClick={() => setShowAllTabs(true)}
+              title="Filter users"
             >
-              Gender ▼
-            </button>
-            <button
-              className="sketchy-tab"
-              onClick={() => {
-                setShowCountryTabs(true);
-                setShowGenderTabs(false);
-              }}
-            >
-              Country ▼
+              <FaFilter />
             </button>
           </div>
 
@@ -1043,96 +990,78 @@ const ChatList = () => {
             )}
           </div>
 
-          {/* Modal for Gender Filter */}
-          {showGenderTabs && (
+          {showAllTabs && (
             <div
               className="modal-backdrop"
-              onClick={() => setShowGenderTabs(false)}
+              onClick={() => setShowAllTabs(false)}
             >
               <div
                 className="modal-content"
                 onClick={(e) => e.stopPropagation()}
               >
-                <h3>Choose Gender</h3>
-                <button
-                  className={`modal-btn ${
-                    genderFilter === "all" ? "active" : ""
-                  }`}
-                  onClick={() => {
-                    setGenderFilter("all");
-                    setShowGenderTabs(false);
-                  }}
-                >
-                  All Genders
-                </button>
-                <button
-                  className={`modal-btn ${
-                    genderFilter === "male" ? "active" : ""
-                  }`}
-                  onClick={() => {
-                    setGenderFilter("male");
-                    setShowGenderTabs(false);
-                  }}
-                >
-                  ♂️ Male
-                </button>
-                <button
-                  className={`modal-btn ${
-                    genderFilter === "female" ? "active" : ""
-                  }`}
-                  onClick={() => {
-                    setGenderFilter("female");
-                    setShowGenderTabs(false);
-                  }}
-                >
-                  ♀️ Female
-                </button>
-              </div>
-            </div>
-          )}
+                <h3>🎛️</h3>
 
-          {/* Modal for Country Filter */}
-          {showCountryTabs && (
-            <div
-              className="modal-backdrop"
-              onClick={() => setShowCountryTabs(false)}
-            >
-              <div
-                className="modal-content"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <h3>Choose Country</h3>
-                <button
-                  className={`modal-btn ${
-                    countryFilter === "all" ? "active" : ""
-                  }`}
-                  onClick={() => {
-                    setCountryFilter("all");
-                    setShowCountryTabs(false);
-                  }}
-                >
-                  All Countries
-                </button>
-                {countries.map((country, i) => (
+                <div className="modal-section">
+                  <h4>Gender</h4>
+                  {["all", "male", "female"].map((g) => (
+                    <button
+                      key={g}
+                      className={`modal-btn ${
+                        genderFilter === g ? "active" : ""
+                      }`}
+                      onClick={() => {
+                        setGenderFilter(g);
+                        setShowAllTabs(false);
+                      }}
+                    >
+                      {g === "all"
+                        ? "All Genders"
+                        : g === "male"
+                        ? "♂️ Male"
+                        : "♀️ Female"}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="modal-section">
+                  <h4>Country</h4>
                   <button
-                    key={i}
                     className={`modal-btn ${
-                      countryFilter === country ? "active" : ""
+                      countryFilter === "all" ? "active" : ""
                     }`}
                     onClick={() => {
-                      setCountryFilter(country);
-                      setShowCountryTabs(false);
+                      setCountryFilter("all");
+                      setShowAllTabs(false);
                     }}
                   >
-                    {country}{" "}
-                    {countryNameToCode[country] && (
-                      <ReactCountryFlag
-                        countryCode={countryNameToCode[country]}
-                        svg
-                      />
-                    )}
+                    🌍 All Countries
                   </button>
-                ))}
+                  {countries.map((c) => (
+                    <button
+                      key={c}
+                      className={`modal-btn ${
+                        countryFilter === c ? "active" : ""
+                      }`}
+                      onClick={() => {
+                        setCountryFilter(c);
+                        setShowAllTabs(false);
+                      }}
+                    >
+                      {countryNameToCode[c] && (
+                        <ReactCountryFlag
+                          countryCode={countryNameToCode[c]}
+                          svg
+                          style={{
+                            width: "1.2em",
+                            height: "1.2em",
+                            marginRight: "6px",
+                          }}
+                        />
+                      )}
+                      {c}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}

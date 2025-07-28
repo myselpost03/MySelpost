@@ -1,91 +1,28 @@
 import React, { useEffect, useState } from "react";
-import "../Styles/Demo.css";
 
-const Demo = () => {
-  const [boyPosition, setBoyPosition] = useState(1); // 1: middle, 0: top, 2: bottom
-  const [obstacles, setObstacles] = useState([]);
-  const [score, setScore] = useState(0);
-  const [gameOver, setGameOver] = useState(false);
-  const [gameWin, setGameWin] = useState(false);
-
-  const lanes = [0, 1, 2];
+function Demo() {
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "ArrowUp") setBoyPosition((prev) => Math.max(prev - 1, 0));
-      if (e.key === "ArrowDown") setBoyPosition((prev) => Math.min(prev + 1, 2));
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    fetch("https://gist.githubusercontent.com/myselpost03/11b01194cf415890dea341c198678293/raw/0930118a8e61b9a7a56b7ef09c84dcf36a1a95b7/data.json")
+      .then((res) => res.json())
+      .then((data) => setItems(data))
+      .catch((err) => console.error("Error fetching JSON:", err));
   }, []);
 
-  useEffect(() => {
-    if (gameOver || gameWin) return;
-
-    const interval = setInterval(() => {
-      const newObs = obstacles.map((obs) => ({
-        ...obs,
-        x: obs.x - 1,
-      })).filter((obs) => obs.x > 0);
-
-      if (Math.random() < 0.3) {
-        newObs.push({ lane: lanes[Math.floor(Math.random() * 3)], x: 10 });
-      }
-
-      const caught = newObs.some((obs) => obs.x === 1 && obs.lane === boyPosition);
-      if (caught) {
-        setGameOver(true);
-        return;
-      }
-
-      setScore((prev) => prev + 1);
-      if (score >= 30) setGameWin(true); // Reached girl
-
-      setObstacles(newObs);
-    }, 300);
-
-    return () => clearInterval(interval);
-  }, [obstacles, boyPosition, gameOver, score, gameWin]);
-
-  const resetGame = () => {
-    setBoyPosition(1);
-    setObstacles([]);
-    setScore(0);
-    setGameOver(false);
-    setGameWin(false);
-  };
-
   return (
-    <div className="game-container">
-      <h2>💘 Chase to Chat</h2>
-      <div className="road">
-        {[0, 1, 2].map((lane) => (
-          <div key={lane} className="lane">
-            {obstacles
-              .filter((obs) => obs.lane === lane)
-              .map((obs, i) => (
-                <div key={i} className="obstacle" style={{ left: `${obs.x * 10}%` }} />
-              ))}
-            {boyPosition === lane && <div className="boy">👦</div>}
-            {lane === 1 && <div className="girl">👧</div>}
-          </div>
-        ))}
-      </div>
-
-      {gameOver && (
-        <div className="overlay">
-          <h3>You hit an obstacle! 💔</h3>
-          <button onClick={resetGame}>Try Again</button>
+    <div>
+      <h2>Roasts + Image from Gist</h2>
+      {items.map((item, index) => (
+        <div key={index} style={{ marginBottom: "20px" }}>
+          <img src={item.image} alt="roast" style={{ width: "200px" }} />
+          <p>{item.roast1}</p>
+          <p>{item.roast2}</p>
+          <p>{item.roast3}</p>
         </div>
-      )}
-      {gameWin && (
-        <div className="overlay">
-          <h3>You reached her! 🥰</h3>
-          <button onClick={resetGame}>Play Again</button>
-        </div>
-      )}
+      ))}
     </div>
   );
-};
+}
 
 export default Demo;

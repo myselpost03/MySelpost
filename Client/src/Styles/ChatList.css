@@ -683,3 +683,31 @@
   background-color: #fff4cc;
   transform: scale(1.05);
 }
+
+.fab-filter-button {
+  position: fixed;
+  bottom: 29px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background: #333;
+  color: white;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  z-index: 1000;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-section {
+  margin: 1rem 0;
+}
+
+.modal-section h4 {
+  margin-bottom: 0.5rem;
+}
+

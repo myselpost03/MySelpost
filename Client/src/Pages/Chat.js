@@ -34,6 +34,8 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
   const [showPayPal, setShowPayPal] = useState(false);
 
+  
+
   useEffect(() => {
     const checkAccess = async () => {
       if (!currentUser?.id) return;
