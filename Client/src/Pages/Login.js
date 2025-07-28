@@ -22,7 +22,12 @@ const Login = () => {
     const { name, value } = e.target;
 
     if (name === "identifier") {
-      setEmailValid(value === "" || isEmailValid(value));
+      // Only validate if it contains "@"
+      if (value.includes("@")) {
+        setEmailValid(isEmailValid(value));
+      } else {
+        setEmailValid(true); // Assume valid if it's likely a name
+      }
     }
 
     setFormData((prev) => ({

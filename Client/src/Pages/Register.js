@@ -25,14 +25,32 @@ const Register = () => {
   const navigate = useNavigate();
 
   const isEmailValid = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  useEffect(() => {
+    const validateStep1 = async () => {
+      if (!formData.name || !formData.email) return;
+
+      const nameExists = await checkNameExists(formData.name);
+      setNameTaken(nameExists); // set inside the check
+
+      if (emailValid && !nameExists) {
+        setTimeout(() => {
+          setStep(2);
+        }, 500);
+      }
+    };
+
+    if (step === 1) {
+      validateStep1();
+    }
+  }, [formData.name, formData.email, emailValid, step]);
 
   const checkNameExists = async (name) => {
-    if (!name) return;
+    if (!name) return false;
     const { data } = await supabase
       .from("users")
       .select("name")
       .eq("name", name);
-    setNameTaken(data && data.length > 0);
+    return data && data.length > 0;
   };
 
   const handleChange = async (e) => {
