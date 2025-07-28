@@ -26,8 +26,18 @@ function Roast() {
   const [hasSharedRoast, setHasSharedRoast] = useState(
     localStorage.getItem("hasSharedRoast") === "true"
   );
+  const currentUser = JSON.parse(localStorage.getItem("user"));
 
-  const toggleFAB = () => setFabOpen((prev) => !prev);
+  const toggleFAB = () => {
+    if (currentUser) {
+      setFabOpen((prev) => !prev);
+    } else {
+      setAlertMessage({
+        text: "You have to log in to access this feature.",
+        withButton: true,
+      });
+    }
+  };
 
   const handleShare = () => {
     if (!hasSharedRoast) {
@@ -115,6 +125,12 @@ function Roast() {
   const upvote = async (cardIndex, roastIndex) => {
     const currentUser = JSON.parse(localStorage.getItem("user"));
     const userId = currentUser?.id;
+    if (!currentUser) {
+      setAlertMessage({
+        text: "You have to log in to upvote the roast.",
+        withButton: true,
+      });
+    }
     if (!userId) return;
 
     const roast = cards[cardIndex].roasts[roastIndex];
@@ -162,10 +178,17 @@ function Roast() {
   };
 
   const addRoast = async (cardIndex) => {
+    
     const trimmed = cards[cardIndex].newRoast.trim();
     if (!trimmed) return;
 
     const currentUser = JSON.parse(localStorage.getItem("user"));
+    if (!currentUser) {
+      setAlertMessage({
+        text: "You have to log in to add roast.",
+        withButton: true,
+      });
+    }
     const userId = currentUser?.id;
     if (!userId) return;
 
@@ -409,6 +432,7 @@ function Roast() {
                     <button
                       onClick={() => upvote(currentIndex, i)}
                       className="vote-button"
+                      disabled={!currentUser}
                     >
                       🔥 {r.votes}
                     </button>
@@ -423,11 +447,13 @@ function Roast() {
                 maxLength={150}
                 onChange={(e) => handleInputChange(e, currentIndex)}
                 className="roast-input"
+                disabled={!currentUser}
               />
 
               <button
                 onClick={() => addRoast(currentIndex)}
                 className="roast-button"
+                disabled={!currentUser}
               >
                 Roast!
               </button>

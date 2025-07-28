@@ -39,7 +39,6 @@ const protectedRoutes = [
   { path: "/web-doodle", component: WebDoodle },
   { path: "/doodle-example", component: DoodleExample },
   { path: "/chat/:id", component: Chat },
-  { path: "/roast", component: Roast },
   { path: "/profile/:id", component: Profile },
   { path: "/coins/:id", component: Coins },
   { path: "/payments/:id", component: PaymentPage },
@@ -52,6 +51,8 @@ const publicRoutes = [
   { path: "/sketch", component: Sketch },
   { path: "/about", component: About },
   { path: "/terms", component: Terms },
+  
+  { path: "/roast", component: Roast },
   { path: "/chat-entrance", component: ChatEntrance },
   { path: "/guest-user", component: GuestUser },
   

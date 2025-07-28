@@ -198,6 +198,13 @@ const Header = () => {
                 >
                   Register
                 </button>
+                 <button
+                  type="button"
+                  className="profile-button"
+                  onClick={() => navigate("/roast")}
+                >
+                  Roast
+                </button>
               </nav>
             </>
           ) : (
