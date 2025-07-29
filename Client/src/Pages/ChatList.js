@@ -242,7 +242,7 @@ const ChatList = () => {
   const listRef = useRef(null);
 
   const observerRef = useRef();
-  
+
   useEffect(() => {
     const fetchUnreadCounts = async () => {
       const { data, error } = await supabase

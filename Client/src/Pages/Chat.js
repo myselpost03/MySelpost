@@ -58,7 +58,7 @@ const Chat = () => {
 
       const { error } = await supabase
         .from("users")
-        .update({ online: status }) // status will be "online" or "offline"
+        .update({ status: status }) // status will be "online" or "offline"
         .eq("id", currentUser.id);
 
       if (error) {
@@ -156,14 +156,14 @@ const Chat = () => {
             .select("*")
             .eq("blocker_id", currentUser.id)
             .eq("blocked_id", targetId)
-            .single(),
+            .maybeSingle(),
 
           supabase
             .from("blocked_users")
             .select("*")
             .eq("blocker_id", targetId)
             .eq("blocked_id", currentUser.id)
-            .single(),
+            .maybeSingle(),
         ]);
 
         setIsBlocked(!!blockedByMe);
@@ -191,14 +191,14 @@ const Chat = () => {
         .select("*")
         .eq("blocker_id", currentUser.id)
         .eq("blocked_id", targetId)
-        .single();
+        .maybeSingle();
 
       const { data: blockedMe, error: error2 } = await supabase
         .from("blocked_users")
         .select("*")
         .eq("blocker_id", targetId)
         .eq("blocked_id", currentUser.id)
-        .single();
+        .maybeSingle();
 
       if (error1 && error1.code !== "PGRST116")
         console.error("Error1:", error1.message);
@@ -446,6 +446,8 @@ const Chat = () => {
       return;
     }
 
+    
+
     // If insert succeeded, replace local temp message with Supabase-confirmed one
     if (data && data[0]) {
       const dbMsg = {
@@ -456,6 +458,7 @@ const Chat = () => {
         timestamp: data[0].created_at,
       };
 
+    
       setMessages((prev) => {
         const filtered = prev.filter((m) => m.id !== tempId);
         const updated = [...filtered, dbMsg];

@@ -26,6 +26,7 @@
     "react-share": "^5.2.2",
     "react-swipeable": "^7.0.2",
     "sitemap": "^8.0.0",
+    "supabase": "^2.31.8",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

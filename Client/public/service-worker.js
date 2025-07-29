@@ -27,6 +27,42 @@ self.addEventListener("activate", (evt) => {
   );
 });
 
+self.addEventListener("push", function (event) {
+  const data = event.data?.json() || {};
+  const title = data.title || "New Notification";
+  const options = {
+    body: data.body || "You have a new message!",
+    icon: "/myselpost.png",
+    badge: "/myselpost.png",
+    tag: "message", // ✅ Tag ensures browser replaces same notification
+    renotify: false,
+
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+
+
+self.addEventListener("push", function (event) {
+  const data = event.data.json();
+
+  const options = {
+    body: data.body,
+    data: {
+      url: data.url // pass the URL so we can open it on click
+    }
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+
+
+
+
 /* Push notification logic
 self.addEventListener("push", (event) => {
   // Get the payload data from the event
@@ -110,32 +146,6 @@ self.addEventListener("message", (event) => {
 });
 
 
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  event.waitUntil(
-    self.clients.matchAll({ type: "window" }).then((clientList) => {
-      let urlToOpen = "https://myselpost.com";
-      for (let i = 0; i < clientList.length; i++) {
-        const client = clientList[i];
-        if (client.url === urlToOpen && "focus" in client) {
-          return client.focus();
-        }
-      }
-      if (self.clients.openWindow) {
-        const newWindow = self.clients.openWindow(urlToOpen);
-        newWindow.then((client) => {
-          if (client) {
-            const notificationOptions = {
-              ...event.notification.options,
-              requireInteraction: false,
-            };
-            client.postMessage({ notificationOptions });
-          }
-        });
-      }
-    })
-  );
-});
 
 
 self.addEventListener("pushsubscriptionchange", async (event) => {

@@ -7,6 +7,7 @@ import SketchyAlert from "../Components/SketchyAlert";
 import InviteFAB from "../Components/InviteFAB";
 import { supabase } from "../Utils/supabaseClient";
 import { isRunningAsPWA } from "../Utils/CheckPWA";
+import { subscribeUser } from "../Utils/subscribeUser";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -16,6 +17,11 @@ const Home = () => {
   const [user, setUser] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileForm, setProfileForm] = useState({ gender: "", age: "" });
+  const PUBLIC_VAPID_KEY =
+    "BMt7fVUizCYq_PQkR-gkxa9azLTlzoLVgFQEIDjjJdP35dj2LyvHKCbBnp3YvsYdPmYwjx7gfnoMMhejp9i85-4";
+  const [isSubscribed, setIsSubscribed] = useState(false);
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+
 
 useEffect(() => {
   const fetchAndSetUser = async () => {
@@ -156,6 +162,53 @@ useEffect(() => {
     }
   };
 
+  const handleSubscribe = async () => {
+    try {
+      const subscription = await subscribeUser(PUBLIC_VAPID_KEY);
+      setIsSubscribed(true);
+  
+      const data = {
+        endpoint: subscription.endpoint,
+        keys: {
+          p256dh: subscription.keys.p256dh,
+          auth: subscription.keys.auth,
+        },
+        user_id: currentUser.id
+      };
+  
+      // Optionally: Check if subscription already exists before upsert
+      const { data: existing, error: selectError } = await supabase
+        .from("subscriptions")
+        .select("endpoint, keys")
+        .eq("endpoint", subscription.endpoint)
+        .single();
+  
+      // Only upsert if changed or not found
+      if (!existing || existing.keys.p256dh !== data.keys.p256dh || existing.keys.auth !== data.keys.auth) {
+        const { error } = await supabase.from("subscriptions").upsert(data, {
+          onConflict: ["endpoint"],
+        });
+  
+        if (error) {
+          console.error("Supabase insert error:", error);
+          console.log("Failed to save subscription.");
+        } else {
+          console.log("Subscribed & saved to Supabase!");
+        }
+      } else {
+        console.log("Subscription already up-to-date.");
+      }
+  
+    } catch (err) {
+      console.error("Subscription failed:", err);
+    }
+  };
+
+  const handleClick =  () => {
+     handleProfileSubmit();
+     handleSubscribe();
+  }
+
   return (
     <div className="background-animated">
       <div className={showAlert || showBuildModal ? "blurred" : ""}>
@@ -264,7 +317,7 @@ useEffect(() => {
               onChange={handleProfileChange}
             />
 
-            <button className="submit-funky-btn" onClick={handleProfileSubmit}>
+            <button className="submit-funky-btn" onClick={handleClick}>
               Submit
             </button>
           </div>

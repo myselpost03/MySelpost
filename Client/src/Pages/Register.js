@@ -191,7 +191,13 @@ const Register = () => {
     <div>
       <Header />
       <div className="register-container">
-        <form className="register-form" onSubmit={handleSubmit}>
+        <form
+          className="register-form"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            await handleSubmit(e);
+          }}
+        >
           <h2 className="acct-text">Create an Account</h2>
 
           {step === 1 && (
