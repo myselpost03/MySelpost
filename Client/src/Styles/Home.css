@@ -396,3 +396,15 @@ body::-webkit-scrollbar {
   transform: translateY(-3px);
   background-color: #fff176;
 }
+
+.qr-wrapper {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.qr-title {
+  font-family: "Patrick Hand", cursive;
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+  color: #222;
+}

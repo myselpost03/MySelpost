@@ -14,6 +14,7 @@ const Chat = () => {
   const [input, setInput] = useState("");
   const [theme, setTheme] = useState("light");
   const [alertMessage, setAlertMessage] = useState(null);
+const fileInputRef = useRef(null);
 
   const [isBlocked, setIsBlocked] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
@@ -242,12 +243,16 @@ const Chat = () => {
       );
 
       const formatted = filtered.map((msg) => ({
-        id: msg.id,
-        text: msg.message,
-        type: msg.sender_id === currentUser.id ? "sent" : "received",
-        time: new Date(msg.created_at).toLocaleTimeString(),
-        timestamp: msg.created_at,
-      }));
+  id: msg.id,
+  text: msg.message,
+  type: msg.sender_id === currentUser.id ? "sent" : "received",
+  sender_id: msg.sender_id,
+  time: new Date(msg.created_at).toLocaleTimeString(),
+  status: msg.status,
+  isRequest: msg.is_request,
+  timestamp: msg.created_at,
+}));
+
 
       setMessages(formatted);
       if (filtered.length > 0) {
@@ -507,32 +512,92 @@ const Chat = () => {
     setInput((prev) => prev + emoji);
   };
 
-  const requestPermission = (type) => {
-    const msg = {
-      id: Date.now(),
-      text: `Request to send ${type}`,
-      type: "sent",
-      time: new Date().toLocaleTimeString(),
-      status: "pending",
-      isRequest: type,
-    };
-    setMessages((prev) => [...prev, msg]);
+const requestPermission = async (type) => {
+  const timestamp = new Date().toISOString();
+  const tempId = Date.now();
+
+  const localMsg = {
+    id: tempId,
+    text: `Request to send ${type}`,
+    type: "sent",
+      sender_id: currentUser.id,
+    time: new Date().toLocaleTimeString(),
+    status: "pending",
+    isRequest: type,
+    timestamp,
   };
 
-  const handleImageClick = () => {
-    if (imagePermission) {
-      const msg = {
+  setMessages((prev) => [...prev, localMsg]);
+
+  // Insert into Supabase
+  const { data, error } = await supabase
+    .from("chats")
+    .insert([
+      {
+        sender_id: currentUser.id,
+        receiver_id: targetId,
+        message: `Request to send ${type}`,
+        is_request: type, // You can add this column in DB for filtering
+        status: "pending",
+      },
+    ])
+    .select();
+
+  if (error) {
+    console.error("❌ Supabase insert error:", error.message);
+    return;
+  }
+
+  if (data && data[0]) {
+    const dbMsg = {
+      id: data[0].id,
+      text: data[0].message,
+      type: "sent",
+        sender_id: data[0].sender_id,
+
+      time: new Date(data[0].created_at).toLocaleTimeString(),
+      status: "pending",
+      isRequest: type,
+      timestamp: data[0].created_at,
+    };
+
+    // Replace local temp message with DB one
+    setMessages((prev) => {
+      const updated = prev.filter((m) => m.id !== tempId);
+      return [...updated, dbMsg];
+    });
+  }
+};
+
+const handleImageClick = () => {
+  if (imagePermission) {
+    fileInputRef.current.click(); // trigger file selector
+  } else {
+    const alreadyRequested = messages.some(
+      (msg) => msg.isRequest === "image" && msg.status === "pending"
+    );
+
+    if (!alreadyRequested) {
+      const demoMsg = {
         id: Date.now(),
         text: "📸 Sent an image (demo)",
         type: "sent",
         time: new Date().toLocaleTimeString(),
-        status: "sent",
+        status: "pending",
+        isRequest: "image"
       };
-      setMessages((prev) => [...prev, msg]);
-    } else {
+
+      setMessages((prev) => [...prev, demoMsg]);
       requestPermission("image");
+    } else {
+      setAlertMessage({
+        text: "⏳ Image request already sent. Waiting for acceptance.",
+        buttons: ["close"]
+      });
     }
-  };
+  }
+};
+
 
   const handleAudioClick = () => {
     if (!hasInvitedFriend) {
@@ -565,47 +630,51 @@ const Chat = () => {
     setReplyTo(msg);
   };
 
-  const handlePermissionAccept = (reqType, id) => {
-    if (reqType === "image") setImagePermission(true);
-    if (reqType === "audio") setAudioPermission(true);
+  const handlePermissionAccept = async (reqType, id) => {
+  // Update the permission locally
+  if (reqType === "image") setImagePermission(true);
+  if (reqType === "audio") setAudioPermission(true);
 
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === id ? { ...msg, status: "accepted", isRequest: null } : msg
-      )
-    );
+  // Update message status in Supabase
+  const { error } = await supabase
+    .from("chats")
+    .update({ status: "accepted" })
+    .eq("id", id);
 
-    // Simulate receiver reply
-    const reply = {
-      id: Date.now() + 1,
-      text: `✔️ Accepted your ${reqType}`,
-      type: "received",
-      time: new Date().toLocaleTimeString(),
-      status: "received",
-    };
-    setTimeout(() => {
-      setMessages((prev) => [...prev, reply]);
-    }, 1000);
-  };
+  if (error) {
+    console.error(`Failed to accept ${reqType} request:`, error.message);
+    return;
+  }
 
-  const handlePermissionReject = (reqType, id) => {
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === id ? { ...msg, status: "rejected", isRequest: null } : msg
-      )
-    );
+  // Update the message in local state
+  setMessages((prev) =>
+    prev.map((msg) =>
+      msg.id === id ? { ...msg, status: "accepted" } : msg
+    )
+  );
+};
 
-    const reply = {
-      id: Date.now() + 1,
-      text: `❌ Rejected your ${reqType}`,
-      type: "received",
-      time: new Date().toLocaleTimeString(),
-      status: "received",
-    };
-    setTimeout(() => {
-      setMessages((prev) => [...prev, reply]);
-    }, 1000);
-  };
+const handlePermissionReject = async (reqType, id) => {
+  // Update message status in Supabase
+  const { error } = await supabase
+    .from("chats")
+    .update({ status: "rejected" })
+    .eq("id", id);
+
+  if (error) {
+    console.error(`Failed to reject ${reqType} request:`, error.message);
+    return;
+  }
+
+  // Update the message in local state
+  setMessages((prev) =>
+    prev.map((msg) =>
+      msg.id === id ? { ...msg, status: "rejected" } : msg
+    )
+  );
+};
+
+
 
   const handleBlockToggle = async () => {
     if (!isBlocked) {
@@ -786,7 +855,7 @@ const Chat = () => {
 
   return (
     <div className={`Chat-UI ${theme}`}>
-      <SketchyHeader title="Chat" onBack={handleBack} />
+      <SketchyHeader title={targetUser.name} onBack={handleBack} />
       {alertMessage && !hasAccess && (
         <SketchyAlert
           message={
@@ -894,33 +963,27 @@ const Chat = () => {
                     <p>{msg.text}</p>
                     <span className="time">{getTimeAgo(msg.timestamp)}</span>
 
-                    {msg.isRequest && (
-                      <div style={{ marginTop: "0.5rem" }}>
-                        <button
-                          className="accept-btn"
-                          onClick={() =>
-                            handlePermissionAccept(msg.isRequest, msg.id)
-                          }
-                        >
-                          Accept {msg.isRequest}
-                        </button>
-                        <button
-                          className="accept-btn"
-                          style={{
-                            backgroundColor: "#c44",
-                            marginLeft: "0.5rem",
-                          }}
-                          onClick={() =>
-                            handlePermissionReject(msg.isRequest, msg.id)
-                          }
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    )}
-                    {/*!msg.isRequest && msg.status && (
-                      <div className="status">✔ {msg.status}</div>
-                    )*/}
+                  {msg.isRequest &&
+ msg.status === "pending" &&
+ msg.sender_id !== currentUser.id && (
+  <div style={{ marginTop: "0.5rem" }}>
+    <button
+      className="accept-btn"
+      onClick={() => handlePermissionAccept(msg.isRequest, msg.id)}
+    >
+      Accept {msg.isRequest}
+    </button>
+    <button
+      className="accept-btn"
+      style={{ backgroundColor: "#c44", marginLeft: "0.5rem" }}
+      onClick={() => handlePermissionReject(msg.isRequest, msg.id)}
+    >
+      Reject
+    </button>
+  </div>
+)}
+
+
                     <div className="reply-btn" onClick={() => handleReply(msg)}>
                       ↩
                     </div>
@@ -933,7 +996,7 @@ const Chat = () => {
 
               <div className="input-area">
                 <div className="icon-wrapper">
-                  <FaImage title="Coming Soon" className="icon-btn" />
+                 <FaImage title="Coming Soon" className="icon-btn" />
                   <div className="coming-soon-ribbon">Coming Soon</div>
                 </div>
 

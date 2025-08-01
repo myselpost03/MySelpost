@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://myselpost/com",
     credentials: true,
   })
 );
@@ -207,5 +207,5 @@ app._router.stack.forEach((r) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Push server running at http://localhost:${PORT}`);
+  console.log(`Push server running`);
 });

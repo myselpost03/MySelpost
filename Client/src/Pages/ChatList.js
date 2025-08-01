@@ -737,12 +737,7 @@ const ChatList = () => {
             >
               All
             </button>
-            <button
-              className={`sketchy-tab ${activeTab === "roast" ? "active" : ""}`}
-              onClick={handleRoast}
-            >
-              Roast
-            </button>
+           
             <button
               className={`sketchy-tab ${
                 activeTab === "pinned" ? "active" : ""

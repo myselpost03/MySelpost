@@ -219,8 +219,7 @@ function Roast() {
     const imageId = cards[cardIndex].image_id;
 
     // ✅ Check if the user has already roasted this image
-    {
-      /*const { data: existingRoast, error: checkError } = await supabase
+    const { data: existingRoast, error: checkError } = await supabase
       .from("roasts")
       .select("id")
       .eq("user_id", userId)
@@ -239,8 +238,7 @@ function Roast() {
         withButton: true,
       });
       return;
-    }*/
-    }
+    }   
     setRoastingIndex(cardIndex);
     // ✅ Insert new roast
     const { data, error } = await supabase.from("roasts").insert({

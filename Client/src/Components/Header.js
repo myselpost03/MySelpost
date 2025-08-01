@@ -130,8 +130,8 @@ const Header = () => {
   };
 
   const handleRoast = () => {
-    navigate('/roast')
-  }
+    navigate("/roast");
+  };
 
   const handleMobileRedirect = (path) => {
     if (isMobile) navigate(path);
@@ -198,17 +198,7 @@ const Header = () => {
                 >
                   Register
                 </button>
-                <div className="roast-button-container">
-  <button
-    type="button"
-    className="profile-button"
-    onClick={() => navigate("/roast")}
-  >
-    Roast
-  </button>
-  <span className="new-badge">New</span>
-</div>
-
+                <div className="roast-button-container"></div>
               </nav>
             </>
           ) : (
@@ -232,12 +222,12 @@ const Header = () => {
         </form>
       ) : (
         <div className="nav-logged-in">
-         <div className="roast-button-container">
-  <button onClick={handleRoast} className="profile-button">
-    Roast
-  </button>
-  <span className="new-badge">New</span>
-</div>
+          <div className="roast-button-container">
+            <button onClick={handleRoast} className="profile-button">
+              Roast
+            </button>
+            <span className="new-badge">New</span>
+          </div>
 
           <button
             style={{ textDecoration: "none" }}
