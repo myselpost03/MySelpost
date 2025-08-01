@@ -34,12 +34,12 @@ const timeAgo = (date) => {
   return `Just now`;
 };
 
-
 function Roast() {
   const navigate = useNavigate();
   const [cards, setCards] = useState([]);
   const [roastingIndex, setRoastingIndex] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [fullImage, setFullImage] = useState(null);
   const [showOverlay, setShowOverlay] = useState(true);
   const [fabOpen, setFabOpen] = useState(false);
   const [showTopRoastPopup, setShowTopRoastPopup] = useState(false);
@@ -116,8 +116,7 @@ function Roast() {
           roasts: roastsWithVotes,
           newRoast: "",
           image_id: img.id,
-            created_at: img.created_at, // ✅ include this
-
+          created_at: img.created_at, // ✅ include this
         };
       })
     );
@@ -388,20 +387,18 @@ function Roast() {
             }`}
           >
             <div className="roast-image-container">
-  <img
-    src={cards[currentIndex].image}
-    alt="Roastee"
-    className="roast-image"
-  />
-  <div className="timestamp-glass">
-    {timeAgo(cards[currentIndex].created_at)}
-  </div>
-</div>
+              <img
+                src={cards[currentIndex].image}
+                alt="Roastee"
+                className="roast-image"
+                onClick={() => setFullImage(cards[currentIndex].image)}
+              />
 
-{/*<span className="timestamp">
-  {timeAgo(cards[currentIndex].created_at)}
-</span>
-*/}
+              <div className="timestamp-glass">
+                {timeAgo(cards[currentIndex].created_at)}
+              </div>
+            </div>
+
             {/* Sketchy Share Buttons */}
             <div className="sketchy-share-buttons">
               <FacebookShareButton
@@ -575,6 +572,11 @@ function Roast() {
           withButton={alertMessage.withButton}
           onClose={() => setAlertMessage(null)}
         />
+      )}
+      {fullImage && (
+        <div className="full-image-overlay" onClick={() => setFullImage(null)}>
+          <img src={fullImage} alt="Full Roast" className="full-image-popup" />
+        </div>
       )}
     </>
   );
