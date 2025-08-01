@@ -14,9 +14,31 @@ import {
   RedditShareButton,
 } from "react-share";
 
+const timeAgo = (date) => {
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+
+  const intervals = {
+    year: 31536000,
+    month: 2592000,
+    week: 604800,
+    day: 86400,
+    hour: 3600,
+    minute: 60,
+  };
+
+  for (let key in intervals) {
+    const value = Math.floor(seconds / intervals[key]);
+    if (value >= 1) return `${value}${key[0]} ago`;
+  }
+
+  return `Just now`;
+};
+
+
 function Roast() {
   const navigate = useNavigate();
   const [cards, setCards] = useState([]);
+  const [roastingIndex, setRoastingIndex] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showOverlay, setShowOverlay] = useState(true);
   const [fabOpen, setFabOpen] = useState(false);
@@ -50,7 +72,7 @@ function Roast() {
     setLoading(true);
     const { data: images, error: imageErr } = await supabase
       .from("images")
-      .select("id, image_url, user_id")
+      .select("id, image_url, user_id, created_at")
       .order("created_at", { ascending: false });
 
     if (imageErr) {
@@ -94,6 +116,8 @@ function Roast() {
           roasts: roastsWithVotes,
           newRoast: "",
           image_id: img.id,
+            created_at: img.created_at, // ✅ include this
+
         };
       })
     );
@@ -178,7 +202,6 @@ function Roast() {
   };
 
   const addRoast = async (cardIndex) => {
-    
     const trimmed = cards[cardIndex].newRoast.trim();
     if (!trimmed) return;
 
@@ -195,7 +218,8 @@ function Roast() {
     const imageId = cards[cardIndex].image_id;
 
     // ✅ Check if the user has already roasted this image
-    const { data: existingRoast, error: checkError } = await supabase
+    {
+      /*const { data: existingRoast, error: checkError } = await supabase
       .from("roasts")
       .select("id")
       .eq("user_id", userId)
@@ -214,17 +238,17 @@ function Roast() {
         withButton: true,
       });
       return;
+    }*/
     }
-
+    setRoastingIndex(cardIndex);
     // ✅ Insert new roast
     const { data, error } = await supabase.from("roasts").insert({
       image_id: imageId,
       user_id: userId,
       text: trimmed,
     });
-
+    setRoastingIndex(null);
     if (error) {
-      console.error("Error adding roast:", error);
       return;
     }
 
@@ -363,12 +387,21 @@ function Roast() {
               showOverlay ? "blurred" : ""
             }`}
           >
-            <img
-              src={cards[currentIndex].image}
-              alt="Roastee"
-              className="roast-image"
-            />
+            <div className="roast-image-container">
+  <img
+    src={cards[currentIndex].image}
+    alt="Roastee"
+    className="roast-image"
+  />
+  <div className="timestamp-glass">
+    {timeAgo(cards[currentIndex].created_at)}
+  </div>
+</div>
 
+{/*<span className="timestamp">
+  {timeAgo(cards[currentIndex].created_at)}
+</span>
+*/}
             {/* Sketchy Share Buttons */}
             <div className="sketchy-share-buttons">
               <FacebookShareButton
@@ -452,10 +485,15 @@ function Roast() {
 
               <button
                 onClick={() => addRoast(currentIndex)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    addRoast(currentIndex);
+                  }
+                }}
                 className="roast-button"
-                disabled={!currentUser}
+                disabled={!currentUser || roastingIndex === currentIndex}
               >
-                Roast!
+                {roastingIndex === currentIndex ? "Roasting..." : "Roast!"}
               </button>
             </div>
           </div>

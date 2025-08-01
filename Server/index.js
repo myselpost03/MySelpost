@@ -32,42 +32,42 @@ const featureNotifications = [
   {
     title: "🎨 Turn Sketch into App",
     body: "Upload your sketch and get a real app for free!",
-    url: "https://myselpost.com/sketch" 
+    url: "http://localhost:3000/sketch" 
   },
   {
     title: "🔥 Roast Battle Ongoing",
     body: "Brutal roasts on photos are live! Join the madness.",
-    url: "https://myselpost.com/roast" 
+    url: "http://localhost:3000/roast" 
   },
   {
     title: "🌍 Global Chat",
     body: "Chat with foreigners around the world in real-time!",
-    url: "https://myselpost.com/chat-list" 
+    url: "http://localhost:3000/chat-list" 
   },
   {
     title: "📱 Sketch Something, AI will Code It!",
     body: "Draw your app idea, AI turn it into reality for free.",
-    url: "https://myselpost.com/sketch"
+    url: "http://localhost:3000/sketch"
   },
    {
     title: "💥 Roast or Be Roasted",
     body: "Dare to upload your pic? Let the roasting begin.",
-    url: "https://myselpost.com/roast"
+    url: "http://localhost:3000/roast"
   },
   {
     title: "🗣️ Talk to the World",
     body: "Make friends in Japan, Brazil, or Egypt — instantly.",
-    url: "https://myselpost.com/chat-list"
+    url: "http://localhost:3000/chat-list"
   },
    {
     title: "🛠️ No Code? No Problem.",
     body: "Got a napkin sketch? AI will build your app from it!",
-    url: "https://myselpost.com/sketch"
+    url: "http://localhost:3000/sketch"
   },
   {
     title: "✈️ New Language, New Friend",
     body: "Practice languages and meet global strangers now!",
-    url: "https://myselpost.com/chat-list"
+    url: "http://localhost:3000/chat-list"
   }
 ];
 
@@ -112,7 +112,7 @@ setInterval(() => {
 
   // Rotate to next feature
   currentIndex = (currentIndex + 1) % featureNotifications.length;
-}, 10000); // every 1 hour
+}, 3600000); // every 1 r
 
 // 🧪 Manual trigger (via POST)
 app.post("/send-notification", async (req, res) => {

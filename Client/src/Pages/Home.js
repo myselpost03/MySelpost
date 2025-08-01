@@ -22,6 +22,19 @@ const Home = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
     const currentUser = JSON.parse(localStorage.getItem("user"));
 
+     useEffect(() => {
+    // Ask permission on load
+    Notification.requestPermission().then((permission) => {
+      if (permission !== "granted") {
+        setAlertMessage({
+          text: "Push notifications not granted!",
+          withButton: true
+        });
+      } else {
+        console.log("Push notifications granted.");
+      }
+    });
+  }, []);
 
 useEffect(() => {
   const fetchAndSetUser = async () => {

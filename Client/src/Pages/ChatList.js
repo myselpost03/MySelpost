@@ -697,6 +697,11 @@ const ChatList = () => {
     );
   };
 
+  const handleRoast = () => {
+    setActiveTab("roast");
+    navigate("/roast");
+  };
+
   return (
     <div className="chatlist-container">
       <Header />
@@ -731,6 +736,12 @@ const ChatList = () => {
               onClick={() => setActiveTab("all")}
             >
               All
+            </button>
+            <button
+              className={`sketchy-tab ${activeTab === "roast" ? "active" : ""}`}
+              onClick={handleRoast}
+            >
+              Roast
             </button>
             <button
               className={`sketchy-tab ${

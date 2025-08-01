@@ -24,7 +24,9 @@ const Register = () => {
   const [nameTaken, setNameTaken] = useState(false);
   const navigate = useNavigate();
 
-  const isEmailValid = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isEmailValid = (email) =>
+    /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email.trim().toLowerCase());
+
   useEffect(() => {
     const validateStep1 = async () => {
       if (!formData.name || !formData.email) return;
@@ -53,15 +55,18 @@ const Register = () => {
     return data && data.length > 0;
   };
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      checkNameExists(formData.name);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [formData.name]);
+
   const handleChange = async (e) => {
     const { name, value, files } = e.target;
 
     if (name === "email") {
       setEmailValid(isEmailValid(value));
-    }
-
-    if (name === "name") {
-      checkNameExists(value);
     }
 
     if (name === "profilePic" && files && files[0]) {
@@ -142,6 +147,29 @@ const Register = () => {
     setError("");
 
     try {
+      if (
+        !formData.name ||
+        !formData.email ||
+        !formData.password ||
+        !formData.profilePic
+      ) {
+        setError("All fields are required.");
+        setLoading(false);
+        return;
+      }
+
+      if (formData.password.length < 8) {
+        setError("Password must be at least 8 characters long.");
+        setLoading(false);
+        return;
+      }
+
+      const validTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!validTypes.includes(formData.profilePic.type)) {
+        setError("Only JPG, PNG, or WEBP images are allowed.");
+        setLoading(false);
+        return;
+      }
       const hashedPassword = await bcrypt.hash(formData.password, 10);
 
       let profilePicUrl = null;

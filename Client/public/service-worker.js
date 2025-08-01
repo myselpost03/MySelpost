@@ -27,35 +27,44 @@ self.addEventListener("activate", (evt) => {
   );
 });
 
+// ✅ Handle Push
 self.addEventListener("push", function (event) {
   const data = event.data?.json() || {};
   const title = data.title || "New Notification";
+
   const options = {
     body: data.body || "You have a new message!",
     icon: "/myselpost.png",
     badge: "/myselpost.png",
-    tag: "message", // ✅ Tag ensures browser replaces same notification
+    tag: "message", // same tag = replaces
     renotify: false,
-
-  };
-
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
-
-
-self.addEventListener("push", function (event) {
-  const data = event.data.json();
-
-  const options = {
-    body: data.body,
     data: {
-      url: data.url // pass the URL so we can open it on click
+      url: data.url || "/" // Save the URL to open on click
     }
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    self.registration.showNotification(title, options)
+  );
+});
+
+self.addEventListener("notificationclick", function (event) {
+  console.log("Notification clicked with data:", event.notification.data);
+  event.notification.close();
+
+  const urlToOpen = event.notification.data?.url || "/";
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then(clientList => {
+      for (const client of clientList) {
+        if (client.url === urlToOpen && "focus" in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
   );
 });
 

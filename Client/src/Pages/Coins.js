@@ -22,6 +22,46 @@ const Coins = () => {
   };
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentSuccess = urlParams.get("payment");
+
+    const handleSuccessfulPayment = async () => {
+      if (paymentSuccess === "success") {
+        // Prevent duplicate rewards by using localStorage
+        const rewardedKey = `rewarded_${id}`;
+        if (localStorage.getItem(rewardedKey)) return;
+
+        const { error: rpcError } = await supabase.rpc(
+          "increment_reward_coins",
+          {
+            user_id_input: id,
+            increment_by: 100,
+          }
+        );
+
+        if (rpcError) {
+          setAlertMessage({
+            text: "❌ Failed to add coins after payment.",
+            withButton: true,
+          });
+        } else {
+          setAlertMessage({
+            text: "✅ 100 coins added after payment!",
+            withButton: true,
+          });
+          setUser((prevUser) => ({
+            ...prevUser,
+            reward_coins: (prevUser.reward_coins || 0) + 100,
+          }));
+          localStorage.setItem(rewardedKey, "true");
+        }
+      }
+    };
+
+    handleSuccessfulPayment();
+  }, [id]);
+
+  useEffect(() => {
     const getUserById = async () => {
       const { data, error } = await supabase
         .from("users")
@@ -29,7 +69,9 @@ const Coins = () => {
         .eq("id", id)
         .single();
 
-      if (error); // console.error("Error fetching user:", error.message)*/};
+      if (
+        error // console.error("Error fetching user:", error.message)*/};
+      );
       else setUser(data);
     };
 
@@ -256,6 +298,11 @@ const Coins = () => {
           <button
             className="sketchy-coin-btn"
             onClick={() => setShowPayPal(true)}
+
+            /*  onClick={() => {
+              const paymentLink = `https://checkout.dodopayments.com/buy/pdt_F75qrtOLCHlR8RlJ18JS0?quantity=1&redirect_url=https://www.myselpost.com/coins/${id}?payment=success`;
+              window.location.href = paymentLink;
+            }}*/
           >
             🛒 Buy 100 Coins - {user?.country === "IN" ? "₹86" : "$1"}
           </button>

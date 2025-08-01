@@ -60,26 +60,23 @@
   pointer-events: none;
 }
 
-
-
 .roast-image {
   width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
+  height: auto;
+  aspect-ratio: 4 / 3.5;
+  object-fit: cover; /* or remove entirely */
   border-radius: 12px;
   border: 2px dashed #222;
   margin-bottom: 10px;
   background-color: #fff;
 }
 
-
-
 .roast-list {
   list-style: none;
   padding: 0;
   margin: 0;
   text-align: left;
-  max-height: 88px;
+  max-height: 48px;
   overflow-y: auto;
   padding-right: 4px;
   margin-bottom: 8px;
@@ -93,13 +90,23 @@
 
 .roast-item {
   display: flex;
-  align-items: center; /* vertically align items */
+  align-items: center;
   justify-content: space-between;
   padding: 6px 0;
-  border-bottom: 1px dashed #999;
   font-size: 0.92rem;
   gap: 8px;
 }
+
+/* Highlight first roast */
+.roast-item:first-child {
+  border-bottom: 2px dashed #000;
+}
+
+/* Hide other roast item borders */
+.roast-item:not(:first-child) {
+  opacity: 0.8;
+}
+
 
 .roast-item span {
   flex: 1;
@@ -284,8 +291,8 @@
   color: #444;
 }
 
-.fab-upload:disabled{
-  opacity: 0.5
+.fab-upload:disabled {
+  opacity: 0.5;
 }
 
 .fab-upload {
@@ -382,11 +389,15 @@
 
 .top-roast-popup-image {
   width: 100%;
-  max-height: 180px;
   object-fit: cover;
-  border-radius: 12px;
-  border: 2px solid #f55;
+  border: solid 2px;
   margin-bottom: 10px;
+  border-image-source: linear-gradient(
+    to bottom right, crimson, hotpink
+  );
+  border-image-slice: 4;
+  height: auto;
+  aspect-ratio: 4 / 3.5;
 }
 
 .popup-roast-text {
@@ -395,11 +406,11 @@
   margin-bottom: 10px;
 
   /* NEW PROPERTIES */
-  max-height: 120px;             /* Limit height */
-  overflow-y: auto;              /* Scroll if needed */
-  word-wrap: break-word;         /* Break long words */
-  white-space: pre-wrap;         /* Respect line breaks */
-  padding-right: 4px;            /* Padding for scrollbar space */
+  max-height: 120px; /* Limit height */
+  overflow-y: auto; /* Scroll if needed */
+  word-wrap: break-word; /* Break long words */
+  white-space: pre-wrap; /* Respect line breaks */
+  padding-right: 4px; /* Padding for scrollbar space */
 }
 
 .popup-roast-text::-webkit-scrollbar {
@@ -409,7 +420,6 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-
 
 .popup-roast-votes {
   font-size: 1.1rem;
@@ -452,7 +462,6 @@
   transform: scale(1.05);
 }
 
-
 .share-button-with-count {
   display: flex;
   flex-direction: column;
@@ -469,4 +478,50 @@
   font-size: 12px;
   color: #444;
   border-radius: 4px;
+}
+
+@media (max-width: 600px) {
+  .roast-page {
+    margin-top: 25%;
+    padding: 25px;
+    align-items: flex-start;
+  }
+
+  .roast-card-container {
+    padding: 0;
+    max-width: 100%;
+  }
+
+  .roast-card {
+    padding: 12px;
+  }
+
+  .popup-roast-text {
+    max-height: 100px;
+    font-size: 0.95rem;
+  }
+
+  .top-roast-popup-inner {
+    padding: 12px;
+  }
+}
+.roast-image-container {
+  position: relative;
+  width: 100%;
+  display: inline-block;
+}
+
+.timestamp-glass {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 10px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 }
