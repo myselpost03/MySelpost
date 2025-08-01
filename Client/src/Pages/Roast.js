@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useSwipeable } from "react-swipeable";
 import LoadingIndicator from "../Components/LoadingIndicator";
 import SketchyAlert from "../Components/SketchyAlert";
-import { supabase } from "../Utils/supabaseClient"; // Update path if needed
+import { supabase } from "../Utils/supabaseClient"; 
 import { FaFire } from "react-icons/fa";
 import {
   FacebookShareButton,
@@ -15,7 +15,8 @@ import {
 } from "react-share";
 
 const timeAgo = (date) => {
-  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  const inputDate = new Date(date + "Z"); // 👈 Ensures it's treated as UTC
+  const seconds = Math.floor((new Date() - inputDate) / 1000);
 
   const intervals = {
     year: 31536000,
@@ -33,6 +34,7 @@ const timeAgo = (date) => {
 
   return `Just now`;
 };
+
 
 function Roast() {
   const navigate = useNavigate();

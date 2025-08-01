@@ -143,7 +143,7 @@ const Header = () => {
         <Link to="/" className="logo">
           MySelpost
         </Link>
-        {user && !isMobile && (
+        {/*{user && !isMobile && (
           <div className="feature-banner-container">
             <div className="coming-soon-banner">Coming Soon</div>
             <button
@@ -153,7 +153,7 @@ const Header = () => {
               ✨ Feature your Profile here
             </button>
           </div>
-        )}
+        )}*/}
       </div>
 
       {!user ? (
@@ -198,13 +198,17 @@ const Header = () => {
                 >
                   Register
                 </button>
-                 <button
-                  type="button"
-                  className="profile-button"
-                  onClick={() => navigate("/roast")}
-                >
-                  Roast
-                </button>
+                <div className="roast-button-container">
+  <button
+    type="button"
+    className="profile-button"
+    onClick={() => navigate("/roast")}
+  >
+    Roast
+  </button>
+  <span className="new-badge">New</span>
+</div>
+
               </nav>
             </>
           ) : (
@@ -228,9 +232,13 @@ const Header = () => {
         </form>
       ) : (
         <div className="nav-logged-in">
-          <button onClick={handleRoast} className="profile-button">
-            Roast
-          </button>
+         <div className="roast-button-container">
+  <button onClick={handleRoast} className="profile-button">
+    Roast
+  </button>
+  <span className="new-badge">New</span>
+</div>
+
           <button
             style={{ textDecoration: "none" }}
             onClick={() => navigate(`/profile/${user.id}`)}

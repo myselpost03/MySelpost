@@ -272,3 +272,23 @@
 
 
 
+.roast-button-container {
+  position: relative;
+  display: inline-block;
+}
+
+.new-badge {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background: linear-gradient(45deg, crimson, #ff5a5a);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 10;
+}
