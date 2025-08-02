@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: "https://myselpost/com",
+    origin: "https://myselpost.com",
     credentials: true,
   })
 );
@@ -32,42 +32,42 @@ const featureNotifications = [
   {
     title: "🎨 Turn Sketch into App",
     body: "Upload your sketch and get a real app for free!",
-    url: "http://localhost:3000/sketch" 
+    url: "https://myselpost.com/sketch" 
   },
   {
     title: "🔥 Roast Battle Ongoing",
     body: "Brutal roasts on photos are live! Join the madness.",
-    url: "http://localhost:3000/roast" 
+    url: "https://myselpost.com/roast" 
   },
   {
     title: "🌍 Global Chat",
     body: "Chat with foreigners around the world in real-time!",
-    url: "http://localhost:3000/chat-list" 
+    url: "https://myselpost.com/chat-list" 
   },
   {
     title: "📱 Sketch Something, AI will Code It!",
     body: "Draw your app idea, AI turn it into reality for free.",
-    url: "http://localhost:3000/sketch"
+    url: "https://myselpost.com/sketch"
   },
    {
     title: "💥 Roast or Be Roasted",
     body: "Dare to upload your pic? Let the roasting begin.",
-    url: "http://localhost:3000/roast"
+    url: "https://myselpost.com/roast"
   },
   {
     title: "🗣️ Talk to the World",
     body: "Make friends in Japan, Brazil, or Egypt — instantly.",
-    url: "http://localhost:3000/chat-list"
+    url: "https://myselpost.com/chat-list"
   },
    {
     title: "🛠️ No Code? No Problem.",
     body: "Got a napkin sketch? AI will build your app from it!",
-    url: "http://localhost:3000/sketch"
+    url: "https://myselpost.com/sketch"
   },
   {
     title: "✈️ New Language, New Friend",
     body: "Practice languages and meet global strangers now!",
-    url: "http://localhost:3000/chat-list"
+    url: "https://myselpost.com/chat-list"
   }
 ];
 

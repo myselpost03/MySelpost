@@ -437,6 +437,7 @@
 
 .sketchy-share-buttons {
   display: flex;
+  flex-direction: row;
   gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 10px;

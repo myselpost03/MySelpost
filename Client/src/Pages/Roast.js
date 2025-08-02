@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useSwipeable } from "react-swipeable";
 import LoadingIndicator from "../Components/LoadingIndicator";
 import SketchyAlert from "../Components/SketchyAlert";
-import { supabase } from "../Utils/supabaseClient"; 
+import { supabase } from "../Utils/supabaseClient";
 import { FaFire } from "react-icons/fa";
 import {
   FacebookShareButton,
@@ -35,10 +35,11 @@ const timeAgo = (date) => {
   return `Just now`;
 };
 
-
 function Roast() {
   const navigate = useNavigate();
   const [cards, setCards] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
   const [roastingIndex, setRoastingIndex] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fullImage, setFullImage] = useState(null);
@@ -238,7 +239,7 @@ function Roast() {
         withButton: true,
       });
       return;
-    }   
+    }
     setRoastingIndex(cardIndex);
     // ✅ Insert new roast
     const { data, error } = await supabase.from("roasts").insert({
@@ -291,6 +292,7 @@ function Roast() {
       alert("Please log in to upload.");
       return;
     }
+    setUploading(true); // 🟡 Disable the upload icon
 
     const CLOUDINARY_UPLOAD_PRESET = "ml_default";
     const CLOUDINARY_CLOUD_NAME = "dzoctpmmi";
@@ -318,6 +320,8 @@ function Roast() {
           text: "Upload failed.",
           withButton: true,
         });
+        setUploading(false);
+
         return;
       }
 
@@ -330,6 +334,8 @@ function Roast() {
       if (insertErr) {
         console.error("Supabase insert error:", insertErr.message);
         //  alert("Failed to save image info.");
+        setUploading(false);
+
         return;
       }
 
@@ -345,6 +351,8 @@ function Roast() {
         text: "Image uploaded successfully!.",
         withButton: true,
       });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -528,11 +536,15 @@ function Roast() {
           <button
             className="fab-option"
             onClick={() => {
-              document.getElementById("upload-input").click();
-              setFabOpen(false);
+              if (!uploading) {
+                document.getElementById("upload-input").click();
+                setFabOpen(false);
+              }
             }}
+            disabled={uploading}
+            title="Upload"
           >
-            📤
+            {uploading ? "⏳" : "📤"}
           </button>
           <button
             className="fab-option"
