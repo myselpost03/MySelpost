@@ -227,6 +227,7 @@
   gap: 1rem;
   margin-bottom: 1rem;
   font-family: "Comic Neue", cursive;
+  box-shadow: none;
 }
 
 .filter-bar select {

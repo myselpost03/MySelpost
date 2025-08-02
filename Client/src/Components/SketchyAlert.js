@@ -14,7 +14,7 @@ const SketchyAlert = ({ message, buttons = ["close"], onClose, onPay }) => {
             </button>
           )}
           {buttons.includes("close") && (
-            <button className="close-btn" onClick={onClose}>
+            <button className="sketchy-close-btn" onClick={onClose}>
               Close
             </button>
           )}
