@@ -31,7 +31,6 @@ import {
 import { supabase } from "./Utils/supabaseClient";
 import SketchyAlert from "./Components/SketchyAlert";
 import InternetStatusAlert from "./Components/InternetStatusAlert";
-import FeedbackPopup from "./Components/FeedbackPopup";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
@@ -100,7 +99,6 @@ function UserStatusWrapper() {
 
 function App() {
   const [alertMessage, setAlertMessage] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -134,59 +132,7 @@ function App() {
     };
   }, []);
 
-   useEffect(() => {
-    const hasSubmitted = localStorage.getItem("feedback_submitted");
-    if (hasSubmitted === "true") return;
-
-    const lastScheduled = JSON.parse(localStorage.getItem("feedback_schedule")) || {};
-
-    const now = new Date();
-    const currentWeek = `${now.getFullYear()}-W${getWeekNumber(now)}`;
-
-    if (lastScheduled.week !== currentWeek) {
-      // Set new random time this week
-      const randomDate = getRandomTimeThisWeek();
-      localStorage.setItem(
-        "feedback_schedule",
-        JSON.stringify({ week: currentWeek, time: randomDate.toISOString() })
-      );
-    }
-
-    const schedule = new Date(JSON.parse(localStorage.getItem("feedback_schedule")).time);
-
-    const timeout = schedule - now;
-    if (timeout > 0) {
-      const timer = setTimeout(() => {
-        setShowFeedback(true);
-      }, timeout);
-      return () => clearTimeout(timer);
-    } else {
-      setShowFeedback(true); // if past scheduled time, show immediately
-    }
-  }, []);
-
-  const getWeekNumber = (d) => {
-    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-  };
-
-  const getRandomTimeThisWeek = () => {
-    const now = new Date();
-    const start = new Date(now.setHours(0, 0, 0, 0));
-    const end = new Date(start);
-    end.setDate(end.getDate() + (7 - end.getDay())); // till Sunday
-
-    const randomTime = new Date(start.getTime() + Math.random() * (end - start));
-    return randomTime;
-  };
-
-  const handleSubmitSuccess = () => {
-    localStorage.setItem("feedback_submitted", "true");
-    setShowFeedback(false);
-  };
+   
 
 
   return (
@@ -213,7 +159,6 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <InternetStatusAlert />
-      {showFeedback && <FeedbackPopup onSubmitSuccess={handleSubmitSuccess} />}
 
       {alertMessage && (
         <SketchyAlert

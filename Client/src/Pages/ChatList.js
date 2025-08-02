@@ -18,6 +18,7 @@ import LoadingIndicator from "../Components/LoadingIndicator";
 import ReactCountryFlag from "react-country-flag";
 import LazyProfileImage from "../Components/LazyProfileImage";
 import MiniSpinner from "../Components/MiniSpinner";
+import FeedbackPopup from "../Components/FeedbackPopup";
 
 const countryNameToCode = {
   AF: "AF",
@@ -233,7 +234,7 @@ const ChatList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAllTabs, setShowAllTabs] = useState(false);
   const [allFilter, setAllFilter] = useState("all"); // 'all' or 'online'
-
+  const [showFeedback, setShowFeedback] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
   const [inboxUserIds, setInboxUserIds] = useState(new Set());
 
@@ -574,6 +575,65 @@ const ChatList = () => {
     allFilter,
   ]);
 
+  useEffect(() => {
+    const hasSubmitted = localStorage.getItem("feedback_submitted");
+    if (hasSubmitted === "true") return;
+
+    const lastScheduled =
+      JSON.parse(localStorage.getItem("feedback_schedule")) || {};
+
+    const now = new Date();
+    const currentWeek = `${now.getFullYear()}-W${getWeekNumber(now)}`;
+
+    if (lastScheduled.week !== currentWeek) {
+      // Set new random time this week
+      const randomDate = getRandomTimeThisWeek();
+      localStorage.setItem(
+        "feedback_schedule",
+        JSON.stringify({ week: currentWeek, time: randomDate.toISOString() })
+      );
+    }
+
+    const schedule = new Date(
+      JSON.parse(localStorage.getItem("feedback_schedule")).time
+    );
+
+    const timeout = schedule - now;
+    if (timeout > 0) {
+      const timer = setTimeout(() => {
+        setShowFeedback(true);
+      }, timeout);
+      return () => clearTimeout(timer);
+    } else {
+      setShowFeedback(true); // if past scheduled time, show immediately
+    }
+  }, []);
+
+  const getWeekNumber = (d) => {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+  };
+
+  const getRandomTimeThisWeek = () => {
+    const now = new Date();
+    const start = new Date(now.setHours(0, 0, 0, 0));
+    const end = new Date(start);
+    end.setDate(end.getDate() + (7 - end.getDay())); // till Sunday
+
+    const randomTime = new Date(
+      start.getTime() + Math.random() * (end - start)
+    );
+    return randomTime;
+  };
+
+  const handleSubmitSuccess = () => {
+    localStorage.setItem("feedback_submitted", "true");
+    setShowFeedback(false);
+  };
+
   const togglePin = async (targetUserId) => {
     const user = JSON.parse(localStorage.getItem("user"));
 
@@ -737,7 +797,7 @@ const ChatList = () => {
             >
               All
             </button>
-           
+
             <button
               className={`sketchy-tab ${
                 activeTab === "pinned" ? "active" : ""
@@ -1105,6 +1165,7 @@ const ChatList = () => {
           </div>
         </div>
       )}
+      {showFeedback && <FeedbackPopup onSubmitSuccess={handleSubmitSuccess} />}
     </div>
   );
 };
