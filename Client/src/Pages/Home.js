@@ -7,7 +7,7 @@ import SketchyAlert from "../Components/SketchyAlert";
 import InviteFAB from "../Components/InviteFAB";
 import { supabase } from "../Utils/supabaseClient";
 import { isRunningAsPWA } from "../Utils/CheckPWA";
-import { subscribeUser } from "../Utils/subscribeUser";
+import {trackEvent} from "../Utils/analytics";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -17,61 +17,42 @@ const Home = () => {
   const [user, setUser] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileForm, setProfileForm] = useState({ gender: "", age: "" });
-  const PUBLIC_VAPID_KEY =
-    "BMt7fVUizCYq_PQkR-gkxa9azLTlzoLVgFQEIDjjJdP35dj2LyvHKCbBnp3YvsYdPmYwjx7gfnoMMhejp9i85-4";
-  const [isSubscribed, setIsSubscribed] = useState(false);
-    const currentUser = JSON.parse(localStorage.getItem("user"));
 
-     useEffect(() => {
-    // Ask permission on load
-    Notification.requestPermission().then((permission) => {
-      if (permission !== "granted") {
-        setAlertMessage({
-          text: "Push notifications not granted!",
-          withButton: true
-        });
-      } else {
-        console.log("Push notifications granted.");
+  useEffect(() => {
+    const fetchAndSetUser = async () => {
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+
+      if (!storedUser?.id) {
+        setUser(null);
+        return;
       }
-    });
+
+      // Fetch fresh user data from Supabase
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", storedUser.id)
+        .single();
+
+      if (error) {
+        console.error("Failed to fetch user from DB:", error.message);
+        setUser(null);
+        return;
+      }
+
+      localStorage.setItem("user", JSON.stringify(data));
+      setUser(data);
+
+      // Show profile modal only if age or gender is missing/null/empty
+      if (!data.gender || !data.age) {
+        setShowProfileModal(true);
+      } else {
+        setShowProfileModal(false);
+      }
+    };
+
+    fetchAndSetUser();
   }, []);
-
-useEffect(() => {
-  const fetchAndSetUser = async () => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-
-    if (!storedUser?.id) {
-      setUser(null);
-      return;
-    }
-
-    // Fetch fresh user data from Supabase
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", storedUser.id)
-      .single();
-
-    if (error) {
-      console.error("Failed to fetch user from DB:", error.message);
-      setUser(null);
-      return;
-    }
-
-    localStorage.setItem("user", JSON.stringify(data));
-    setUser(data);
-
-    // Show profile modal only if age or gender is missing/null/empty
-    if (!data.gender || !data.age) {
-      setShowProfileModal(true);
-    } else {
-      setShowProfileModal(false);
-    }
-  };
-
-  fetchAndSetUser();
-}, []);
-
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -79,6 +60,11 @@ useEffect(() => {
   };
 
   const handleProfileSubmit = async () => {
+    trackEvent({
+      action: 'button_click',
+      category: 'Home Page',
+      label: 'Submit Gender & Age Button',
+    });
     if (!profileForm.gender || !profileForm.age) return;
 
     const { error } = await supabase
@@ -123,7 +109,7 @@ useEffect(() => {
           });
 
           if (error) {
-           // console.error("❌ PWA reward error:", error.message);
+            // console.error("❌ PWA reward error:", error.message);
           } else {
             localStorage.setItem(rewardKey, "true");
             setAlertMessage({
@@ -132,14 +118,15 @@ useEffect(() => {
             });
           }
         } catch (err) {
-         // console.error("❗ Unexpected PWA reward error:", err);
+          // console.error("❗ Unexpected PWA reward error:", err);
         }
       })();
     }
   }, []);
 
   const handleChatClick = () => {
-    {/*const storedUser = JSON.parse(localStorage.getItem("user"));
+    {
+      /*const storedUser = JSON.parse(localStorage.getItem("user"));
 
     // No user found in localStorage
     if (!storedUser || !storedUser.id) {
@@ -148,13 +135,19 @@ useEffect(() => {
         withButton: true,
       });
       return;
-    }*/}
+    }*/
+    }
 
     // Valid user, proceed to chat
     navigate("/chat-entrance");
   };
 
   const handleBuildAppClick = () => {
+    trackEvent({
+          action: 'button_click',
+          category: 'Home Page',
+          label: 'Sketch App Button',
+        });
     setShowBuildModal(true);
   };
 
@@ -175,52 +168,9 @@ useEffect(() => {
     }
   };
 
-  const handleSubscribe = async () => {
-    try {
-      const subscription = await subscribeUser(PUBLIC_VAPID_KEY);
-      setIsSubscribed(true);
-  
-      const data = {
-        endpoint: subscription.endpoint,
-        keys: {
-          p256dh: subscription.keys.p256dh,
-          auth: subscription.keys.auth,
-        },
-        user_id: currentUser.id
-      };
-  
-      // Optionally: Check if subscription already exists before upsert
-      const { data: existing, error: selectError } = await supabase
-        .from("subscriptions")
-        .select("endpoint, keys")
-        .eq("endpoint", subscription.endpoint)
-        .single();
-  
-      // Only upsert if changed or not found
-      if (!existing || existing.keys.p256dh !== data.keys.p256dh || existing.keys.auth !== data.keys.auth) {
-        const { error } = await supabase.from("subscriptions").upsert(data, {
-          onConflict: ["endpoint"],
-        });
-  
-        if (error) {
-          console.error("Supabase insert error:", error);
-          console.log("Failed to save subscription.");
-        } else {
-          console.log("Subscribed & saved to Supabase!");
-        }
-      } else {
-        console.log("Subscription already up-to-date.");
-      }
-  
-    } catch (err) {
-      console.error("Subscription failed:", err);
-    }
+  const handleClick = async () => {
+    await handleProfileSubmit();
   };
-
-  const handleClick =  () => {
-     handleProfileSubmit();
-     handleSubscribe();
-  }
 
   return (
     <div className="background-animated">
@@ -233,7 +183,7 @@ useEffect(() => {
             </button>
             <span className="or-text">OR</span>
             <button className="sketchy-button" onClick={handleBuildAppClick}>
-              Build App
+              Sketch
             </button>
           </div>
         </main>

@@ -18,6 +18,8 @@ const giftList = [
 const giftCoinRequirements = [50, 300, 150, 10, 400, 100];
 
 const Profile = () => {
+  const [showImageModal, setShowImageModal] = useState(false);
+
   const { id } = useParams();
   const navigate = useNavigate();
   const currentUser = JSON.parse(localStorage.getItem("user"));
@@ -327,10 +329,13 @@ const Profile = () => {
 
           <div className="sketchy-profile-center">
             <img
-              src={userData.avatar}
-              alt="Avatar"
-              className="sketchy-profile-avatar"
-            />
+  src={userData.avatar}
+  alt="Avatar"
+  className="sketchy-profile-avatar"
+  onClick={() => setShowImageModal(true)}
+  style={{ cursor: "pointer" }}
+/>
+
           </div>
         </div>
 
@@ -375,6 +380,17 @@ const Profile = () => {
             onClose={() => setStatus((s) => ({ ...s, alertMessage: "" }))}
           />
         )}
+        {showImageModal && (
+  <div className="sketchy-image-modal" onClick={() => setShowImageModal(false)}>
+    <div className="sketchy-blur-overlay" />
+    <img
+      src={userData.avatar}
+      alt="Full Avatar"
+      className="sketchy-fullscreen-image"
+    />
+  </div>
+)}
+
       </div>
     </>
   );

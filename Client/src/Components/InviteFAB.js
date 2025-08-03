@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { supabase } from "../Utils/supabaseClient";
 import SketchyAlert from "./SketchyAlert";
+import {trackEvent} from "../Utils/analytics";
 import "../Styles/FABInvite.css"; // sketchy styles here
 
 const InviteFAB = () => {
@@ -11,6 +12,11 @@ const InviteFAB = () => {
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
   const handleRedeemCode = async () => {
+    trackEvent({
+    action: 'button_click',
+    category: 'FAB',
+    label: 'Invite FAB Button',
+  });
     if (!inviteInput.trim()) return;
     setIsRedeeming(true);
 

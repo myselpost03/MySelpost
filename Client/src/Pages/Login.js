@@ -4,6 +4,7 @@ import Header from "../Components/Header";
 import "../Styles/Login.css";
 import { supabase } from "../Utils/supabaseClient";
 import bcrypt from "bcryptjs";
+import { trackEvent } from "../Utils/analytics";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -72,7 +73,11 @@ const Login = () => {
           rewardTime: data.last_coin_award_time ?? null,
         })
       );
-
+      trackEvent({
+        action: "button_click",
+        category: "User Interaction",
+        label: "Login Button",
+      });
       navigate("/");
     } catch (err) {
       setError(err.message || "Login failed.");

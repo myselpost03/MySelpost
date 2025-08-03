@@ -449,6 +449,7 @@ function Roast() {
                 url={window.location.href}
                 title="🔥 Check this roast!"
                 onClick={handleShare}
+                className="reddit-desktop-only" // 👈 Add this
               >
                 <button className="sketchy-share">
                   Reddit{" "}

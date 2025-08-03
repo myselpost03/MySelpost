@@ -4,7 +4,7 @@ import "../Styles/Header.css";
 import { supabase } from "../Utils/supabaseClient";
 import bcrypt from "bcryptjs";
 import SketchyAlert from "../Components/SketchyAlert";
-import LoadingIndicator from "../Components/LoadingIndicator";
+import {trackEvent} from "../Utils/analytics";
 
 const Header = () => {
   const [user, setUser] = useState(null);
@@ -61,18 +61,6 @@ const Header = () => {
     }
   };
 
-  const handleClick = () => {
-    setLoading(true);
-    // Simulate loading (optional)
-    setTimeout(() => {
-      navigate(`/profile/${user.id}`);
-    }, 500); // Optional delay
-  };
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    window.location.href = "/";
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     const updatedForm = { ...formData, [name]: value };
@@ -99,6 +87,11 @@ const Header = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    trackEvent({
+        action: 'button_click',
+        category: 'Header',
+        label: 'Desktop Login Button',
+      });
     setLoggingIn(true);
     const { email, password } = formData;
 
@@ -130,6 +123,11 @@ const Header = () => {
   };
 
   const handleRoast = () => {
+    trackEvent({
+        action: 'button_click',
+        category: 'Header',
+        label: 'Roast Button',
+      });
     navigate("/roast");
   };
 

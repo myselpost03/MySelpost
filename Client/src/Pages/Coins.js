@@ -5,6 +5,7 @@ import "../Styles/Coins.css";
 import SketchyAlert from "../Components/SketchyAlert";
 import LoadingIndicator from "../Components/LoadingIndicator";
 import { supabase } from "../Utils/supabaseClient";
+import {trackEvent} from "../Utils/analytics";
 
 const Coins = () => {
   const { id } = useParams();
@@ -107,6 +108,11 @@ const Coins = () => {
   }, []);
 
   const installApp = () => {
+     trackEvent({
+      action: 'button_click',
+      category: 'Mobile Coins Section',
+      label: 'Install App Button',
+    });
     // Check if app is already installed
     const isInstalled =
       window.matchMedia("(display-mode: standalone)").matches ||
@@ -141,6 +147,11 @@ const Coins = () => {
   };
 
   const cancelInstall = () => {
+    trackEvent({
+      action: 'button_click',
+      category: 'Mobile Coins Section',
+      label: 'Cancel App Install Button',
+    });
     // console.log("User cancelled install prompt");
     setShowPrompt(false);
   };
@@ -150,6 +161,11 @@ const Coins = () => {
   };
 
   const handleInviteClick = async () => {
+    trackEvent({
+      action: 'button_click',
+      category: 'Mobile Coins Section',
+      label: 'Invite Button',
+    });
     setLoading(true);
     const code = generateRandomCode();
 

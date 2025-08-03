@@ -558,3 +558,13 @@
     transform: scale(1);
   }
 }
+/* Hide on screens less than 768px (typical breakpoint for tablets/mobiles) */
+.reddit-desktop-only {
+  display: inline-block;
+}
+
+@media (max-width: 767px) {
+  .reddit-desktop-only {
+    display: none !important;
+  }
+}

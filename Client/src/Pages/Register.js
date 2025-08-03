@@ -5,6 +5,9 @@ import "../Styles/Register.css";
 import bcrypt from "bcryptjs";
 import imageCompression from "browser-image-compression";
 import { supabase } from "../Utils/supabaseClient";
+import { trackEvent } from "../Utils/analytics";
+import confetti from "canvas-confetti"; // ✅ Import confetti
+
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -26,6 +29,32 @@ const Register = () => {
 
   const isEmailValid = (email) =>
     /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email.trim().toLowerCase());
+
+  const [deviceId, setDeviceId] = useState(null);
+  const [deviceBlocked, setDeviceBlocked] = useState(false);
+
+  useEffect(() => {
+    let id = localStorage.getItem("device_id");
+    if (!id) {
+      id = crypto.randomUUID(); // or use a hash function if preferred
+      localStorage.setItem("device_id", id);
+    }
+    setDeviceId(id);
+
+    // Check if the device already has an account
+    const checkDeviceId = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("device_id")
+        .eq("device_id", id);
+
+      if (data && data.length > 0) {
+        setDeviceBlocked(true);
+      }
+    };
+
+    checkDeviceId();
+  }, []);
 
   useEffect(() => {
     const validateStep1 = async () => {
@@ -158,6 +187,12 @@ const Register = () => {
         return;
       }
 
+      if (deviceBlocked) {
+        setError("Account already exists on this device.");
+        setLoading(false);
+        return;
+      }
+
       if (formData.password.length < 8) {
         setError("Password must be at least 8 characters long.");
         setLoading(false);
@@ -198,15 +233,59 @@ const Register = () => {
           password: hashedPassword,
           profile_pic: profilePicUrl,
           country: country,
+          device_id: deviceId,
         },
       ]);
 
       if (error) throw error;
 
+      trackEvent({
+        action: "button_click",
+        category: "User Interaction",
+        label: "Register Button",
+      });
+      // Simulate login: fetch the user from your DB
+      const { data: userData, error: loginError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("email", formData.email)
+        .single();
+
+      if (loginError || !userData) {
+        setError("Failed to log in after registration.");
+        return;
+      }
+
+      // Check password manually (bcrypt compare)
+      const passwordMatch = await bcrypt.compare(
+        formData.password,
+        userData.password
+      );
+      if (!passwordMatch) {
+        setError("Password mismatch.");
+        return;
+      }
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          coins: userData.reward_coins ?? 0,
+          rewardTime: userData.last_coin_award_time ?? null,
+        })
+      );
       setShowAlert(true);
+            confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+      });
+
       setTimeout(() => {
         setShowAlert(false);
-        navigate("/login");
+        navigate("/");
       }, 2000);
     } catch (err) {
       setError(err.message || "Something went wrong");
@@ -295,10 +374,15 @@ const Register = () => {
             </>
           )}
         </form>
+        {deviceBlocked && (
+          <p className="error-msg">
+            An account has already been created on this device.
+          </p>
+        )}
 
         {showAlert && (
           <div className="custom-alert-box">
-            🎉 Registration successful! Redirecting to login...
+            🎉 Registration successful! Redirecting to home...
           </div>
         )}
       </div>

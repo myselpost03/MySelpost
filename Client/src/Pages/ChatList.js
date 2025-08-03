@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
+import SketchyAlert from "../Components/SketchyAlert";
 import "../Styles/ChatList.css";
 import {
   FaCircle,
@@ -11,6 +12,8 @@ import {
   FaThumbtack,
   FaSearch,
   FaFilter,
+  FaBell,
+  FaBellSlash,
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
@@ -19,6 +22,8 @@ import ReactCountryFlag from "react-country-flag";
 import LazyProfileImage from "../Components/LazyProfileImage";
 import MiniSpinner from "../Components/MiniSpinner";
 import FeedbackPopup from "../Components/FeedbackPopup";
+import { subscribeUser } from "../Utils/subscribeUser";
+import {trackEvent} from "../Utils/analytics";
 
 const countryNameToCode = {
   AF: "AF",
@@ -225,6 +230,7 @@ const ChatList = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [loading, setLoading] = useState(true);
   const [countries, setCountries] = useState([]);
+  const [enabled, setEnabled] = useState(false);
   const [showPremiumNotice, setShowPremiumNotice] = useState(false);
   const [premiumTargetUser, setPremiumTargetUser] = useState(null);
   const [hasPaidPremium, setHasPaidPremium] = useState(false);
@@ -233,10 +239,15 @@ const ChatList = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAllTabs, setShowAllTabs] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
+
   const [allFilter, setAllFilter] = useState("all"); // 'all' or 'online'
   const [showFeedback, setShowFeedback] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
   const [inboxUserIds, setInboxUserIds] = useState(new Set());
+  const PUBLIC_VAPID_KEY =
+    "BMt7fVUizCYq_PQkR-gkxa9azLTlzoLVgFQEIDjjJdP35dj2LyvHKCbBnp3YvsYdPmYwjx7gfnoMMhejp9i85-4";
 
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -393,6 +404,85 @@ const ChatList = () => {
   }, []);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (Notification.permission === "granted") {
+      setEnabled(true);
+    } else {
+      setEnabled(false);
+    }
+  }, []);
+
+  const handleSubscribe = async () => {
+    try {
+      const subscription = await subscribeUser(PUBLIC_VAPID_KEY);
+      setIsSubscribed(true);
+
+      const data = {
+        endpoint: subscription.endpoint,
+        keys: {
+          p256dh: subscription.keys.p256dh,
+          auth: subscription.keys.auth,
+        },
+        user_id: user.id,
+      };
+
+      // Optionally: Check if subscription already exists before upsert
+      const { data: existing, error: selectError } = await supabase
+        .from("subscriptions")
+        .select("endpoint, keys")
+        .eq("endpoint", subscription.endpoint)
+        .single();
+
+      // Only upsert if changed or not found
+      if (
+        !existing ||
+        existing.keys.p256dh !== data.keys.p256dh ||
+        existing.keys.auth !== data.keys.auth
+      ) {
+        const { error } = await supabase.from("subscriptions").upsert(data, {
+          onConflict: ["endpoint"],
+        });
+
+        if (error) {
+          console.error("Supabase insert error:", error);
+          console.log("Failed to save subscription.");
+        } else {
+          console.log("Subscribed & saved to Supabase!");
+        }
+      } else {
+        console.log("Subscription already up-to-date.");
+      }
+    } catch (err) {
+      console.error("Subscription failed:", err);
+    }
+  };
+
+  const askNotificationPermission = async () => {
+    trackEvent({
+          action: 'button_click',
+          category: 'Chat List Page',
+          label: 'Notification Button',
+        });
+    if (Notification.permission === "granted") {
+      setEnabled(true);
+      console.log("Already granted.");
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+      setEnabled(true);
+      console.log("Push notifications granted.");
+      await handleSubscribe();
+    } else {
+      setEnabled(false);
+      setAlertMessage({
+        text: "Push notifications not granted!",
+        withButton: true,
+      });
+    }
+  };
 
   const handleProtectedNavigation = (e, path, targetUser = null) => {
     e.preventDefault();
@@ -579,57 +669,32 @@ const ChatList = () => {
     const hasSubmitted = localStorage.getItem("feedback_submitted");
     if (hasSubmitted === "true") return;
 
-    const lastScheduled =
-      JSON.parse(localStorage.getItem("feedback_schedule")) || {};
-
+    const lastShown = localStorage.getItem("last_feedback_shown");
     const now = new Date();
-    const currentWeek = `${now.getFullYear()}-W${getWeekNumber(now)}`;
 
-    if (lastScheduled.week !== currentWeek) {
-      // Set new random time this week
-      const randomDate = getRandomTimeThisWeek();
-      localStorage.setItem(
-        "feedback_schedule",
-        JSON.stringify({ week: currentWeek, time: randomDate.toISOString() })
-      );
+    if (lastShown) {
+      const lastDate = new Date(lastShown);
+      const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+      if (diffDays < 7) return; // Already shown within the past 7 days
     }
 
-    const schedule = new Date(
-      JSON.parse(localStorage.getItem("feedback_schedule")).time
-    );
+    const delayMinutes = Math.floor(Math.random() * 6) + 5; // 5–10 min
+    const delayMs = delayMinutes * 60 * 1000;
 
-    const timeout = schedule - now;
-    if (timeout > 0) {
-      const timer = setTimeout(() => {
-        setShowFeedback(true);
-      }, timeout);
-      return () => clearTimeout(timer);
-    } else {
-      setShowFeedback(true); // if past scheduled time, show immediately
-    }
+    const timeout = setTimeout(() => {
+      setShowFeedback(true);
+      localStorage.setItem("last_feedback_shown", now.toISOString());
+    }, delayMs);
+
+    return () => clearTimeout(timeout);
   }, []);
 
-  const getWeekNumber = (d) => {
-    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-  };
-
-  const getRandomTimeThisWeek = () => {
-    const now = new Date();
-    const start = new Date(now.setHours(0, 0, 0, 0));
-    const end = new Date(start);
-    end.setDate(end.getDate() + (7 - end.getDay())); // till Sunday
-
-    const randomTime = new Date(
-      start.getTime() + Math.random() * (end - start)
-    );
-    return randomTime;
-  };
-
   const handleSubmitSuccess = () => {
+    trackEvent({
+    action: 'button_click',
+    category: 'Chat List Page',
+    label: 'Feedback Submission Button',
+  });
     localStorage.setItem("feedback_submitted", "true");
     setShowFeedback(false);
   };
@@ -680,6 +745,11 @@ const ChatList = () => {
   );
 
   const handleSearchSubmit = async () => {
+    trackEvent({
+    action: 'button_click',
+    category: 'Chat List Page',
+    label: 'Search Bar',
+  });
     if (searchTerm.trim() === "") {
       setPage(0);
       setUsers([]);
@@ -757,10 +827,16 @@ const ChatList = () => {
     );
   };
 
-  const handleRoast = () => {
-    setActiveTab("roast");
-    navigate("/roast");
-  };
+  // ✅ Place this inside the component, before return()
+  const uniqueUsersByCountry = [];
+  const seenCountries = new Set();
+
+  for (const user of filteredUsers) {
+    if (!seenCountries.has(user.country)) {
+      uniqueUsersByCountry.push(user);
+      seenCountries.add(user.country);
+    }
+  }
 
   return (
     <div className="chatlist-container">
@@ -855,7 +931,12 @@ const ChatList = () => {
             >
               Online
             </button>
-
+            <button
+              onClick={askNotificationPermission}
+              className={`notify-btn ${enabled ? "disabled" : "enabled"}`}
+            >
+              {enabled ? <FaBell /> : <FaBellSlash />}
+            </button>
             <button
               className="fab-filter-button"
               onClick={() => setShowAllTabs(true)}
@@ -866,9 +947,10 @@ const ChatList = () => {
           </div>
 
           <div ref={listRef} className="sketchy-list-scrollable">
-            {filteredUsers.length > 0 ? (
+            {uniqueUsersByCountry.length > 0 ? (
               <>
-                {filteredUsers
+                {uniqueUsersByCountry
+
                   .filter((u) => u.id !== user.id)
                   .map((user) => (
                     <Link
@@ -1164,6 +1246,13 @@ const ChatList = () => {
             </div>
           </div>
         </div>
+      )}
+      {alertMessage && (
+        <SketchyAlert
+          message={alertMessage.text}
+          withButton={alertMessage.withButton}
+          onClose={() => setAlertMessage(null)}
+        />
       )}
       {showFeedback && <FeedbackPopup onSubmitSuccess={handleSubmitSuccess} />}
     </div>
