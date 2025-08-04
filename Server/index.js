@@ -28,162 +28,18 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY
 );
 
-const featureNotifications = [
-  {
-    title: "🌍 Talk Beyond Borders",
-    body: "Make friends worldwide — someone’s waiting to chat.",
-    url: "http://localhost:3000/chat-list",
-  },
-  {
-    title: "🎨 Sketch What You See",
-    body: "Draw your imagination, and AI will build it into reality.",
-    url: "http://localhost:3000/sketch",
-  },
-  {
-    title: "🔥 Enter the Roast Pit",
-    body: "Upload your pic and see what people really think.",
-    url: "http://localhost:3000/roast",
-  },
-  {
-    title: "📱 App from a Scribble",
-    body: "Sketch anything. We'll turn it into an app — no code needed.",
-    url: "http://localhost:3000/sketch",
-  },
-  {
-    title: "💥 Dare to Be Roasted?",
-    body: "Upload a selfie. Let the internet do its thing.",
-    url: "http://localhost:3000/roast",
-  },
-  {
-    title: "🗣️ Global Talks in Real-Time",
-    body: "Jump into conversations across cultures and time zones.",
-    url: "http://localhost:3000/chat-list",
-  },
-  {
-    title: "🛠️ Build Without Coding",
-    body: "Got an idea? Draw it and AI builds your prototype.",
-    url: "http://localhost:3000/sketch",
-  },
-  {
-    title: "🎭 Roast Arena Open",
-    body: "Enter the battleground of brutal honesty and laughs.",
-    url: "http://localhost:3000/roast",
-  },
-  {
-    title: "🌐 Meet Someone New",
-    body: "Every message is a doorway to a different world.",
-    url: "http://localhost:3000/chat-list",
-  },
-  {
-    title: "🧠 From Idea to Interface",
-    body: "Sketch your vision — AI brings it to life.",
-    url: "http://localhost:3000/sketch",
-  },
-  {
-    title: "🚨 Roast in Progress",
-    body: "Someone just got roasted... could be you next.",
-    url: "http://localhost:3000/roast",
-  },
-  {
-    title: "🌏 Small Talk, Big World",
-    body: "Say hello to someone across the globe right now.",
-    url: "http://localhost:3000/chat-list",
-  },
-  {
-    title: "🎨 Doodle to Demo",
-    body: "Your rough sketches become real apps — seriously.",
-    url: "http://localhost:3000/sketch",
-  },
-  {
-    title: "🔥 Roast Madness",
-    body: "It's getting spicy in here — jump into the roast feed.",
-    url: "http://localhost:3000/roast",
-  },
-  {
-    title: "💬 Language Swaps & Laughs",
-    body: "Talk to strangers, learn something new, feel alive.",
-    url: "http://localhost:3000/chat-list",
-  },
-  {
-    title: "📲 No Skills Needed",
-    body: "Sketch it. Drop it. We’ll code it. Done.",
-    url: "http://localhost:3000/sketch",
-  },
-  {
-    title: "🎤 Roast Room Unlocked",
-    body: "Brave enough? Upload and let the roasting begin.",
-    url: "http://localhost:3000/roast",
-  },
-  {
-    title: "🌎 Find a Friend Abroad",
-    body: "Click. Match. Talk. From anywhere to anywhere.",
-    url: "http://localhost:3000/chat-list",
-  },
-  {
-    title: "✏️ Sketch the Unexpected",
-    body: "Make something weird — AI loves weird.",
-    url: "http://localhost:3000/sketch",
-  },
-  {
-    title: "🔥 Roast Storm Incoming",
-    body: "Some faces just ask for it. Join the fun.",
-    url: "http://localhost:3000/roast",
-  },
-  {
-    title: "🌍 Unfiltered World Chat",
-    body: "No borders. No filters. Just real humans talking.",
-    url: "http://localhost:3000/chat-list",
-  },
-  {
-    title: "🎯 Napkin to App",
-    body: "Even your worst doodle can become an app — try us.",
-    url: "http://localhost:3000/sketch",
-  },
-  {
-    title: "🔥 One Pic. Many Punchlines.",
-    body: "Upload now. Internet humor is brutally creative.",
-    url: "http://localhost:3000/roast",
-  },
-  {
-    title: "🧭 Talk Beyond Your Circle",
-    body: "Tired of local chats? Meet a total stranger.",
-    url: "http://localhost:3000/chat-list",
-  },
-];
+app.post("/send-push", async (req, res) => {
+  console.log("Received push request:", req.body);
+  const { subscription, payload } = req.body;
 
-let currentIndex = 0;
-
-async function sendPushToAll(title, body, url) {
-  const { data: subscriptions, error } = await supabase
-    .from("subscriptions")
-    .select("*");
-
-  if (error) {
-    console.error("Supabase error:", error);
-    return;
+  try {
+    await webpush.sendNotification(subscription, JSON.stringify(payload));
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error sending push:", error);
+    res.status(500).json({ error: "Failed to send notification" });
   }
-
-  const payload = JSON.stringify({
-    title,
-    body,
-    url, // Include URL for click actions in client
-  });
-
-  for (const sub of subscriptions) {
-    try {
-      await webpush.sendNotification(sub, payload);
-    } catch (err) {
-      console.error("Failed to push:", err.message);
-      if (err.statusCode === 410 || err.statusCode === 404) {
-        await supabase
-          .from("subscriptions")
-          .delete()
-          .eq("endpoint", sub.endpoint);
-        console.log("Deleted invalid subscription:", sub.endpoint);
-      }
-    }
-  }
-}
+});
 
 app.get("/check-subscriptions", async (req, res) => {
   try {
@@ -237,18 +93,4 @@ app._router.stack.forEach((r) => {
 
 app.listen(PORT, () => {
   console.log(`Push server running`);
-
-  setInterval(async () => {
-    try {
-      const feature = featureNotifications[currentIndex];
-
-      await sendPushToAll(feature.title, feature.body, feature.url);
-      //console.log(`✅ Sent notification: ${feature.title}`);
-
-      // Move to next index (loop around when end is reached)
-      currentIndex = (currentIndex + 1) % featureNotifications.length;
-    } catch (err) {
-      console.error("❌ Error sending feature notification:", err);
-    }
-  }, 60 * 60 * 15000); // every 1 hour
 });

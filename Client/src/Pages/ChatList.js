@@ -257,6 +257,7 @@ const ChatList = () => {
 
   const observerRef = useRef();
 
+
   useEffect(() => {
     const fetchUnreadCounts = async () => {
       const { data, error } = await supabase
@@ -267,11 +268,12 @@ const ChatList = () => {
       if (!error && data) {
         const countMap = {};
         const missingUserIds = [];
+        
 
         data.forEach((item) => {
           if (item.count > 0) {
             countMap[item.sender_id] = item.count;
-
+           
             const exists = users.some((u) => u.id === item.sender_id);
             if (!exists) missingUserIds.push(item.sender_id);
           }
@@ -1013,13 +1015,13 @@ const ChatList = () => {
             >
               Online
             </button>
-            <button
+            {/*<button
               onClick={askNotificationPermission}
               className={`notify-btn ${enabled ? "disabled" : "enabled"}`}
             >
               {enabled ? <FaBell /> : <FaBellSlash />}
             </button>
-
+*/}
             {activeTab === "all" && (
               <button
                 className="fab-filter-button"

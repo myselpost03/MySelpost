@@ -444,6 +444,7 @@ useEffect(() => {
       .from("chats")
       .insert([newMessage])
       .select();
+      
 
     if (error) {
       console.error("❌ Supabase insert error:", error.message);

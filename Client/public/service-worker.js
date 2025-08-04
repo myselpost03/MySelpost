@@ -30,14 +30,14 @@ self.addEventListener("activate", (evt) => {
 // ✅ Handle Push
 self.addEventListener("push", function (event) {
   const data = event.data?.json() || {};
-  const title = data.title || "New Notification";
+  const title = data.title || "Inbox";
 
   const options = {
     body: data.body || "You have a new message!",
     icon: "/myselpost.png",
     badge: "/myselpost.png",
-    tag: "message", // same tag = replaces
-    renotify: false,
+    tag: "consolidated-message", // same tag = replaces
+    renotify: true,
     data: {
       url: data.url || "/" // Save the URL to open on click
     }
