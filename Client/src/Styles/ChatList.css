@@ -79,7 +79,7 @@
   width: 55px;
   height: 55px;
   border-radius: 50%;
-  border: 2px solid #333;
+  border: none;
   object-fit: cover;
   margin-right: 1rem;
 }
@@ -145,55 +145,85 @@
 
 .modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000; /* Make sure it's above other elements */
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
   display: flex;
   justify-content: center;
   align-items: center;
+  backdrop-filter: blur(4px);
 }
 
 .modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  z-index: 1001;
-  text-align: center;
+  background: #fdfdfd;
+  padding: 24px 20px;
+  border-radius: 16px;
   width: 90%;
-  max-width: 400px;
-  max-height: 300px;
+  max-width: 420px;
+  max-height: 80vh;
   overflow-y: auto;
-  box-sizing: border-box;
-
-  /* Hide scrollbar – Chrome, Safari */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease;
 }
 
-.modal-content::-webkit-scrollbar {
-  display: none; /* Chrome, Safari */
+@keyframes fadeIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-title {
+  font-size: 1.4rem;
+  margin-bottom: 16px;
+}
+
+.modal-section {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.modal-section h4 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .modal-btn {
-  display: block;
-  margin: 10px auto;
-  padding: 10px 20px;
-  font-size: 1rem;
+  flex: 1 1 45%;
+  padding: 10px 14px;
+  font-size: 0.95rem;
   border: none;
-  color: #fff;
-  background: #d4d0d0;
-  cursor: pointer;
-  font-family: "comic neue", serif;
-  border-radius: 6px;
+  border-radius: 8px;
+  background: #e0e0e0;
+  color: #333;
+  font-family: 'Comic Neue', sans-serif;
   font-weight: bold;
-  width: 100%;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+}
+
+.modal-btn:hover {
+  background-color: #c5c5c5;
 }
 
 .modal-btn.active {
-  background-color: #080808;
+  background-color: #222;
+  color: white;
 }
 
 .sketchy-list-scrollable {

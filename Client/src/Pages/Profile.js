@@ -204,9 +204,10 @@ const Profile = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem("user");
+    localStorage.clear();
     window.location.href = "/";
+    //  localStorage.removeItem("user");
+    //  localStorage.removeItem("activeTab");
   };
 
   const handleCoins = () => navigate(`/coins/${currentUser.id}`);
@@ -329,13 +330,12 @@ const Profile = () => {
 
           <div className="sketchy-profile-center">
             <img
-  src={userData.avatar}
-  alt="Avatar"
-  className="sketchy-profile-avatar"
-  onClick={() => setShowImageModal(true)}
-  style={{ cursor: "pointer" }}
-/>
-
+              src={userData.avatar}
+              alt="Avatar"
+              className="sketchy-profile-avatar"
+              onClick={() => setShowImageModal(true)}
+              style={{ cursor: "pointer" }}
+            />
           </div>
         </div>
 
@@ -381,16 +381,18 @@ const Profile = () => {
           />
         )}
         {showImageModal && (
-  <div className="sketchy-image-modal" onClick={() => setShowImageModal(false)}>
-    <div className="sketchy-blur-overlay" />
-    <img
-      src={userData.avatar}
-      alt="Full Avatar"
-      className="sketchy-fullscreen-image"
-    />
-  </div>
-)}
-
+          <div
+            className="sketchy-image-modal"
+            onClick={() => setShowImageModal(false)}
+          >
+            <div className="sketchy-blur-overlay" />
+            <img
+              src={userData.avatar}
+              alt="Full Avatar"
+              className="sketchy-fullscreen-image"
+            />
+          </div>
+        )}
       </div>
     </>
   );

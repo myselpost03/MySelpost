@@ -30,7 +30,7 @@ const Register = () => {
   const isEmailValid = (email) =>
     /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email.trim().toLowerCase());
 
-  const [deviceId, setDeviceId] = useState(null);
+  /*const [deviceId, setDeviceId] = useState(null);
   const [deviceBlocked, setDeviceBlocked] = useState(false);
 
   useEffect(() => {
@@ -55,7 +55,7 @@ const Register = () => {
 
     checkDeviceId();
   }, []);
-
+*/
   useEffect(() => {
     const validateStep1 = async () => {
       if (!formData.name || !formData.email) return;
@@ -187,11 +187,11 @@ const Register = () => {
         return;
       }
 
-      if (deviceBlocked) {
+      {/*if (deviceBlocked) {
         setError("Account already exists on this device.");
         setLoading(false);
         return;
-      }
+      }*/}
 
       if (formData.password.length < 8) {
         setError("Password must be at least 8 characters long.");
@@ -233,7 +233,7 @@ const Register = () => {
           password: hashedPassword,
           profile_pic: profilePicUrl,
           country: country,
-          device_id: deviceId,
+        //  device_id: deviceId,
         },
       ]);
 
@@ -374,11 +374,11 @@ const Register = () => {
             </>
           )}
         </form>
-        {deviceBlocked && (
+        {/*deviceBlocked && (
           <p className="error-msg">
             An account has already been created on this device.
           </p>
-        )}
+        )*/}
 
         {showAlert && (
           <div className="custom-alert-box">

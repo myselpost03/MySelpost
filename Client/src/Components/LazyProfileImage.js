@@ -10,8 +10,15 @@ const LazyProfileImage = ({ src }) => {
       <img
         src={src}
         alt="Profile"
-        laoding="lazy"
-        onLoad={() => setLoaded(true)}
+        loading="lazy"
+onLoad={() => {
+  console.log("Image loaded"); // ← should show in console
+  setLoaded(true);
+}}
+onError={() => {
+  console.log("Image failed to load");
+  setLoaded(true); // hide loader even if image fails
+}}
         className={`profile-image ${loaded ? "loaded" : "hidden"}`}
       />
     </div>

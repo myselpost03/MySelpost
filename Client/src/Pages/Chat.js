@@ -16,7 +16,6 @@ const Chat = () => {
   const [theme, setTheme] = useState("light");
   const [alertMessage, setAlertMessage] = useState(null);
   const fileInputRef = useRef(null);
-
   const [isBlocked, setIsBlocked] = useState(false);
   const [replyTo, setReplyTo] = useState(null);
   const [imagePermission, setImagePermission] = useState(false);
@@ -54,28 +53,37 @@ const Chat = () => {
     resetUnreadCount();
   }, [targetId, currentUser]);
 
-  useEffect(() => {
-    const updateOnlineStatus = async (status) => {
-      if (!currentUser?.id) return;
+useEffect(() => {
+  if (!currentUser?.id) return;
 
-      const { error } = await supabase
-        .from("users")
-        .update({ status: status }) // status will be "online" or "offline"
-        .eq("id", currentUser.id);
+  const updateOnlineStatus = async (status) => {
+    const { error } = await supabase
+      .from("users")
+      .update({ status }) // "online" or "offline"
+      .eq("id", currentUser.id);
 
-      if (error) {
-        console.error("Failed to update online status:", error.message);
-      }
-    };
+    if (error) {
+      console.error("Failed to update online status:", error.message);
+    }
+  };
 
-    // Set user as "online" when component mounts
-    updateOnlineStatus("online");
+  const handleOnline = () => updateOnlineStatus("online");
+  const handleOffline = () => updateOnlineStatus("offline");
 
-    // Set user as "offline" when component unmounts
-    return () => {
-      updateOnlineStatus("offline");
-    };
-  }, [currentUser?.id]);
+  // Initial status based on browser state
+  updateOnlineStatus(navigator.onLine ? "online" : "offline");
+
+  // Listen for changes
+  window.addEventListener("online", handleOnline);
+  window.addEventListener("offline", handleOffline);
+
+  // Cleanup on unmount
+  return () => {
+    window.removeEventListener("online", handleOnline);
+    window.removeEventListener("offline", handleOffline);
+    updateOnlineStatus("offline");
+  };
+}, [currentUser?.id]);
 
   useEffect(() => {
     const checkAccess = async () => {

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
-import SketchyAlert from "../Components/SketchyAlert";
 import "../Styles/ChatList.css";
 import {
   FaCircle,
@@ -14,16 +13,17 @@ import {
   FaFilter,
   FaBell,
   FaBellSlash,
+  FaCheck,
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
+import { subscribeUser } from "../Utils/subscribeUser";
 import LoadingIndicator from "../Components/LoadingIndicator";
 import ReactCountryFlag from "react-country-flag";
-import LazyProfileImage from "../Components/LazyProfileImage";
 import MiniSpinner from "../Components/MiniSpinner";
+import SketchyAlert from "../Components/SketchyAlert";
 import FeedbackPopup from "../Components/FeedbackPopup";
-import { subscribeUser } from "../Utils/subscribeUser";
-import {trackEvent} from "../Utils/analytics";
+import { trackEvent } from "../Utils/analytics";
 
 const countryNameToCode = {
   AF: "AF",
@@ -227,10 +227,14 @@ const ChatList = () => {
   const [users, setUsers] = useState([]);
   const [genderFilter, setGenderFilter] = useState("all");
   const [countryFilter, setCountryFilter] = useState("all");
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem("activeTab") || "all";
+  });
+  const [enabled, setEnabled] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [loading, setLoading] = useState(true);
   const [countries, setCountries] = useState([]);
-  const [enabled, setEnabled] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showPremiumNotice, setShowPremiumNotice] = useState(false);
   const [premiumTargetUser, setPremiumTargetUser] = useState(null);
   const [hasPaidPremium, setHasPaidPremium] = useState(false);
@@ -239,11 +243,9 @@ const ChatList = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAllTabs, setShowAllTabs] = useState(false);
+  const [allFilter, setAllFilter] = useState("all"); // 'all' or 'online'
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
-
-  const [allFilter, setAllFilter] = useState("all"); // 'all' or 'online'
-  const [showFeedback, setShowFeedback] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
   const [inboxUserIds, setInboxUserIds] = useState(new Set());
   const PUBLIC_VAPID_KEY =
@@ -348,6 +350,38 @@ const ChatList = () => {
     return () => clearInterval(interval);
   }, [user.id]);
 
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const updateOnlineStatus = async (status) => {
+      const { error } = await supabase
+        .from("users")
+        .update({ status }) // "online" or "offline"
+        .eq("id", user.id);
+
+      if (error) {
+        console.error("Failed to update online status:", error.message);
+      }
+    };
+
+    const handleOnline = () => updateOnlineStatus("online");
+    const handleOffline = () => updateOnlineStatus("offline");
+
+    // Initial status based on browser state
+    updateOnlineStatus(navigator.onLine ? "online" : "offline");
+
+    // Listen for changes
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    // Cleanup on unmount
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+      updateOnlineStatus("offline");
+    };
+  }, [user?.id]);
+
   const handleUserClick = (clickedId) => {
     setUsers((prevUsers) =>
       prevUsers.map((user) =>
@@ -357,10 +391,16 @@ const ChatList = () => {
   };
 
   useEffect(() => {
-    if (users.length > 0) {
-      const uniqueCountries = [...new Set(users.map((u) => u.country))];
-      setCountries(uniqueCountries);
-    }
+    const used = new Set(users.map((u) => u.country));
+    const allCountries = Object.values(countryNameToCode);
+
+    const usedCountries = Array.from(used).sort();
+    const unusedCountries = allCountries
+      .filter((code) => !used.has(code))
+      .sort();
+
+    // Combined list: used first, then the rest
+    setCountries([...usedCountries, ...unusedCountries]);
   }, [users]);
 
   // 2️⃣ Background refresh for latest data, without showing loading indicator
@@ -401,16 +441,6 @@ const ChatList = () => {
 
     const interval = setInterval(refreshUsers, 30000);
     return () => clearInterval(interval);
-  }, []);
-
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (Notification.permission === "granted") {
-      setEnabled(true);
-    } else {
-      setEnabled(false);
-    }
   }, []);
 
   const handleSubscribe = async () => {
@@ -460,10 +490,10 @@ const ChatList = () => {
 
   const askNotificationPermission = async () => {
     trackEvent({
-          action: 'button_click',
-          category: 'Chat List Page',
-          label: 'Notification Button',
-        });
+      action: "button_click",
+      category: "Chat List Page",
+      label: "Notification Button",
+    });
     if (Notification.permission === "granted") {
       setEnabled(true);
       console.log("Already granted.");
@@ -483,6 +513,8 @@ const ChatList = () => {
       });
     }
   };
+
+  const navigate = useNavigate();
 
   const handleProtectedNavigation = (e, path, targetUser = null) => {
     e.preventDefault();
@@ -573,6 +605,14 @@ const ChatList = () => {
         query = query.ilike("name", `%${searchTerm}%`);
       }
 
+      // Prioritize users with profile_pic first only under All tab
+      if (activeTab === "all") {
+        query = query.order("profile_pic", {
+          ascending: false,
+          nullsFirst: false,
+        });
+      }
+
       const { data: fetchedUsers, error } = await query.range(
         offset,
         offset + limit - 1
@@ -642,8 +682,9 @@ const ChatList = () => {
         const bCount = unreadCounts[b.id] || 0;
         if (bCount !== aCount) return bCount - aCount;
 
-        const aHasPic = a.profile_pic ? 1 : 0;
-        const bHasPic = b.profile_pic ? 1 : 0;
+        const aHasPic = a.avatar !== empty ? 1 : 0;
+        const bHasPic = b.avatar !== empty ? 1 : 0;
+
         if (bHasPic !== aHasPic) return bHasPic - aHasPic;
 
         const getPriority = (u) => {
@@ -691,10 +732,10 @@ const ChatList = () => {
 
   const handleSubmitSuccess = () => {
     trackEvent({
-    action: 'button_click',
-    category: 'Chat List Page',
-    label: 'Feedback Submission Button',
-  });
+      action: "button_click",
+      category: "Chat List Page",
+      label: "Feedback Submission Button",
+    });
     localStorage.setItem("feedback_submitted", "true");
     setShowFeedback(false);
   };
@@ -746,10 +787,10 @@ const ChatList = () => {
 
   const handleSearchSubmit = async () => {
     trackEvent({
-    action: 'button_click',
-    category: 'Chat List Page',
-    label: 'Search Bar',
-  });
+      action: "button_click",
+      category: "Chat List Page",
+      label: "Search Bar",
+    });
     if (searchTerm.trim() === "") {
       setPage(0);
       setUsers([]);
@@ -827,16 +868,24 @@ const ChatList = () => {
     );
   };
 
-  // ✅ Place this inside the component, before return()
-  const uniqueUsersByCountry = [];
-  const seenCountries = new Set();
-
-  for (const user of filteredUsers) {
-    if (!seenCountries.has(user.country)) {
-      uniqueUsersByCountry.push(user);
-      seenCountries.add(user.country);
+  const handleMarkAllAsSeen = async () => {
+    const updated = { ...unreadCounts };
+    for (let userId in updated) {
+      updated[userId] = 0;
     }
-  }
+    setUnreadCounts(updated);
+    await supabase
+      .from("unread_counts")
+      .update({ count: 0 })
+      .eq("receiver_id", user.id);
+
+    setUsers((prevUsers) =>
+      prevUsers.map((u) => ({
+        ...u,
+        notifications: 0,
+      }))
+    );
+  };
 
   return (
     <div className="chatlist-container">
@@ -869,16 +918,21 @@ const ChatList = () => {
           <div className="tab-bar">
             <button
               className={`sketchy-tab ${activeTab === "all" ? "active" : ""}`}
-              onClick={() => setActiveTab("all")}
+              onClick={() => {
+                setActiveTab("all");
+                localStorage.setItem("activeTab", "all");
+              }}
             >
               All
             </button>
-
             <button
               className={`sketchy-tab ${
                 activeTab === "pinned" ? "active" : ""
               }`}
-              onClick={() => setActiveTab("pinned")}
+              onClick={() => {
+                setActiveTab("pinned");
+                localStorage.setItem("activeTab", "pinned");
+              }}
               style={{ position: "relative" }}
             >
               📌 Pinned
@@ -899,7 +953,10 @@ const ChatList = () => {
             </button>
             <button
               className={`sketchy-tab ${activeTab === "inbox" ? "active" : ""}`}
-              onClick={() => setActiveTab("inbox")}
+              onClick={() => {
+                setActiveTab("inbox");
+                localStorage.setItem("activeTab", "inbox");
+              }}
               style={{ position: "relative" }}
             >
               Inbox
@@ -918,6 +975,30 @@ const ChatList = () => {
                 ></span>
               )}
             </button>
+            {activeTab === "inbox" &&
+              Object.values(unreadCounts).some((c) => c > 0) && (
+                <button
+                  onClick={handleMarkAllAsSeen}
+                  className="mark-all-seen-btn"
+                  style={{
+                    position: "fixed",
+                    bottom: "50px",
+                    right: "20px",
+                    zIndex: 999,
+                    padding: "0.8rem 1.2rem",
+                    backgroundColor: "#222",
+                    color: "white",
+                    borderRadius: "30px",
+                    border: "none",
+                    cursor: "pointer",
+                    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
+                    fontWeight: "bold",
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  <FaCheck size={20} color="white" />
+                </button>
+              )}
 
             <button
               className={`sketchy-tab ${
@@ -927,6 +1008,7 @@ const ChatList = () => {
                 const newTab = activeTab === "online" ? "all" : "online";
                 setActiveTab(newTab);
                 setAllFilter(newTab === "online" ? "online" : "all");
+                localStorage.setItem("activeTab", newTab);
               }}
             >
               Online
@@ -937,20 +1019,22 @@ const ChatList = () => {
             >
               {enabled ? <FaBell /> : <FaBellSlash />}
             </button>
-            <button
-              className="fab-filter-button"
-              onClick={() => setShowAllTabs(true)}
-              title="Filter users"
-            >
-              <FaFilter />
-            </button>
+
+            {activeTab === "all" && (
+              <button
+                className="fab-filter-button"
+                onClick={() => setShowAllTabs(true)}
+                title="Filter users"
+              >
+                <FaFilter />
+              </button>
+            )}
           </div>
 
           <div ref={listRef} className="sketchy-list-scrollable">
-            {uniqueUsersByCountry.length > 0 ? (
+            {filteredUsers.length > 0 ? (
               <>
-                {uniqueUsersByCountry
-
+                {filteredUsers
                   .filter((u) => u.id !== user.id)
                   .map((user) => (
                     <Link
@@ -971,7 +1055,7 @@ const ChatList = () => {
                             e.stopPropagation(); // 👈 prevent parent click
                           }}
                         >
-                          <LazyProfileImage
+                          <img
                             src={user.avatar}
                             alt="avatar"
                             className="user-avatar"
@@ -1145,68 +1229,72 @@ const ChatList = () => {
                 className="modal-content"
                 onClick={(e) => e.stopPropagation()}
               >
-                <h3>🎛️</h3>
+                <h3 className="modal-title">🎛️ Filters</h3>
 
                 <div className="modal-section">
                   <h4>Gender</h4>
-                  {["all", "male", "female"].map((g) => (
-                    <button
-                      key={g}
-                      className={`modal-btn ${
-                        genderFilter === g ? "active" : ""
-                      }`}
-                      onClick={() => {
-                        setGenderFilter(g);
-                        setShowAllTabs(false);
-                      }}
-                    >
-                      {g === "all"
-                        ? "All Genders"
-                        : g === "male"
-                        ? "♂️ Male"
-                        : "♀️ Female"}
-                    </button>
-                  ))}
+                  <div className="btn-group">
+                    {["all", "male", "female"].map((g) => (
+                      <button
+                        key={g}
+                        className={`modal-btn ${
+                          genderFilter === g ? "active" : ""
+                        }`}
+                        onClick={() => {
+                          setGenderFilter(g);
+                          setShowAllTabs(false);
+                        }}
+                      >
+                        {g === "all"
+                          ? "🌐 All Genders"
+                          : g === "male"
+                          ? "♂️ Male"
+                          : "♀️ Female"}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="modal-section">
                   <h4>Country</h4>
-                  <button
-                    className={`modal-btn ${
-                      countryFilter === "all" ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setCountryFilter("all");
-                      setShowAllTabs(false);
-                    }}
-                  >
-                    🌍 All Countries
-                  </button>
-                  {countries.map((c) => (
+                  <div className="btn-group">
                     <button
-                      key={c}
                       className={`modal-btn ${
-                        countryFilter === c ? "active" : ""
+                        countryFilter === "all" ? "active" : ""
                       }`}
                       onClick={() => {
-                        setCountryFilter(c);
+                        setCountryFilter("all");
                         setShowAllTabs(false);
                       }}
                     >
-                      {countryNameToCode[c] && (
-                        <ReactCountryFlag
-                          countryCode={countryNameToCode[c]}
-                          svg
-                          style={{
-                            width: "1.2em",
-                            height: "1.2em",
-                            marginRight: "6px",
-                          }}
-                        />
-                      )}
-                      {c}
+                      🌍 All Countries
                     </button>
-                  ))}
+                    {countries.map((c) => (
+                      <button
+                        key={c}
+                        className={`modal-btn ${
+                          countryFilter === c ? "active" : ""
+                        }`}
+                        onClick={() => {
+                          setCountryFilter(c);
+                          setShowAllTabs(false);
+                        }}
+                      >
+                        {countryNameToCode[c] && (
+                          <ReactCountryFlag
+                            countryCode={countryNameToCode[c]}
+                            svg
+                            style={{
+                              width: "1.2em",
+                              height: "1.2em",
+                              marginRight: "8px",
+                            }}
+                          />
+                        )}
+                        {c}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
