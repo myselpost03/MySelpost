@@ -6,8 +6,8 @@ import bcrypt from "bcryptjs";
 import imageCompression from "browser-image-compression";
 import { supabase } from "../Utils/supabaseClient";
 import { trackEvent } from "../Utils/analytics";
-import confetti from "canvas-confetti"; // ✅ Import confetti
-
+import confetti from "canvas-confetti"; // ✅ Import confettiimport { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -187,11 +187,13 @@ const Register = () => {
         return;
       }
 
-      {/*if (deviceBlocked) {
+      {
+        /*if (deviceBlocked) {
         setError("Account already exists on this device.");
         setLoading(false);
         return;
-      }*/}
+      }*/
+      }
 
       if (formData.password.length < 8) {
         setError("Password must be at least 8 characters long.");
@@ -233,7 +235,7 @@ const Register = () => {
           password: hashedPassword,
           profile_pic: profilePicUrl,
           country: country,
-        //  device_id: deviceId,
+          //  device_id: deviceId,
         },
       ]);
 
@@ -277,7 +279,8 @@ const Register = () => {
         })
       );
       setShowAlert(true);
-            confetti({
+      toast.success("Registered Successfully!");
+      confetti({
         particleCount: 150,
         spread: 70,
         origin: { y: 0.6 },
@@ -379,13 +382,9 @@ const Register = () => {
             An account has already been created on this device.
           </p>
         )*/}
-
-        {showAlert && (
-          <div className="custom-alert-box">
-            🎉 Registration successful! Redirecting to home...
-          </div>
-        )}
       </div>
+
+      <Toaster />
     </div>
   );
 };

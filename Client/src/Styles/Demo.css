@@ -1,0 +1,134 @@
+.frozen-wrapper {
+  position: relative;
+  width: 320px;
+  margin: 60px auto;
+}
+
+.frozen-input {
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 16px;
+  background: #e0f7ff;
+  border: 2px solid #cceeff;
+  border-radius: 10px;
+  color: #444;
+  pointer-events: none;
+  opacity: 0.6;
+  filter: blur(0.4px);
+  box-shadow: inset 0 0 12px rgba(0, 191, 255, 0.4),
+              inset 0 0 30px rgba(173, 216, 230, 0.2);
+}
+
+/* Ice Crystal Texture Layer */
+.frost-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  opacity: 0.2;
+  animation: frostPulse 6s ease-in-out infinite;
+  pointer-events: none;
+  mix-blend-mode: lighten;
+}
+
+/* Cracked Ice Layer */
+.crack-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.15;
+  pointer-events: none;
+  border-radius: 10px;
+}
+
+/* Particle Mist (Animated Dots like Ice Dust) */
+@keyframes mistFloat {
+  0% { transform: translateY(0) scale(1); opacity: 0.6; }
+  50% { transform: translateY(-10px) scale(1.2); opacity: 0.3; }
+  100% { transform: translateY(0) scale(1); opacity: 0.6; }
+}
+
+.ice-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.ice-particles span {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  animation: mistFloat 3s ease-in-out infinite;
+}
+
+.ice-particles span:nth-child(1) {
+  top: 10%;
+  left: 20%;
+  animation-delay: 0s;
+}
+.ice-particles span:nth-child(2) {
+  top: 30%;
+  left: 60%;
+  animation-delay: 1s;
+}
+.ice-particles span:nth-child(3) {
+  top: 50%;
+  left: 10%;
+  animation-delay: 1.5s;
+}
+.ice-particles span:nth-child(4) {
+  top: 70%;
+  left: 70%;
+  animation-delay: 0.5s;
+}
+.ice-particles span:nth-child(5) {
+  top: 20%;
+  left: 80%;
+  animation-delay: 2s;
+}
+
+/* Glow Pulse */
+@keyframes frostPulse {
+  0%, 100% {
+    opacity: 0.2;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.35;
+    filter: brightness(1.1);
+  }
+}
+
+.freeze-label {
+  position: absolute;
+  bottom: -26px;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  color: #cdefff;
+  text-shadow: 1px 1px 2px #000;
+  font-weight: 600;
+}
+
+.freeze-reason {
+  margin-top: 10px;
+  color: #00ccff;
+  font-size: 14px;
+  font-style: italic;
+  text-shadow: 0 0 5px #00ccff;
+  animation: flicker 1.5s infinite;
+}
+
+@keyframes flicker {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.6; }
+  100% { opacity: 1; }
+}

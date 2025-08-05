@@ -257,7 +257,6 @@ const ChatList = () => {
 
   const observerRef = useRef();
 
-
   useEffect(() => {
     const fetchUnreadCounts = async () => {
       const { data, error } = await supabase
@@ -268,12 +267,11 @@ const ChatList = () => {
       if (!error && data) {
         const countMap = {};
         const missingUserIds = [];
-        
 
         data.forEach((item) => {
           if (item.count > 0) {
             countMap[item.sender_id] = item.count;
-           
+
             const exists = users.some((u) => u.id === item.sender_id);
             if (!exists) missingUserIds.push(item.sender_id);
           }
@@ -721,8 +719,7 @@ const ChatList = () => {
       if (diffDays < 7) return; // Already shown within the past 7 days
     }
 
-    const delayMinutes = Math.floor(Math.random() * 6) + 5; // 5–10 min
-    const delayMs = delayMinutes * 60 * 1000;
+    const delayMs = 30000;
 
     const timeout = setTimeout(() => {
       setShowFeedback(true);

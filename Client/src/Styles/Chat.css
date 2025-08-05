@@ -88,6 +88,14 @@
   line-height: 1.4;
 }
 
+.message img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  object-fit: cover;
+  display: block;
+}
+
 .message p {
   margin: 0;
 }
@@ -591,4 +599,120 @@ body.theme-dark .fixed-theme-toggle {
 
 .toggle-switch.on .toggle-thumb {
   transform: translateX(24px);
+}
+
+
+.chat-image {
+  max-width: 200px;
+  border-radius: 10px;
+  transition: filter 0.3s ease;
+  cursor: pointer;
+}
+
+.chat-image.blurred {
+  filter: blur(10px);
+}
+
+.dotting-indicator {
+  font-size: 20px;
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%   { opacity: 0.2; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+
+
+.image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-modal img {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+
+
+.image-modal ~ .Chat-UI {
+  filter: blur(10px);
+}
+
+
+.chat-image-obscured {
+  filter: brightness(0) blur(12px);
+  pointer-events: none;
+  user-select: none;
+  position: relative;
+  max-width: 250px;
+  max-height: 250px;
+  object-fit: cover;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 250px;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  text-align: center;
+  z-index: 2;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.image-container {
+  position: relative;
+  display: inline-block;
+  margin-top: 10px;
+}
+
+.chat-image-wrapper {
+  position: relative;
+  width: 200px;
+  max-width: 100%;
+  margin: 8px 0;
+  overflow: hidden;
+}
+
+.image-placeholder {
+  background: #222;
+  color: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.3s;
+}
+
+.image-placeholder:hover {
+  background: #444;
+}
+
+.click-to-reveal-text {
+  font-size: 14px;
+  font-weight: bold;
 }

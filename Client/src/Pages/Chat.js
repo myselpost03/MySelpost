@@ -13,27 +13,32 @@ import "../Styles/Chat.css";
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [theme, setTheme] = useState("light");
   const [alertMessage, setAlertMessage] = useState(null);
-  const fileInputRef = useRef(null);
   const [isBlocked, setIsBlocked] = useState(false);
-  const [replyTo, setReplyTo] = useState(null);
-  const [imagePermission, setImagePermission] = useState(false);
-  const [audioPermission, setAudioPermission] = useState(false);
+  const [modalImage, setModalImage] = useState(null);
+  const [loadingImages, setLoadingImages] = useState({});
+  const [revealedImages, setRevealedImages] = useState({});
   const [isSending, setIsSending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSendingImage, setIsSendingImage] = useState(false);
   const [autoDeleteEnabled, setAutoDeleteEnabled] = useState(true);
-  const [hasInvitedFriend, setHasInvitedFriend] = useState(false); // NEW
-  const { id: targetId } = useParams();
-  const { state } = useLocation();
-  const currentUser = JSON.parse(localStorage.getItem("user"));
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
   const [hasAccess, setHasAccess] = useState(false);
+  const [showPayPal, setShowPayPal] = useState(false);
+  const [blockedByOtherUser, setBlockedByOtherUser] = useState(false);
+  const [iBlockedOtherUser, setIBlockedOtherUser] = useState(false);
+
+  const { id: targetId } = useParams();
+
+  const { state } = useLocation();
+
+  const currentUser = JSON.parse(localStorage.getItem("user"));
 
   const targetUser = state?.targetUser;
+
   const navigate = useNavigate();
+
   const messagesEndRef = useRef(null);
-  const [showPayPal, setShowPayPal] = useState(false);
 
   useEffect(() => {
     if (!targetId || !currentUser?.id) return;
@@ -53,37 +58,37 @@ const Chat = () => {
     resetUnreadCount();
   }, [targetId, currentUser]);
 
-useEffect(() => {
-  if (!currentUser?.id) return;
+  useEffect(() => {
+    if (!currentUser?.id) return;
 
-  const updateOnlineStatus = async (status) => {
-    const { error } = await supabase
-      .from("users")
-      .update({ status }) // "online" or "offline"
-      .eq("id", currentUser.id);
+    const updateOnlineStatus = async (status) => {
+      const { error } = await supabase
+        .from("users")
+        .update({ status }) // "online" or "offline"
+        .eq("id", currentUser.id);
 
-    if (error) {
-      console.error("Failed to update online status:", error.message);
-    }
-  };
+      if (error) {
+        console.error("Failed to update online status:", error.message);
+      }
+    };
 
-  const handleOnline = () => updateOnlineStatus("online");
-  const handleOffline = () => updateOnlineStatus("offline");
+    const handleOnline = () => updateOnlineStatus("online");
+    const handleOffline = () => updateOnlineStatus("offline");
 
-  // Initial status based on browser state
-  updateOnlineStatus(navigator.onLine ? "online" : "offline");
+    // Initial status based on browser state
+    updateOnlineStatus(navigator.onLine ? "online" : "offline");
 
-  // Listen for changes
-  window.addEventListener("online", handleOnline);
-  window.addEventListener("offline", handleOffline);
+    // Listen for changes
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
-  // Cleanup on unmount
-  return () => {
-    window.removeEventListener("online", handleOnline);
-    window.removeEventListener("offline", handleOffline);
-    updateOnlineStatus("offline");
-  };
-}, [currentUser?.id]);
+    // Cleanup on unmount
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+      updateOnlineStatus("offline");
+    };
+  }, [currentUser?.id]);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -191,9 +196,6 @@ useEffect(() => {
     }
   }, [currentUser.id, targetId]);
 
-  const [blockedByOtherUser, setBlockedByOtherUser] = useState(false);
-  const [iBlockedOtherUser, setIBlockedOtherUser] = useState(false);
-
   useEffect(() => {
     const checkBlockStatus = async () => {
       const { data: blockedByMe, error: error1 } = await supabase
@@ -260,6 +262,7 @@ useEffect(() => {
         status: msg.status,
         isRequest: msg.is_request,
         timestamp: msg.created_at,
+        isImage: msg.type === "image",
       }));
 
       setMessages(formatted);
@@ -317,6 +320,7 @@ useEffect(() => {
         type: msg.sender_id === currentUser.id ? "sent" : "received",
         time: new Date(msg.created_at).toLocaleTimeString(),
         timestamp: msg.created_at,
+        isImage: msg.type === "image",
       }));
 
       setMessages((prev) => {
@@ -328,6 +332,79 @@ useEffect(() => {
       setLastFetchedAt(filtered[filtered.length - 1].created_at);
     }
   };
+
+  useEffect(() => {
+    const deleteExpiredReceivedImages = async () => {
+      const cutoffTime = dayjs().subtract(24, "hour").toISOString();
+
+      // 1. Get image messages received by current user older than 24 hours
+      const { data: oldImages, error } = await supabase
+        .from("chats")
+        .select("*")
+        .eq("receiver_id", currentUser.id)
+        .eq("type", "image")
+        .lt("created_at", cutoffTime);
+
+      if (error) {
+        console.error("Error fetching expired images:", error.message);
+        return;
+      }
+
+      if (oldImages.length === 0) return;
+
+      for (const msg of oldImages) {
+        try {
+          // 2. Extract file path from URL
+          const url = new URL(msg.message);
+          const bucketPath = decodeURIComponent(
+            url.pathname.split("/storage/v1/object/public/chat-assets/")[1]
+          );
+
+          // 3. Delete image from storage
+          if (bucketPath) {
+            const { error: deleteError } = await supabase.storage
+              .from("chat-assets")
+              .remove([bucketPath]);
+
+            if (deleteError) {
+              console.error(
+                "Error deleting from storage:",
+                deleteError.message
+              );
+            } else {
+              console.log("✅ Deleted from bucket:", bucketPath);
+            }
+          }
+
+          // 4. Delete message from chats table
+          const { error: deleteChatError } = await supabase
+            .from("chats")
+            .delete()
+            .eq("id", msg.id);
+
+          if (deleteChatError) {
+            console.error(
+              "Error deleting chat entry:",
+              deleteChatError.message
+            );
+          } else {
+            console.log("✅ Deleted image message from DB:", msg.id);
+          }
+
+          // 5. Update local state
+          setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+        } catch (err) {
+          console.error("Error cleaning expired image:", err.message);
+        }
+      }
+    };
+
+    // Run on mount and every 5 minutes
+    deleteExpiredReceivedImages(); // Run once immediately
+    const interval = setInterval(deleteExpiredReceivedImages, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [currentUser.id]);
 
   const deleteOldMessagesBetweenUsers = async (currentUserId, otherUserId) => {
     // Get current time in local timezone and subtract 24 hours
@@ -436,7 +513,6 @@ useEffect(() => {
       sender_id: currentUser.id,
       receiver_id: targetId,
       message: messageText,
-      reply_to: replyTo?.id || null,
     };
 
     // Insert into Supabase
@@ -444,7 +520,6 @@ useEffect(() => {
       .from("chats")
       .insert([newMessage])
       .select();
-      
 
     if (error) {
       console.error("❌ Supabase insert error:", error.message);
@@ -496,7 +571,6 @@ useEffect(() => {
         }
       });
 
-    setReplyTo(null);
     setIsSending(false);
   };
 
@@ -506,175 +580,12 @@ useEffect(() => {
     }
   };
 
-  const requestPermission = async (type) => {
-    const timestamp = new Date().toISOString();
-    const tempId = Date.now();
-
-    const localMsg = {
-      id: tempId,
-      text: `Request to send ${type}`,
-      type: "sent",
-      sender_id: currentUser.id,
-      time: new Date().toLocaleTimeString(),
-      status: "pending",
-      isRequest: type,
-      timestamp,
-    };
-
-    setMessages((prev) => [...prev, localMsg]);
-
-    // Insert into Supabase
-    const { data, error } = await supabase
-      .from("chats")
-      .insert([
-        {
-          sender_id: currentUser.id,
-          receiver_id: targetId,
-          message: `Request to send ${type}`,
-          is_request: type, // You can add this column in DB for filtering
-          status: "pending",
-        },
-      ])
-      .select();
-
-    if (error) {
-      console.error("❌ Supabase insert error:", error.message);
-      return;
-    }
-
-    if (data && data[0]) {
-      const dbMsg = {
-        id: data[0].id,
-        text: data[0].message,
-        type: "sent",
-        sender_id: data[0].sender_id,
-
-        time: new Date(data[0].created_at).toLocaleTimeString(),
-        status: "pending",
-        isRequest: type,
-        timestamp: data[0].created_at,
-      };
-
-      // Replace local temp message with DB one
-      setMessages((prev) => {
-        const updated = prev.filter((m) => m.id !== tempId);
-        return [...updated, dbMsg];
-      });
-    }
-  };
-
-  const handleImageClick = () => {
-    if (imagePermission) {
-      fileInputRef.current.click(); // trigger file selector
-    } else {
-      const alreadyRequested = messages.some(
-        (msg) => msg.isRequest === "image" && msg.status === "pending"
-      );
-
-      if (!alreadyRequested) {
-        const demoMsg = {
-          id: Date.now(),
-          text: "📸 Sent an image (demo)",
-          type: "sent",
-          time: new Date().toLocaleTimeString(),
-          status: "pending",
-          isRequest: "image",
-        };
-
-        setMessages((prev) => [...prev, demoMsg]);
-        requestPermission("image");
-      } else {
-        setAlertMessage({
-          text: "⏳ Image request already sent. Waiting for acceptance.",
-          buttons: ["close"],
-        });
-      }
-    }
-  };
-
-  const handleAudioClick = () => {
-    if (!hasInvitedFriend) {
-      const inviteMsg = {
-        id: Date.now(),
-        text: "🎟️ Audio uploads are premium! Invite a friend using your code to unlock.",
-        type: "sent",
-        time: new Date().toLocaleTimeString(),
-        status: "info",
-      };
-      setMessages((prev) => [...prev, inviteMsg]);
-      return;
-    }
-
-    if (audioPermission) {
-      const msg = {
-        id: Date.now(),
-        text: "🎤 Sent an audio (demo)",
-        type: "sent",
-        time: new Date().toLocaleTimeString(),
-        status: "sent",
-      };
-      setMessages((prev) => [...prev, msg]);
-    } else {
-      requestPermission("audio");
-    }
-  };
-
-  const handleReply = (msg) => {
-    trackEvent({
-    action: 'button_click',
-    category: 'Chat Page',
-    label: 'Reply Button',
-  });
-    setReplyTo(msg);
-    
-  };
-
-  const handlePermissionAccept = async (reqType, id) => {
-    // Update the permission locally
-    if (reqType === "image") setImagePermission(true);
-    if (reqType === "audio") setAudioPermission(true);
-
-    // Update message status in Supabase
-    const { error } = await supabase
-      .from("chats")
-      .update({ status: "accepted" })
-      .eq("id", id);
-
-    if (error) {
-      console.error(`Failed to accept ${reqType} request:`, error.message);
-      return;
-    }
-
-    // Update the message in local state
-    setMessages((prev) =>
-      prev.map((msg) => (msg.id === id ? { ...msg, status: "accepted" } : msg))
-    );
-  };
-
-  const handlePermissionReject = async (reqType, id) => {
-    // Update message status in Supabase
-    const { error } = await supabase
-      .from("chats")
-      .update({ status: "rejected" })
-      .eq("id", id);
-
-    if (error) {
-      console.error(`Failed to reject ${reqType} request:`, error.message);
-      return;
-    }
-
-    // Update the message in local state
-    setMessages((prev) =>
-      prev.map((msg) => (msg.id === id ? { ...msg, status: "rejected" } : msg))
-    );
-  };
-
   const handleBlockToggle = async () => {
     trackEvent({
-    action: 'button_click',
-    category: 'Chat Page',
-    label: 'Block Button',
-  });
+      action: "button_click",
+      category: "Chat Page",
+      label: "Block Button",
+    });
     if (!isBlocked) {
       const { error } = await supabase.from("blocked_users").insert([
         {
@@ -822,10 +733,10 @@ useEffect(() => {
 
   const handlePaste = async (e) => {
     trackEvent({
-    action: 'button_click',
-    category: 'Chat Page',
-    label: 'Paste Button',
-  });
+      action: "button_click",
+      category: "Chat Page",
+      label: "Paste Button",
+    });
     const pastedText = e.clipboardData.getData("text/plain").toLowerCase();
     if (pastedText) {
       setAlertMessage({
@@ -846,18 +757,136 @@ useEffect(() => {
     navigate(-1);
   };
 
+  const handleFileInputClick = (e) => {
+    const imageSendKey = `imageSentDate_${currentUser.id}`;
+    const lastSentDate = localStorage.getItem(imageSendKey);
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+    if (lastSentDate === today) {
+      e.preventDefault(); // Prevents file dialog from opening
+      setAlertMessage("You can only send one image per day.");
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const imageSendKey = `imageSentDate_${currentUser.id}`;
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const lastSentDate = localStorage.getItem(imageSendKey);
+
+    // Secondary check (failsafe)
+    if (lastSentDate === today) {
+      setAlertMessage("You can only send one image per day.");
+      return;
+    }
+
+    setIsSendingImage(true);
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `chat-images/${currentUser.id}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("chat-assets")
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error("Upload failed:", uploadError.message);
+      setIsSendingImage(false);
+      return;
+    }
+
+    const { data: publicURLData } = supabase.storage
+      .from("chat-assets")
+      .getPublicUrl(filePath);
+
+    const imageUrl = publicURLData?.publicUrl;
+
+    const { data, error } = await supabase
+      .from("chats")
+      .insert([
+        {
+          sender_id: currentUser.id,
+          receiver_id: targetId,
+          message: imageUrl,
+          type: "image",
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.error("Failed to insert image message:", error.message);
+      setIsSendingImage(false);
+      return;
+    }
+
+    if (data && data[0]) {
+      const dbMsg = {
+        id: data[0].id,
+        text: data[0].message,
+        type: "sent",
+        isImage: true,
+        time: new Date(data[0].created_at).toLocaleTimeString(),
+        timestamp: data[0].created_at,
+      };
+
+      setMessages((prev) => [...prev, dbMsg]);
+
+      // Save today's date after successful send
+      localStorage.setItem(imageSendKey, today);
+    }
+
+    setIsSendingImage(false);
+  };
+
+  const handleImageClick = async (msg) => {
+    trackEvent({
+      action: "button_click",
+      category: "Chat Page",
+      label: "Share Image Button",
+    });
+    setModalImage(msg.text); // Open modal
+
+    const bucketName = "chat-assets";
+    const imageUrl = msg.text;
+
+    // 1. Unblur image immediately
+    const imgElement = document.querySelector(`img[src="${imageUrl}"]`);
+    if (imgElement) imgElement.classList.remove("blurred");
+
+    setTimeout(async () => {
+      try {
+        // 2. Extract file path
+        const url = new URL(imageUrl);
+        const filePath = decodeURIComponent(
+          url.pathname.split(`/storage/v1/object/public/${bucketName}/`)[1]
+        );
+
+        // 3. Delete all messages with same imageUrl (from both sides)
+        await supabase.from("chats").delete().eq("message", imageUrl);
+
+        // 4. Delete from storage
+        if (filePath) {
+          await supabase.storage.from(bucketName).remove([filePath]);
+        }
+
+        // 5. Update UI (remove all image messages with this URL)
+        setMessages((prev) => prev.filter((m) => m.text !== imageUrl));
+      } catch (err) {
+        console.error("Error deleting image:", err.message);
+      }
+    }, 10000);
+  };
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
-  useEffect(() => {
-    document.body.className = theme === "dark" ? "theme-dark" : "theme-light";
-  }, [theme]);
-
   return (
-    <div className={`Chat-UI ${theme}`}>
+    <div className={`Chat-UI`}>
       <SketchyHeader title={targetUser.name} onBack={handleBack} />
       {alertMessage && !hasAccess && (
         <SketchyAlert
@@ -894,10 +923,6 @@ useEffect(() => {
         />
       )}
 
-      {/*     <div className="fixed-theme-toggle" onClick={handleThemeToggle}>
-        {theme === "light" ? <FaMoon /> : <FaSun />}
-      </div>
-*/}
       <div className="chat-container">
         <div className="chat-box">
           <div className="top-actions">
@@ -957,45 +982,50 @@ useEffect(() => {
                   <div
                     key={msg.id}
                     className={`message ${msg.type} ${msg.status || ""}`}
+                    onClick={() => msg.isImage && handleImageClick(msg)}
                   >
-                    {msg.replyTo && (
-                      <div className="reply-tag">
-                        Replying to: <em>{msg.replyTo.text}</em>
-                      </div>
-                    )}
-                    <p>{msg.text}</p>
-                    <span className="time">{getTimeAgo(msg.timestamp)}</span>
-
-                    {msg.isRequest &&
-                      msg.status === "pending" &&
-                      msg.sender_id !== currentUser.id && (
-                        <div style={{ marginTop: "0.5rem" }}>
-                          <button
-                            className="accept-btn"
-                            onClick={() =>
-                              handlePermissionAccept(msg.isRequest, msg.id)
-                            }
-                          >
-                            Accept {msg.isRequest}
-                          </button>
-                          <button
-                            className="accept-btn"
-                            style={{
-                              backgroundColor: "#c44",
-                              marginLeft: "0.5rem",
-                            }}
-                            onClick={() =>
-                              handlePermissionReject(msg.isRequest, msg.id)
-                            }
-                          >
-                            Reject
-                          </button>
+                    {msg.isImage ? (
+                      msg.type === "sent" ? (
+                        <p>
+                          <em>📤 Sent image</em>
+                        </p>
+                      ) : (
+                        <div className="chat-image-wrapper">
+                          {!revealedImages[msg.id] ? (
+                            <div
+                              className="image-placeholder"
+                              onClick={() => {
+                                setRevealedImages((prev) => ({
+                                  ...prev,
+                                  [msg.id]: true,
+                                }));
+                                handleImageClick(msg); // start timer and delete logic
+                              }}
+                            >
+                              <p className="click-to-reveal-text">
+                                Click to Reveal Image
+                              </p>
+                            </div>
+                          ) : (
+                            <img
+                              src={msg.text}
+                              alt="Received"
+                              className="chat-image"
+                              onLoad={() =>
+                                setLoadingImages((prev) => ({
+                                  ...prev,
+                                  [msg.id]: false,
+                                }))
+                              }
+                            />
+                          )}
                         </div>
-                      )}
+                      )
+                    ) : (
+                      <p>{msg.text}</p>
+                    )}
 
-                    <div className="reply-btn" onClick={() => handleReply(msg)}>
-                      ↩
-                    </div>
+                    <span className="time">{getTimeAgo(msg.timestamp)}</span>
                   </div>
                 ))}
 
@@ -1005,8 +1035,21 @@ useEffect(() => {
 
               <div className="input-area">
                 <div className="icon-wrapper">
-                  <FaImage title="Coming Soon" className="icon-btn" />
-                  <div className="coming-soon-ribbon">Coming Soon</div>
+                  <label htmlFor="image-upload" className="icon-btn">
+                    {isSendingImage ? (
+                      <span className="dotting-indicator">...</span>
+                    ) : (
+                      <FaImage />
+                    )}
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="image-upload"
+                    style={{ display: "none" }}
+                    onClick={handleFileInputClick}
+                    onChange={handleImageUpload}
+                  />
                 </div>
 
                 <div className="icon-wrapper">
@@ -1016,20 +1059,16 @@ useEffect(() => {
 
                 <input
                   type="text"
-                  placeholder={
-                    replyTo
-                      ? `Replying to: ${replyTo.text}`
-                      : "Write a message..."
-                  }
                   value={input}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
                   onPaste={handlePaste}
+                  placeholder="Type your message..."
                 />
 
                 <button
                   onClick={sendMessage}
-                  disabled={isSending || !input.trim()}
+                  disabled={isSending || isSendingImage || !input.trim()}
                 >
                   {isSending ? "➤" : "➤"}
                 </button>
@@ -1038,6 +1077,11 @@ useEffect(() => {
           )}
         </div>
       </div>
+      {modalImage && (
+        <div className="image-modal" onClick={() => setModalImage(null)}>
+          <img src={modalImage} alt="Full View" />
+        </div>
+      )}
     </div>
   );
 };

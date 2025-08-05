@@ -13,6 +13,7 @@ import {
   WhatsappShareButton,
   RedditShareButton,
 } from "react-share";
+import toast, {Toaster} from 'react-hot-toast';
 
 const timeAgo = (date) => {
   const inputDate = new Date(date + "Z"); // 👈 Ensures it's treated as UTC
@@ -339,18 +340,12 @@ function Roast() {
         return;
       }
 
-      setAlertMessage({
-        text: "Image uploaded successfully!.",
-        withButton: true,
-      });
+      toast.success('Image Uploaded Successfully!')
       await fetchCardsData(); // ✅ Refresh data without reloading
       setCurrentIndex(0);
     } catch (err) {
       console.error("Upload error:", err);
-      setAlertMessage({
-        text: "Image uploaded successfully!.",
-        withButton: true,
-      });
+      toast.error('Upload failed.')
     } finally {
       setUploading(false);
     }
@@ -591,6 +586,7 @@ function Roast() {
           <img src={fullImage} alt="Full Roast" className="full-image-popup" />
         </div>
       )}
+      <Toaster />
     </>
   );
 }
