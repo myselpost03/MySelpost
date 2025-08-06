@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
+import axios from "axios";
 import "../Styles/ChatList.css";
 import {
   FaCircle,
@@ -234,7 +235,6 @@ const ChatList = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [loading, setLoading] = useState(true);
   const [countries, setCountries] = useState([]);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showPremiumNotice, setShowPremiumNotice] = useState(false);
   const [premiumTargetUser, setPremiumTargetUser] = useState(null);
   const [hasPaidPremium, setHasPaidPremium] = useState(false);
@@ -247,6 +247,8 @@ const ChatList = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
   const [unreadCounts, setUnreadCounts] = useState({});
+  const [badgeSeen, setBadgeSeen] = useState("true"); // assume no badge unless told otherwise
+
   const [inboxUserIds, setInboxUserIds] = useState(new Set());
   const PUBLIC_VAPID_KEY =
     "BMt7fVUizCYq_PQkR-gkxa9azLTlzoLVgFQEIDjjJdP35dj2LyvHKCbBnp3YvsYdPmYwjx7gfnoMMhejp9i85-4";
@@ -256,6 +258,13 @@ const ChatList = () => {
   const listRef = useRef(null);
 
   const observerRef = useRef();
+
+  {
+    /*const updateBadgeSeenStatus = (unreadCounts) => {
+  const hasUnread = Object.values(unreadCounts).some((count) => count > 0);
+  localStorage.setItem("badgeSeen", hasUnread ? "false" : "true");
+};*/
+  }
 
   useEffect(() => {
     const fetchUnreadCounts = async () => {
@@ -278,6 +287,7 @@ const ChatList = () => {
         });
 
         setUnreadCounts(countMap);
+        //updateBadgeSeenStatus(countMap);
 
         if (missingUserIds.length > 0) {
           const { data: newUsers, error: userErr } = await supabase
@@ -350,37 +360,45 @@ const ChatList = () => {
     return () => clearInterval(interval);
   }, [user.id]);
 
-  useEffect(() => {
-    if (!user?.id) return;
+  {
+    /*
+useEffect(() => {
+  let hasPushed = false;
 
-    const updateOnlineStatus = async (status) => {
-      const { error } = await supabase
-        .from("users")
-        .update({ status }) // "online" or "offline"
-        .eq("id", user.id);
+  const checkAndSendPush = async () => {
+    const localBadgeSeen = localStorage.getItem("badgeSeen");
+    if (document.visibilityState === "visible") return;
+    
+    if (localBadgeSeen === "false" && !hasPushed && user?.id) {
+      const { data: subData, error: subErr } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-      if (error) {
-        console.error("Failed to update online status:", error.message);
+      if (!subErr && subData) {
+        try {
+          await axios.post("http://localhost:5000/send-push", {
+            subscription: subData,
+            title: "New Messages",
+            body: "You have a new message",
+            tag: "consolidated-message", // Prevents stacking multiple notifications
+          });
+
+          hasPushed = true; // prevent further pushes
+        } catch (err) {
+          console.error("❌ Push error:", err.message);
+        }
       }
-    };
+    }
+  };
 
-    const handleOnline = () => updateOnlineStatus("online");
-    const handleOffline = () => updateOnlineStatus("offline");
+  const interval = setInterval(checkAndSendPush, 3000); // Polling every 3 seconds
 
-    // Initial status based on browser state
-    updateOnlineStatus(navigator.onLine ? "online" : "offline");
-
-    // Listen for changes
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    // Cleanup on unmount
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-      updateOnlineStatus("offline");
-    };
-  }, [user?.id]);
+  return () => clearInterval(interval);
+}, [user?.id]);
+*/
+  }
 
   const handleUserClick = (clickedId) => {
     setUsers((prevUsers) =>
@@ -867,12 +885,24 @@ const ChatList = () => {
     );
   };
 
+  const resetBadgeSeen = async () => {
+    const { error } = await supabase
+      .from("users")
+      .update({ badge_seen: true })
+      .in("id", user.id);
+
+    if (error) {
+      console.error("Error resetting badge_seen:", error);
+    }
+  };
+
   const handleMarkAllAsSeen = async () => {
     const updated = { ...unreadCounts };
     for (let userId in updated) {
       updated[userId] = 0;
     }
     setUnreadCounts(updated);
+    //updateBadgeSeenStatus(updated);
     await supabase
       .from("unread_counts")
       .update({ count: 0 })
@@ -954,6 +984,7 @@ const ChatList = () => {
               className={`sketchy-tab ${activeTab === "inbox" ? "active" : ""}`}
               onClick={() => {
                 setActiveTab("inbox");
+                resetBadgeSeen();
                 localStorage.setItem("activeTab", "inbox");
               }}
               style={{ position: "relative" }}
@@ -1012,13 +1043,13 @@ const ChatList = () => {
             >
               Online
             </button>
-            {/*<button
+            <button
               onClick={askNotificationPermission}
               className={`notify-btn ${enabled ? "disabled" : "enabled"}`}
             >
               {enabled ? <FaBell /> : <FaBellSlash />}
             </button>
-*/}
+
             {activeTab === "all" && (
               <button
                 className="fab-filter-button"

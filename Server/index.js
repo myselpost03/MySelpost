@@ -29,15 +29,43 @@ webpush.setVapidDetails(
 );
 
 app.post("/send-push", async (req, res) => {
-  console.log("Received push request:", req.body);
-  const { subscription, payload } = req.body;
+  const { userId } = req.body;
 
   try {
-    await webpush.sendNotification(subscription, JSON.stringify(payload));
-    res.status(200).json({ success: true });
-  } catch (error) {
-    console.error("Error sending push:", error);
-    res.status(500).json({ error: "Failed to send notification" });
+    // 1. Check badge_seen
+    const { data: status, error: statusErr } = await supabase
+      .from("users")
+      .select("badge_seen")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (statusErr) throw statusErr;
+    if (!status || status.badge_seen) {
+      return res.status(200).json({ message: "No push needed. Badge seen is true." });
+    }
+
+    // 2. Get subscription info
+    const { data: sub, error: subErr } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (subErr || !sub) throw new Error("No subscription found");
+
+    // 3. Send push notification
+    const payload = JSON.stringify({
+      title: "New Messages",
+      body: "You have unread messages",
+      tag: "consolidated-message",
+    });
+
+    await webpush.sendNotification(sub, payload);
+
+    res.status(200).json({ message: "Push sent!" });
+  } catch (err) {
+    console.error("❌ Error sending push:", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 

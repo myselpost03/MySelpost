@@ -32,15 +32,12 @@ self.addEventListener("push", function (event) {
   const data = event.data?.json() || {};
   const title = data.title || "Inbox";
 
-  const options = {
-    body: data.body || "You have a new message!",
-    icon: "/myselpost.png",
-    badge: "/myselpost.png",
-    tag: "consolidated-message", // same tag = replaces
-    renotify: true,
-    data: {
-      url: data.url || "/" // Save the URL to open on click
-    }
+   const options = {
+    body: data.body || 'You got new messages.',
+    tag: data.tag || "default-tag", // prevent stacking
+    icon: "/myselpost.png",      // optional
+    badge: "/myselpost.png",      // optional
+    requireInteraction: true,       // ✅ keeps notification until user interacts
   };
 
   event.waitUntil(
@@ -49,24 +46,22 @@ self.addEventListener("push", function (event) {
 });
 
 self.addEventListener("notificationclick", function (event) {
-  console.log("Notification clicked with data:", event.notification.data);
-  event.notification.close();
 
-  const urlToOpen = event.notification.data?.url || "/";
-
+  // ✅ You can focus or open a window/tab
   event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then(clientList => {
+    clients.matchAll({ type: "window" }).then((clientList) => {
       for (const client of clientList) {
-        if (client.url === urlToOpen && "focus" in client) {
+        if (client.url.includes("/chat-list") && "focus" in client) {
           return client.focus();
         }
       }
-      if (clients.openWindow) {
-        return clients.openWindow(urlToOpen);
-      }
+
+      // Otherwise, open a new tab
+      return clients.openWindow("/chat-list");
     })
   );
 });
+
 
 
 

@@ -8,6 +8,7 @@ import dayjs from "dayjs";
 import bannedData from "../Utils/bannedWords.json";
 import SketchyAlert from "../Components/SketchyAlert";
 import { trackEvent } from "../Utils/analytics";
+import axios from "axios";
 import "../Styles/Chat.css";
 
 const Chat = () => {
@@ -57,38 +58,6 @@ const Chat = () => {
 
     resetUnreadCount();
   }, [targetId, currentUser]);
-
-  useEffect(() => {
-    if (!currentUser?.id) return;
-
-    const updateOnlineStatus = async (status) => {
-      const { error } = await supabase
-        .from("users")
-        .update({ status }) // "online" or "offline"
-        .eq("id", currentUser.id);
-
-      if (error) {
-        console.error("Failed to update online status:", error.message);
-      }
-    };
-
-    const handleOnline = () => updateOnlineStatus("online");
-    const handleOffline = () => updateOnlineStatus("offline");
-
-    // Initial status based on browser state
-    updateOnlineStatus(navigator.onLine ? "online" : "offline");
-
-    // Listen for changes
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    // Cleanup on unmount
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-      updateOnlineStatus("offline");
-    };
-  }, [currentUser?.id]);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -560,14 +529,83 @@ const Chat = () => {
       .select()
       .then(async ({ data, error }) => {
         if (!error && data?.[0]) {
+          const newCount = data[0].count + 1;
+
           await supabase
             .from("unread_counts")
             .update({
-              count: data[0].count + 1,
+              count: newCount,
               updated_at: new Date().toISOString(),
             })
             .eq("sender_id", currentUser.id)
             .eq("receiver_id", targetId);
+
+          if (newCount > 0) {
+            // Fetch last push time from Supabase
+            const { data: receiverData, error: fetchError } = await supabase
+              .from("users")
+              .select("last_push_sent_at")
+              .eq("id", targetId)
+              .maybeSingle();
+
+            if (fetchError) {
+              console.error(
+                "❌ Error fetching last push timestamp:",
+                fetchError.message
+              );
+            } else {
+              const lastPush = receiverData?.last_push_sent_at
+                ? new Date(receiverData.last_push_sent_at).getTime()
+                : 0;
+              const now = Date.now();
+              const PUSH_INTERVAL_MS = 5 * 60 * 60 * 1000; // 5 hours in milliseconds
+
+              if (!lastPush || now - lastPush > PUSH_INTERVAL_MS) {
+                try {
+                  await axios.post("http://localhost:5000/send-push", {
+                    userId: targetId,
+                  });
+
+                  // Update last push time in Supabase
+                  const { error: updateError } = await supabase
+                    .from("users")
+                    .update({ last_push_sent_at: new Date().toISOString() })
+                    .eq("id", targetId);
+
+                  if (updateError) {
+                    console.error(
+                      "❌ Error updating last push time:",
+                      updateError.message
+                    );
+                  } else {
+                    console.log("✅ Push sent and timestamp updated");
+                  }
+                } catch (err) {
+                  console.error(
+                    "❌ Error sending push notification:",
+                    err.message
+                  );
+                }
+              } else {
+                console.log("⏱️ Push skipped — sent within last 5 hours");
+              }
+            }
+          }
+
+          if (newCount > 0) {
+            const { data: badgeUpdateData, error: badgeUpdateError } =
+              await supabase
+                .from("users")
+                .update({ badge_seen: false })
+                .eq("id", targetId)
+                .select();
+
+            if (badgeUpdateError) {
+              console.error("❌ Badge update error:", badgeUpdateError.message);
+            } else {
+              console.log("✅ Badge update result:", badgeUpdateData);
+            }
+          }
         }
       });
 
