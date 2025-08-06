@@ -562,7 +562,7 @@ const Chat = () => {
 
               if (!lastPush || now - lastPush > PUSH_INTERVAL_MS) {
                 try {
-                  await axios.post("https://myselpost.com/send-push", {
+                  await axios.post("https://myselpost.onrender.com/send-push", {
                     userId: targetId,
                   });
 

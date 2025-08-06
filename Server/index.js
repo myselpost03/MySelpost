@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: "https://myselpost.com",
+    origin: ["https://myselpost.com", "https://www.myselpost.com"],
     credentials: true,
   })
 );
