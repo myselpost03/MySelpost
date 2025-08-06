@@ -14,7 +14,6 @@ import { supabase } from "../Utils/supabaseClient";
 import LoadingIndicator from "../Components/LoadingIndicator";
 import ReactCountryFlag from "react-country-flag";
 import SketchyAlert from "../Components/SketchyAlert";
-import LazyProfileImage from "../Components/LazyProfileImage";
 
 const countryNameToCode = {
   AF: "AF",
@@ -347,7 +346,7 @@ const GuestUser = () => {
                   <>
                     <div className="user-card" onClick={handleAlert}>
                       <div className="user-avatar-wrapper">
-                        <LazyProfileImage
+                        <img
                           src={user.profile_pic || empty}
                           alt="avatar"
                           className="user-avatar"

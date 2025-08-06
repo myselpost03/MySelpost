@@ -506,6 +506,11 @@ useEffect(() => {
     }
   };
 
+  useEffect(() => {
+  const storedEnabled = localStorage.getItem("notifications_enabled");
+  if (storedEnabled === "true") setEnabled(true);
+}, []);
+
   const askNotificationPermission = async () => {
     trackEvent({
       action: "button_click",
@@ -521,10 +526,12 @@ useEffect(() => {
     const permission = await Notification.requestPermission();
     if (permission === "granted") {
       setEnabled(true);
+      localStorage.setItem("notifications_enabled", "true");
       console.log("Push notifications granted.");
       await handleSubscribe();
     } else {
       setEnabled(false);
+      localStorage.setItem("notifications_enabled", "false");
       setAlertMessage({
         text: "Push notifications not granted!",
         withButton: true,

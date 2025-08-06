@@ -11,8 +11,6 @@ const FeedbackPopup = ({ onSubmitSuccess }) => {
 
   const handleRating = (star) => setRating(star);
   const handleSubmit = async () => {
-    console.log("Rating:", rating);
-    console.log("Feedback:", feedback);
 
     const { data, error } = await supabase.from("feedbacks").insert([
       {

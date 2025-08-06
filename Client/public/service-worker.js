@@ -35,7 +35,7 @@ self.addEventListener("push", function (event) {
    const options = {
     body: data.body || 'You got new messages.',
     tag: data.tag || "default-tag", // prevent stacking
-    icon: "/myselpost.png",      // optional
+    icon: "/inbox.png",      // optional
     badge: "/myselpost.png",      // optional
     requireInteraction: true,       // ✅ keeps notification until user interacts
   };

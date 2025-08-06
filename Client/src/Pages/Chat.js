@@ -558,11 +558,11 @@ const Chat = () => {
                 ? new Date(receiverData.last_push_sent_at).getTime()
                 : 0;
               const now = Date.now();
-              const PUSH_INTERVAL_MS = 5 * 60 * 60 * 1000; // 5 hours in milliseconds
+              const PUSH_INTERVAL_MS = 3 * 60 * 60 * 1000; // 5 hours in milliseconds
 
               if (!lastPush || now - lastPush > PUSH_INTERVAL_MS) {
                 try {
-                  await axios.post("http://localhost:5000/send-push", {
+                  await axios.post("https://myselpost.com/send-push", {
                     userId: targetId,
                   });
 
@@ -603,7 +603,7 @@ const Chat = () => {
             if (badgeUpdateError) {
               console.error("❌ Badge update error:", badgeUpdateError.message);
             } else {
-              console.log("✅ Badge update result:", badgeUpdateData);
+              //console.log("✅ Badge update result:", badgeUpdateData);
             }
           }
         }
