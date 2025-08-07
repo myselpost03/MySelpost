@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, useLocation, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  useLocation,
+  Routes,
+  Route,
+} from "react-router-dom";
 import ProtectedRoute from "./Utils/ProtectedRoute";
 import {
   Home,
@@ -50,11 +55,11 @@ const publicRoutes = [
   { path: "/sketch", component: Sketch },
   { path: "/about", component: About },
   { path: "/terms", component: Terms },
-  
+
   { path: "/roast", component: Roast },
   { path: "/chat-entrance", component: ChatEntrance },
   { path: "/guest-user", component: GuestUser },
-  
+
   { path: "/privacy", component: Privacy },
   { path: "/contact-us", component: Contact },
   { path: "/pricing", component: Pricing },
@@ -76,10 +81,7 @@ const useUserStatusSync = () => {
     let heartbeatInterval = null;
 
     const updateStatus = async (status) => {
-      await supabase
-        .from("users")
-        .update({ status })
-        .eq("id", storedUser.id);
+      await supabase.from("users").update({ status }).eq("id", storedUser.id);
     };
 
     const setActive = () => {
@@ -120,7 +122,11 @@ const useUserStatusSync = () => {
 
     // 3. Heartbeat to refresh status
     heartbeatInterval = setInterval(() => {
-      if (isUserActive && document.visibilityState === "visible" && isChatRoute) {
+      if (
+        isUserActive &&
+        document.visibilityState === "visible" &&
+        isChatRoute
+      ) {
         updateStatus("online");
       }
     }, 30000); // every 30 sec
@@ -167,9 +173,24 @@ function UserStatusWrapper() {
   return null;
 }
 
-
 function App() {
   const [alertMessage, setAlertMessage] = useState(null);
+  useEffect(() => {
+    const visibilityChannel = new BroadcastChannel("chat_app_visibility");
+
+    const sendVisibility = () => {
+      const isVisible = document.visibilityState === "visible";
+      visibilityChannel.postMessage({ visible: isVisible });
+    };
+
+    document.addEventListener("visibilitychange", sendVisibility);
+    sendVisibility(); // send once on mount
+
+    return () => {
+      document.removeEventListener("visibilitychange", sendVisibility);
+      visibilityChannel.close();
+    };
+  }, []);
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -212,7 +233,6 @@ function App() {
         ))}
 
         {protectedRoutes.map(({ path, component: Component }) => (
-          
           <Route
             key={path}
             path={path}

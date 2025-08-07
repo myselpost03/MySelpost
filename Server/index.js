@@ -9,7 +9,10 @@ const PORT = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: ["https://myselpost.com", "https://www.myselpost.com"],
+    origin: [
+      "https://myselpost.com",
+      "https://www.myselpost.com"
+    ],
     credentials: true,
   })
 );
@@ -29,43 +32,56 @@ webpush.setVapidDetails(
 );
 
 app.post("/send-push", async (req, res) => {
-  const { userId } = req.body;
+  const { userId, messageId } = req.body;
 
   try {
-    // 1. Check badge_seen
-    const { data: status, error: statusErr } = await supabase
+    if (!userId || !messageId) {
+      return res.status(400).json({ error: "Missing userId or messageId" });
+    }
+
+    // 1. Get user status
+    const { data: user, error: userErr } = await supabase
       .from("users")
-      .select("badge_seen")
+      .select("badge_seen, last_push_message_id")
       .eq("id", userId)
       .maybeSingle();
 
-    if (statusErr) throw statusErr;
-    if (!status || status.badge_seen) {
-      return res.status(200).json({ message: "No push needed. Badge seen is true." });
+    if (userErr) throw userErr;
+    if (!user) throw new Error("User not found");
+
+    // 2. Only push if badge_seen === false and messageId is new
+    if (user.badge_seen === false && user.last_push_message_id !== messageId) {
+      const { data: sub, error: subErr } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (subErr || !sub) throw new Error("No subscription found");
+
+      const payload = JSON.stringify({
+        title: "New Messages",
+        body: "You have unread messages",
+        tag: "consolidated-message",
+      });
+
+      await webpush.sendNotification(sub, payload);
+
+      // Update last_push_message_id
+      const { error: updateErr } = await supabase
+        .from("users")
+        .update({ last_push_message_id: messageId })
+        .eq("id", userId);
+
+      if (updateErr) throw updateErr;
+
+      return res.status(200).json({ message: "✅ Push sent" });
     }
 
-    // 2. Get subscription info
-    const { data: sub, error: subErr } = await supabase
-      .from("subscriptions")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (subErr || !sub) throw new Error("No subscription found");
-
-    // 3. Send push notification
-    const payload = JSON.stringify({
-      title: "New Messages",
-      body: "You have unread messages",
-      tag: "consolidated-message",
-    });
-
-    await webpush.sendNotification(sub, payload);
-
-    res.status(200).json({ message: "Push sent!" });
+    return res.status(200).json({ message: "ℹ️ No push needed" });
   } catch (err) {
     console.error("❌ Error sending push:", err.message);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 

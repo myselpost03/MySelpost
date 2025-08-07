@@ -27,8 +27,41 @@ const Register = () => {
   const [nameTaken, setNameTaken] = useState(false);
   const navigate = useNavigate();
 
-  const isEmailValid = (email) =>
-    /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email.trim().toLowerCase());
+  const isEmailValid = (email) => {
+    const trimmedEmail = email.trim().toLowerCase();
+
+    // List of popular email providers (including those without country domains)
+    const allowedExactDomains = [
+      "gmail.com",
+      "yahoo.com",
+      "outlook.com",
+      "hotmail.com",
+      "icloud.com",
+      "aol.com",
+      "protonmail.com",
+      "zoho.com",
+      "mail.com",
+      "gmx.com",
+    ];
+
+    // Allow country-based variations like gmail.co.uk, outlook.in, etc.
+    const allowedBaseProviders = ["gmail", "yahoo", "outlook", "hotmail"];
+
+    const domain = trimmedEmail.split("@")[1];
+    if (!domain) return false;
+
+    // Allow exact matches (like gmail.com, icloud.com)
+    if (allowedExactDomains.includes(domain)) {
+      return true;
+    }
+
+    // Allow country-based domains like gmail.co.uk, outlook.in
+    return allowedBaseProviders.some(
+      (provider) =>
+        domain.startsWith(`${provider}.`) &&
+        /^[a-z]{2,}$/.test(domain.split(".").pop())
+    );
+  };
 
   /*const [deviceId, setDeviceId] = useState(null);
   const [deviceBlocked, setDeviceBlocked] = useState(false);

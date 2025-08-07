@@ -422,195 +422,144 @@ const Chat = () => {
   }
 
   const sendMessage = async () => {
-    trackEvent({
-      action: "button_click",
-      category: "Chat Page",
-      label: "Send Message Button",
+  trackEvent({
+    action: "button_click",
+    category: "Chat Page",
+    label: "Send Message Button",
+  });
+
+  if (!input.trim()) return;
+
+  const now = Date.now();
+  const recent = recentMessages.current;
+
+  // Remove messages older than 15 seconds
+  recentMessages.current = recent.filter((msg) => now - msg.time < 15000);
+
+  // Prevent spamming same message
+  if (recentMessages.current.some((msg) => msg.text === input.trim())) {
+    setAlertMessage({
+      text: "⚠️ You are sending the same message repeatedly.",
+      buttons: ["close"],
     });
-    if (!input.trim()) return;
-    // Detect repeated messages in short time
-    const now = Date.now();
-    const recent = recentMessages.current;
 
-    // Remove messages older than 15 seconds
-    recentMessages.current = recent.filter((msg) => now - msg.time < 15000);
+    const { error } = await supabase.rpc("decrement_decency", {
+      user_id_input: currentUser.id,
+    });
 
-    // Check for same message sent recently
-    if (recentMessages.current.some((msg) => msg.text === input.trim())) {
-      setAlertMessage({
-        text: "⚠️ You are sending the same message repeatedly.",
-        buttons: ["close"],
-      });
-      const { error } = await supabase.rpc("decrement_decency", {
-        user_id_input: currentUser.id,
-      });
-
-      if (error) {
-        console.error("❌ RPC error:", error.message);
-      }
-      return;
+    if (error) {
+      console.error("❌ RPC error:", error.message);
     }
+    return;
+  }
 
-    // Record this message
-    recentMessages.current.push({ text: input.trim(), time: now });
+  recentMessages.current.push({ text: input.trim(), time: now });
+  setIsSending(true);
 
-    setIsSending(true);
+  const messageText = input.trim();
+  const timestamp = new Date().toISOString();
+  const tempId = Date.now();
 
-    const messageText = input.trim();
-    const timestamp = new Date().toISOString();
-    const tempId = Date.now(); // Temporary unique ID
+  const localMsg = {
+    id: tempId,
+    text: messageText,
+    type: "sent",
+    time: new Date().toLocaleTimeString(),
+    timestamp,
+  };
 
-    // Create a temporary local message
-    const localMsg = {
-      id: tempId,
-      text: messageText,
+  setMessages((prev) => {
+    const updated = [...prev, localMsg];
+    localStorage.setItem(chatStorageKey, JSON.stringify(updated));
+    return updated;
+  });
+
+  setInput("");
+
+  const newMessage = {
+    sender_id: currentUser.id,
+    receiver_id: targetId,
+    message: messageText,
+  };
+
+  const { data, error } = await supabase
+    .from("chats")
+    .insert([newMessage])
+    .select();
+
+  if (error) {
+    console.error("❌ Supabase insert error:", error.message);
+    setIsSending(false);
+    return;
+  }
+
+  let messageId = null;
+
+  if (data && data[0]) {
+    messageId = data[0].id;
+    const dbMsg = {
+      id: messageId,
+      text: data[0].message,
       type: "sent",
-      time: new Date().toLocaleTimeString(),
-      timestamp,
+      time: new Date(data[0].created_at).toLocaleTimeString(),
+      timestamp: data[0].created_at,
     };
 
-    // Add to messages state and localStorage immediately
     setMessages((prev) => {
-      const updated = [...prev, localMsg];
+      const filtered = prev.filter((m) => m.id !== tempId);
+      const updated = [...filtered, dbMsg];
       localStorage.setItem(chatStorageKey, JSON.stringify(updated));
       return updated;
     });
+  }
 
-    setInput(""); // Clear input
+  await supabase
+    .from("unread_counts")
+    .upsert(
+      {
+        sender_id: currentUser.id,
+        receiver_id: targetId,
+        count: 1,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: ["sender_id", "receiver_id"] }
+    )
+    .select()
+    .then(async ({ data, error }) => {
+      if (!error && data?.[0]) {
+        const newCount = data[0].count + 1;
 
-    const newMessage = {
-      sender_id: currentUser.id,
-      receiver_id: targetId,
-      message: messageText,
-    };
+        await supabase
+          .from("unread_counts")
+          .update({
+            count: newCount,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("sender_id", currentUser.id)
+          .eq("receiver_id", targetId);
 
-    // Insert into Supabase
-    const { data, error } = await supabase
-      .from("chats")
-      .insert([newMessage])
-      .select();
+        // Update badge_seen to false
+        await supabase
+          .from("users")
+          .update({ badge_seen: false })
+          .eq("id", targetId);
 
-    if (error) {
-      console.error("❌ Supabase insert error:", error.message);
-      setIsSending(false);
-      return;
-    }
-
-    // If insert succeeded, replace local temp message with Supabase-confirmed one
-    if (data && data[0]) {
-      const dbMsg = {
-        id: data[0].id,
-        text: data[0].message,
-        type: "sent",
-        time: new Date(data[0].created_at).toLocaleTimeString(),
-        timestamp: data[0].created_at,
-      };
-
-      setMessages((prev) => {
-        const filtered = prev.filter((m) => m.id !== tempId);
-        const updated = [...filtered, dbMsg];
-        localStorage.setItem(chatStorageKey, JSON.stringify(updated));
-        return updated;
-      });
-    }
-
-    // Optional: Update unread count
-    await supabase
-      .from("unread_counts")
-      .upsert(
-        {
-          sender_id: currentUser.id,
-          receiver_id: targetId,
-          count: 1,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: ["sender_id", "receiver_id"] }
-      )
-      .select()
-      .then(async ({ data, error }) => {
-        if (!error && data?.[0]) {
-          const newCount = data[0].count + 1;
-
-          await supabase
-            .from("unread_counts")
-            .update({
-              count: newCount,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("sender_id", currentUser.id)
-            .eq("receiver_id", targetId);
-
-          if (newCount > 0) {
-            // Fetch last push time from Supabase
-            const { data: receiverData, error: fetchError } = await supabase
-              .from("users")
-              .select("last_push_sent_at")
-              .eq("id", targetId)
-              .maybeSingle();
-
-            if (fetchError) {
-              console.error(
-                "❌ Error fetching last push timestamp:",
-                fetchError.message
-              );
-            } else {
-              const lastPush = receiverData?.last_push_sent_at
-                ? new Date(receiverData.last_push_sent_at).getTime()
-                : 0;
-              const now = Date.now();
-              const PUSH_INTERVAL_MS = 3 * 60 * 60 * 1000; // 5 hours in milliseconds
-
-              if (!lastPush || now - lastPush > PUSH_INTERVAL_MS) {
-                try {
-                  await axios.post("https://myselpost.onrender.com/send-push", {
-                    userId: targetId,
-                  });
-
-                  // Update last push time in Supabase
-                  const { error: updateError } = await supabase
-                    .from("users")
-                    .update({ last_push_sent_at: new Date().toISOString() })
-                    .eq("id", targetId);
-
-                  if (updateError) {
-                    console.error(
-                      "❌ Error updating last push time:",
-                      updateError.message
-                    );
-                  } else {
-                    console.log("✅ Push sent and timestamp updated");
-                  }
-                } catch (err) {
-                  console.error(
-                    "❌ Error sending push notification:",
-                    err.message
-                  );
-                }
-              } else {
-                console.log("⏱️ Push skipped — sent within last 5 hours");
-              }
-            }
-          }
-
-          if (newCount > 0) {
-            const { data: badgeUpdateData, error: badgeUpdateError } =
-              await supabase
-                .from("users")
-                .update({ badge_seen: false })
-                .eq("id", targetId)
-                .select();
-
-            if (badgeUpdateError) {
-              console.error("❌ Badge update error:", badgeUpdateError.message);
-            } else {
-              //console.log("✅ Badge update result:", badgeUpdateData);
-            }
+        // Send push with messageId
+        if (messageId) {
+          try {
+            await axios.post("https://myselpost.com/send-push", {
+              userId: targetId,
+              messageId: messageId,
+            });
+          } catch (err) {
+            console.error("❌ Error sending push:", err.message);
           }
         }
-      });
+      }
+    });
 
-    setIsSending(false);
-  };
+  setIsSending(false);
+};
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
