@@ -706,64 +706,54 @@ useEffect(() => {
     setHasMore(true);
   }, [activeTab, genderFilter, countryFilter]);
 
-    const filteredUsers = useMemo(() => {
-    // Step 1: Filter
-    let filtered = users.filter((user) => {
-      const genderMatch =
-        genderFilter === "all" || user.gender === genderFilter;
-      const countryMatch =
-        countryFilter === "all" || user.country === countryFilter;
-      const searchMatch = user.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      const pinMatch =
-        activeTab === "pinned"
-          ? user.pinned
-          : activeTab === "inbox"
-          ? unreadCounts[user.id] > 0
-          : !(unreadCounts[user.id] > 0);
+  const filteredUsers = useMemo(() => {
+    return users
+      .filter((user) => {
+        const genderMatch =
+          genderFilter === "all" || user.gender === genderFilter;
+        const countryMatch =
+          countryFilter === "all" || user.country === countryFilter;
+        const searchMatch = user.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+        const pinMatch =
+          activeTab === "pinned"
+            ? user.pinned
+            : activeTab === "inbox"
+            ? unreadCounts[user.id] > 0
+            : !(unreadCounts[user.id] > 0); // 👈 Fix: show users only if no unread notifications
 
-      const onlineMatch =
-        activeTab === "online" ? user.status === "online" : true;
+        const onlineMatch =
+          activeTab === "online" ? user.status === "online" : true;
+        return (
+          genderMatch && countryMatch && searchMatch && pinMatch && onlineMatch
+        );
+      })
+      .sort((a, b) => {
+        // 🥈 Sort by notification count (desc)
+        const aCount = unreadCounts[a.id] || 0;
+        const bCount = unreadCounts[b.id] || 0;
+        if (bCount !== aCount) return bCount - aCount;
+        // 🥇 Sort by country: non-IN first, IN last
+        const aIsIndia = a.country === "IN";
+        const bIsIndia = b.country === "IN";
+        if (aIsIndia !== bIsIndia) return aIsIndia ? 1 : -1;
 
-      return (
-        genderMatch && countryMatch && searchMatch && pinMatch && onlineMatch
-      );
-    });
+        // 🥉 Sort by presence of avatar
+        const aHasPic = a.avatar !== empty ? 1 : 0;
+        const bHasPic = b.avatar !== empty ? 1 : 0;
+        if (bHasPic !== aHasPic) return bHasPic - aHasPic;
 
-    // Step 2: Sort
-    filtered.sort((a, b) => {
-      const aCount = unreadCounts[a.id] || 0;
-      const bCount = unreadCounts[b.id] || 0;
-      if (bCount !== aCount) return bCount - aCount;
+        // Bonus: pinned + verified priority
+        const getPriority = (u) => {
+          if (u.verified && u.pinned) return 4000;
+          if (u.verified) return 3000;
+          if (u.pinned) return 2000;
+          return 1000;
+        };
 
-      const aHasPic = a.avatar !== empty ? 1 : 0;
-      const bHasPic = b.avatar !== empty ? 1 : 0;
-
-      if (bHasPic !== aHasPic) return bHasPic - aHasPic;
-
-      const getPriority = (u) => {
-        if (u.verified && u.pinned) return 4000;
-        if (u.verified) return 3000;
-        if (u.pinned) return 2000;
-        return 1000;
-      };
-
-      return getPriority(b) - getPriority(a);
-    });
-
-    // Step 3: Alternate Boy / Girl
-    const boys = filtered.filter((u) => u.gender === "male");
-    const girls = filtered.filter((u) => u.gender === "female");
-
-    const alternating = [];
-    const maxLen = Math.max(boys.length, girls.length);
-    for (let i = 0; i < maxLen; i++) {
-      if (girls[i]) alternating.push(girls[i]); // first girl
-      if (boys[i]) alternating.push(boys[i]); // then boy
-    }
-
-    return alternating;
+        return getPriority(b) - getPriority(a);
+      });
   }, [
     users,
     genderFilter,
@@ -773,7 +763,6 @@ useEffect(() => {
     unreadCounts,
     allFilter,
   ]);
-
 
   useEffect(() => {
     const hasSubmitted = localStorage.getItem("feedback_submitted");
