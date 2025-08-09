@@ -137,7 +137,7 @@ margin-top: 3%;}
   }
 }
 
-.fab-container {
+.sketch-fab-container {
   position: fixed;
   bottom: 30px;
   right: 30px;
@@ -147,7 +147,7 @@ margin-top: 3%;}
   z-index: 1000;
 }
 
-.fab-button {
+.sketch-fab-button {
   background-color: #000000; /* More vibrant color */
   color: #fff;
   border: none;
@@ -165,14 +165,14 @@ margin-top: 3%;}
   -webkit-tap-highlight-color: transparent;
 }
 
-.fab-button:hover {
+.sketch-fab-button:hover {
   background-color: #000000;
   transform: scale(1.1);
   box-shadow: 0 8px 25px rgba(17, 17, 17, 0.5);
 }
 
 /* Pulsing animation to draw attention */
-.fab-pulse-ring {
+.sketch-fab-pulse-ring {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -200,19 +200,19 @@ margin-top: 3%;}
 
 /* Make FAB more visible on mobile */
 @media (max-width: 768px) {
-  .fab-container {
+  .sketch-fab-container {
     bottom: 20px;
     right: 20px;
   }
 
-  .fab-button {
+  .sketch-fab-button {
     width: 60px;
     height: 60px;
     font-size: 1.8rem;
   }
 
   /* Add a text label on mobile */
-  .fab-button::after {
+  .sketch-fab-button::after {
     position: absolute;
     white-space: nowrap;
     right: 70px;
@@ -226,11 +226,11 @@ margin-top: 3%;}
     transition: opacity 0.3s ease;
   }
 
-  .fab-button:hover::after {
+  .sketch-fab-button:hover::after {
     opacity: 1;
   }
 }
-.fab-options {
+.sketch-fab-options {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -250,7 +250,7 @@ margin-top: 3%;}
   }
 }
 
-.fab-option {
+.sketch-fab-option {
   background-color: #fff;
   color: #222;
   border: 2px solid #222;
@@ -265,7 +265,7 @@ margin-top: 3%;}
   text-decoration: none;
 }
 
-.fab-option:hover {
+.sketch-fab-option:hover {
   background-color: #222;
   color: #fff;
 }
@@ -360,14 +360,14 @@ margin-top: 3%;}
 }
 
 /* New FAB with Image */
-.fab-button.new-fab {
+.sketch-fab-button.new-fab {
   background-color: #fff; /* White background */
   border: 2px solid #222; /* Optional: Add border for contrast */
   box-shadow: none;
   top: 10px;
 }
 
-.fab-icon {
+.sketch-fab-icon {
   width: 30px;
   height: 30px;
   object-fit: cover;

@@ -106,20 +106,20 @@ const Sketch = () => {
       )}
 
       {/* Floating Action Buttons */}
-      <div className="fab-container">
-        <button className="fab-button new-fab" onClick={handleDoodle}>
-          <img src={draw} alt="New FAB" className="fab-icon" />
+      <div className="sketch-fab-container">
+        <button className="sketch-fab-button new-fab" onClick={handleDoodle}>
+          <img src={draw} alt="New FAB" className="sketch-fab-icon" />
         </button>
-        <button className="fab-button" onClick={handleFabClick}>
+        <button className="sketch-fab-button" onClick={handleFabClick}>
           ✏️
         </button>
 
         {showAlert && (
-          <div className="fab-options">
-            <Link to="/app-sketch" className="fab-option">
+          <div className="sketch-fab-options">
+            <Link to="/app-sketch" className="sketch-fab-option">
               ✨ Create App
             </Link>
-            <Link to="/web-sketch" className="fab-option">
+            <Link to="/web-sketch" className="sketch-fab-option">
               🌐 Create Website
             </Link>
           </div>
