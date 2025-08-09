@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
-import axios from "axios";
 import "../Styles/ChatList.css";
 import {
   FaCircle,
@@ -15,10 +14,12 @@ import {
   FaBell,
   FaBellSlash,
   FaCheck,
+  FaTimes,
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
 import { subscribeUser } from "../Utils/subscribeUser";
+import useDebounce from "../Utils/useDebounce";
 import LoadingIndicator from "../Components/LoadingIndicator";
 import ReactCountryFlag from "react-country-flag";
 import MiniSpinner from "../Components/MiniSpinner";
@@ -231,6 +232,8 @@ const ChatList = () => {
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem("activeTab") || "all";
   });
+  const [firstLoad, setFirstLoad] = useState(true);
+
   const [enabled, setEnabled] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -507,9 +510,9 @@ useEffect(() => {
   };
 
   useEffect(() => {
-  const storedEnabled = localStorage.getItem("notifications_enabled");
-  if (storedEnabled === "true") setEnabled(true);
-}, []);
+    const storedEnabled = localStorage.getItem("notifications_enabled");
+    if (storedEnabled === "true") setEnabled(true);
+  }, []);
 
   const askNotificationPermission = async () => {
     trackEvent({
@@ -549,7 +552,7 @@ useEffect(() => {
       // console.log("Logged in user:", user);
 
       // 🚫 Restrict if non-US user (except Akriti) tries to chat with US user
-      const isNotUS = user.country !== "US";
+      {/*const isNotUS = user.country !== "US";
       const isNotAkriti = user.name?.trim().toLowerCase() !== "akriti";
       const isTargetUS = targetUser?.country === "US";
 
@@ -558,7 +561,7 @@ useEffect(() => {
         setShowPremiumNotice(true);
         return;
       }
-
+*/}
       navigate(path, { state: { targetUser } }); // 👈 Pass clicked user to next screen
     } else {
       navigate("/register");
@@ -588,11 +591,22 @@ useEffect(() => {
   const handlePaypalRedirect = () => {
     navigate(`/payments/${user.id}`);
   };
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
     const fetchUsers = async () => {
-      if (searchTerm.trim() === "" && page === 0) setLoading(true);
-      else setLoadingMore(true);
+      if (
+        debouncedSearchTerm.trim().length > 0 &&
+        debouncedSearchTerm.trim().length < 2
+      ) {
+        setUsers([]);
+        setLoading(false);
+        return;
+      } else if (firstLoad && page === 0) {
+        setLoading(true); // First ever load
+      } else {
+        setLoadingMore(true); // For pagination or tab switch: show mini loader
+      }
 
       const limit = 10;
       const offset = page * limit;
@@ -603,6 +617,11 @@ useEffect(() => {
           "id, name, profile_pic, country, gender, status, age, decency_rating"
         );
 
+      if (activeTab === "all") {
+        query = query
+          .order("profile_pic", { ascending: false, nullsFirst: false })
+          .order("country", { ascending: true });
+      }
       if (genderFilter !== "all") query = query.eq("gender", genderFilter);
       if (countryFilter !== "all") query = query.eq("country", countryFilter);
       if (activeTab === "online") query = query.eq("status", "online");
@@ -674,53 +693,77 @@ useEffect(() => {
 
       setLoading(false);
       setLoadingMore(false);
+      setFirstLoad(false); // ✅ Prevent loader next time
     };
 
     fetchUsers();
   }, [page, activeTab, genderFilter, countryFilter, searchTerm]);
 
-  const filteredUsers = useMemo(() => {
-    return users
-      .filter((user) => {
-        const genderMatch =
-          genderFilter === "all" || user.gender === genderFilter;
-        const countryMatch =
-          countryFilter === "all" || user.country === countryFilter;
-        const searchMatch = user.name
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-        const pinMatch =
-          activeTab === "pinned"
-            ? user.pinned
-            : activeTab === "inbox"
-            ? unreadCounts[user.id] > 0
-            : !(unreadCounts[user.id] > 0); // 👈 Fix: show users only if no unread notifications
+  useEffect(() => {
+    // Reset user list when tab changes
+    setUsers([]);
+    setPage(0);
+    setHasMore(true);
+  }, [activeTab, genderFilter, countryFilter]);
 
-        const onlineMatch =
-          activeTab === "online" ? user.status === "online" : true;
-        return (
-          genderMatch && countryMatch && searchMatch && pinMatch && onlineMatch
-        );
-      })
-      .sort((a, b) => {
-        const aCount = unreadCounts[a.id] || 0;
-        const bCount = unreadCounts[b.id] || 0;
-        if (bCount !== aCount) return bCount - aCount;
+    const filteredUsers = useMemo(() => {
+    // Step 1: Filter
+    let filtered = users.filter((user) => {
+      const genderMatch =
+        genderFilter === "all" || user.gender === genderFilter;
+      const countryMatch =
+        countryFilter === "all" || user.country === countryFilter;
+      const searchMatch = user.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const pinMatch =
+        activeTab === "pinned"
+          ? user.pinned
+          : activeTab === "inbox"
+          ? unreadCounts[user.id] > 0
+          : !(unreadCounts[user.id] > 0);
 
-        const aHasPic = a.avatar !== empty ? 1 : 0;
-        const bHasPic = b.avatar !== empty ? 1 : 0;
+      const onlineMatch =
+        activeTab === "online" ? user.status === "online" : true;
 
-        if (bHasPic !== aHasPic) return bHasPic - aHasPic;
+      return (
+        genderMatch && countryMatch && searchMatch && pinMatch && onlineMatch
+      );
+    });
 
-        const getPriority = (u) => {
-          if (u.verified && u.pinned) return 4000;
-          if (u.verified) return 3000;
-          if (u.pinned) return 2000;
-          return 1000;
-        };
+    // Step 2: Sort
+    filtered.sort((a, b) => {
+      const aCount = unreadCounts[a.id] || 0;
+      const bCount = unreadCounts[b.id] || 0;
+      if (bCount !== aCount) return bCount - aCount;
 
-        return getPriority(b) - getPriority(a);
-      });
+      const aHasPic = a.avatar !== empty ? 1 : 0;
+      const bHasPic = b.avatar !== empty ? 1 : 0;
+
+      if (bHasPic !== aHasPic) return bHasPic - aHasPic;
+
+      const getPriority = (u) => {
+        if (u.verified && u.pinned) return 4000;
+        if (u.verified) return 3000;
+        if (u.pinned) return 2000;
+        return 1000;
+      };
+
+      return getPriority(b) - getPriority(a);
+    });
+
+    // Step 3: Alternate Boy / Girl
+    const boys = filtered.filter((u) => u.gender === "male");
+    const girls = filtered.filter((u) => u.gender === "female");
+
+    const alternating = [];
+    const maxLen = Math.max(boys.length, girls.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (girls[i]) alternating.push(girls[i]); // first girl
+      if (boys[i]) alternating.push(boys[i]); // then boy
+    }
+
+    return alternating;
   }, [
     users,
     genderFilter,
@@ -730,6 +773,7 @@ useEffect(() => {
     unreadCounts,
     allFilter,
   ]);
+
 
   useEffect(() => {
     const hasSubmitted = localStorage.getItem("feedback_submitted");
@@ -938,7 +982,16 @@ useEffect(() => {
               placeholder="🔍 Search users..."
               value={searchTerm}
               onChange={(e) => {
-                setSearchTerm(e.target.value);
+                const value = e.target.value;
+                setSearchTerm(value);
+
+                if (value.trim() === "") {
+                  setPage(0);
+                  setUsers([]);
+                  setHasMore(true);
+                  setActiveTab("all");
+                  localStorage.setItem("activeTab", "all");
+                }
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -946,9 +999,26 @@ useEffect(() => {
                 }
               }}
             />
-            <button className="search-button" onClick={handleSearchSubmit}>
-              <FaSearch />
-            </button>
+
+            {searchTerm.trim() === "" ? (
+              <button className="search-button" onClick={handleSearchSubmit}>
+                <FaSearch />
+              </button>
+            ) : (
+              <button
+                className="search-button"
+                onClick={() => {
+                  setSearchTerm("");
+                  setPage(0);
+                  setUsers([]);
+                  setHasMore(true);
+                  setActiveTab("all");
+                  localStorage.setItem("activeTab", "all");
+                }}
+              >
+                <FaTimes />
+              </button>
+            )}
           </div>
 
           <div className="tab-bar">

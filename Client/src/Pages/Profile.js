@@ -37,6 +37,7 @@ const Profile = () => {
 
   const handleBack = () => navigate(-1);
 
+
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -57,7 +58,7 @@ const Profile = () => {
     const { data, error } = await supabase
       .from("users")
       .select(
-        "id, name, bio, profile_pic, app_created, reward_coins, decency_rating"
+        "id, name, talked_to_count, bio, profile_pic, app_created, reward_coins, decency_rating"
       )
       .eq("id", id)
       .single();
@@ -274,9 +275,9 @@ const Profile = () => {
 
             <div className="sketchy-profile-stats-row">
               <p>
-                Apps Created:
+                Conversations:
                 <span className="sketchy-stat-value">
-                  {userData.app_created || 0}
+                  {userData.talked_to_count || 0}
                 </span>
               </p>
               <p>
@@ -285,12 +286,7 @@ const Profile = () => {
                   {userData.reward_coins || 0}
                 </span>
               </p>
-              <p>
-                Decency Rating:
-                <span className="sketchy-stat-value">
-                  {userData.decency_rating || 10}
-                </span>
-              </p>
+              
             </div>
 
             {isCurrentUser && (

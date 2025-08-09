@@ -13,7 +13,8 @@ import {
   WhatsappShareButton,
   RedditShareButton,
 } from "react-share";
-import toast, {Toaster} from 'react-hot-toast';
+import bannedWords from "../Utils/bannedWords";
+import toast, { Toaster } from "react-hot-toast";
 
 const timeAgo = (date) => {
   const inputDate = new Date(date + "Z"); // 👈 Ensures it's treated as UTC
@@ -204,9 +205,34 @@ function Roast() {
     setTimeout(() => btn.classList.remove("fire-animate"), 400);
   };
 
+  const genericTexts = [
+    "hi",
+    "hello",
+    "hellow",
+    "wet",
+    "ok",
+    "okay",
+    "hii",
+    "hey",
+    "nice",
+  ];
+
   const addRoast = async (cardIndex) => {
     const trimmed = cards[cardIndex].newRoast.trim();
     if (!trimmed) return;
+    // Check banned words again before submitting
+    const containsBanned = bannedWords.abusiveWords.some((word) =>
+      trimmed.toLowerCase().includes(word.toLowerCase())
+    );
+    if (containsBanned) {
+      toast.error("Your roast contains abusive words and cannot be submitted.");
+      return;
+    }
+    const isGeneric = genericTexts.includes(trimmed.toLowerCase());
+    if (trimmed.length < 3 || isGeneric) {
+      toast.error("⚠ Please write a roast, not a simple greeting.");
+      return;
+    }
 
     const currentUser = JSON.parse(localStorage.getItem("user"));
     if (!currentUser) {
@@ -260,8 +286,21 @@ function Roast() {
   };
 
   const handleInputChange = (e, cardIndex) => {
+    const inputValue = e.target.value;
+
+    // Access the array inside abusiveWords
+    const containsBanned = bannedWords.abusiveWords.some((word) =>
+      inputValue.toLowerCase().includes(word.toLowerCase())
+    );
+
+    if (containsBanned) {
+      toast.error(
+        "⚠ This message contains abusive words. You could be banned!"
+      );
+    }
+
     const updatedCards = [...cards];
-    updatedCards[cardIndex].newRoast = e.target.value;
+    updatedCards[cardIndex].newRoast = inputValue;
     setCards(updatedCards);
   };
 
@@ -340,12 +379,14 @@ function Roast() {
         return;
       }
 
-      toast.success('Image Uploaded Successfully!')
+      toast.success("Image Uploaded Successfully!");
+      localStorage.setItem("hasUploadedImage", "true"); // <-- Add this
+
       await fetchCardsData(); // ✅ Refresh data without reloading
       setCurrentIndex(0);
     } catch (err) {
       console.error("Upload error:", err);
-      toast.error('Upload failed.')
+      toast.error("Upload failed.");
     } finally {
       setUploading(false);
     }
@@ -509,20 +550,7 @@ function Roast() {
       />
 
       {/* Main FAB */}
-      <button
-        className="fab-upload"
-        onClick={() => {
-          if (hasSharedRoast) {
-            toggleFAB();
-          } else {
-            setAlertMessage({
-              text: "You have to share one roast to access this feature.",
-              withButton: true,
-            });
-          }
-        }}
-        title="Actions"
-      >
+      <button className="fab-upload" onClick={toggleFAB} title="Actions">
         <FaFire />
       </button>
 

@@ -17,6 +17,10 @@ const Chat = () => {
   const [alertMessage, setAlertMessage] = useState(null);
   const [isBlocked, setIsBlocked] = useState(false);
   const [modalImage, setModalImage] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [audioChunks, setAudioChunks] = useState([]);
+
   const [loadingImages, setLoadingImages] = useState({});
   const [revealedImages, setRevealedImages] = useState({});
   const [isSending, setIsSending] = useState(false);
@@ -203,11 +207,13 @@ const Chat = () => {
 
   useEffect(() => {
     const loadInitialMessages = async () => {
-      setIsLoading(true);
+      //setIsLoading(true);
       const { data, error } = await supabase
         .from("chats")
         .select("*")
-        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+        .or(
+          `and(sender_id.eq.${currentUser.id},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${currentUser.id})`
+        )
         .order("created_at", { ascending: true });
 
       if (error) {
@@ -231,6 +237,8 @@ const Chat = () => {
         status: msg.status,
         isRequest: msg.is_request,
         timestamp: msg.created_at,
+        isAudio: msg.type === "audio", // <-- mark audio messages here
+
         isImage: msg.type === "image",
       }));
 
@@ -375,28 +383,87 @@ const Chat = () => {
     return () => clearInterval(interval);
   }, [currentUser.id]);
 
+  useEffect(() => {
+    const fetchAndStoreTalkedUsers = async () => {
+      const { data, error } = await supabase
+        .from("chats")
+        .select("sender_id, receiver_id")
+        .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
+
+      if (error) {
+        console.error("Error fetching messages:", error);
+        return;
+      }
+
+      if (!data) return;
+
+      const uniqueUsers = new Set();
+
+      data.forEach((msg) => {
+        const otherUser =
+          msg.sender_id === currentUser.id ? msg.receiver_id : msg.sender_id;
+        uniqueUsers.add(otherUser);
+      });
+
+      const talkedToCount = uniqueUsers.size;
+
+      // 🔍 Fetch current talked_to_count from users table
+      const { data: userData, error: userFetchError } = await supabase
+        .from("users")
+        .select("talked_to_count")
+        .eq("id", currentUser.id)
+        .single();
+
+      if (userFetchError) {
+        console.error("Failed to fetch user data:", userFetchError);
+        return;
+      }
+
+      const currentCount = userData?.talked_to_count || 0;
+
+      // 🧠 Only update if count is different
+      if (currentCount !== talkedToCount) {
+        const { error: updateError } = await supabase
+          .from("users")
+          .update({ talked_to_count: talkedToCount })
+          .eq("id", currentUser.id);
+
+        if (updateError) {
+          console.error("Failed to update talked_to_count:", updateError);
+        } else {
+          console.log(`Updated talked_to_count to ${talkedToCount}`);
+        }
+      } else {
+        console.log("talked_to_count unchanged, skipping update");
+      }
+    };
+
+    fetchAndStoreTalkedUsers();
+  }, []);
+
   const deleteOldMessagesBetweenUsers = async (currentUserId, otherUserId) => {
-    // Get current time in local timezone and subtract 24 hours
-    const localCutoffTime = dayjs().subtract(24, "hour").toISOString();
+    const cutoffTime = dayjs().subtract(24, "hour").toISOString();
 
     const { error } = await supabase
       .from("chats")
       .delete()
+      .lt("created_at", cutoffTime)
       .or(
         `and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUserId})`
-      )
-      .lt("created_at", localCutoffTime);
+      );
 
     if (error) {
       console.error("Failed to delete old messages:", error.message);
     } else {
-      console.log("Old messages between users deleted.");
+      console.log("Messages older than 24h deleted between users.");
     }
   };
 
   useEffect(() => {
-    deleteOldMessagesBetweenUsers(currentUser.id, targetUser.id);
-  }, [currentUser.id, targetUser.id]);
+    if (currentUser?.id && targetUser?.id) {
+      deleteOldMessagesBetweenUsers(currentUser.id, targetUser.id);
+    }
+  }, [currentUser?.id, targetUser?.id]);
 
   function getTimeAgo(dateString) {
     const date = new Date(dateString);
@@ -422,144 +489,147 @@ const Chat = () => {
   }
 
   const sendMessage = async () => {
-  trackEvent({
-    action: "button_click",
-    category: "Chat Page",
-    label: "Send Message Button",
-  });
-
-  if (!input.trim()) return;
-
-  const now = Date.now();
-  const recent = recentMessages.current;
-
-  // Remove messages older than 15 seconds
-  recentMessages.current = recent.filter((msg) => now - msg.time < 15000);
-
-  // Prevent spamming same message
-  if (recentMessages.current.some((msg) => msg.text === input.trim())) {
-    setAlertMessage({
-      text: "⚠️ You are sending the same message repeatedly.",
-      buttons: ["close"],
+    trackEvent({
+      action: "button_click",
+      category: "Chat Page",
+      label: "Send Message Button",
     });
 
-    const { error } = await supabase.rpc("decrement_decency", {
-      user_id_input: currentUser.id,
-    });
+    if (!input.trim()) return;
 
-    if (error) {
-      console.error("❌ RPC error:", error.message);
+    const now = Date.now();
+    const recent = recentMessages.current;
+
+    // Remove messages older than 15 seconds
+    recentMessages.current = recent.filter((msg) => now - msg.time < 15000);
+
+    // Prevent spamming same message
+    if (recentMessages.current.some((msg) => msg.text === input.trim())) {
+      setAlertMessage({
+        text: "⚠️ You are sending the same message repeatedly.",
+        buttons: ["close"],
+      });
+
+      const { error } = await supabase.rpc("decrement_decency", {
+        user_id_input: currentUser.id,
+      });
+
+      if (error) {
+        console.error("❌ RPC error:", error.message);
+      }
+      return;
     }
-    return;
-  }
 
-  recentMessages.current.push({ text: input.trim(), time: now });
-  setIsSending(true);
+    recentMessages.current.push({ text: input.trim(), time: now });
+    setIsSending(true);
 
-  const messageText = input.trim();
-  const timestamp = new Date().toISOString();
-  const tempId = Date.now();
+    const messageText = input.trim();
+    const timestamp = new Date().toISOString();
+    const tempId = Date.now();
 
-  const localMsg = {
-    id: tempId,
-    text: messageText,
-    type: "sent",
-    time: new Date().toLocaleTimeString(),
-    timestamp,
-  };
-
-  setMessages((prev) => {
-    const updated = [...prev, localMsg];
-    localStorage.setItem(chatStorageKey, JSON.stringify(updated));
-    return updated;
-  });
-
-  setInput("");
-
-  const newMessage = {
-    sender_id: currentUser.id,
-    receiver_id: targetId,
-    message: messageText,
-  };
-
-  const { data, error } = await supabase
-    .from("chats")
-    .insert([newMessage])
-    .select();
-
-  if (error) {
-    console.error("❌ Supabase insert error:", error.message);
-    setIsSending(false);
-    return;
-  }
-
-  let messageId = null;
-
-  if (data && data[0]) {
-    messageId = data[0].id;
-    const dbMsg = {
-      id: messageId,
-      text: data[0].message,
+    const localMsg = {
+      id: tempId,
+      text: messageText,
       type: "sent",
-      time: new Date(data[0].created_at).toLocaleTimeString(),
-      timestamp: data[0].created_at,
+      time: new Date().toLocaleTimeString(),
+      timestamp,
     };
 
     setMessages((prev) => {
-      const filtered = prev.filter((m) => m.id !== tempId);
-      const updated = [...filtered, dbMsg];
+      const updated = [...prev, localMsg];
       localStorage.setItem(chatStorageKey, JSON.stringify(updated));
       return updated;
     });
-  }
 
-  await supabase
-    .from("unread_counts")
-    .upsert(
-      {
-        sender_id: currentUser.id,
-        receiver_id: targetId,
-        count: 1,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: ["sender_id", "receiver_id"] }
-    )
-    .select()
-    .then(async ({ data, error }) => {
-      if (!error && data?.[0]) {
-        const newCount = data[0].count + 1;
+    setInput("");
 
-        await supabase
-          .from("unread_counts")
-          .update({
-            count: newCount,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("sender_id", currentUser.id)
-          .eq("receiver_id", targetId);
+    const newMessage = {
+      sender_id: currentUser.id,
+      receiver_id: targetId,
+      message: messageText,
+    };
 
-        // Update badge_seen to false
-        await supabase
-          .from("users")
-          .update({ badge_seen: false })
-          .eq("id", targetId);
+    const { data, error } = await supabase
+      .from("chats")
+      .insert([newMessage])
+      .select();
 
-        // Send push with messageId
-        if (messageId) {
-          try {
-            await axios.post("https://myselpost.com/send-push", {
-              userId: targetId,
-              messageId: messageId,
-            });
-          } catch (err) {
-            console.error("❌ Error sending push:", err.message);
+    if (error) {
+      console.error("❌ Supabase insert error:", error.message);
+      setIsSending(false);
+      return;
+    }
+
+    let messageId = null;
+
+    if (data && data[0]) {
+      messageId = data[0].id;
+      const dbMsg = {
+        id: messageId,
+        text: data[0].message,
+        type: "sent",
+        time: new Date(data[0].created_at).toLocaleTimeString(),
+        timestamp: data[0].created_at,
+      };
+
+      setMessages((prev) => {
+        const filtered = prev.filter((m) => m.id !== tempId);
+        const updated = [...filtered, dbMsg];
+        localStorage.setItem(chatStorageKey, JSON.stringify(updated));
+        return updated;
+      });
+    }
+
+    await supabase
+      .from("unread_counts")
+      .upsert(
+        {
+          sender_id: currentUser.id,
+          receiver_id: targetId,
+          count: 1,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: ["sender_id", "receiver_id"] }
+      )
+      .select()
+      .then(async ({ data, error }) => {
+        if (!error && data?.[0]) {
+          const newCount = data[0].count + 1;
+
+          await supabase
+            .from("unread_counts")
+            .update({
+              count: newCount,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("sender_id", currentUser.id)
+            .eq("receiver_id", targetId);
+
+          // Update badge_seen to false
+          await supabase
+            .from("users")
+            .update({ badge_seen: false })
+            .eq("id", targetId);
+
+          // Send push with messageId
+          // Send push only if not blocked by or blocking the target
+          if (messageId && !blockedByOtherUser && !iBlockedOtherUser) {
+            try {
+              await axios.post("https://myselpost.onrender.com/send-push", {
+                userId: targetId,
+                messageId: messageId,
+              });
+            } catch (err) {
+              console.error("❌ Error sending push:", err.message);
+            }
+          } else {
+            console.log("🔕 Push notification skipped due to block status.");
           }
         }
-      }
-    });
+      });
 
-  setIsSending(false);
-};
+    setIsSending(false);
+  };
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
@@ -867,6 +937,106 @@ const Chat = () => {
   };
 
   useEffect(() => {
+    if (!mediaRecorder) return;
+
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+      const fileName = `${Date.now()}.webm`;
+      const filePath = `chat-audio/${currentUser.id}/${fileName}`;
+
+      // Upload to Supabase storage
+      const { error: uploadError } = await supabase.storage
+        .from("chat-audio")
+        .upload(filePath, audioBlob);
+
+      if (uploadError) {
+        console.error("Upload failed:", uploadError.message);
+        return;
+      }
+
+      const { data: publicURLData } = supabase.storage
+        .from("chat-audio")
+        .getPublicUrl(filePath);
+
+      const audioUrl = publicURLData?.publicUrl;
+
+      // Save message in chats table
+      const { data, error } = await supabase
+        .from("chats")
+        .insert([
+          {
+            sender_id: currentUser.id,
+            receiver_id: targetId,
+            message: audioUrl,
+            type: "audio",
+          },
+        ])
+        .select();
+
+      if (error) {
+        console.error("Insert audio message failed:", error.message);
+        return;
+      }
+
+      if (data && data[0]) {
+        const dbMsg = {
+          id: data[0].id,
+          text: data[0].message,
+          type: "sent",
+          timestamp: data[0].created_at,
+          isAudio: true,
+        };
+        setMessages((prev) => [...prev, dbMsg]);
+      }
+    };
+  }, [mediaRecorder, audioChunks]);
+
+  const handleMicClick = async () => {
+    const hasUploadedImage =
+      localStorage.getItem("hasUploadedImage") === "true";
+    if (!hasUploadedImage) {
+      setAlertMessage({
+        text: "📸 Upload your image under roast section to use microphone 🎤.",
+        withButton: true,
+      });
+
+      return;
+    }
+    if (!isRecording) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        const recorder = new MediaRecorder(stream);
+        const chunks = [];
+
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            chunks.push(e.data);
+          }
+        };
+
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: "audio/webm" });
+          const audioUrl = URL.createObjectURL(blob);
+          console.log("Audio ready:", audioUrl);
+          // Here you can upload `blob` to Supabase storage
+        };
+
+        recorder.start();
+        setMediaRecorder(recorder);
+        setAudioChunks(chunks);
+        setIsRecording(true);
+      } catch (err) {
+        console.error("Mic access denied:", err);
+      }
+    } else {
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }
+  };
+
+  useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
@@ -954,17 +1124,6 @@ const Chat = () => {
           ) : (
             <>
               <div className="messages">
-                {messages.length === 0 && (
-                  <div className="empty-msg">
-                    <img
-                      src="https://cdn3.iconfinder.com/data/icons/49handdrawing/256x256/comment.png"
-                      alt="No messages"
-                      className="empty-chat-img"
-                    />
-                    <p>Start your sketchy chat ✍️</p>
-                  </div>
-                )}
-
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
@@ -1008,6 +1167,10 @@ const Chat = () => {
                           )}
                         </div>
                       )
+                    ) : msg.isAudio ? (
+                      <div className="chat-audio">
+                        <audio controls src={msg.text} />
+                      </div>
                     ) : (
                       <p>{msg.text}</p>
                     )}
@@ -1040,8 +1203,14 @@ const Chat = () => {
                 </div>
 
                 <div className="icon-wrapper">
-                  <FaMicrophone title="Coming Soon" className="icon-btn" />
-                  <div className="coming-soon-ribbon">Coming Soon</div>
+                  <FaMicrophone
+                    onClick={handleMicClick}
+                    className="icon-btn"
+                    style={{
+                      cursor: "pointer",
+                      color: isRecording ? "#ff6f61" : "#444",
+                    }}
+                  />
                 </div>
 
                 <input

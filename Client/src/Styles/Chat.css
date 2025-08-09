@@ -255,8 +255,6 @@
 .icon-btn {
   font-size: 1.2rem;
   margin: 0 0.2rem;
-  cursor: pointer;
-  color: #444;
 }
 
 .reply-tag {
@@ -715,4 +713,15 @@ body.theme-dark .fixed-theme-toggle {
 .click-to-reveal-text {
   font-size: 14px;
   font-weight: bold;
+}
+
+.chat-audio {
+  max-width: 200px;    /* or any width that fits your bubble */
+  width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  background-color: #f0f0f0; /* match your bubble style */
+  padding: 5px;
+  display: flex;
+  align-items: center;
 }
