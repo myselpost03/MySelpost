@@ -288,17 +288,7 @@ function Roast() {
   const handleInputChange = (e, cardIndex) => {
     const inputValue = e.target.value;
 
-    // Access the array inside abusiveWords
-    const containsBanned = bannedWords.abusiveWords.some((word) =>
-      inputValue.toLowerCase().includes(word.toLowerCase())
-    );
-
-    if (containsBanned) {
-      toast.error(
-        "⚠ This message contains abusive words. You could be banned!"
-      );
-    }
-
+    
     const updatedCards = [...cards];
     updatedCards[cardIndex].newRoast = inputValue;
     setCards(updatedCards);
@@ -378,9 +368,10 @@ function Roast() {
 
         return;
       }
+      console.log("Setting hasUploadedImage in localStorage");
+      localStorage.setItem("hasUploadedImage", "true");
 
       toast.success("Image Uploaded Successfully!");
-      localStorage.setItem("hasUploadedImage", "true"); // <-- Add this
 
       await fetchCardsData(); // ✅ Refresh data without reloading
       setCurrentIndex(0);
