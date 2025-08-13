@@ -70,18 +70,20 @@ const publicRoutes = [
 ];
 
 const useUserStatusSync = () => {
-  const location = useLocation();
-
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (!storedUser || !storedUser.id) return;
+    if (!storedUser?.id) return;
 
     let isUserActive = true;
     let activityTimeout = null;
     let heartbeatInterval = null;
 
     const updateStatus = async (status) => {
-      await supabase.from("users").update({ status }).eq("id", storedUser.id);
+      try {
+        await supabase.from("users").update({ status }).eq("id", storedUser.id);
+      } catch (err) {
+        console.error("Status update failed:", err);
+      }
     };
 
     const setActive = () => {
@@ -90,62 +92,54 @@ const useUserStatusSync = () => {
       activityTimeout = setTimeout(() => {
         isUserActive = false;
         updateStatus("offline");
-      }, 60000); // 1 minute idle
+      }, 60000); // 1 min idle
+      updateStatus("online");
     };
 
-    // Route logic: online only if on chat/chat-list
-    const isChatRoute =
-      location.pathname === "/chat-list" ||
-      /^\/chat\/[^/]+$/.test(location.pathname);
-
-    if (isChatRoute) {
-      updateStatus("online");
-    } else {
-      updateStatus("offline");
-    }
-
-    // 1. Interaction tracking
-    const interactionEvents = ["mousemove", "keydown", "scroll", "click"];
+    // Events to detect activity (desktop + mobile)
+    const interactionEvents = [
+      "mousemove", "keydown", "scroll", "click", "touchstart", "touchmove"
+    ];
     interactionEvents.forEach((event) =>
       window.addEventListener(event, setActive)
     );
 
-    // 2. Tab visibility
+    // Tab visibility (desktop)
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
         updateStatus("offline");
-      } else if (isChatRoute) {
-        updateStatus("online");
+      } else {
+        setActive();
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // 3. Heartbeat to refresh status
+    // Mobile-specific: detect background/foreground changes
+    const handlePageHide = () => updateStatus("offline");
+    const handlePageShow = () => setActive();
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("pageshow", handlePageShow);
+
+    // Heartbeat to keep status alive
     heartbeatInterval = setInterval(() => {
-      if (
-        isUserActive &&
-        document.visibilityState === "visible" &&
-        isChatRoute
-      ) {
+      if (isUserActive && document.visibilityState === "visible") {
         updateStatus("online");
       }
-    }, 30000); // every 30 sec
+    }, 30000); // 30s
 
-    // 4. Cleanup when leaving
-    const handleUnload = () => {
-      updateStatus("offline");
-    };
+    // Before unload (closing tab)
+    const handleUnload = () => updateStatus("offline");
     window.addEventListener("beforeunload", handleUnload);
 
-    // 5. LocalStorage event to detect cross-tab
+    // Cross-tab activity detection
     const handleStorage = (event) => {
       if (event.key === "user-activity") {
-        setActive(); // Another tab showed activity
+        setActive();
       }
     };
     window.addEventListener("storage", handleStorage);
 
-    // 6. Cross-tab heartbeat sender
+    // Cross-tab heartbeat sender
     const localHeartbeat = setInterval(() => {
       localStorage.setItem("user-activity", Date.now());
     }, 5000);
@@ -158,6 +152,8 @@ const useUserStatusSync = () => {
         window.removeEventListener(event, setActive)
       );
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("pageshow", handlePageShow);
       window.removeEventListener("beforeunload", handleUnload);
       window.removeEventListener("storage", handleStorage);
       clearTimeout(activityTimeout);
@@ -165,8 +161,9 @@ const useUserStatusSync = () => {
       clearInterval(localHeartbeat);
       updateStatus("offline");
     };
-  }, [location]);
+  }, []);
 };
+
 
 function UserStatusWrapper() {
   useUserStatusSync();

@@ -138,7 +138,7 @@ const Header = () => {
   return (
     <header className="header">
       <div className="logo-container">
-        <Link to="/" className="logo">
+        <Link className="logo">
           MySelpost
         </Link>
         {/*{user && !isMobile && (

@@ -7,7 +7,7 @@ import SketchyAlert from "../Components/SketchyAlert";
 import InviteFAB from "../Components/InviteFAB";
 import { supabase } from "../Utils/supabaseClient";
 import { isRunningAsPWA } from "../Utils/CheckPWA";
-import {trackEvent} from "../Utils/analytics";
+import { trackEvent } from "../Utils/analytics";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -17,6 +17,7 @@ const Home = () => {
   const [user, setUser] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileForm, setProfileForm] = useState({ gender: "", age: "" });
+  const [checkingRedirect, setCheckingRedirect] = useState(true);
 
   useEffect(() => {
     const fetchAndSetUser = async () => {
@@ -24,6 +25,7 @@ const Home = () => {
 
       if (!storedUser?.id) {
         setUser(null);
+        setCheckingRedirect(false);
         return;
       }
 
@@ -37,22 +39,35 @@ const Home = () => {
       if (error) {
         console.error("Failed to fetch user from DB:", error.message);
         setUser(null);
+        setCheckingRedirect(false);
         return;
       }
 
       localStorage.setItem("user", JSON.stringify(data));
       setUser(data);
 
-      // Show profile modal only if age or gender is missing/null/empty
+      // Show profile modal only if age or gender missing
       if (!data.gender || !data.age) {
         setShowProfileModal(true);
       } else {
         setShowProfileModal(false);
       }
+
+      // Check lastChoice for redirect
+      const lastChoice = localStorage.getItem("lastChoice");
+      if (lastChoice === "chat") {
+        navigate("/chat-entrance");
+        // no need to setCheckingRedirect(false) because navigate will happen
+      } else if (lastChoice === "sketch") {
+        navigate("/sketch");
+        // same here
+      } else {
+        setCheckingRedirect(false); // no redirect, show home
+      }
     };
 
     fetchAndSetUser();
-  }, []);
+  }, [navigate]);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -61,9 +76,9 @@ const Home = () => {
 
   const handleProfileSubmit = async () => {
     trackEvent({
-      action: 'button_click',
-      category: 'Home Page',
-      label: 'Submit Gender & Age Button',
+      action: "button_click",
+      category: "Home Page",
+      label: "Submit Gender & Age Button",
     });
     if (!profileForm.gender || !profileForm.age) return;
 
@@ -123,31 +138,18 @@ const Home = () => {
       })();
     }
   }, []);
-
   const handleChatClick = () => {
-    {
-      /*const storedUser = JSON.parse(localStorage.getItem("user"));
+    localStorage.setItem("lastChoice", "chat");
 
-    // No user found in localStorage
-    if (!storedUser || !storedUser.id) {
-      setAlertMessage({
-        text: "You have to log in to access the chat feature.",
-        withButton: true,
-      });
-      return;
-    }*/
-    }
-
-    // Valid user, proceed to chat
     navigate("/chat-entrance");
   };
 
   const handleBuildAppClick = () => {
     trackEvent({
-          action: 'button_click',
-          category: 'Home Page',
-          label: 'Sketch App Button',
-        });
+      action: "button_click",
+      category: "Home Page",
+      label: "Sketch App Button",
+    });
     setShowBuildModal(true);
   };
 

@@ -3,12 +3,20 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import SketchyHeader from "../Components/SketchyHeader";
 import { supabase } from "../Utils/supabaseClient";
 import LoadingIndicator from "../Components/LoadingIndicator";
-import { FaImage, FaMicrophone, FaMoon, FaSun, FaSmile } from "react-icons/fa";
+import {
+  FaBan,
+  FaImage,
+  FaMicrophone,
+  FaMoon,
+  FaSun,
+  FaSmile,
+} from "react-icons/fa";
 import dayjs from "dayjs";
 import bannedData from "../Utils/bannedWords.json";
 import SketchyAlert from "../Components/SketchyAlert";
 import { trackEvent } from "../Utils/analytics";
 import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
 import "../Styles/Chat.css";
 
 const Chat = () => {
@@ -20,6 +28,7 @@ const Chat = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [audioChunks, setAudioChunks] = useState([]);
+  const inputRef = useRef(null);
 
   const [loadingImages, setLoadingImages] = useState({});
   const [revealedImages, setRevealedImages] = useState({});
@@ -542,6 +551,9 @@ const Chat = () => {
     });
 
     setInput("");
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
 
     const newMessage = {
       sender_id: currentUser.id,
@@ -656,6 +668,7 @@ const Chat = () => {
         return;
       }
       setIsBlocked(true);
+      toast.success("This user has been blocked.");
     } else {
       const { error } = await supabase
         .from("blocked_users")
@@ -664,10 +677,12 @@ const Chat = () => {
         .eq("blocked_id", targetId);
 
       if (error) {
+        toast.error("Failed to unblock user.");
         console.error("Unblock failed:", error.message);
         return;
       }
       setIsBlocked(false);
+      toast.success("User has been unblocked.");
     }
   };
 
@@ -691,34 +706,15 @@ const Chat = () => {
       textsToCheck.some((text) => text.includes(word.toLowerCase()))
     );
 
-    const words = lowerText.split(/\s+/);
-
-    // Regex: match any word that contains at least one special character
-    const hasSpecialCharacter = words.some((word) =>
-      /[@&#$%()\[\]{};:"<>^\/\\|]/.test(word)
-    );
-
-    if (hasSpecialCharacter) {
-      setAlertMessage({
-        text: "🚫 Special characters are not allowed.",
-        withButton: true,
-      });
-      const { error } = await supabase.rpc("decrement_decency", {
-        user_id_input: currentUser.id,
-      });
-
-      if (error) {
-        console.error("❌ RPC error:", error.message);
-      }
-      return;
-    }
-
     if (hasAbuse) {
       setAlertMessage({
         text: "🚫 Abusive words are not allowed.",
         buttons: ["close"],
       });
       setInput("");
+      setTimeout(() => {
+        if (inputRef.current) inputRef.current.focus();
+      }, 100);
 
       const { data, error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
@@ -739,6 +735,10 @@ const Chat = () => {
     if (hasLink) {
       setAlertMessage("🚫 Links or obfuscated links are not allowed.");
       setInput("");
+      setTimeout(() => {
+        if (inputRef.current) inputRef.current.focus();
+      }, 100);
+
       const { data, error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
@@ -757,6 +757,10 @@ const Chat = () => {
         buttons: ["close"],
       });
       setInput("");
+      setTimeout(() => {
+        if (inputRef.current) inputRef.current.focus();
+      }, 100);
+
       const { data, error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
@@ -775,6 +779,9 @@ const Chat = () => {
         buttons: ["close"],
       });
       setInput("");
+      setTimeout(() => {
+        if (inputRef.current) inputRef.current.focus();
+      }, 100);
       const { data, error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
@@ -815,6 +822,21 @@ const Chat = () => {
   };
 
   const handleFileInputClick = (e) => {
+    const hasUploadedImage =
+      localStorage.getItem("hasUploadedImage") === "true";
+    if (!hasUploadedImage) {
+      setAlertMessage({
+        text: "📸 Upload one post under Roast section to send image.",
+        withButton: true,
+      });
+      e.preventDefault(); // prevent opening file dialog
+      return;
+    }
+
+    if (currentUser.name === "shivani" || currentUser.name === "madison") {
+      return; // no limit for these users
+    }
+
     const imageSendKey = `imageSentDate_${currentUser.id}`;
     const lastSentDate = localStorage.getItem(imageSendKey);
     const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
@@ -828,17 +850,18 @@ const Chat = () => {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    // Allow unlimited images if currentUser.name is shivani or madison
+    if (!(currentUser.name === "Shivani" || currentUser.name === "Madison")) {
+      const imageSendKey = `imageSentDate_${currentUser.id}`;
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+      const lastSentDate = localStorage.getItem(imageSendKey);
 
-    const imageSendKey = `imageSentDate_${currentUser.id}`;
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-    const lastSentDate = localStorage.getItem(imageSendKey);
-
-    // Secondary check (failsafe)
-    if (lastSentDate === today) {
-      setAlertMessage("You can only send one image per day.");
-      return;
+      // Secondary check (failsafe)
+      if (lastSentDate === today) {
+        setAlertMessage("You can only send one image per day.");
+        return;
+      }
     }
-
     setIsSendingImage(true);
     const fileExt = file.name.split(".").pop();
     const fileName = `${Date.now()}.${fileExt}`;
@@ -889,11 +912,12 @@ const Chat = () => {
       };
 
       setMessages((prev) => [...prev, dbMsg]);
-
-      // Save today's date after successful send
-      localStorage.setItem(imageSendKey, today);
+      if (!(currentUser.name === "Shivani" || currentUser.name === "Madison")) {
+        const imageSendKey = `imageSentDate_${currentUser.id}`;
+        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+        localStorage.setItem(imageSendKey, today);
+      }
     }
-
     setIsSendingImage(false);
   };
 
@@ -999,28 +1023,67 @@ const Chat = () => {
         text: "📸 Upload your image under roast section to use microphone 🎤.",
         withButton: true,
       });
-
       return;
     }
+
     if (!isRecording) {
       try {
+        // ✅ Ask permission first (needed for mobile Chrome)
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
         });
-        const recorder = new MediaRecorder(stream);
+
+        // ✅ Better mobile-friendly MIME type fallback
+        let mimeType = "audio/webm";
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          if (MediaRecorder.isTypeSupported("audio/mp4")) {
+            mimeType = "audio/mp4";
+          } else if (MediaRecorder.isTypeSupported("audio/ogg")) {
+            mimeType = "audio/ogg";
+          } else {
+            mimeType = ""; // let browser decide
+          }
+        }
+
         const chunks = [];
+        const recorder = new MediaRecorder(
+          stream,
+          mimeType ? { mimeType } : {}
+        );
 
         recorder.ondataavailable = (e) => {
-          if (e.data.size > 0) {
-            chunks.push(e.data);
-          }
+          if (e.data.size > 0) chunks.push(e.data);
         };
 
-        recorder.onstop = () => {
-          const blob = new Blob(chunks, { type: "audio/webm" });
-          const audioUrl = URL.createObjectURL(blob);
-          console.log("Audio ready:", audioUrl);
-          // Here you can upload `blob` to Supabase storage
+        recorder.onstop = async () => {
+          const blob = new Blob(chunks, { type: mimeType || "audio/webm" });
+          const fileExt = mimeType.split("/")[1] || "webm";
+          const fileName = `${Date.now()}.${fileExt}`;
+          const filePath = `chat-audio/${currentUser.id}/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from("chat-audio")
+            .upload(filePath, blob);
+
+          if (uploadError) {
+            console.error("Upload failed:", uploadError.message);
+            return;
+          }
+
+          const { data: publicURLData } = supabase.storage
+            .from("chat-audio")
+            .getPublicUrl(filePath);
+
+          const audioUrl = publicURLData?.publicUrl;
+
+          await supabase.from("chats").insert([
+            {
+              sender_id: currentUser.id,
+              receiver_id: targetId,
+              message: audioUrl,
+              type: "audio",
+            },
+          ]);
         };
 
         recorder.start();
@@ -1028,7 +1091,11 @@ const Chat = () => {
         setAudioChunks(chunks);
         setIsRecording(true);
       } catch (err) {
-        console.error("Mic access denied:", err);
+        console.error("🎤 Mic error:", err);
+        setAlertMessage({
+          text: "❌ Audio sharing only works in laptops/computers.",
+          withButton: true,
+        });
       }
     } else {
       mediaRecorder.stop();
@@ -1043,8 +1110,12 @@ const Chat = () => {
   }, [messages]);
 
   return (
-    <div className={`Chat-UI`}>
-      <SketchyHeader title={targetUser.name} onBack={handleBack} />
+    <div className="Chat-UI">
+      <SketchyHeader
+        title={targetUser.name}
+        onBack={handleBack}
+      ></SketchyHeader>
+
       {alertMessage && !hasAccess && (
         <SketchyAlert
           message={
@@ -1054,7 +1125,7 @@ const Chat = () => {
                 <div
                   id="paypal-button-container"
                   style={{ marginTop: "1rem" }}
-                ></div>
+                />
               </div>
             ) : typeof alertMessage === "string" ? (
               alertMessage
@@ -1082,7 +1153,8 @@ const Chat = () => {
 
       <div className="chat-container">
         <div className="chat-box">
-          <div className="top-actions">
+          {/* Top actions visible only on desktop */}
+          <div className="top-actions desktop-only">
             <div className="left-actions">
               <button className="block-btn" onClick={handleBlockToggle}>
                 {isBlocked ? "Unblock" : "Block"}
@@ -1093,16 +1165,6 @@ const Chat = () => {
               <label className="toggle-label">Self-Destruct: 24h</label>
               <div
                 className={`toggle-switch ${autoDeleteEnabled ? "on" : "off"}`}
-                onClick={() => {
-                  if (hasAccess) {
-                    setAutoDeleteEnabled(!autoDeleteEnabled);
-                  } else {
-                    setAlertMessage({
-                      text: "⚠️ Pay $1 to disable self-destruct mode.",
-                      buttons: ["pay", "close"],
-                    });
-                  }
-                }}
               >
                 <div className="toggle-thumb" />
               </div>
@@ -1119,8 +1181,6 @@ const Chat = () => {
                 </p>
               )}
             </div>
-          ) : isLoading ? (
-            <LoadingIndicator />
           ) : (
             <>
               <div className="messages">
@@ -1145,7 +1205,7 @@ const Chat = () => {
                                   ...prev,
                                   [msg.id]: true,
                                 }));
-                                handleImageClick(msg); // start timer and delete logic
+                                handleImageClick(msg);
                               }}
                             >
                               <p className="click-to-reveal-text">
@@ -1178,12 +1238,11 @@ const Chat = () => {
                     <span className="time">{getTimeAgo(msg.timestamp)}</span>
                   </div>
                 ))}
-
-                <div ref={messagesEndRef} />
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="input-area">
+              {/* Input area visible only on desktop inside chat-box */}
+              <div className="input-area desktop-only">
                 <div className="icon-wrapper">
                   <label htmlFor="image-upload" className="icon-btn">
                     {isSendingImage ? (
@@ -1214,6 +1273,7 @@ const Chat = () => {
                 </div>
 
                 <input
+                  ref={inputRef}
                   type="text"
                   value={input}
                   onChange={handleInputChange}
@@ -1233,11 +1293,76 @@ const Chat = () => {
           )}
         </div>
       </div>
+
+      {/* Input area fixed at bottom on mobile, outside chat-container */}
+      <div className="input-area mobile-only">
+        <div className="icon-wrapper">
+          <label htmlFor="image-upload" className="icon-btn">
+            {isSendingImage ? (
+              <span className="dotting-indicator">...</span>
+            ) : (
+              <FaImage />
+            )}
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            id="image-upload"
+            style={{ display: "none" }}
+            onClick={handleFileInputClick}
+            onChange={handleImageUpload}
+          />
+        </div>
+        <div className="icon-wrapper">
+          <button
+            onClick={handleBlockToggle}
+            className="icon-btn block-icon-btn"
+            aria-label={isBlocked ? "Unblock user" : "Block user"}
+            title={isBlocked ? "Unblock user" : "Block user"}
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+              color: isBlocked ? "#ff6f61" : "#444",
+              fontSize: "1.2rem",
+            }}
+          >
+            <FaBan />
+          </button>
+        </div>
+        {/*
+        <div className="icon-wrapper">
+          <FaMicrophone
+            onClick={handleMicClick}
+            className="icon-btn"
+            style={{ cursor: "pointer", color: isRecording ? "#ff6f61" : "#444" }}
+          />
+        </div>*/}
+
+        <input
+          type="text"
+          value={input}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyPress}
+          onPaste={handlePaste}
+          placeholder="Type your message..."
+        />
+
+        <button
+          onClick={sendMessage}
+          disabled={isSending || isSendingImage || !input.trim()}
+        >
+          {isSending ? "➤" : "➤"}
+        </button>
+      </div>
+
       {modalImage && (
         <div className="image-modal" onClick={() => setModalImage(null)}>
           <img src={modalImage} alt="Full View" />
         </div>
       )}
+      <Toaster />
     </div>
   );
 };

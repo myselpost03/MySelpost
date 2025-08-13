@@ -1,16 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Caveat&display=swap");
-@import url(https://fonts.googleapis.com/css?family=Patrick+Hand:regular);
+@import url("https://fonts.googleapis.com/css?family=Patrick+Hand:regular");
+
 .Chat-UI {
-  background: #fdf6e3;
   font-family: "Comic Sans MS", "Caveat", cursive;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-
 .messages {
-  flex: 1;
+  flex-grow: 1; /* fill available space */
+  min-height: 0; /* allow flex to shrink properly */
   overflow-y: auto;
   padding-right: 0.5rem;
   margin-bottom: 1rem;
@@ -18,6 +18,25 @@
   flex-direction: column;
   gap: 0.8rem;
   scroll-behavior: smooth;
+}
+
+.chat-image-wrapper {
+  position: relative;
+  width: 200px;
+  max-width: 100%;
+  margin: 8px 0;
+  overflow: hidden;
+}
+
+.chat-image {
+  max-width: 200px;
+  border-radius: 10px;
+  transition: filter 0.3s ease;
+  cursor: pointer;
+}
+
+.chat-image.blurred {
+  filter: blur(10px);
 }
 
 /* Hide scrollbar for WebKit */
@@ -98,6 +117,7 @@
 
 .message p {
   margin: 0;
+  font-family: "patrick hand", serif;
 }
 
 .message .time {
@@ -107,18 +127,19 @@
   display: block;
   text-align: right;
   opacity: 0.7;
+  font-family: "patrick hand", serif;
 }
 
 .message.sent {
   align-self: flex-end;
   background-color: #c0f5c0;
-  border: 2px dashed #292;
+  font-family: "patrick hand", serif;
 }
 
 .message.received {
   align-self: flex-start;
   background-color: #d4e9f0;
-  border: 2px dashed rgb(32, 110, 161);
+  font-family: "patrick hand", serif;
 }
 
 .input-area {
@@ -129,10 +150,13 @@
   gap: 0.5rem;
   position: relative;
   flex-wrap: wrap;
+  font-family: "patrick hand", serif;
 }
 
 .input-area input[type="text"] {
   flex: 1;
+  font-family: "patrick hand", serif;
+
   padding: 0.6rem 1rem;
   border: 2px dashed #888;
   border-radius: 10px;
@@ -158,6 +182,17 @@
   background-color: #555;
 }
 
+.image-placeholder {
+  background: #222;
+  color: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.3s;
+}
+
 .image-icon {
   pointer-events: none;
   font-size: 1.3rem;
@@ -175,7 +210,6 @@
   color: #000;
 }
 
-/* Animation */
 @keyframes sketch-bounce {
   0% {
     transform: scale(0.8) rotate(-2deg);
@@ -198,212 +232,6 @@
   color: #922;
 }
 
-.accept-btn {
-  margin-top: 0.5rem;
-  background-color: #88c;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.3rem 0.8rem;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.pending-img {
-  background: repeating-linear-gradient(
-    45deg,
-    #f8f8f8,
-    #f8f8f8 10px,
-    #ddd 10px,
-    #ddd 20px
-  );
-  color: #888;
-  font-style: italic;
-  font-weight: bold;
-}
-
-.system-msg {
-  background-color: #fff3cd;
-  border: 2px dashed #d9a506;
-  color: #a85d00;
-  text-align: center;
-}
-
-.Chat-UI.dark {
-  --bg: #2d2d2d;
-  --text: #eee;
-  --border: #999;
-}
-
-.Chat-UI.dark .chat-box {
-  background: #333;
-  color: #eee;
-  border-color: #777;
-}
-
-.theme-toggle {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  cursor: pointer;
-  font-size: 1.3rem;
-  color: #555;
-}
-
-/* ...existing CSS... */
-
-.icon-btn {
-  font-size: 1.2rem;
-  margin: 0 0.2rem;
-}
-
-.reply-tag {
-  font-size: 0.8rem;
-  font-style: italic;
-  background: #eee;
-  border-left: 2px solid #999;
-  padding-left: 0.5rem;
-  margin-bottom: 0.3rem;
-}
-
-.reply-btn {
-  position: absolute;
-  bottom: 4px;
-  right: -28px; /* place outside on the right side of bubble */
-  font-size: 0.85rem;
-  cursor: pointer;
-  opacity: 0.6;
-  transition: 0.2s ease;
-}
-
-.message:hover .reply-btn {
-  opacity: 1;
-}
-
-.status {
-  font-size: 0.7rem;
-  color: #666;
-  text-align: right;
-  margin-top: 2px;
-}
-
-/* ...existing CSS... */
-
-.theme-toggle,
-.fixed-theme-toggle {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  cursor: pointer;
-  font-size: 1.5rem;
-  z-index: 10;
-  color: #555;
-}
-
-body.theme-dark .fixed-theme-toggle {
-  color: #eee;
-}
-
-/* Make icons and text white in dark mode */
-.Chat-UI.dark .icon-btn,
-.Chat-UI.dark .input-area input,
-.Chat-UI.dark .message p,
-.Chat-UI.dark .message .time {
-  color: #fff;
-}
-
-.Chat-UI.dark .input-area input {
-  background: #444;
-  border-color: #888;
-}
-
-/* Emoji Picker */
-.emoji-picker {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin: 0.5rem 0;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-.emoji-picker span {
-  transition: transform 0.1s ease;
-}
-.emoji-picker span:hover {
-  transform: scale(1.3);
-}
-
-.empty-msg {
-  text-align: center;
-  padding: 2rem 1rem;
-  font-size: 1.3rem;
-  color: #555;
-  opacity: 0.8;
-}
-
-.blocked-chat {
-  background-color: #1e1e1e;
-  color: #fff;
-  padding: 2rem;
-  margin: 2rem;
-  border: 2px solid #ff4d4d;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 0 12px rgba(255, 77, 77, 0.7);
-  animation: fadeIn 0.4s ease-in-out;
-}
-
-.blocked-chat h2 {
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  color: #ff4d4d;
-}
-
-.blocked-chat p {
-  font-size: 1.1rem;
-  line-height: 1.6;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0.4;
-    transform: translateY(3px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fixed-theme-toggle {
-  position: fixed;
-  top: 70px; /* below header */
-  right: 1rem;
-  cursor: pointer;
-  font-size: 1.5rem;
-  z-index: 999;
-  color: #555;
-}
-
-.Chat-UI.dark .emoji-picker {
-  background: #3a3a3a;
-  border-color: #666;
-}
-
 .block-btn {
   background: #fdd;
   border: 2px dashed #c33;
@@ -423,107 +251,16 @@ body.theme-dark .fixed-theme-toggle {
   background: #fcc;
 }
 
-.input-area .icon-btn {
-  display: inline-block;
+.icon-btn {
   font-size: 1.5rem;
+  margin: 0 0.2rem;
   color: #444;
   flex-shrink: 0;
+  cursor: pointer;
+  font-family: "patrick hand", serif;
 }
 
-@media (max-width: 480px) {
-  .input-area .icon-btn {
-    font-size: 1.6rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .message {
-    font-size: 1.3rem;
-    padding: 0.5rem 0.8rem;
-    font-family: "patrick hand", serif;
-  }
-
-  .chat-box {
-    width: 100%;
-    height: 70vh;
-    padding: 0.7rem;
-    border-width: 2px;
-  }
-
-  .input-area input[type="text"] {
-    font-size: 0.9rem;
-    padding: 0.5rem;
-    font-family: "patrick hand", serif;
-  }
-
-  .input-area button {
-    font-size: 0.9rem;
-    padding: 0.5rem 0.8rem;
-  }
-}
-
-@keyframes fadeBlink {
-  0% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.3;
-  }
-}
-
-.empty-chat-img {
-  width: 150px;
-  height: auto;
-  margin-bottom: 1rem;
-  opacity: 0.8;
-  filter: drop-shadow(2px 4px 6px #ccc);
-}
-
-.chat-img-preview {
-  max-width: 200px;
-  max-height: 200px;
-  border-radius: 8px;
-  margin-top: 5px;
-}
-
-.icon-wrapper {
-  position: relative;
-  display: inline-block;
-  margin-right: 0.4rem;
-}
-
-.coming-soon-ribbon {
-  position: absolute;
-  top: -8px;
-  right: -12px;
-  background: #ff6f61;
-  color: white;
-  font-size: 0.55rem;
-  padding: 1px 4px;
-  border-radius: 6px;
-  font-family: "Caveat", cursive;
-  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
-  transform: rotate(6deg);
-  opacity: 15;
-  pointer-events: none;
-  animation: pulse-ribbon 2s infinite;
-}
-
-@keyframes pulse-ribbon {
-  0%,
-  100% {
-    opacity: 15;
-    transform: rotate(6deg) scale(1);
-  }
-  50% {
-    opacity: 15;
-    transform: rotate(6deg) scale(1.05);
-  }
-}
-
+/* Top actions */
 .top-actions {
   display: flex;
   justify-content: space-between;
@@ -532,15 +269,12 @@ body.theme-dark .fixed-theme-toggle {
   margin-bottom: 1rem;
   border-bottom: 2px dashed #222;
 }
-
 .left-actions .block-btn {
   padding: 0.4rem 1rem;
-  border: 2px dashed #333;
   background-color: #ffe2e2;
   font-family: "patrick hand", cursive, sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 2px 2px 0px #000;
 }
 
 .left-actions .block-btn:hover {
@@ -557,11 +291,7 @@ body.theme-dark .fixed-theme-toggle {
   font-size: 0.85rem;
   font-weight: bold;
   font-family: "patrick hand", cursive, sans-serif;
-  color: var(--chat-label-color, #333); /* Will adapt if dark mode is active */
-}
-
-.Chat-UI.theme-dark .toggle-label {
-  color: #eee;
+  color: var(--chat-label-color, #333);
 }
 
 .toggle-switch {
@@ -599,30 +329,114 @@ body.theme-dark .fixed-theme-toggle {
   transform: translateX(24px);
 }
 
+/* Mobile specific styles */
+@media (max-width: 480px) {
+  /* Remove dashed border and shadow from chat-box */
+  .chat-box {
+    border: none !important;
+    box-shadow: none;
+    height: calc(100vh - 120px);
+  }
 
-.chat-image {
-  max-width: 200px;
-  border-radius: 10px;
-  transition: filter 0.3s ease;
-  cursor: pointer;
+  /* Hide top actions */
+  .top-actions {
+    display: none !important;
+  }
+
+  /* Desktop-only elements hidden on mobile */
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Mobile-only elements visible on mobile */
+  .mobile-only {
+    display: flex !important;
+  }
+
+  /* Input area fixed at bottom */
+  .input-area.mobile-only {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fdf6e3;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid #ccc;
+    gap: 0.5rem;
+    align-items: center;
+    z-index: 999;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Adjust input text style in fixed input */
+  .input-area.mobile-only input[type="text"] {
+    flex: 1;
+    border: 1px solid #888;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+  }
+
+  /* Mobile header menu container */
+  .mobile-header-actions {
+    position: relative;
+  }
+
+  /* Mobile three dots button */
+  .mobile-menu-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #333;
+    cursor: pointer;
+    padding: 0;
+    margin-left: auto;
+  }
+
+  /* Mobile dropdown menu */
+  .mobile-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #fffef9;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    min-width: 120px;
+    z-index: 1000;
+    font-family: "Patrick Hand", cursive, serif;
+  }
+
+  .mobile-menu-dropdown button {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #c33;
+  }
+
+  .mobile-menu-dropdown button:hover {
+    background-color: #fcc;
+  }
 }
 
-.chat-image.blurred {
-  filter: blur(10px);
+/* By default, hide mobile-only */
+.mobile-only {
+  display: none;
 }
-
-.dotting-indicator {
-  font-size: 20px;
-  font-weight: bold;
-  animation: blink 1s infinite;
+@media (max-width: 480px) {
+  .chat-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 0 !important; /* Optional: if you want sharp corners */
+  }
 }
-
-@keyframes blink {
-  0%   { opacity: 0.2; }
-  50%  { opacity: 1; }
-  100% { opacity: 0.2; }
-}
-
 
 .image-modal {
   position: fixed;
@@ -647,11 +461,9 @@ body.theme-dark .fixed-theme-toggle {
   cursor: pointer;
 }
 
-
 .image-modal ~ .Chat-UI {
   filter: blur(10px);
 }
-
 
 .chat-image-obscured {
   filter: brightness(0) blur(12px);
@@ -714,14 +526,17 @@ body.theme-dark .fixed-theme-toggle {
   font-size: 14px;
   font-weight: bold;
 }
+@media (max-width: 480px) {
+  .chat-container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
 
-.chat-audio {
-  max-width: 200px;    /* or any width that fits your bubble */
-  width: 100%;
-  overflow: hidden;
-  border-radius: 10px;
-  background-color: #f0f0f0; /* match your bubble style */
-  padding: 5px;
-  display: flex;
-  align-items: center;
+@media (max-width: 480px) {
+  .message {
+    margin: 0.4rem 0.6rem; /* vertical 0.4rem, horizontal 0.6rem */
+    /* or padding if you prefer */
+    /* padding: 0.5rem 1rem; */
+  }
 }

@@ -5,6 +5,7 @@ import SketchyAlert from "../Components/SketchyAlert";
 import "../Styles/Profile.css";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
+import toast, {Toaster} from 'react-hot-toast';
 
 const giftList = [
   "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png",
@@ -109,6 +110,7 @@ const Profile = () => {
       .upload(filePath, form.imageFile, { upsert: true });
 
     if (error) {
+      toast.error("Failed to upload image.")
       console.error("Upload error:", error.message);
       return null;
     }
@@ -143,6 +145,7 @@ const Profile = () => {
       setStatus({ ...status, editing: false, uploading: false });
       setForm((f) => ({ ...f, imageFile: null }));
     } else {
+      toast.error("Failed to update.")
       console.error("Failed to update:", error.message);
       setStatus((s) => ({ ...s, uploading: false }));
     }
@@ -390,6 +393,7 @@ const Profile = () => {
           </div>
         )}
       </div>
+<Toaster />
     </>
   );
 };

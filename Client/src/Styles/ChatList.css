@@ -1,4 +1,5 @@
 @import url(https://fonts.googleapis.com/css?family=Comic+Neue:300,300italic,regular,italic,700,700italic);
+@import url(https://fonts.googleapis.com/css?family=Rubik+Spray+Paint:regular);
 
 * {
   box-sizing: border-box;
@@ -53,9 +54,8 @@
   align-items: center;
   padding: 0.8rem;
   background: #fffdf7;
+  border-radius: 18px;
   border: 2px dashed #333;
-  border-radius: 12px;
-  box-shadow: 2px 3px 0px #8884;
   animation: popIn 0.4s ease forwards;
   transition: transform 0.3s ease;
   gap: 1rem;
@@ -749,7 +749,7 @@
   padding: 10px 18px;
   font-size: 16px;
   font-family: inherit;
-  background: white;
+  background: inherit;
   color: black;
   border: 2px dashed black;
   border-radius: 10px;
@@ -763,4 +763,13 @@
 
 .notify-btn:active {
   transform: translateY(1px);
+}
+.status-time {
+  font-size: 12px;
+  color: #888;
+}
+@media (max-width: 480px) {
+.user-card{
+  border: none;
+}
 }

@@ -8,9 +8,9 @@ const Footer = () => {
       <div className="footer-container">
         <div className="footer-section">
           <h3 className="footer-txt-1">MySelpost</h3>
-          <p className="tagline">"Ideas don’t need code. Just a sketch."</p>
+          <p className="tagline">"Where chat meets creativity."</p>
           <p>
-            Your place to turn sketches or prompts into real websites & apps.
+            Your place to connect with friends around world and turn sketches or prompts into real websites & apps.
           </p>
         </div>
 
