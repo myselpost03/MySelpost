@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
-  useLocation,
+  useNavigate,
   Routes,
   Route,
 } from "react-router-dom";
@@ -33,9 +33,11 @@ import {
   Coins,
   PaymentPage,
 } from "./Pages/index";
+import LoadingIndicator from "./Components/LoadingIndicator";
 import { supabase } from "./Utils/supabaseClient";
 import SketchyAlert from "./Components/SketchyAlert";
 import InternetStatusAlert from "./Components/InternetStatusAlert";
+import { useLocation } from "react-router-dom";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
@@ -55,11 +57,9 @@ const publicRoutes = [
   { path: "/sketch", component: Sketch },
   { path: "/about", component: About },
   { path: "/terms", component: Terms },
-
   { path: "/roast", component: Roast },
   { path: "/chat-entrance", component: ChatEntrance },
   { path: "/guest-user", component: GuestUser },
-
   { path: "/privacy", component: Privacy },
   { path: "/contact-us", component: Contact },
   { path: "/pricing", component: Pricing },
@@ -68,6 +68,10 @@ const publicRoutes = [
   { path: "/web-sketch", component: WebSketch },
   { path: "/demo", component: Demo },
 ];
+
+// Detect mobile
+const isMobileDevice = () =>
+  /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 const useUserStatusSync = () => {
   useEffect(() => {
@@ -92,19 +96,22 @@ const useUserStatusSync = () => {
       activityTimeout = setTimeout(() => {
         isUserActive = false;
         updateStatus("offline");
-      }, 60000); // 1 min idle
+      }, 60000);
       updateStatus("online");
     };
 
-    // Events to detect activity (desktop + mobile)
     const interactionEvents = [
-      "mousemove", "keydown", "scroll", "click", "touchstart", "touchmove"
+      "mousemove",
+      "keydown",
+      "scroll",
+      "click",
+      "touchstart",
+      "touchmove",
     ];
     interactionEvents.forEach((event) =>
       window.addEventListener(event, setActive)
     );
 
-    // Tab visibility (desktop)
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
         updateStatus("offline");
@@ -114,24 +121,20 @@ const useUserStatusSync = () => {
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Mobile-specific: detect background/foreground changes
     const handlePageHide = () => updateStatus("offline");
     const handlePageShow = () => setActive();
     window.addEventListener("pagehide", handlePageHide);
     window.addEventListener("pageshow", handlePageShow);
 
-    // Heartbeat to keep status alive
     heartbeatInterval = setInterval(() => {
       if (isUserActive && document.visibilityState === "visible") {
         updateStatus("online");
       }
-    }, 30000); // 30s
+    }, 30000);
 
-    // Before unload (closing tab)
     const handleUnload = () => updateStatus("offline");
     window.addEventListener("beforeunload", handleUnload);
 
-    // Cross-tab activity detection
     const handleStorage = (event) => {
       if (event.key === "user-activity") {
         setActive();
@@ -139,12 +142,10 @@ const useUserStatusSync = () => {
     };
     window.addEventListener("storage", handleStorage);
 
-    // Cross-tab heartbeat sender
     const localHeartbeat = setInterval(() => {
       localStorage.setItem("user-activity", Date.now());
     }, 5000);
 
-    // Initial mark
     setActive();
 
     return () => {
@@ -164,25 +165,24 @@ const useUserStatusSync = () => {
   }, []);
 };
 
-
 function UserStatusWrapper() {
   useUserStatusSync();
   return null;
 }
 
-function App() {
+function AppContent() {
   const [alertMessage, setAlertMessage] = useState(null);
+  const navigate = useNavigate();
+  const location = useLocation(); // ✅ get current path
+  const [ready, setReady] = useState(false); // ✅ prevent early render
   useEffect(() => {
     const visibilityChannel = new BroadcastChannel("chat_app_visibility");
-
     const sendVisibility = () => {
       const isVisible = document.visibilityState === "visible";
       visibilityChannel.postMessage({ visible: isVisible });
     };
-
     document.addEventListener("visibilitychange", sendVisibility);
-    sendVisibility(); // send once on mount
-
+    sendVisibility();
     return () => {
       document.removeEventListener("visibilitychange", sendVisibility);
       visibilityChannel.close();
@@ -193,42 +193,62 @@ function App() {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser || !storedUser.id) return;
 
-    //console.log("🎯 Reward coin interval started");
-
     const interval = setInterval(async () => {
       try {
         const { error } = await supabase.rpc("increment_reward_coins", {
           user_id_input: storedUser.id,
           increment_by: 3,
         });
-
-        if (error) {
-          //console.error("❌ RPC update error:", error);
-        } else {
+        if (!error) {
           setAlertMessage({
             text: "✅ You got 3 coins for spending an hour.",
             withButton: true,
           });
         }
-      } catch (err) {
-        //console.error("❗ Unexpected RPC error:", err);
-      }
-    }, 3600000); // 1 hour (use 5000 for testing)
-
-    return () => {
-      clearInterval(interval);
-      //console.log("🧼 Interval cleared");
-    };
+      } catch {}
+    }, 3600000);
+    return () => clearInterval(interval);
   }, []);
+  useEffect(() => {
+    if (!isMobileDevice()) {
+      setReady(true); // render routes normally on desktop
+      return;
+    }
+
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+
+    // If mobile and user exists, prevent /guest-user access
+    if (storedUser?.id && location.pathname === "/guest-user") {
+      navigate("/chat-list", { replace: true });
+      return;
+    }
+
+    // Mobile root "/" redirection
+    if (location.pathname === "/") {
+      if (!storedUser?.id) {
+        navigate("/guest-user", { replace: true });
+        return;
+      } else {
+        navigate("/chat-list", { replace: true });
+        return;
+      }
+    }
+
+    setReady(true); // safe to render routes
+  }, [navigate, location.pathname]);
+
+  if (!ready && isMobileDevice() && location.pathname === "/") {
+    // Prevent flicker — show nothing or a loader until redirect happens
+    return <LoadingIndicator />; // could be <LoadingSpinner /> if you want
+  }
 
   return (
-    <Router>
+    <>
       <UserStatusWrapper />
       <Routes>
         {publicRoutes.map(({ path, component: Component }) => (
           <Route key={path} path={path} element={<Component />} />
         ))}
-
         {protectedRoutes.map(({ path, component: Component }) => (
           <Route
             key={path}
@@ -240,11 +260,9 @@ function App() {
             }
           />
         ))}
-
         <Route path="*" element={<NotFound />} />
       </Routes>
       <InternetStatusAlert />
-
       {alertMessage && (
         <SketchyAlert
           message={alertMessage.text}
@@ -252,6 +270,14 @@ function App() {
           onClose={() => setAlertMessage(null)}
         />
       )}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }

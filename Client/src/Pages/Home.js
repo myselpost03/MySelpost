@@ -17,7 +17,6 @@ const Home = () => {
   const [user, setUser] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileForm, setProfileForm] = useState({ gender: "", age: "" });
-  const [checkingRedirect, setCheckingRedirect] = useState(true);
 
   useEffect(() => {
     const fetchAndSetUser = async () => {
@@ -25,7 +24,6 @@ const Home = () => {
 
       if (!storedUser?.id) {
         setUser(null);
-        setCheckingRedirect(false);
         return;
       }
 
@@ -39,7 +37,6 @@ const Home = () => {
       if (error) {
         console.error("Failed to fetch user from DB:", error.message);
         setUser(null);
-        setCheckingRedirect(false);
         return;
       }
 
@@ -51,18 +48,6 @@ const Home = () => {
         setShowProfileModal(true);
       } else {
         setShowProfileModal(false);
-      }
-
-      // Check lastChoice for redirect
-      const lastChoice = localStorage.getItem("lastChoice");
-      if (lastChoice === "chat") {
-        navigate("/chat-entrance");
-        // no need to setCheckingRedirect(false) because navigate will happen
-      } else if (lastChoice === "sketch") {
-        navigate("/sketch");
-        // same here
-      } else {
-        setCheckingRedirect(false); // no redirect, show home
       }
     };
 
@@ -139,8 +124,6 @@ const Home = () => {
     }
   }, []);
   const handleChatClick = () => {
-    localStorage.setItem("lastChoice", "chat");
-
     navigate("/chat-entrance");
   };
 

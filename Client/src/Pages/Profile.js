@@ -5,7 +5,8 @@ import SketchyAlert from "../Components/SketchyAlert";
 import "../Styles/Profile.css";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
-import toast, {Toaster} from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
+import MosaicAvatar from "../Components/MosaicAvatar";
 
 const giftList = [
   "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png",
@@ -20,6 +21,8 @@ const giftCoinRequirements = [50, 300, 150, 10, 400, 100];
 
 const Profile = () => {
   const [showImageModal, setShowImageModal] = useState(false);
+  // Add new state
+  const [showGiftList, setShowGiftList] = useState(false);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -37,7 +40,29 @@ const Profile = () => {
   const [receivedGifts, setReceivedGifts] = useState([]);
 
   const handleBack = () => navigate(-1);
+  const totalLikes = 400; // total blocks = total likes for 1:1 reveal
+  const rows = 20;
+  const cols = 20;
 
+  const [likes, setLikes] = useState(0);
+
+  // Build snake-like grid order
+  const grid = [];
+  let counter = 0;
+  for (let r = rows - 1; r >= 0; r--) {
+    // bottom to top
+    if ((rows - r) % 2 === 1) {
+      // left → right
+      for (let c = 0; c < cols; c++) {
+        grid.push({ row: r, col: c, index: counter++ });
+      }
+    } else {
+      // right → left
+      for (let c = cols - 1; c >= 0; c--) {
+        grid.push({ row: r, col: c, index: counter++ });
+      }
+    }
+  }
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -110,7 +135,7 @@ const Profile = () => {
       .upload(filePath, form.imageFile, { upsert: true });
 
     if (error) {
-      toast.error("Failed to upload image.")
+      toast.error("Failed to upload image.");
       console.error("Upload error:", error.message);
       return null;
     }
@@ -145,7 +170,7 @@ const Profile = () => {
       setStatus({ ...status, editing: false, uploading: false });
       setForm((f) => ({ ...f, imageFile: null }));
     } else {
-      toast.error("Failed to update.")
+      toast.error("Failed to update.");
       console.error("Failed to update:", error.message);
       setStatus((s) => ({ ...s, uploading: false }));
     }
@@ -289,7 +314,6 @@ const Profile = () => {
                   {userData.reward_coins || 0}
                 </span>
               </p>
-              
             </div>
 
             {isCurrentUser && (
@@ -328,13 +352,7 @@ const Profile = () => {
           </div>
 
           <div className="sketchy-profile-center">
-            <img
-              src={userData.avatar}
-              alt="Avatar"
-              className="sketchy-profile-avatar"
-              onClick={() => setShowImageModal(true)}
-              style={{ cursor: "pointer" }}
-            />
+            <MosaicAvatar src={userData.avatar} />
           </div>
         </div>
 
@@ -355,17 +373,28 @@ const Profile = () => {
         )}
 
         {!isCurrentUser && (
-          <div className="floating-gifts-container">
-            {giftList.map((giftUrl, index) => (
-              <img
-                key={index}
-                src={giftUrl}
-                alt={`gift-${index}`}
-                className="floating-gift"
-                onClick={() => handleSendGift(giftUrl, index)}
-                title="Send gift"
-              />
-            ))}
+          <div className="send-gift-section" style={{ marginTop: 20 }}>
+            <button
+              className="sketchy-send-gift-btn"
+              onClick={() => setShowGiftList((prev) => !prev)}
+            >
+              🎁 Send Gift
+            </button>
+
+            {showGiftList && (
+              <div className="sketchy-gift-list-container">
+                {giftList.map((giftUrl, index) => (
+                  <div
+                    key={index}
+                    className="sketchy-gift-item"
+                    onClick={() => handleSendGift(giftUrl, index)}
+                  >
+                    <img src={giftUrl} alt={`gift-${index}`} />
+                    <span>{giftCoinRequirements[index]} coins</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -393,7 +422,7 @@ const Profile = () => {
           </div>
         )}
       </div>
-<Toaster />
+      <Toaster />
     </>
   );
 };

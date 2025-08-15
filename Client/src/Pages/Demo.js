@@ -1,135 +1,81 @@
+// Demo.js
 import React, { useState, useEffect } from "react";
-import { db } from "../Utils/firebaseConfig";
-import { collection, addDoc, getDocs, doc, setDoc } from "firebase/firestore";
 
-export default function Demo() {
-  const [file, setFile] = useState(null);
-  const [images, setImages] = useState([]);
-  const [totalEgress, setTotalEgress] = useState(0);
+const Demo = () => {
+  const [name, setName] = useState("");
+  const [users, setUsers] = useState([]);
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      console.log(
-        `Selected file: ${selectedFile.name}, Size: ${selectedFile.size} bytes (${(
-          selectedFile.size / 1024
-        ).toFixed(2)} KB)`
-      );
-      setFile(selectedFile);
-    }
+  // Open or create IndexedDB
+  const openDB = () => {
+    return new Promise((resolve, reject) => {
+      const request = window.indexedDB.open("MyDatabase", 1);
+
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains("users")) {
+          db.createObjectStore("users", { keyPath: "id", autoIncrement: true });
+        }
+      };
+
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = (event) => reject(event.target.error);
+    });
   };
 
-  const uploadImage = async () => {
-    if (!file) return alert("No file selected");
-
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64Data = reader.result; // base64 string
-      const base64Size = base64Data.length;
-      const estimatedBytes = Math.ceil((base64Size * 3) / 4);
-
-      console.log(
-        `Uploading image ${file.name} — Base64 length: ${base64Size} chars, Estimated bytes: ${estimatedBytes} bytes (${(
-          estimatedBytes / 1024
-        ).toFixed(2)} KB)`
-      );
-
-      await addDoc(collection(db, "images"), {
-        name: file.name,
-        data: base64Data,
-        createdAt: Date.now(),
-      });
-
-      alert("Image uploaded!");
-      setFile(null);
-      fetchImages(); // refresh
-    };
-    reader.readAsDataURL(file);
+  // Add user to IndexedDB
+  const addUser = async (user) => {
+    const db = await openDB();
+    const tx = db.transaction("users", "readwrite");
+    const store = tx.objectStore("users");
+    store.add(user);
+    tx.oncomplete = () => fetchUsers();
   };
 
-
-const uploadProfilePicToFirestore = async (file) => {
-  if (!file) return null;
-
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${Date.now()}.${fileExt}`;
-  const filePath = `avatars/${fileName}`;
-
-  const reader = new FileReader();
-
-  return new Promise((resolve, reject) => {
-    reader.onloadend = async () => {
-      const base64Data = reader.result;
-
-      try {
-        await setDoc(doc(db, filePath), {
-          name: fileName,
-          data: base64Data,
-          createdAt: Date.now(),
-        });
-        console.log(`Profile pic uploaded at Firestore path: ${filePath}`);
-        resolve(filePath);
-      } catch (err) {
-        reject(err);
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-};
-
-
-  const fetchImages = async () => {
-    const querySnapshot = await getDocs(collection(db, "images"));
-    let newImages = [];
-    let totalFetchedBytes = 0;
-
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const base64Length = data.data.length;
-      const byteSize = Math.ceil((base64Length * 3) / 4);
-
-      totalFetchedBytes += byteSize;
-
-      console.log(
-        `Fetched image ${data.name} — Base64 length: ${base64Length} chars, Estimated bytes: ${byteSize} bytes (${(
-          byteSize / 1024
-        ).toFixed(2)} KB)`
-      );
-
-      newImages.push({ id: doc.id, ...data });
+  // Get all users from IndexedDB
+  const getAllUsers = async () => {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction("users", "readonly");
+      const store = tx.objectStore("users");
+      const request = store.getAll();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
     });
+  };
 
-    setImages(newImages);
-
-    setTotalEgress((prev) => {
-      const newTotal = prev + totalFetchedBytes;
-      console.log(
-        `Total Egress so far: ${newTotal} bytes (${(newTotal / 1024).toFixed(2)} KB)`
-      );
-      return newTotal;
-    });
+  // Fetch users and update state
+  const fetchUsers = async () => {
+    const allUsers = await getAllUsers();
+    setUsers(allUsers);
   };
 
   useEffect(() => {
-    fetchImages();
+    fetchUsers();
   }, []);
 
+  const handleAddUser = () => {
+    if (!name) return;
+    addUser({ name });
+    setName("");
+  };
+
   return (
-    <div style={{ padding: 20 }}>
-      <h1>Firestore Image Upload & Fetch</h1>
-      <input type="file" accept="image/*" onChange={handleFileChange} />
-      <button onClick={() => uploadProfilePicToFirestore(file)}>Upload</button>
-<h3>
-        Total Egress: {totalEgress} bytes ({(totalEgress / 1024).toFixed(2)} KB)
-      </h3>
-      <div style={{ display: "flex", flexWrap: "wrap" }}>
-        {images.map((img) => (
-          <div key={img.id} style={{ margin: 10 }}>
-            <img src={img.data} alt={img.name} width={150} />
-            <p>{img.name}</p>
-          </div>
+    <div style={{ padding: "20px" }}>
+      <h2>React + IndexedDB Example</h2>
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Enter name"
+      />
+      <button onClick={handleAddUser}>Add User</button>
+
+      <ul>
+        {users.map((user) => (
+          <li key={user.id}>{user.name}</li>
         ))}
-      </div>
+      </ul>
     </div>
   );
-}
+};
+
+export default Demo;

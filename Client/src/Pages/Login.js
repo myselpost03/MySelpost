@@ -18,6 +18,8 @@ const Login = () => {
   const navigate = useNavigate();
 
   const isEmailValid = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const isMobileDevice = () =>
+  /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,7 +80,13 @@ const Login = () => {
         category: "User Interaction",
         label: "Login Button",
       });
-      navigate("/");
+      // after successful login
+if (isMobileDevice()) {
+  navigate("/chat-list", { replace: true });
+} else {
+  navigate("/", { replace: true }); // Or wherever you want desktop users to land
+}
+
     } catch (err) {
       setError(err.message || "Login failed.");
     } finally {

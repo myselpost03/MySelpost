@@ -16,6 +16,13 @@ const Register = () => {
     password: "",
     profilePic: null,
   });
+  const [originalImage, setOriginalImage] = useState(null);
+  const [compressedImage, setCompressedImage] = useState(null);
+  const [originalSize, setOriginalSize] = useState(0);
+  const [compressedSize, setCompressedSize] = useState(0);
+
+  const isMobileDevice = () =>
+    /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
   const [step, setStep] = useState(1);
   const [emailValid, setEmailValid] = useState(true);
@@ -26,48 +33,48 @@ const Register = () => {
 
   const [nameTaken, setNameTaken] = useState(false);
   const navigate = useNavigate();
-const isEmailValid = (email) => {
-  const trimmedEmail = email.trim().toLowerCase();
+  const isEmailValid = (email) => {
+    const trimmedEmail = email.trim().toLowerCase();
 
-  // ✅ Strict email format check
-  const basicPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!basicPattern.test(trimmedEmail)) return false;
+    // ✅ Strict email format check
+    const basicPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!basicPattern.test(trimmedEmail)) return false;
 
-  const allowedExactDomains = [
-    "gmail.com",
-    "yahoo.com",
-    "outlook.com",
-    "hotmail.com",
-    "icloud.com",
-    "aol.com",
-    "protonmail.com",
-    "zoho.com",
-    "mail.com",
-    "gmx.com",
-  ];
+    const allowedExactDomains = [
+      "gmail.com",
+      "yahoo.com",
+      "outlook.com",
+      "hotmail.com",
+      "icloud.com",
+      "aol.com",
+      "protonmail.com",
+      "zoho.com",
+      "mail.com",
+      "gmx.com",
+    ];
 
-  const allowedMultiPartDomains = [
-    "gmail.co.uk",
-    "gmail.com.au",
-    "outlook.co.uk",
-    "yahoo.co.in",
-    // Add more if needed
-  ];
+    const allowedMultiPartDomains = [
+      "gmail.co.uk",
+      "gmail.com.au",
+      "outlook.co.uk",
+      "yahoo.co.in",
+      // Add more if needed
+    ];
 
-  const domain = trimmedEmail.split("@")[1];
+    const domain = trimmedEmail.split("@")[1];
 
-  // Exact match check
-  if (allowedExactDomains.includes(domain)) {
-    return true;
-  }
+    // Exact match check
+    if (allowedExactDomains.includes(domain)) {
+      return true;
+    }
 
-  // Multi-part domain match
-  if (allowedMultiPartDomains.includes(domain)) {
-    return true;
-  }
+    // Multi-part domain match
+    if (allowedMultiPartDomains.includes(domain)) {
+      return true;
+    }
 
-  return false;
-};
+    return false;
+  };
 
   /*const [deviceId, setDeviceId] = useState(null);
   const [deviceBlocked, setDeviceBlocked] = useState(false);
@@ -130,6 +137,58 @@ const isEmailValid = (email) => {
     return () => clearTimeout(timeout);
   }, [formData.name]);
 
+  const compressAndResize = async (file, targetKB = 10) => {
+    let quality = 0.9;
+    let maxWidthOrHeight = 1000;
+    let compressedFile = file;
+
+    for (let i = 0; i < 10; i++) {
+      const options = {
+        maxSizeMB: targetKB / 1024,
+        maxWidthOrHeight,
+        initialQuality: quality,
+        useWebWorker: true,
+      };
+
+      compressedFile = await imageCompression(file, options);
+      const sizeKB = compressedFile.size / 1024;
+
+      if (sizeKB <= targetKB) break;
+
+      quality -= 0.1;
+      maxWidthOrHeight = Math.floor(maxWidthOrHeight * 0.8);
+      if (quality <= 0.1) quality = 0.1;
+      file = compressedFile;
+    }
+
+    return compressedFile;
+  };
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const originalKB = (file.size / 1024).toFixed(2);
+    setOriginalSize(originalKB);
+    setOriginalImage(URL.createObjectURL(file));
+
+    try {
+      const compressedFile = await compressAndResize(file, 10);
+      const compressedKB = (compressedFile.size / 1024).toFixed(2);
+      console.log("Compressed size KB:", compressedFile.size / 1024);
+
+      setCompressedSize(compressedKB);
+      setCompressedImage(URL.createObjectURL(compressedFile));
+
+      setFormData((prev) => ({
+        ...prev,
+        profilePic: compressedFile,
+      }));
+    } catch (error) {
+      console.error("Compression error:", error);
+    }
+  };
+
   const handleChange = async (e) => {
     const { name, value, files } = e.target;
 
@@ -138,37 +197,7 @@ const isEmailValid = (email) => {
     }
 
     if (name === "profilePic" && files && files[0]) {
-      const originalFile = files[0];
-      console.log(
-        `🖼️ Original file size: ${(originalFile.size / 1024 / 1024).toFixed(
-          2
-        )} MB`
-      );
-
-      try {
-        const options = {
-          maxSizeMB: 0.5, // Limit to 0.5 MB
-          maxWidthOrHeight: 1024,
-          useWebWorker: true,
-        };
-
-        const compressedFile = await imageCompression(originalFile, options);
-
-        console.log(
-          `📉 Compressed file size: ${(
-            compressedFile.size /
-            1024 /
-            1024
-          ).toFixed(2)} MB`
-        );
-
-        setFormData((prev) => ({
-          ...prev,
-          profilePic: compressedFile,
-        }));
-      } catch (error) {
-        console.error("❌ Image compression error:", error);
-      }
+      await handleImageUpload(e);
     } else {
       setFormData((prev) => ({
         ...prev,
@@ -327,7 +356,12 @@ const isEmailValid = (email) => {
 
       setTimeout(() => {
         setShowAlert(false);
-        navigate("/");
+        // after successful login
+        if (isMobileDevice()) {
+          navigate("/chat-list", { replace: true });
+        } else {
+          navigate("/", { replace: true }); // Or wherever you want desktop users to land
+        }
       }, 2000);
     } catch (err) {
       setError(err.message || "Something went wrong");
@@ -381,7 +415,6 @@ const isEmailValid = (email) => {
               <p className="step-indicator">Step 1 of 2 ✅</p>
             </>
           )}
-
           {step === 2 && (
             <>
               <input
@@ -393,14 +426,23 @@ const isEmailValid = (email) => {
                 required
               />
 
-              <label style={{ marginTop: "10px" }}>Profile Pic</label>
-              <input
-                type="file"
-                name="profilePic"
-                accept="image/*"
-                onChange={handleChange}
-                required
-              />
+              <div className="profile-pic-selector">
+                <label className="profile-pic-card">
+                  <span className="profile-pic-text">
+                    {formData.profilePic
+                      ? "File Selected"
+                      : "Click here to choose a profile picture"}
+                  </span>
+                  <input
+                    type="file"
+                    name="profilePic"
+                    accept="image/*"
+                    onChange={handleChange}
+                    className="profile-pic-input"
+                    required
+                  />
+                </label>
+              </div>
 
               {error && <p className="error-msg">{error}</p>}
 

@@ -230,6 +230,9 @@ const ChatList = () => {
   const [genderFilter, setGenderFilter] = useState("all");
   const [countryFilter, setCountryFilter] = useState("all");
   const [shuffledUsers, setShuffledUsers] = useState([]);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileForm, setProfileForm] = useState({ gender: "", age: "" });
+  const [newUser, setNewUser] = useState(null);
 
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem("activeTab") || "all";
@@ -255,6 +258,8 @@ const ChatList = () => {
   const [badgeSeen, setBadgeSeen] = useState("true"); // assume no badge unless told otherwise
 
   const [inboxUserIds, setInboxUserIds] = useState(new Set());
+
+  const navigate = useNavigate();
   const PUBLIC_VAPID_KEY =
     "BMt7fVUizCYq_PQkR-gkxa9azLTlzoLVgFQEIDjjJdP35dj2LyvHKCbBnp3YvsYdPmYwjx7gfnoMMhejp9i85-4";
 
@@ -263,6 +268,80 @@ const ChatList = () => {
   const listRef = useRef(null);
 
   const observerRef = useRef();
+
+  useEffect(() => {
+    const fetchAndSetUser = async () => {
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+
+      if (!storedUser?.id) {
+        setNewUser(null);
+        return;
+      }
+
+      // Fetch fresh user data from Supabase
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", storedUser.id)
+        .single();
+
+      if (error) {
+        console.error("Failed to fetch user from DB:", error.message);
+        setNewUser(null);
+        return;
+      }
+
+      localStorage.setItem("user", JSON.stringify(data));
+      setNewUser(data);
+      const isMobile = window.innerWidth < 768;
+      if ((!data.gender || !data.age) && isMobile) {
+        setShowProfileModal(true);
+      } else {
+        setShowProfileModal(false);
+      }
+    };
+
+    fetchAndSetUser();
+  }, [navigate]);
+
+  const handleProfileChange = (e) => {
+    const { name, value } = e.target;
+    setProfileForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleProfileSubmit = async () => {
+    setSubmitting(true);
+    trackEvent({
+      action: "button_click",
+      category: "Home Page",
+      label: "Submit Gender & Age Button",
+    });
+    if (!profileForm.gender || !profileForm.age) return;
+
+    const { error } = await supabase
+      .from("users")
+      .update({
+        gender: profileForm.gender,
+        age: parseInt(profileForm.age),
+      })
+      .eq("id", user.id);
+
+    if (!error) {
+      const updatedUser = { ...user, ...profileForm };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setNewUser(updatedUser);
+      setShowProfileModal(false);
+      setDataChanged(true); // ✅ Trigger refetch
+    } else {
+      console.error("Update failed:", error.message);
+    }
+    setSubmitting(false); // ✅ Stop "Submitting..."
+  };
+
+  const handleClick = async () => {
+    await handleProfileSubmit();
+  };
+
   useEffect(() => {
     if (activeTab === "all") {
       setShuffledUsers((prev) => {
@@ -509,8 +588,6 @@ const ChatList = () => {
     }
   };
 
-  const navigate = useNavigate();
-
   const handleProtectedNavigation = (e, path, targetUser = null) => {
     e.preventDefault();
     const isLoggedIn = localStorage.getItem("user");
@@ -561,8 +638,12 @@ const ChatList = () => {
     navigate(`/payments/${user.id}`);
   };
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const [dataChanged, setDataChanged] = useState(false); // ✅ Track if data changed
+  const [submitting, setSubmitting] = useState(false); // ✅ Show "Submitting..."
 
   useEffect(() => {
+    if (!dataChanged) return; // ❌ Don't fetch unless data changed
+
     const fetchUsers = async () => {
       if (
         debouncedSearchTerm.trim().length > 0 &&
@@ -669,10 +750,11 @@ const ChatList = () => {
       setLoading(false);
       setLoadingMore(false);
       setFirstLoad(false); // ✅ Prevent loader next time
+      setDataChanged(false);
     };
 
     fetchUsers();
-  }, [page, activeTab, genderFilter, countryFilter, searchTerm]);
+  }, [page, activeTab, genderFilter, countryFilter, searchTerm, dataChanged]);
 
   useEffect(() => {
     // Reset user list when tab changes
@@ -949,7 +1031,9 @@ const ChatList = () => {
       }))
     );
   };
-
+ const handleContextMenu = (e) => {
+    e.preventDefault(); // Prevent right-click menu
+  };
   return (
     <div className="chatlist-container">
       <Header />
@@ -1142,6 +1226,7 @@ const ChatList = () => {
                         <img
                           src={user.avatar}
                           alt="avatar"
+                          onContextMenu={handleContextMenu}
                           className="user-avatar"
                         />
                       </Link>
@@ -1397,6 +1482,52 @@ const ChatList = () => {
         />
       )}
       {showFeedback && <FeedbackPopup onSubmitSuccess={handleSubmitSuccess} />}
+      {showProfileModal && (
+        <div className="popup-wrapper">
+          <div className="popup-card">
+            <h3 className="popup-title">Hey there!</h3>
+            <p className="popup-text">
+              Tell us your age and gender to continue.
+            </p>
+
+            <div className="option-row">
+              <label className="option-box">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="male"
+                  checked={profileForm.gender === "male"}
+                  onChange={handleProfileChange}
+                />{" "}
+                Male
+              </label>
+              <label className="option-box">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="female"
+                  checked={profileForm.gender === "female"}
+                  onChange={handleProfileChange}
+                />{" "}
+                Female
+              </label>
+            </div>
+
+            <input
+              type="number"
+              className="input-field"
+              placeholder="Enter your age"
+              name="age"
+              value={profileForm.age}
+              onChange={handleProfileChange}
+            />
+
+            <button className="submit-funky-btn" onClick={handleClick}>
+              Submit
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

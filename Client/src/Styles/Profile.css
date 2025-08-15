@@ -171,11 +171,24 @@
     flex-direction: column-reverse;
     gap: 1.5rem;
     padding: 1rem;
+    box-shadow: none;
+  }
+
+  .sketchy-profile-tab {
+    display: none;
+  }
+
+  .sketchy-profile-wrapper {
+    box-shadow: none;
   }
 
   .sketchy-profile-avatar {
-    width: 120px;
-    height: 120px;
+    border: none;
+    box-shadow: none;
+    transform: none;
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
   }
 
   .floating-gift {
@@ -308,7 +321,6 @@
   box-shadow: 2px 2px 0 #000;
 }
 
-
 .sketchy-file-upload-wrapper {
   display: flex;
   flex-direction: column;
@@ -335,7 +347,6 @@
   text-overflow: ellipsis;
 }
 
-
 .sketchy-file-upload-btn:hover {
   background: linear-gradient(135deg, #f9f871, #ffe785);
   transform: translateY(-2px);
@@ -353,7 +364,6 @@
     font-size: 0.9rem;
   }
 }
-
 
 .sketchy-image-modal {
   position: fixed;
@@ -394,4 +404,114 @@
     transform: scale(1);
     opacity: 1;
   }
+}
+.sketchy-send-gift-btn {
+  font-family: "Lilita One", cursive, sans-serif;
+width: 328px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #3e2f00;
+  background: linear-gradient(135deg, #f9d423 0%, #ffcc00 50%, #f9a602 100%);
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-block;
+  text-align: center;
+  user-select: none;
+}
+
+.sketchy-send-gift-btn:hover {
+  background: linear-gradient(135deg, #ffe259 0%, #ffa751 100%);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.sketchy-send-gift-btn:active {
+  transform: translateY(2px) scale(0.98);
+}
+
+.sketchy-gift-list-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 15px;
+  background: #fffbe6;
+  padding: 10px;
+  border: 3px dashed #b8860b;
+  border-radius: 16px;
+  box-shadow: 3px 3px 0 #000;
+  animation: popIn 0.5s ease;
+}
+
+.sketchy-gift-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.sketchy-gift-item img {
+  width: 60px;
+  height: 60px;
+  border: 2px dashed #b8860b;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 #000;
+  transition: all 0.2s ease;
+}
+
+.sketchy-gift-item span {
+  font-family: "Gloria Hallelujah", cursive;
+  font-size: 0.95rem;
+  margin-top: 6px;
+  color: #3e2f00;
+  text-shadow: 1px 1px 0 #fff;
+}
+
+.sketchy-gift-item:hover {
+  transform: scale(1.1) rotate(-2deg);
+}
+.mosaic-container {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.mosaic-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.pixel-block {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(6px) brightness(0.6); /* reduce blur */
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.like-btn {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.8);
+  transition: background 0.2s;
+}
+
+.like-btn:hover {
+  background: rgba(255, 255, 255, 1);
 }

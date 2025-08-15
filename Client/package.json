@@ -13,7 +13,7 @@
     "browser-image-compression": "^2.0.2",
     "canvas-confetti": "^1.9.3",
     "dayjs": "^1.11.13",
-    "firebase": "^12.1.0",
+    "idb-keyval": "^6.2.2",
     "image-js": "^0.37.0",
     "imagekitio-react": "^4.3.0",
     "lottie-react": "^2.4.1",

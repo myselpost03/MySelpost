@@ -1,4 +1,3 @@
-
 @import url(https://fonts.googleapis.com/css?family=Original+Surfer:regular);
 body {
   margin: 0;
@@ -21,7 +20,7 @@ body {
   }
 }
 
-.link-to-login{
+.link-to-login {
   text-align: center;
 }
 
@@ -226,4 +225,39 @@ body {
   border: 2px solid #000;
 }
 
+.profile-pic-selector {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
 
+.profile-pic-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 200px;
+  height: 50px;
+  border: 2px dashed #000;
+  border-radius: 16px;
+  cursor: pointer;
+  background-color: #fafafa;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  text-align: center;
+  padding: 1rem;
+}
+
+.profile-pic-card:hover {
+  background-color: #f0f0f0;
+  transform: scale(1.03);
+}
+
+.profile-pic-input {
+  display: none;
+}
+
+.profile-pic-text {
+  font-size: 0.95rem;
+  color: #555;
+  font-family: "original surfer", cursive;
+  text-align: center;
+}

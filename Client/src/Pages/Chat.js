@@ -1115,6 +1115,9 @@ const Chat = () => {
         title={targetUser.name}
         onBack={handleBack}
       ></SketchyHeader>
+<div className="auto-delete-notice">
+  🕒 Messages will delete on seen
+</div>
 
       {alertMessage && !hasAccess && (
         <SketchyAlert

@@ -540,3 +540,34 @@
     /* padding: 0.5rem 1rem; */
   }
 }
+
+
+.auto-delete-notice {
+  width: 95%;
+  max-width: 600px;
+  margin: 0.5rem auto 1rem auto;
+  padding: 0.6rem 1rem;
+  background: linear-gradient(135deg, #ffecd2, #fcb69f);
+  color: #333;
+  font-weight: bold;
+  font-family: 'Patrick Hand', cursive, serif;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+  border: 2px dashed #ff6f61;
+  animation: notice-pop 0.5s ease-out;
+}
+
+@keyframes notice-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
