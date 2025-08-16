@@ -642,8 +642,13 @@ const ChatList = () => {
   const [submitting, setSubmitting] = useState(false); // ✅ Show "Submitting..."
 
   useEffect(() => {
-    if (!dataChanged) return; // ❌ Don't fetch unless data changed
+    // Reset user list when tab changes
+    setUsers([]);
+    setPage(0);
+    setHasMore(true);
+  }, [activeTab, genderFilter, countryFilter]);
 
+  useEffect(() => {
     const fetchUsers = async () => {
       if (
         debouncedSearchTerm.trim().length > 0 &&
@@ -651,38 +656,32 @@ const ChatList = () => {
       ) {
         setUsers([]);
         setLoading(false);
+        setLoadingMore(false);
         return;
-      } else if (firstLoad && page === 0) {
-        setLoading(true); // First ever load
-      } else {
-        setLoadingMore(true); // For pagination or tab switch: show mini loader
       }
 
-      const limit = 10;
-      const offset = page * limit;
+      // always full load once (not per page)
+      setLoading(true);
 
       let query = supabase
         .from("users")
         .select(
           "id, name, profile_pic, country, gender, status, age, decency_rating"
         );
+
       if (activeTab === "all") {
         query = query
-          // Get newest first within each country
-          .order("created_at", { ascending: false })
-          .order("country", { ascending: true })
-          .order("profile_pic", { ascending: false, nullsFirst: false });
+          .neq("country", "IN")
+          .order("created_at", { ascending: false });
       }
-
       if (genderFilter !== "all") query = query.eq("gender", genderFilter);
       if (countryFilter !== "all") query = query.eq("country", countryFilter);
       if (activeTab === "online") {
         query = query
           .eq("status", "online")
-          .order("created_at", { ascending: false }); // Newest first
+          .order("created_at", { ascending: false });
       }
 
-      // Handle pinned tab separately
       if (activeTab === "pinned") {
         const { data: pinnedData } = await supabase
           .from("pinned_users")
@@ -697,7 +696,6 @@ const ChatList = () => {
           setLoadingMore(false);
           return;
         }
-
         query = query.in("id", pinnedIds);
       }
 
@@ -705,7 +703,6 @@ const ChatList = () => {
         query = query.ilike("name", `%${searchTerm}%`);
       }
 
-      // Prioritize users with profile_pic first only under All tab
       if (activeTab === "all") {
         query = query.order("profile_pic", {
           ascending: false,
@@ -713,10 +710,7 @@ const ChatList = () => {
         });
       }
 
-      const { data: fetchedUsers, error } = await query.range(
-        offset,
-        offset + limit - 1
-      );
+      const { data: fetchedUsers, error } = await query;
 
       if (!error && fetchedUsers) {
         const { data: pinnedData } = await supabase
@@ -736,35 +730,18 @@ const ChatList = () => {
             status: user.status || "offline",
           }));
 
-        if (page === 0) setUsers(processed);
-        else
-          setUsers((prev) => {
-            const existingIds = new Set(prev.map((u) => u.id));
-            const newUsers = processed.filter((u) => !existingIds.has(u.id));
-            return [...prev, ...newUsers];
-          });
-
-        setHasMore(fetchedUsers.length === limit);
+        setUsers(processed); // ✅ always replace, no append
       }
 
       setLoading(false);
       setLoadingMore(false);
-      setFirstLoad(false); // ✅ Prevent loader next time
-      setDataChanged(false);
+      setFirstLoad(false);
     };
 
     fetchUsers();
-  }, [page, activeTab, genderFilter, countryFilter, searchTerm, dataChanged]);
-
-  useEffect(() => {
-    // Reset user list when tab changes
-    setUsers([]);
-    setPage(0);
-    setHasMore(true);
-  }, [activeTab, genderFilter, countryFilter]);
+  }, [activeTab, genderFilter, countryFilter, searchTerm]);
 
   const filteredUsers = useMemo(() => {
-    // Step 1: filter normally
     let filtered = users.filter((user) => {
       const genderMatch =
         genderFilter === "all" || user.gender === genderFilter;
@@ -788,15 +765,11 @@ const ChatList = () => {
       );
     });
 
-    // Step 2: sort with your existing priority rules
+    // sort priority
     filtered.sort((a, b) => {
       const aCount = unreadCounts[a.id] || 0;
       const bCount = unreadCounts[b.id] || 0;
       if (bCount !== aCount) return bCount - aCount;
-
-      const aIsIndia = a.country === "IN";
-      const bIsIndia = b.country === "IN";
-      if (aIsIndia !== bIsIndia) return aIsIndia ? 1 : -1;
 
       const aHasPic = a.avatar !== empty ? 1 : 0;
       const bHasPic = b.avatar !== empty ? 1 : 0;
@@ -811,7 +784,31 @@ const ChatList = () => {
       return getPriority(b) - getPriority(a);
     });
 
-    // Step 3: if online tab, alternate genders (female first)
+    // if All tab → one user per country per round
+    if (activeTab === "all") {
+      const countryGroups = filtered.reduce((acc, user) => {
+        if (!acc[user.country]) acc[user.country] = [];
+        acc[user.country].push(user);
+        return acc;
+      }, {});
+
+      let roundRobin = [];
+      let index = 0;
+      let added = true;
+      while (added) {
+        added = false;
+        for (const country in countryGroups) {
+          if (countryGroups[country][index]) {
+            roundRobin.push(countryGroups[country][index]);
+            added = true;
+          }
+        }
+        index++;
+      }
+      filtered = roundRobin;
+    }
+
+    // online tab alternate genders
     if (activeTab === "online") {
       const females = filtered.filter((u) => u.gender === "female");
       const males = filtered.filter((u) => u.gender === "male");
@@ -826,10 +823,15 @@ const ChatList = () => {
         if (f < females.length) alternated.push(females[f++]);
         if (m < males.length) alternated.push(males[m++]);
       }
-      return [...alternated, ...others];
+      filtered = [...alternated, ...others];
     }
 
-    return filtered;
+    // ✅ Apply pagination here (10 users per page)
+    // ✅ Show all items up to the current page
+    const pageSize = 10;
+    const end = (page + 1) * pageSize;
+
+    return filtered.slice(0, end);
   }, [
     users,
     genderFilter,
@@ -837,8 +839,21 @@ const ChatList = () => {
     searchTerm,
     activeTab,
     unreadCounts,
-    allFilter,
+    page,
   ]);
+
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+
+    if (scrollTop + clientHeight >= scrollHeight - 50 && !loadingMore) {
+      setLoadingMore(true);
+
+      setTimeout(() => {
+        setPage((prev) => prev + 1);
+        setLoadingMore(false);
+      }, 800); // simulate load delay
+    }
+  };
 
   useEffect(() => {
     const hasSubmitted = localStorage.getItem("feedback_submitted");
@@ -968,7 +983,6 @@ const ChatList = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (!hasMore || loadingMore || loading || searchTerm.trim() !== "") return;
 
@@ -979,14 +993,17 @@ const ChatList = () => {
         }
       },
       {
-        threshold: 1.0,
+        root: null, // viewport
+        rootMargin: "100px", // start loading a bit earlier
+        threshold: 0.1, // trigger when 10% visible
       }
     );
 
-    if (observerRef.current) observer.observe(observerRef.current);
+    const currentRef = observerRef.current;
+    if (currentRef) observer.observe(currentRef);
 
     return () => {
-      if (observerRef.current) observer.unobserve(observerRef.current);
+      if (currentRef) observer.unobserve(currentRef);
     };
   }, [hasMore, loadingMore, loading, searchTerm]);
 
@@ -1031,7 +1048,7 @@ const ChatList = () => {
       }))
     );
   };
- const handleContextMenu = (e) => {
+  const handleContextMenu = (e) => {
     e.preventDefault(); // Prevent right-click menu
   };
   return (
@@ -1199,7 +1216,12 @@ const ChatList = () => {
           )}
         </div>
 
-        <div ref={listRef} className="sketchy-list-scrollable">
+        <div
+          ref={listRef}
+          onScroll={handleScroll}
+          style={{ overflowY: "auto", height: "100vh" }}
+          className="sketchy-list-scrollable"
+        >
           {filteredUsers.length > 0 ? (
             <>
               {filteredUsers
