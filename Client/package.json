@@ -13,6 +13,7 @@
     "browser-image-compression": "^2.0.2",
     "canvas-confetti": "^1.9.3",
     "dayjs": "^1.11.13",
+    "idb": "^8.0.3",
     "idb-keyval": "^6.2.2",
     "image-js": "^0.37.0",
     "imagekitio-react": "^4.3.0",

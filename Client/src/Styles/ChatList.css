@@ -13,6 +13,9 @@
   font-family: "Comic Neue", cursive;
 }
 
+@media only screen and (max-width: 480px) {
+}
+
 /* Desktop-specific tweaks */
 @media (min-width: 768px) {
   .chatlist-container {
@@ -207,7 +210,7 @@
   border-radius: 8px;
   background: #e0e0e0;
   color: #333;
-  font-family: 'Comic Neue', sans-serif;
+  font-family: "Comic Neue", sans-serif;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -726,7 +729,7 @@
   border-radius: 50%;
   font-size: 1.5rem;
   z-index: 1000;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   border: none;
   cursor: pointer;
   display: flex;
@@ -769,7 +772,7 @@
   color: #888;
 }
 @media (max-width: 480px) {
-.user-card{
-  border: none;
-}
+  .user-card {
+    border: none;
+  }
 }

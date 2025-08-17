@@ -818,6 +818,7 @@ const Chat = () => {
   };
 
   const handleBack = () => {
+    
     navigate(-1);
   };
 
@@ -1108,6 +1109,7 @@ const Chat = () => {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
 
   return (
     <div className="Chat-UI">
