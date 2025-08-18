@@ -8,6 +8,8 @@ import { supabase, supabaseStorage } from "../Utils/supabaseClient";
 import { trackEvent } from "../Utils/analytics";
 import confetti from "canvas-confetti"; // ✅ Import confettiimport { Toaster } from 'react-hot-toast';
 import toast, { Toaster } from "react-hot-toast";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode"; // ✅ Correct import
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -74,6 +76,70 @@ const Register = () => {
     }
 
     return false;
+  };
+
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
+      console.log("Google User Info:", decoded);
+
+      // Optional: Check if user exists in supabase
+      const { data: existingUser } = await supabase
+        .from("users")
+        .select("*")
+        .eq("email", decoded.email)
+        .single();
+
+      let userId;
+      if (existingUser) {
+        userId = existingUser.id;
+      } else {
+        // Insert new user
+        const { data: insertedUser, error: insertError } = await supabase
+          .from("users")
+          .insert([
+            {
+              name: decoded.name,
+              email: decoded.email,
+              profile_pic: decoded.picture || null,
+              country: country,
+
+              google_login: true,
+            },
+          ])
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        userId = insertedUser.id;
+      }
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: userId,
+          name: decoded.name,
+          email: decoded.email,
+          coins: existingUser?.reward_coins ?? 0,
+
+          google_login: true,
+        })
+      );
+
+      toast.success("Logged in with Google!");
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+
+      setTimeout(() => {
+        if (isMobileDevice()) {
+          navigate("/chat-list", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
+      }, 1500);
+    } catch (err) {
+      console.error(err);
+      toast.error("Google login failed");
+    }
   };
 
   /*const [deviceId, setDeviceId] = useState(null);
@@ -238,62 +304,63 @@ const Register = () => {
     emailValid &&
     !nameTaken;
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  try {
-    // Required fields check
-    if (!formData.name || !formData.email || !formData.password || !formData.profilePic) {
-      setError("All fields are required.");
-      setLoading(false);
-      return;
-    }
+    try {
+      // Required fields check
+      if (
+        !formData.name ||
+        !formData.email ||
+        !formData.password ||
+        !formData.profilePic
+      ) {
+        setError("All fields are required.");
+        setLoading(false);
+        return;
+      }
 
-    // Password length check
-    if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long.");
-      setLoading(false);
-      return;
-    }
+      // Password length check
+      if (formData.password.length < 8) {
+        setError("Password must be at least 8 characters long.");
+        setLoading(false);
+        return;
+      }
 
-    // File type validation
-    const validTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!validTypes.includes(formData.profilePic.type)) {
-      setError("Only JPG, PNG, or WEBP images are allowed.");
-      setLoading(false);
-      return;
-    }
+      // File type validation
+      const validTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!validTypes.includes(formData.profilePic.type)) {
+        setError("Only JPG, PNG, or WEBP images are allowed.");
+        setLoading(false);
+        return;
+      }
 
-    const hashedPassword = await bcrypt.hash(formData.password, 10);
+      const hashedPassword = await bcrypt.hash(formData.password, 10);
 
-    // Upload profile pic to storage DB
-    let profilePicUrl = null;
-    if (formData.profilePic) {
-      const fileExt = formData.profilePic.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      // Upload profile pic to storage DB
+      let profilePicUrl = null;
+      if (formData.profilePic) {
+        const fileExt = formData.profilePic.name.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `avatars/${fileName}`;
 
-      const { error: uploadError } = await supabaseStorage
-        .storage
-        .from("profile-pics")
-        .upload(filePath, formData.profilePic);
+        const { error: uploadError } = await supabaseStorage.storage
+          .from("profile-pics")
+          .upload(filePath, formData.profilePic);
 
-      if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
 
-      const { data: publicUrlData } = supabaseStorage
-        .storage
-        .from("profile-pics")
-        .getPublicUrl(filePath);
+        const { data: publicUrlData } = supabaseStorage.storage
+          .from("profile-pics")
+          .getPublicUrl(filePath);
 
-      profilePicUrl = publicUrlData.publicUrl;
-    }
+        profilePicUrl = publicUrlData.publicUrl;
+      }
 
-    // Insert user into main DB
-    const { error: insertError } = await supabase
-      .from("users")
-      .insert([
+      // Insert user into main DB
+      const { error: insertError } = await supabase.from("users").insert([
         {
           name: formData.name,
           email: formData.email,
@@ -304,64 +371,69 @@ const handleSubmit = async (e) => {
         },
       ]);
 
-    if (insertError) throw insertError;
+      if (insertError) throw insertError;
 
-    // Track registration event
-    trackEvent({
-      action: "button_click",
-      category: "User Interaction",
-      label: "Register Button",
-    });
+      // Track registration event
+      trackEvent({
+        action: "button_click",
+        category: "User Interaction",
+        label: "Register Button",
+      });
 
-    // Simulate login after registration
-    const { data: userData, error: loginError } = await supabase
-      .from("users")
-      .select("*")
-      .eq("email", formData.email)
-      .single();
+      // Simulate login after registration
+      const { data: userData, error: loginError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("email", formData.email)
+        .single();
 
-    if (loginError || !userData) {
-      setError("Failed to log in after registration.");
-      return;
-    }
-
-    const passwordMatch = await bcrypt.compare(formData.password, userData.password);
-    if (!passwordMatch) {
-      setError("Password mismatch.");
-      return;
-    }
-
-    // Save user locally
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        id: userData.id,
-        name: userData.name,
-        email: userData.email,
-        coins: userData.reward_coins ?? 0,
-        rewardTime: userData.last_coin_award_time ?? null,
-      })
-    );
-
-    setShowAlert(true);
-    toast.success("Registered Successfully!");
-    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-
-    setTimeout(() => {
-      setShowAlert(false);
-      if (isMobileDevice()) {
-        navigate("/chat-list", { replace: true });
-      } else {
-        navigate("/", { replace: true });
+      if (loginError || !userData) {
+        setError("Failed to log in after registration.");
+        return;
       }
-    }, 2000);
 
-  } catch (err) {
-    setError(err.message || "Something went wrong");
-  } finally {
-    setLoading(false);
-  }
-};
+      const passwordMatch = await bcrypt.compare(
+        formData.password,
+        userData.password
+      );
+      if (!passwordMatch) {
+        setError("Password mismatch.");
+        return;
+      }
+
+      // Save user locally
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          coins: userData.reward_coins ?? 0,
+          rewardTime: userData.last_coin_award_time ?? null,
+        })
+      );
+
+      setShowAlert(true);
+      toast.success("Registered Successfully!");
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+
+      setTimeout(() => {
+        setShowAlert(false);
+        if (isMobileDevice()) {
+          navigate("/chat-list", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
+      }, 2000);
+    } catch (err) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleGoogleLoginError = () => {
+    toast.error("Google login failed");
+  };
   return (
     <div>
       <Header />
@@ -374,7 +446,11 @@ const handleSubmit = async (e) => {
           }}
         >
           <h2 className="acct-text">Create an Account</h2>
-
+          <GoogleLogin
+            onSuccess={handleGoogleLogin}
+            onError={handleGoogleLoginError}
+            ux_mode="popup"
+          />
           {step === 1 && (
             <>
               <input

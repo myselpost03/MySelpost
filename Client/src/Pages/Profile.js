@@ -123,16 +123,13 @@ const Profile = () => {
     try {
       const db = await getDB();
       let cachedUser = await db.get("users", id); // try to get user from IndexedDB
-
-      if (cachedUser && cachedUser.profile_pic) {
+      const isGoogleUser = currentUser?.google_login;
+      if (!isGoogleUser && cachedUser && cachedUser.profile_pic) {
         // ✅ Use cached user if available
         console.log("📂 Loaded user from IndexedDB");
         setUserData({
           ...cachedUser,
-          avatar:
-            cachedUser.profile_pic instanceof Blob
-              ? URL.createObjectURL(cachedUser.profile_pic)
-              : cachedUser.profile_pic || empty,
+          avatar: cachedUser.profile_pic || empty,
         });
         setForm((prev) => ({
           ...prev,
@@ -152,8 +149,7 @@ const Profile = () => {
 
         if (!error && data) {
           // Save to IndexedDB for future offline use
-          await saveUsers([data]);
-
+          if (!isGoogleUser) await saveUsers([data]);
           setUserData({
             ...data,
             avatar: data.profile_pic || empty,

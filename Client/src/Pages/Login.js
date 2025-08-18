@@ -5,6 +5,8 @@ import "../Styles/Login.css";
 import { supabase } from "../Utils/supabaseClient";
 import bcrypt from "bcryptjs";
 import { trackEvent } from "../Utils/analytics";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -18,8 +20,8 @@ const Login = () => {
   const navigate = useNavigate();
 
   const isEmailValid = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-const isMobileDevice = () =>
-  /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isMobileDevice = () =>
+    /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -81,17 +83,81 @@ const isMobileDevice = () =>
         label: "Login Button",
       });
       // after successful login
-if (isMobileDevice()) {
-  navigate("/chat-list", { replace: true });
-} else {
-  navigate("/", { replace: true }); // Or wherever you want desktop users to land
-}
-
+      if (isMobileDevice()) {
+        navigate("/chat-list", { replace: true });
+      } else {
+        navigate("/", { replace: true }); // Or wherever you want desktop users to land
+      }
     } catch (err) {
       setError(err.message || "Login failed.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
+      console.log("Google User Info:", decoded);
+
+      // Check if user exists
+      const { data: existingUser } = await supabase
+        .from("users")
+        .select("*")
+        .eq("email", decoded.email)
+        .single();
+
+      let userId;
+      if (existingUser) {
+        userId = existingUser.id;
+      } else {
+        // Insert new user
+        const { data: insertedUser, error: insertError } = await supabase
+          .from("users")
+          .insert([
+            {
+              name: decoded.name,
+              email: decoded.email,
+              profile_pic: decoded.picture || null,
+            },
+          ])
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        userId = insertedUser.id;
+      }
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: userId,
+          name: decoded.name,
+          email: decoded.email,
+          coins: existingUser?.reward_coins ?? 0,
+          google_login: true,   
+        })
+      );
+
+      trackEvent({
+        action: "button_click",
+        category: "User Interaction",
+        label: "Google Login",
+      });
+
+      if (isMobileDevice()) {
+        navigate("/chat-list", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Google login failed");
+    }
+  };
+
+  const handleGoogleLoginError = () => {
+    setError("Google login failed");
   };
 
   return (
@@ -100,6 +166,7 @@ if (isMobileDevice()) {
       <div className="login-container">
         <form className="login-form" onSubmit={handleSubmit}>
           <h2>Log In</h2>
+
           <input
             type="text"
             name="identifier"
@@ -119,12 +186,16 @@ if (isMobileDevice()) {
             onChange={handleChange}
             required
           />
+
           {error && <p className="error-msg">{error}</p>}
           <button type="submit" disabled={!isFormValid || loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
           <p>
-            Don't have an account? <Link to="/register">Register</Link>
+            Don't have an account?{" "}
+            <Link to="/register" style={{ textDecoration: "none" }}>
+              Register
+            </Link>
           </p>
         </form>
       </div>
