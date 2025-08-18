@@ -209,6 +209,7 @@ function AppContent() {
     }, 3600000);
     return () => clearInterval(interval);
   }, []);
+
   useEffect(() => {
     if (!isMobileDevice()) {
       setReady(true); // render routes normally on desktop
@@ -232,6 +233,22 @@ function AppContent() {
         navigate("/chat-list", { replace: true });
         return;
       }
+    }
+
+    if (storedUser?.id && location.pathname === "/guest-user") {
+      navigate("/chat-list", { replace: true });
+      return;
+    }
+
+    const protectedRoutes = [
+      "/chat-list",
+      "/roast",
+      "/chat/:id",
+      "/profile/:id",
+    ];
+    if (!storedUser?.id && protectedRoutes.includes(location.pathname)) {
+      navigate("/guest-user", { replace: true });
+      return;
     }
 
     setReady(true); // safe to render routes

@@ -4,9 +4,11 @@ import SketchyHeader from "../Components/SketchyHeader";
 import SketchyAlert from "../Components/SketchyAlert";
 import "../Styles/Profile.css";
 import empty from "../Assets/empty.png";
-import { supabase } from "../Utils/supabaseClient";
+import { supabase, supabaseStorage } from "../Utils/supabaseClient";
 import toast, { Toaster } from "react-hot-toast";
+import { getDB, saveUsers } from "../Utils/db";
 import MosaicAvatar from "../Components/MosaicAvatar";
+import imageCompression from "browser-image-compression";
 
 const giftList = [
   "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png",
@@ -28,7 +30,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const currentUser = JSON.parse(localStorage.getItem("user"));
   const isCurrentUser = currentUser?.id?.toString() === id;
-
+  const currentUserId = currentUser?.id;
   const [userData, setUserData] = useState(null);
   const [form, setForm] = useState({ name: "", bio: "", imageFile: null });
   const [status, setStatus] = useState({
@@ -40,11 +42,8 @@ const Profile = () => {
   const [receivedGifts, setReceivedGifts] = useState([]);
 
   const handleBack = () => navigate(-1);
-  const totalLikes = 400; // total blocks = total likes for 1:1 reveal
   const rows = 20;
   const cols = 20;
-
-  const [likes, setLikes] = useState(0);
 
   // Build snake-like grid order
   const grid = [];
@@ -66,12 +65,52 @@ const Profile = () => {
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
+    if (!file) return;
+
+    // Compress the image first
+    const compressAndResize = async (file, targetKB = 9) => {
+      let quality = 0.9;
+      let maxWidthOrHeight = 1000;
+      let compressedFile = file;
+
+      for (let i = 0; i < 10; i++) {
+        const options = {
+          maxSizeMB: targetKB / 1024,
+          maxWidthOrHeight,
+          initialQuality: quality,
+          useWebWorker: true,
+        };
+
+        compressedFile = await imageCompression(file, options);
+        const sizeKB = compressedFile.size / 1024;
+
+        if (sizeKB <= targetKB) break;
+
+        quality -= 0.1;
+        maxWidthOrHeight = Math.floor(maxWidthOrHeight * 0.8);
+        if (quality <= 0.1) quality = 0.1;
+        file = compressedFile;
+      }
+
+      return compressedFile;
+    };
+
+    try {
+      const compressedFile = await compressAndResize(file, 9);
+      setForm((prev) => ({ ...prev, imageFile: compressedFile }));
+
+      // Preview compressed image
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUserData((prev) => ({ ...prev, avatar: reader.result }));
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (err) {
+      console.error("Image compression failed:", err);
+      // fallback to original file if compression fails
       setForm((prev) => ({ ...prev, imageFile: file }));
-      // Optional: Set image preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setUserData((prev) => ({ ...prev, avatar: reader.result }));
@@ -81,26 +120,70 @@ const Profile = () => {
   };
 
   const fetchUser = async () => {
-    const { data, error } = await supabase
-      .from("users")
-      .select(
-        "id, name, talked_to_count, bio, profile_pic, app_created, reward_coins, decency_rating"
-      )
-      .eq("id", id)
-      .single();
+    try {
+      const db = await getDB();
+      let cachedUser = await db.get("users", id); // try to get user from IndexedDB
 
-    if (data && !error) {
+      if (cachedUser && cachedUser.profile_pic) {
+        // ✅ Use cached user if available
+        console.log("📂 Loaded user from IndexedDB");
+        setUserData({
+          ...cachedUser,
+          avatar:
+            cachedUser.profile_pic instanceof Blob
+              ? URL.createObjectURL(cachedUser.profile_pic)
+              : cachedUser.profile_pic || empty,
+        });
+        setForm((prev) => ({
+          ...prev,
+          name: cachedUser.name || "",
+          bio: cachedUser.bio || "",
+        }));
+      } else {
+        // 🔄 Fallback: fetch from Supabase if no cached data
+        console.log("🌐 Fetching user from Supabase (fallback)");
+        const { data, error } = await supabase
+          .from("users")
+          .select(
+            "id, name, talked_to_count, bio, profile_pic, reward_coins, decency_rating"
+          )
+          .eq("id", id)
+          .single();
+
+        if (!error && data) {
+          // Save to IndexedDB for future offline use
+          await saveUsers([data]);
+
+          setUserData({
+            ...data,
+            avatar: data.profile_pic || empty,
+          });
+          setForm((prev) => ({
+            ...prev,
+            name: data.name || "",
+            bio: data.bio || "",
+          }));
+
+          console.log("✅ User fetched from Supabase and saved to IndexedDB");
+        } else {
+          console.error(
+            "❌ Error fetching user from Supabase:",
+            error?.message
+          );
+          setUserData({
+            avatar: empty,
+            name: "",
+            bio: "",
+          });
+        }
+      }
+    } catch (err) {
+      console.error("⚠️ fetchUser error:", err);
       setUserData({
-        ...data,
-        avatar: data.profile_pic || empty,
+        avatar: empty,
+        name: "",
+        bio: "",
       });
-      setForm((prev) => ({
-        ...prev,
-        name: data.name || "",
-        bio: data.bio || "",
-      }));
-    } else {
-      console.error("Error fetching user:", error?.message);
     }
   };
 
@@ -123,55 +206,66 @@ const Profile = () => {
     }
   }, [id]);
 
-  const uploadImage = async () => {
-    if (!form.imageFile) return null;
-
-    const fileExt = form.imageFile.name.split(".").pop();
-    const fileName = `${id}_${Date.now()}.${fileExt}`;
-    const filePath = `avatars/${fileName}`;
-
-    const { error } = await supabase.storage
-      .from("profile-pics")
-      .upload(filePath, form.imageFile, { upsert: true });
-
-    if (error) {
-      toast.error("Failed to upload image.");
-      console.error("Upload error:", error.message);
-      return null;
-    }
-
-    const { data } = supabase.storage
-      .from("profile-pics")
-      .getPublicUrl(filePath);
-    return data.publicUrl;
-  };
-
   const handleUpdate = async () => {
     setStatus((s) => ({ ...s, uploading: true }));
     let profilePicUrl = userData.avatar;
 
-    if (form.imageFile) {
-      const uploadedUrl = await uploadImage();
-      if (uploadedUrl) profilePicUrl = uploadedUrl;
-    }
+    try {
+      // 1️⃣ Upload new image if selected
+      if (form.imageFile) {
+        const fileExt = form.imageFile.name.split(".").pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `avatars/${fileName}`;
 
-    const { error } = await supabase
-      .from("users")
-      .update({ name: form.name, bio: form.bio, profile_pic: profilePicUrl })
-      .eq("id", id);
+        const { error: uploadError } = await supabaseStorage.storage
+          .from("profile-pics")
+          .upload(filePath, form.imageFile);
 
-    if (!error) {
-      setUserData((u) => ({
-        ...u,
-        name: form.name,
-        bio: form.bio,
-        avatar: profilePicUrl,
-      }));
-      setStatus({ ...status, editing: false, uploading: false });
-      setForm((f) => ({ ...f, imageFile: null }));
-    } else {
-      toast.error("Failed to update.");
-      console.error("Failed to update:", error.message);
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabaseStorage.storage
+          .from("profile-pics")
+          .getPublicUrl(filePath);
+
+        if (publicUrlData?.publicUrl) profilePicUrl = publicUrlData.publicUrl;
+      }
+
+      // 2️⃣ Update user in main Supabase DB
+      const { data: updatedUser, error } = await supabase
+        .from("users")
+        .update({
+          name: form.name,
+          bio: form.bio,
+          profile_pic: profilePicUrl,
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (!error && updatedUser) {
+        // 3️⃣ Update IndexedDB locally
+        await saveUsers([updatedUser]);
+
+        // 4️⃣ Update UI immediately
+        setUserData((u) => ({
+          ...u,
+          name: form.name,
+          bio: form.bio,
+          avatar: profilePicUrl,
+        }));
+
+        setStatus({ ...status, editing: false, uploading: false });
+        setForm((f) => ({ ...f, imageFile: null }));
+
+        console.log("✅ User updated in Supabase and IndexedDB");
+      } else {
+        toast.error("Failed to update.");
+        console.error("Failed to update:", error?.message);
+        setStatus((s) => ({ ...s, uploading: false }));
+      }
+    } catch (err) {
+      toast.error("Something went wrong while uploading image.");
+      console.error(err);
       setStatus((s) => ({ ...s, uploading: false }));
     }
   };
@@ -352,7 +446,11 @@ const Profile = () => {
           </div>
 
           <div className="sketchy-profile-center">
-            <MosaicAvatar src={userData.avatar} />
+            <MosaicAvatar
+              src={userData.avatar}
+              userId={id}
+              currentUserId={currentUserId}
+            />
           </div>
         </div>
 

@@ -1,17 +1,17 @@
-@import url("https://fonts.googleapis.com/css2?family=Spicy+Rice&family=Patrick+Hand&display=swap");
-@import url(https://fonts.googleapis.com/css?family=Nerko+One:regular);
+@import url(https://fonts.googleapis.com/css?family=Twinkle+Star:regular);
+@import url(https://fonts.googleapis.com/css?family=Concert+One:regular);
+@import url(https://fonts.googleapis.com/css?family=Schoolbell:regular);
+@import url(https://fonts.googleapis.com/css?family=RocknRoll+One:regular);
+
+/* General page layout */
 .roast-page {
-  font-family: "Patrick Hand", cursive;
-  min-height: 100vh;
-  margin-top: 5px;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 40px;
-  box-sizing: border-box;
-  overflow: hidden;
-
-  background-color: #f0f0f0;
+  min-height: 100vh;
+  color: #222;
+  font-family: "Inter", sans-serif;
+ background-color: #f0f0f0;
   background-image:
     /* Subtle paper grain */ repeating-linear-gradient(
       135deg,
@@ -32,539 +32,290 @@
   background-blend-mode: multiply;
 }
 
+/* Card container */
 .roast-card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: relative;
-  width: 100%;
-  max-width: 350px;
-  min-width: 280px;
-  padding: 10px;
-  box-sizing: border-box;
 }
 
+/* Roast card */
 .roast-card {
-  border: 3px dashed #111;
-  border-radius: 16px;
-  padding: 16px;
-  background: linear-gradient(145deg, #fff 0%, #fef2f2 100%);
-  box-shadow: 6px 6px 0px #000;
-  transition: transform 0.3s ease;
-  width: 100%;
-}
-
-.roast-card:hover {
-  transform: scale(1.015);
+  background: #fff;
+border-top-left-radius: 20px;
+border-top-right-radius: 20px;
+border-bottom-left-radius: 20px;
+border-bottom-right-radius: 20px;
+width: 300px;
+  max-width: 90vw;
+  height: 450px;   /* fixed height for card */
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .roast-card.blurred {
-  filter: blur(3px);
+  filter: blur(4px);
   pointer-events: none;
+}
+
+/* Roast image */
+.roast-image-container {
+  position: relative;
+  margin-bottom: 15px;
 }
 
 .roast-image {
   width: 100%;
-  height: auto;
   aspect-ratio: 4 / 3.5;
-  object-fit: cover; /* or remove entirely */
-  border-radius: 12px;
-  border: 2px dashed #222;
-  margin-bottom: 10px;
-  background-color: #fff;
+  object-fit: cover;
 }
 
+.timestamp-glass {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-family: 'concert one', serif;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #444;
+}
+
+/* Share buttons */
+.sketchy-share-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.sketchy-share {
+  background: #f9f9f9;
+  color: #222;
+border: 2px dashed #222;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.sketchy-share:hover {
+  background: #eee;
+}
+
+/* Roast list scrollable */
 .roast-list {
   list-style: none;
-  padding: 0;
-  margin: 0;
+  margin: 0px 0;
+padding: 5px;
   text-align: left;
-  max-height: 48px;
-  overflow-y: auto;
-  padding-right: 4px;
-  margin-bottom: 8px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  flex: 1;               /* take remaining space */
+  overflow-y: auto;       /* scroll vertically */
+  scrollbar-width: thin;  /* Firefox */
+  scrollbar-color: #bbb transparent;
 }
 
+/* Custom scrollbar (Webkit browsers) */
 .roast-list::-webkit-scrollbar {
-  display: none;
+  width: 6px;
+}
+.roast-list::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 3px;
+}
+.roast-list::-webkit-scrollbar-track {
+  background: transparent;
 }
 
+/* Roast item */
 .roast-item {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 6px 0;
-  font-size: 0.92rem;
-  gap: 8px;
+  align-items: center;
+  background: #fafafa;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-family: 'RocknRoll One', serif;
 }
 
-/* Highlight first roast */
-.roast-item:first-child {
-  border-bottom: 2px dashed #000;
-}
-
-/* Hide other roast item borders */
-.roast-item:not(:first-child) {
-  opacity: 0.8;
-}
-
-.roast-item span {
-  flex: 1;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  white-space: normal;
-  padding-right: 10px;
+.long-roast {
+  font-size: 12px;
+  color: #777;
 }
 
 .vote-button {
-  flex-shrink: 0; /* prevent shrinking */
-  white-space: nowrap; /* prevent line wrap */
-  background-color: #fff5f5;
-  border: 2px solid black;
-  padding: 4px 8px;
-  font-family: inherit;
-  cursor: pointer;
+  background: none;
   border-radius: 6px;
-  box-shadow: 2px 2px 0 black;
-  transition: all 0.2s ease;
-  height: fit-content;
-  align-self: flex-start; /* optional: align button to top */
+  padding: 4px 8px;
+  cursor: pointer;
+  color: #333;
+  border:none;
+  outline:none;
+  white-space: nowrap;
+  transition: 0.2s;
+font-family: 'spicy rice', serif
 }
 
 .vote-button:hover {
-  background-color: #ffe1e1;
+  background: #f1f1f1;
 }
 
+/* Input row */
 .input-row {
   display: flex;
   margin-top: 12px;
-  gap: 6px;
+  gap: 8px;
+padding: 0px 20px 20px 20px;
 }
 
 .roast-input {
   flex: 1;
-  padding: 6px;
-  border: 2px dashed black;
-  font-family: inherit;
-  border-radius: 6px;
-  background-color: #fff;
+  background: #eee;
+  
+  border: none;
+  outline:none;
+  padding: 8px;
+  color: #222;
+}
+
+.roast-input::placeholder {
+  color: #aaa;
 }
 
 .roast-button {
-  padding: 6px 12px;
-  background-color: #fff8f8;
-  border: 2px dashed #000;
-  font-family: "Spicy Rice", serif;
+  background: #222;
+  border:none;
+  outline: none;
+  padding: 8px 14px;
   cursor: pointer;
-  border-radius: 6px;
-  box-shadow: 2px 2px 0 black;
-  transition: background 0.2s ease;
+  font-weight: bold;
+  font-weight: 1000;
+  color: #fff;
+  transition: 0.2s;
+margin-right: 20px;
+font-family: 'twinkle star', serif
 }
+
 .roast-button:hover {
-  background-color: #fff0f0;
+  background: #f1f1f1;
 }
 
-.swipe-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  backdrop-filter: blur(3px);
-  background-color: rgba(255, 255, 255, 0.85);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.1rem;
-  font-weight: bold;
-  border: 3px double black;
-  border-radius: 16px;
-  z-index: 10;
-  animation: pulseSwipe 1s infinite alternate;
-  text-align: center;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-@keyframes pulseSwipe {
-  0% {
-    transform: scale(1);
-  }
-  100% {
-    transform: scale(1.03);
-  }
-}
-.roast-content {
-  display: flex;
-  align-items: stretch; /* match image height with text column */
-  gap: 12px;
-  margin-top: 8px;
-  text-align: left;
-}
-
-.roast-text-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.tall-image {
-  width: 100px;
-  height: auto;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 2px solid #f55;
-}
-
-.roast-row {
-  display: flex;
-  flex-direction: row;
-}
-
-.roast-text {
-  flex: 1;
-  text-align: left;
-  font-size: 1rem;
-  color: #444;
-  word-break: break-word;
-}
-
-.roast-of-day .votes {
-  font-size: 1.1rem;
-  color: #d7263d;
-  font-weight: bold;
-  white-space: nowrap;
-  padding-left: 10px;
-}
-.top-roast-image {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  margin-right: 1px;
-  border-radius: 12px;
-  border: 2px solid #444;
-}
-
-.animated-card {
-  animation: popIn 0.5s ease-out;
-}
-
-@keyframes popIn {
-  0% {
-    transform: scale(0.85);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.roast-of-day {
-  background: linear-gradient(135deg, #fff5da, #ffebc2);
-  border: 2px dashed black;
-  padding: 10px 14px;
-  margin-bottom: 16px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 5px 5px 0 black;
-  font-family: "Patrick Hand", cursive;
-  animation: highlightRoast 1s ease-in-out;
-  width: 100%;
-  max-width: 330px;
-}
-
-.roast-of-day h3 {
-  margin: 0;
-  font-size: 1.3rem;
-  color: #b34c00;
-  white-space: nowrap;
-  overflow: hidden;
-  font-family: "nerko one", serif;
-  text-overflow: ellipsis;
-}
-
-.roast-of-day p {
-  font-size: 1rem;
-  margin: 6px 0;
-  color: #444;
-}
-
-.fab-upload:disabled {
-  opacity: 0.5;
-}
-
+/* FAB buttons */
 .fab-upload {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  border: 2px dashed #222;
-  background-color: #fff;
-  color: #222;
+  bottom: 24px;
+  right: 24px;
+  background: #fff;
+  border: 1px solid #ccc;
   border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 24px;
+  width: 56px;
+  height: 56px;
+  font-size: 22px;
+  color: #222;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  transition: background-color 0.3s;
-}
-
-.fab-upload:hover {
-  background-color: #444;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .fab-options {
   position: fixed;
   bottom: 90px;
-  right: 25px;
+  right: 24px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  z-index: 1000;
 }
 
 .fab-option {
-  background-color: #fff;
-  color: #111;
-  border: 2px dashed #000;
+  background: #fff;
+  border: 1px solid #ccc;
   border-radius: 50%;
-  width: 45px;
-  height: 45px;
+  width: 48px;
+  height: 48px;
   font-size: 20px;
-  box-shadow: 2px 2px 0 black;
+  color: #222;
   cursor: pointer;
-  transition: all 0.2s ease;
-
-  /* Add these for centering */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
+  transition: 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .fab-option:hover {
-  background-color: #f5f5f5;
+  background: #f1f1f1;
 }
 
+/* Popup */
 .top-roast-popup {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(3px);
-  z-index: 1001;
+  background: rgba(255,255,255,0.8);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .top-roast-popup-inner {
-  position: relative;
-  width: 90%;
-  max-width: 340px;
-  background: linear-gradient(135deg, #fff7d6, #ffebc2);
-  border: 3px dashed #222;
-  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 20px;
   padding: 20px;
+  width: 300px;
+  max-width: 90vw;
   text-align: center;
-  box-shadow: 5px 5px 0 #000;
-  animation: popIn 0.4s ease-out;
-  font-family: "Patrick Hand", cursive;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
 }
 
-.top-roast-popup-inner h3 {
-  margin: 0 0 10px;
-  font-size: 1.3rem;
-  color: #b34c00;
-  font-family: "Nerko One", cursive;
+.close-popup {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 18px;
+  float: right;
+  cursor: pointer;
 }
 
 .top-roast-popup-image {
   width: 100%;
-  object-fit: cover;
-  border: solid 2px;
-  margin-bottom: 10px;
-  border-image-source: linear-gradient(to bottom right, crimson, hotpink);
-  border-image-slice: 4;
-  height: auto;
-  aspect-ratio: 4 / 3.5;
+  border-radius: 12px;
+  margin: 12px 0;
 }
 
 .popup-roast-text {
-  font-size: 1rem;
+  font-size: 14px;
   color: #333;
-  margin-bottom: 10px;
-
-  /* NEW PROPERTIES */
-  max-height: 120px; /* Limit height */
-  overflow-y: auto; /* Scroll if needed */
-  word-wrap: break-word; /* Break long words */
-  white-space: pre-wrap; /* Respect line breaks */
-  padding-right: 4px; /* Padding for scrollbar space */
-}
-
-.popup-roast-text::-webkit-scrollbar {
-  display: none;
-}
-.popup-roast-text {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
 .popup-roast-votes {
-  font-size: 1.1rem;
-  color: #d7263d;
-  font-weight: bold;
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #555;
 }
 
-.close-popup {
-  position: absolute;
-  top: 6px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #333;
-}
-
-.sketchy-share-buttons {
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-  justify-content: center;
-}
-
-.sketchy-share {
-  font-family: "Patrick Hand", cursive;
-  background-color: #fffdf5;
-  border: 2px dashed #111;
-  padding: 4px 10px;
-  border-radius: 6px;
-  box-shadow: 2px 2px 0 #000;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.sketchy-share:hover {
-  background-color: #fffbdf;
-  transform: scale(1.05);
-}
-
-.share-button-with-count {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 8px;
-}
-
-.myShareCountWrapper {
-  font-family: "Comic Sans MS", cursive, sans-serif;
-  background: #fdf6e3;
-  border: 2px dashed #444;
-  padding: 2px 6px;
-  margin-top: 4px;
-  font-size: 12px;
-  color: #444;
-  border-radius: 4px;
-}
-
-@media (max-width: 600px) {
-  .roast-page {
-    margin-top: 25%;
-    padding: 25px;
-    align-items: flex-start;
-  }
-
-  .roast-card-container {
-    padding: 0;
-    max-width: 100%;
-  }
-
-  .roast-card {
-    padding: 12px;
-  }
-
-  .popup-roast-text {
-    max-height: 100px;
-    font-size: 0.95rem;
-  }
-
-  .top-roast-popup-inner {
-    padding: 12px;
-  }
-}
-.roast-image-container {
-  position: relative;
-  width: 100%;
-  display: inline-block;
-}
-
-.timestamp-glass {
-  position: absolute;
-  bottom: 10px;
-  right: 12px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  color: #fff;
-  font-weight: bold;
-  font-size: 0.75rem;
-  padding: 4px 8px;
-  border-radius: 10px;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-}
-
-
+/* Full image */
 .full-image-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  backdrop-filter: blur(10px);
-  background-color: rgba(0, 0, 0, 0.6);
-  z-index: 9999;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(255,255,255,0.9);
   display: flex;
-  align-items: center;
   justify-content: center;
-  cursor: zoom-out;
+  align-items: center;
 }
 
 .full-image-popup {
   max-width: 90%;
   max-height: 90%;
   border-radius: 12px;
-  box-shadow: 0 0 20px #000;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-/* Hide on screens less than 768px (typical breakpoint for tablets/mobiles) */
-.reddit-desktop-only {
-  display: inline-block;
-}
-
-@media (max-width: 767px) {
-  .reddit-desktop-only {
-    display: none !important;
-  }
+  border: 2px solid #ddd;
 }

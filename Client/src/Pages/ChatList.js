@@ -26,7 +26,14 @@ import MiniSpinner from "../Components/MiniSpinner";
 import SketchyAlert from "../Components/SketchyAlert";
 import FeedbackPopup from "../Components/FeedbackPopup";
 import { trackEvent } from "../Utils/analytics";
-import {getDB, getUsers, getUsersFiltered, saveUsers, setLastSync, getLastSync} from "../Utils/db.js";
+import {
+  getDB,
+  getUsers,
+  getUsersFiltered,
+  saveUsers,
+  setLastSync,
+  getLastSync,
+} from "../Utils/db.js";
 
 const countryNameToCode = {
   AF: "AF",
@@ -638,22 +645,24 @@ const ChatList = () => {
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [dataChanged, setDataChanged] = useState(false); // ✅ Track if data changed
   const [submitting, setSubmitting] = useState(false); // ✅ Show "Submitting..."
-useEffect(() => {
-  const logIndexedDBSize = async () => {
-    try {
-      const users = await getUsers(); // fetch all users from IndexedDB
-      const json = JSON.stringify(users); // serialize to string
-      const bytes = new TextEncoder().encode(json).length; // get byte length
-      const kb = (bytes / 1024).toFixed(2);
-      const mb = (bytes / (1024 * 1024)).toFixed(2);
-      console.log(`📦 IndexedDB storage: ${bytes} bytes | ${kb} KB | ${mb} MB`);
-    } catch (err) {
-      console.error("❌ Failed to compute IndexedDB size:", err);
-    }
-  };
+  useEffect(() => {
+    const logIndexedDBSize = async () => {
+      try {
+        const users = await getUsers(); // fetch all users from IndexedDB
+        const json = JSON.stringify(users); // serialize to string
+        const bytes = new TextEncoder().encode(json).length; // get byte length
+        const kb = (bytes / 1024).toFixed(2);
+        const mb = (bytes / (1024 * 1024)).toFixed(2);
+        console.log(
+          `📦 IndexedDB storage: ${bytes} bytes | ${kb} KB | ${mb} MB`
+        );
+      } catch (err) {
+        console.error("❌ Failed to compute IndexedDB size:", err);
+      }
+    };
 
-  logIndexedDBSize();
-}, []); // runs once on component mount
+    logIndexedDBSize();
+  }, []); // runs once on component mount
 
   useEffect(() => {
     // Reset user list when tab changes
@@ -662,145 +671,175 @@ useEffect(() => {
     setHasMore(true);
   }, [activeTab, genderFilter, countryFilter]);
 
-useEffect(() => {
-  const formatIST = (utcString) => {
-    if (!utcString) return "N/A";
-    return new Date(utcString).toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-  };
+  useEffect(() => {
+    const formatIST = (utcString) => {
+      if (!utcString) return "N/A";
+      return new Date(utcString).toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+    };
 
-  const fetchUsers = async () => {
-    if (
-      debouncedSearchTerm.trim().length > 0 &&
-      debouncedSearchTerm.trim().length < 2
-    ) {
-      setUsers([]);
-      setLoading(false);
-      setLoadingMore(false);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      console.log("🔄 Checking last sync...");
-      const lastSync = await getLastSync();
-
-      if (!lastSync) {
-        console.log("🟢 First fetch detected (no previous sync)");
-      } else {
-        console.log("🔁 Next fetch detected (last sync =", formatIST(lastSync), ")");
+    const fetchUsers = async () => {
+      if (
+        debouncedSearchTerm.trim().length > 0 &&
+        debouncedSearchTerm.trim().length < 2
+      ) {
+        setUsers([]);
+        setLoading(false);
+        setLoadingMore(false);
+        return;
       }
 
-      // Fetch latest timestamp from Supabase
-      const { data: latest, error: latestError } = await supabase
-        .from("users")
-        .select("created_at")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+      setLoading(true);
 
-      const latestTimestamp = latest?.created_at;
-      console.log("🕒 Latest user in Supabase:", formatIST(latestTimestamp));
+      try {
+        console.log("🔄 Checking last sync...");
+        const lastSync = await getLastSync();
 
-      let fetchedUsers = [];
-      let source = "Unknown";
-
-      if (!latestError && lastSync && new Date(latestTimestamp) <= new Date(lastSync)) {
-        // ✅ No new data → load all from IndexedDB
-        fetchedUsers = await getUsersFiltered({ activeTab, genderFilter, countryFilter, searchTerm });
-
-        source = "IndexedDB (no new users in Supabase)";
-        console.log(`[IndexedDB] 📂 Loaded ${fetchedUsers.length} users`);
-      } else {
-        // ✅ New data → only fetch users created after lastSync
-        console.log("🌐 Source: Supabase (fetching NEW users)...");
-
-        let query = supabase
-          .from("users")
-          .select("id, name, profile_pic, country, gender, status, age, decency_rating, created_at");
-
-        if (lastSync) {
-          query = query.gt("created_at", lastSync); // 👈 incremental fetch
-        }
-
-        if (activeTab === "all") {
-          query = query.neq("country", "IN").order("created_at", { ascending: false });
-        }
-        if (genderFilter !== "all") query = query.eq("gender", genderFilter);
-        if (countryFilter !== "all") query = query.eq("country", countryFilter);
-        if (activeTab === "online") {
-          query = query.eq("status", "online").order("created_at", { ascending: false });
-        }
-        if (searchTerm.trim() !== "") {
-          query = query.ilike("name", `%${searchTerm}%`);
-        }
-
-        const { data: newUsers, error } = await query;
-
-        if (!error && newUsers) {
-          console.log(`🌐 Supabase returned ${newUsers.length} NEW users`);
-
-          // Save only new users
-          if (newUsers.length > 0) {
-            await saveUsers(newUsers);
-            await setLastSync(latestTimestamp);
-            console.log(`[IndexedDB] ✅ Saved ${newUsers.length} users`);
-            console.log("[IndexedDB] ⏱️ Updated lastSync =", formatIST(latestTimestamp));
-          }
+        if (!lastSync) {
+          console.log("🟢 First fetch detected (no previous sync)");
         } else {
-          console.error("❌ Supabase fetch error:", error);
+          console.log(
+            "🔁 Next fetch detected (last sync =",
+            formatIST(lastSync),
+            ")"
+          );
         }
 
-        // After saving → always load full list from IndexedDB
-        fetchedUsers = await getUsersFiltered({ activeTab, genderFilter, countryFilter, searchTerm });
+        // Fetch latest timestamp from Supabase
+        const { data: latest, error: latestError } = await supabase
+          .from("users")
+          .select("created_at")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
 
-        source = "Supabase (fetched new users)";
-        console.log(`[IndexedDB] 📂 Loaded ${fetchedUsers.length} users`);
+        const latestTimestamp = latest?.created_at;
+        console.log("🕒 Latest user in Supabase:", formatIST(latestTimestamp));
+
+        let fetchedUsers = [];
+        let source = "Unknown";
+
+        if (
+          !latestError &&
+          lastSync &&
+          new Date(latestTimestamp) <= new Date(lastSync)
+        ) {
+          // ✅ No new data → load all from IndexedDB
+          fetchedUsers = await getUsersFiltered({
+            activeTab,
+            genderFilter,
+            countryFilter,
+            searchTerm,
+          });
+
+          source = "IndexedDB (no new users in Supabase)";
+          console.log(`[IndexedDB] 📂 Loaded ${fetchedUsers.length} users`);
+        } else {
+          // ✅ New data → only fetch users created after lastSync
+          console.log("🌐 Source: Supabase (fetching NEW users)...");
+
+          let query = supabase
+            .from("users")
+            .select(
+              "id, name, profile_pic, country, gender, status, age, decency_rating, created_at"
+            );
+
+          if (lastSync) {
+            query = query.gt("created_at", lastSync); // 👈 incremental fetch
+          }
+
+          if (activeTab === "all") {
+            query = query
+              .neq("country", "IN")
+              .order("created_at", { ascending: false });
+          }
+          if (genderFilter !== "all") query = query.eq("gender", genderFilter);
+          if (countryFilter !== "all")
+            query = query.eq("country", countryFilter);
+          if (activeTab === "online") {
+            query = query
+              .eq("status", "online")
+              .order("created_at", { ascending: false });
+          }
+          if (searchTerm.trim() !== "") {
+            query = query.ilike("name", `%${searchTerm}%`);
+          }
+
+          const { data: newUsers, error } = await query;
+
+          if (!error && newUsers) {
+            console.log(`🌐 Supabase returned ${newUsers.length} NEW users`);
+
+            // Save only new users
+            if (newUsers.length > 0) {
+              await saveUsers(newUsers);
+              await setLastSync(latestTimestamp);
+              console.log(`[IndexedDB] ✅ Saved ${newUsers.length} users`);
+              console.log(
+                "[IndexedDB] ⏱️ Updated lastSync =",
+                formatIST(latestTimestamp)
+              );
+            }
+          } else {
+            console.error("❌ Supabase fetch error:", error);
+          }
+
+          // After saving → always load full list from IndexedDB
+          fetchedUsers = await getUsersFiltered({
+            activeTab,
+            genderFilter,
+            countryFilter,
+            searchTerm,
+          });
+
+          source = "Supabase (fetched new users)";
+          console.log(`[IndexedDB] 📂 Loaded ${fetchedUsers.length} users`);
+        }
+
+        // ✅ Log overall profile pic source
+        console.log(`🖼️ Profile pics source for this fetch: ${source}`);
+
+        // ✅ Fetch pinned list
+        const { data: pinnedData } = await supabase
+          .from("pinned_users")
+          .select("pinned_user_id")
+          .eq("user_id", user.id);
+
+        const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
+
+        const processed = fetchedUsers
+          .filter((u) => u.id !== user.id)
+          .map((u) => ({
+            ...u,
+            avatar:
+              u.profile_pic instanceof Blob
+                ? URL.createObjectURL(u.profile_pic)
+                : empty,
+            notifications: unreadCounts[u.id] || 0,
+            pinned: pinnedIds.includes(u.id),
+            status: u.status || "offline",
+          }));
+
+        console.log(`✅ Processed ${processed.length} users for display`);
+        setUsers(processed);
+      } catch (err) {
+        console.error("⚠️ fetchUsers error:", err);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+        setFirstLoad(false);
       }
+    };
 
-      // ✅ Log overall profile pic source
-      console.log(`🖼️ Profile pics source for this fetch: ${source}`);
-
-      // ✅ Fetch pinned list
-      const { data: pinnedData } = await supabase
-        .from("pinned_users")
-        .select("pinned_user_id")
-        .eq("user_id", user.id);
-
-      const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
-
-      const processed = fetchedUsers
-        .filter((u) => u.id !== user.id)
-        .map((u) => ({
-          ...u,
-          avatar: u.profile_pic instanceof Blob ? URL.createObjectURL(u.profile_pic) : empty,
-          notifications: unreadCounts[u.id] || 0,
-          pinned: pinnedIds.includes(u.id),
-          status: u.status || "offline",
-        }));
-
-      console.log(`✅ Processed ${processed.length} users for display`);
-      setUsers(processed);
-
-    } catch (err) {
-      console.error("⚠️ fetchUsers error:", err);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      setFirstLoad(false);
-    }
-  };
-
-  fetchUsers();
-}, [activeTab, genderFilter, countryFilter, searchTerm]);
+    fetchUsers();
+  }, [activeTab, genderFilter, countryFilter, searchTerm]);
 
   const filteredUsers = useMemo(() => {
     let filtered = users.filter((user) => {
@@ -887,8 +926,6 @@ useEffect(() => {
       filtered = [...alternated, ...others];
     }
 
-    // ✅ Apply pagination here (10 users per page)
-    // ✅ Show all items up to the current page
     const pageSize = 10;
     const end = (page + 1) * pageSize;
 

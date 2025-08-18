@@ -472,20 +472,7 @@ function Roast() {
                   )}
                 </button>
               </WhatsappShareButton>
-              <RedditShareButton
-                url={window.location.href}
-                title="🔥 Check this roast!"
-                onClick={handleShare}
-                className="reddit-desktop-only" // 👈 Add this
-              >
-                <button className="sketchy-share">
-                  Reddit{" "}
-                  {(count) => (
-                    <span className="myShareCountWrapper">{count}</span>
-                  )}
-                </button>
-              </RedditShareButton>
-            </div>
+              </div>
 
             <ul className="roast-list">
               {cards[currentIndex].roasts

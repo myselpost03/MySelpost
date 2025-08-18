@@ -4,7 +4,7 @@ import Header from "../Components/Header";
 import "../Styles/Register.css";
 import bcrypt from "bcryptjs";
 import imageCompression from "browser-image-compression";
-import { supabase } from "../Utils/supabaseClient";
+import { supabase, supabaseStorage } from "../Utils/supabaseClient";
 import { trackEvent } from "../Utils/analytics";
 import confetti from "canvas-confetti"; // ✅ Import confettiimport { Toaster } from 'react-hot-toast';
 import toast, { Toaster } from "react-hot-toast";
@@ -238,138 +238,130 @@ const Register = () => {
     emailValid &&
     !nameTaken;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
 
-    try {
-      if (
-        !formData.name ||
-        !formData.email ||
-        !formData.password ||
-        !formData.profilePic
-      ) {
-        setError("All fields are required.");
-        setLoading(false);
-        return;
-      }
+  try {
+    // Required fields check
+    if (!formData.name || !formData.email || !formData.password || !formData.profilePic) {
+      setError("All fields are required.");
+      setLoading(false);
+      return;
+    }
 
-      {
-        /*if (deviceBlocked) {
-        setError("Account already exists on this device.");
-        setLoading(false);
-        return;
-      }*/
-      }
+    // Password length check
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      setLoading(false);
+      return;
+    }
 
-      if (formData.password.length < 8) {
-        setError("Password must be at least 8 characters long.");
-        setLoading(false);
-        return;
-      }
+    // File type validation
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validTypes.includes(formData.profilePic.type)) {
+      setError("Only JPG, PNG, or WEBP images are allowed.");
+      setLoading(false);
+      return;
+    }
 
-      const validTypes = ["image/jpeg", "image/png", "image/webp"];
-      if (!validTypes.includes(formData.profilePic.type)) {
-        setError("Only JPG, PNG, or WEBP images are allowed.");
-        setLoading(false);
-        return;
-      }
-      const hashedPassword = await bcrypt.hash(formData.password, 10);
+    const hashedPassword = await bcrypt.hash(formData.password, 10);
 
-      let profilePicUrl = null;
-      if (formData.profilePic) {
-        const fileExt = formData.profilePic.name.split(".").pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = `avatars/${fileName}`;
+    // Upload profile pic to storage DB
+    let profilePicUrl = null;
+    if (formData.profilePic) {
+      const fileExt = formData.profilePic.name.split(".").pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from("profile-pics")
-          .upload(filePath, formData.profilePic);
+      const { error: uploadError } = await supabaseStorage
+        .storage
+        .from("profile-pics")
+        .upload(filePath, formData.profilePic);
 
-        if (uploadError) throw uploadError;
+      if (uploadError) throw uploadError;
 
-        const { data: publicUrlData } = supabase.storage
-          .from("profile-pics")
-          .getPublicUrl(filePath);
+      const { data: publicUrlData } = supabaseStorage
+        .storage
+        .from("profile-pics")
+        .getPublicUrl(filePath);
 
-        profilePicUrl = publicUrlData.publicUrl;
-      }
+      profilePicUrl = publicUrlData.publicUrl;
+    }
 
-      const { error } = await supabase.from("users").insert([
+    // Insert user into main DB
+    const { error: insertError } = await supabase
+      .from("users")
+      .insert([
         {
           name: formData.name,
           email: formData.email,
           password: hashedPassword,
           profile_pic: profilePicUrl,
           country: country,
-          //  device_id: deviceId,
+          // device_id: deviceId,
         },
       ]);
 
-      if (error) throw error;
+    if (insertError) throw insertError;
 
-      trackEvent({
-        action: "button_click",
-        category: "User Interaction",
-        label: "Register Button",
-      });
-      // Simulate login: fetch the user from your DB
-      const { data: userData, error: loginError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("email", formData.email)
-        .single();
+    // Track registration event
+    trackEvent({
+      action: "button_click",
+      category: "User Interaction",
+      label: "Register Button",
+    });
 
-      if (loginError || !userData) {
-        setError("Failed to log in after registration.");
-        return;
-      }
+    // Simulate login after registration
+    const { data: userData, error: loginError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", formData.email)
+      .single();
 
-      // Check password manually (bcrypt compare)
-      const passwordMatch = await bcrypt.compare(
-        formData.password,
-        userData.password
-      );
-      if (!passwordMatch) {
-        setError("Password mismatch.");
-        return;
-      }
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: userData.id,
-          name: userData.name,
-          email: userData.email,
-          coins: userData.reward_coins ?? 0,
-          rewardTime: userData.last_coin_award_time ?? null,
-        })
-      );
-      setShowAlert(true);
-      toast.success("Registered Successfully!");
-      confetti({
-        particleCount: 150,
-        spread: 70,
-        origin: { y: 0.6 },
-      });
-
-      setTimeout(() => {
-        setShowAlert(false);
-        // after successful login
-        if (isMobileDevice()) {
-          navigate("/chat-list", { replace: true });
-        } else {
-          navigate("/", { replace: true }); // Or wherever you want desktop users to land
-        }
-      }, 2000);
-    } catch (err) {
-      setError(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
+    if (loginError || !userData) {
+      setError("Failed to log in after registration.");
+      return;
     }
-  };
 
+    const passwordMatch = await bcrypt.compare(formData.password, userData.password);
+    if (!passwordMatch) {
+      setError("Password mismatch.");
+      return;
+    }
+
+    // Save user locally
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        coins: userData.reward_coins ?? 0,
+        rewardTime: userData.last_coin_award_time ?? null,
+      })
+    );
+
+    setShowAlert(true);
+    toast.success("Registered Successfully!");
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+
+    setTimeout(() => {
+      setShowAlert(false);
+      if (isMobileDevice()) {
+        navigate("/chat-list", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+    }, 2000);
+
+  } catch (err) {
+    setError(err.message || "Something went wrong");
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div>
       <Header />
