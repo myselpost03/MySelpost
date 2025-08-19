@@ -38,6 +38,7 @@ import { supabase } from "./Utils/supabaseClient";
 import SketchyAlert from "./Components/SketchyAlert";
 import InternetStatusAlert from "./Components/InternetStatusAlert";
 import { useLocation } from "react-router-dom";
+import { isRunningAsPWA } from "./CheckPWA";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
@@ -172,9 +173,11 @@ function UserStatusWrapper() {
 
 function AppContent() {
   const [alertMessage, setAlertMessage] = useState(null);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const location = useLocation(); // ✅ get current path
   const [ready, setReady] = useState(false); // ✅ prevent early render
+
   useEffect(() => {
     const visibilityChannel = new BroadcastChannel("chat_app_visibility");
     const sendVisibility = () => {
@@ -209,6 +212,46 @@ function AppContent() {
     }, 3600000);
     return () => clearInterval(interval);
   }, []);
+
+
+    useEffect(() => {
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      if (!storedUser || !storedUser.id) return;
+  
+      if (storedUser && storedUser.id) {
+        setUser(storedUser);
+      } else {
+        setUser(null);
+        return;
+      }
+  
+      const rewardKey = `${storedUser.id}`;
+  
+      if (isRunningAsPWA() && !localStorage.getItem(rewardKey)) {
+        //console.log("🚀 PWA detected – rewarding 30 coins");
+  
+        (async () => {
+          try {
+            const { error } = await supabase.rpc("increment_reward_coins", {
+              user_id_input: storedUser.id,
+              increment_by: 30,
+            });
+  
+            if (error) {
+              // console.error("❌ PWA reward error:", error.message);
+            } else {
+              localStorage.setItem(rewardKey, "true");
+              setAlertMessage({
+                text: "🎉 App Installed! You got +30 coins.",
+                withButton: true,
+              });
+            }
+          } catch (err) {
+            // console.error("❗ Unexpected PWA reward error:", err);
+          }
+        })();
+      }
+    }, []);
 
   useEffect(() => {
     if (!isMobileDevice()) {

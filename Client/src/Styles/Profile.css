@@ -1,5 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Gloria+Hallelujah&display=swap");
 @import url("https://fonts.googleapis.com/css?family=Lilita+One:regular");
+@import url(https://fonts.googleapis.com/css?family=Aclonica:regular);
+@import url(https://fonts.googleapis.com/css?family=IM+Fell+English:regular,italic);
 
 .sketchy-profile-wrapper {
   max-width: 500px;
@@ -13,18 +15,34 @@
   animation: popIn 0.6s ease;
 }
 
+.sketchy-install-btn {
+  font-family: "Lilita One", cursive, sans-serif;
+  font-size: 1.2rem;
+  color: #fff0f0;
+ background: linear-gradient(135deg, #0d0d0d, #1c1c1c, #333333, #000000);
+ padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  user-select: none;
+  
+border: none;
+outline: none;
+}
+
 .sketchy-logout-btn {
   font-family: "Lilita One", cursive, sans-serif;
   font-size: 1.2rem;
   color: #fff0f0;
   background: linear-gradient(135deg, #dc143c, #b22222, #8b0000);
-  border: 3px dashed #4b0000;
   padding: 10px 18px;
   border-radius: 10px;
   cursor: pointer;
-  box-shadow: 4px 4px 0 #000;
   transition: all 0.2s ease-in-out;
   user-select: none;
+  
+border: none;
+outline: none;
 }
 
 .sketchy-logout-btn:hover {
@@ -124,22 +142,22 @@
 
 .sketchy-profile-update-btn {
   padding: 10px 16px;
-  border: 2px dashed #000;
   background: linear-gradient(135deg, #a8ff78, #78ffd6);
   font-weight: bold;
-  font-family: "Lilita One", sans-serif;
+  font-family: "Concert One", sans-serif;
   cursor: pointer;
+  white-space: nowrap;
   border-radius: 12px;
   font-size: 1.2rem;
   transition: all 0.3s ease;
-  box-shadow: 3px 3px 0 #000;
   color: #003300;
+border: none;
+outline: none;
 }
 
 .sketchy-profile-update-btn:hover {
   transform: scale(1.05);
   background: linear-gradient(135deg, #96f78f, #5cffd2);
-  box-shadow: 2px 2px 0 #000;
 }
 
 .sketchy-profile-avatar {
@@ -299,12 +317,14 @@
   font-size: 1.2rem;
   color: #3e2f00;
   background: linear-gradient(135deg, #f9d423 0%, #ffcc00 50%, #f9a602 100%);
-  border: 3px dashed #b8860b;
   padding: 12px 20px;
   border-radius: 12px;
   cursor: pointer;
-  box-shadow: 4px 4px 0 #000;
   transition: all 0.2s ease;
+    height: 3rem;
+  white-space: nowrap;
+border: none;
+outline: none;
   display: inline-block;
   text-align: center;
   user-select: none;
@@ -330,16 +350,15 @@
 .sketchy-file-upload-btn {
   font-family: "Lilita One", cursive;
   font-size: 1rem;
-  background: linear-gradient(135deg, #fdfd96, #fce38a);
-  border: 2px dashed #222;
+  background: linear-gradient(135deg, #f0f084, #fce38a);
   padding: 10px 16px;
   border-radius: 12px;
-  box-shadow: 3px 3px 0 #000;
   cursor: pointer;
   transition: all 0.2s ease;
   color: #333;
   text-align: center;
-
+border: none;
+outline: none;
   /* Prevent stretching */
   max-width: 220px;
   white-space: nowrap;
@@ -406,9 +425,10 @@
   }
 }
 .sketchy-send-gift-btn {
-  font-family: "Lilita One", cursive, sans-serif;
+  font-family: "Aclonica", cursive, sans-serif;
 width: 328px;
-  font-size: 1.2rem;
+  font-size: 1rem;
+  margin-bottom: 10px;
   font-weight: bold;
   color: #3e2f00;
   background: linear-gradient(135deg, #f9d423 0%, #ffcc00 50%, #f9a602 100%);
@@ -418,6 +438,8 @@ width: 328px;
   display: inline-block;
   text-align: center;
   user-select: none;
+  border:none;
+  outline: none;
 }
 
 .sketchy-send-gift-btn:hover {
@@ -511,4 +533,11 @@ width: 328px;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.8);
   transition: background 0.2s;
+}
+
+.grid-group{
+   display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 buttons per row */
+  gap: 12px;
+  margin-top: 16px;
 }

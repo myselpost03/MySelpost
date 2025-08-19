@@ -1082,7 +1082,7 @@ const Chat = () => {
   return (
     <div className="Chat-UI">
       <SketchyHeader
-        title={targetUser.name}
+        title={targetUser?.name || "Chat"}
         onBack={handleBack}
       ></SketchyHeader>
 

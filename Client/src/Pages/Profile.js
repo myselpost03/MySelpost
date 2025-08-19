@@ -9,6 +9,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { getDB, saveUsers } from "../Utils/db";
 import MosaicAvatar from "../Components/MosaicAvatar";
 import imageCompression from "browser-image-compression";
+import { trackEvent } from "../Utils/analytics";
 
 const giftList = [
   "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png",
@@ -25,6 +26,7 @@ const Profile = () => {
   const [showImageModal, setShowImageModal] = useState(false);
   // Add new state
   const [showGiftList, setShowGiftList] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -42,26 +44,6 @@ const Profile = () => {
   const [receivedGifts, setReceivedGifts] = useState([]);
 
   const handleBack = () => navigate(-1);
-  const rows = 20;
-  const cols = 20;
-
-  // Build snake-like grid order
-  const grid = [];
-  let counter = 0;
-  for (let r = rows - 1; r >= 0; r--) {
-    // bottom to top
-    if ((rows - r) % 2 === 1) {
-      // left → right
-      for (let c = 0; c < cols; c++) {
-        grid.push({ row: r, col: c, index: counter++ });
-      }
-    } else {
-      // right → left
-      for (let c = cols - 1; c >= 0; c--) {
-        grid.push({ row: r, col: c, index: counter++ });
-      }
-    }
-  }
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -118,7 +100,75 @@ const Profile = () => {
       reader.readAsDataURL(file);
     }
   };
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
 
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+      setShowPopup(false);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    return () => {
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === "accepted") {
+      console.log("✅ User accepted the install");
+    } else {
+      console.log("❌ User dismissed the install");
+    }
+
+    setDeferredPrompt(null);
+    setShowPopup(false);
+    const { data, error } = await supabase
+      .from("users")
+      .update({ installed_app: true })
+      .eq("id", currentUserId);
+
+    if (error) {
+      console.error("Error updating field:", error);
+    } else {
+      console.log("Updated field:", data);
+    }
+    // Track install click
+    trackEvent({
+      action: "button_click",
+      category: "Install Popup",
+      label: "Install App",
+    });
+  };
+
+  const handleCancel = () => {
+    setShowPopup(false);
+    setDeferredPrompt(null);
+
+    // Track cancel click
+    window.gtag?.("event", "click", {
+      event_category: "Install Popup",
+      event_label: "Cancel Button",
+      value: 1,
+    });
+  };
   const fetchUser = async () => {
     try {
       const db = await getDB();
@@ -411,35 +461,48 @@ const Profile = () => {
 
             {isCurrentUser && (
               <>
-                <button
-                  className="sketchy-profile-update-btn"
-                  onClick={() =>
-                    status.editing
-                      ? handleUpdate()
-                      : setStatus((s) => ({ ...s, editing: true }))
-                  }
-                  disabled={status.uploading}
-                >
-                  {status.editing
-                    ? status.uploading
-                      ? "Saving..."
-                      : "Save Profile"
-                    : "Update Profile"}
-                </button>
-                <button
-                  className="sketchy-coin-btn-new"
-                  onClick={handleCoins}
-                  style={{ marginTop: 10 }}
-                >
-                  Get More Coins
-                </button>
-                <button
-                  className="sketchy-logout-btn"
-                  onClick={handleLogout}
-                  style={{ marginTop: 10 }}
-                >
-                  Logout
-                </button>
+                <div className="grid-group">
+                  <button
+                    className="sketchy-profile-update-btn"
+                    onClick={() =>
+                      status.editing
+                        ? handleUpdate()
+                        : setStatus((s) => ({ ...s, editing: true }))
+                    }
+                    disabled={status.uploading}
+                    style={{ marginTop: 10 }}
+                  
+                  >
+                    {status.editing
+                      ? status.uploading
+                        ? "Saving..."
+                        : "Save Profile"
+                      : "Update Profile"}
+                  </button>
+                  <button
+                    className="sketchy-coin-btn-new"
+                    onClick={handleCoins}
+                    style={{ marginTop: 10 }}
+                  >
+                    Get Coins
+                  </button>
+                  <button
+                    className="sketchy-install-btn"
+                    onClick={() => setShowPopup(true)}
+                    disabled={!deferredPrompt}
+                    style={{ marginTop: 10 }}
+                    
+                  >
+                    Install App
+                  </button>
+                  <button
+                    className="sketchy-logout-btn"
+                    onClick={handleLogout}
+                    style={{ marginTop: 10 }}
+                  >
+                    Logout
+                  </button>
+                </div>{" "}
               </>
             )}
           </div>
@@ -519,6 +582,67 @@ const Profile = () => {
           </div>
         )}
       </div>
+      {showPopup && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            width: "100%",
+            backgroundColor: "#ffffff",
+            padding: "20px",
+            textAlign: "center",
+            boxShadow: "rgba(0,0,0,0.1) 0px 4px 12px",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "10px",
+            }}
+          >
+            <button
+              onClick={handleInstall}
+              style={{
+                backgroundColor: "#03c988",
+                color: "#ffffff",
+                border: "none",
+                padding: "10px 20px",
+                fontSize: "16px",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              Install
+            </button>
+            <button
+              onClick={handleCancel}
+              style={{
+                backgroundColor: "#ff6666",
+                color: "#ffffff",
+                border: "none",
+                padding: "10px 20px",
+                fontSize: "16px",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+      {alertMessage && (
+        <SketchyAlert
+          message={alertMessage.text}
+          withButton={alertMessage.withButton}
+          onClose={() => setAlertMessage(null)}
+        />
+      )}
+
       <Toaster />
     </>
   );

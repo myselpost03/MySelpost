@@ -1611,7 +1611,7 @@ const ChatList = () => {
           onClose={() => setAlertMessage(null)}
         />
       )}
-      {showFeedback && <FeedbackPopup onSubmitSuccess={handleSubmitSuccess} />}
+      {showFeedback && <FeedbackPopup onSubmitSuccess={handleSubmitSuccess} onClose={() => setShowFeedback(false)} />}
       {showProfileModal && (
         <div className="popup-wrapper">
           <div className="popup-card">

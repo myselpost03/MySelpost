@@ -1,62 +1,77 @@
+/* Container */
 .sketchy-coins-container {
-  background: #fef9e7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  background: #fff; /* White dominant */
   min-height: 100vh;
-  padding: 80px 16px 40px;
-  font-family: 'Comic Sans MS', cursive;
-  margin-top: 60px;
+  color: #111; /* Dark text for readability */
+  font-family: "Poppins", sans-serif;
+  margin-top: 55px;
 }
 
+/* Coins Box */
 .sketchy-coins-box {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 25px 20px;
-  border: 3px dashed #333;
+  background: #fafafa;
+  border: 1px solid #ddd;
   border-radius: 20px;
-  background: #fff9dc;
-  box-shadow: 5px 5px 0px #555;
+  padding: 32px;
+  max-width: 500px;
+  width: 100%;
   text-align: center;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.08);
 }
 
+/* Title */
 .sketchy-coins-title {
-  font-size: 2rem;
-  color: #333;
+  font-size: 28px;
+  font-weight: bold;
   margin-bottom: 12px;
+  color: #000;
 }
 
+/* Description */
 .sketchy-coins-desc {
-  font-size: 1rem;
+  font-size: 16px;
   color: #555;
-  margin-bottom: 25px;
+  margin-bottom: 24px;
 }
 
+/* Options */
 .sketchy-coins-options {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  margin-bottom: 24px;
 }
 
+/* Buttons */
 .sketchy-coin-btn {
-  padding: 12px 18px;
-  border: 2px dashed #444;
-  border-radius: 12px;
-  background-color: #fff8e1;
-  color: #333;
-  font-size: 1rem;
+  padding: 14px 20px;
+  border-radius: 14px;
+  border: 1px solid #111;
+  background: #fff;
+  color: #111;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 4px 4px 0px #999;
+  transition: all 0.25s ease-in-out;
 }
 
 .sketchy-coin-btn:hover {
-  background-color: #ffe59f;
-  transform: scale(1.03);
+  background: #111;
+  color: #fff;
+  transform: translateY(-2px);
 }
 
-.sketchy-coin-note {
-  margin-top: 28px;
-  font-size: 0.9rem;
-  color: #888;
-  line-height: 1.4;
+/* PayPal Box */
+.paypal-box {
+  margin-top: 20px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 16px;
 }
 
 /* Invite Popup */
@@ -66,126 +81,47 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(30, 30, 30, 0.5);
+  background: rgba(0,0,0,0.6);
   display: flex;
-  align-items: center;
   justify-content: center;
-  z-index: 999;
+  align-items: center;
 }
 
 .invite-box {
-  background: #fffef3;
-  padding: 25px 20px;
-  border-radius: 15px;
+  background: #fff;
+  padding: 28px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
   text-align: center;
-  border: 3px dashed #444;
-  box-shadow: 6px 6px 0px #666;
-  max-width: 320px;
-  width: 90%;
-}
-
-.invite-box h3 {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  color: #444;
+  max-width: 350px;
+  box-shadow: 0px 6px 16px rgba(0,0,0,0.1);
 }
 
 .invite-code {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
-  color: #007bff;
-  background: #e6f2ff;
-  padding: 6px 12px;
-  border-radius: 8px;
-  display: inline-block;
-  margin-bottom: 15px;
-  border: 2px dashed #007bff;
+  color: #111;
+  margin: 12px 0;
 }
 
-input.invite-input {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border: 2px dashed #666;
-  border-radius: 8px;
-  font-family: 'Comic Sans MS', cursive;
-  outline: none;
-  box-shadow: 3px 3px 0px #aaa;
-}
-
-.sketchy-popup-btn {
-  margin-top: 18px;
-  background-color: #fff4cc;
-  padding: 10px 16px;
-  font-size: 1rem;
-  border: 2px dashed #444;
-  border-radius: 10px;
-  cursor: pointer;
-  box-shadow: 3px 3px 0px #aaa;
-}
-
-.sketchy-popup-btn:hover {
-  background-color: #ffe599;
-}
-
- .close-btn {
-  background-color: #ff6961;
-  color: white;
-  font-family: serif;
-  font-weight: bold;
-  padding: 1rem;
-  border-radius: 1rem;
-  border: 2px solid #b22222;
-}
-
-#install-popup {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: #ffffff;
-  padding: 20px;
-  text-align: center;
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
-  z-index: 9999;
-}
-
-#install-popup-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-#install-popup-text {
-  flex-grow: 1;
-  font-family: "Poppins", sans-serif;
-  font-size: 16px;
-  color: #333;
-}
-
-#install-button,
-#cancel-button {
-  background-color: #03c988;
-  color: #ffffff;
-  border: none;
+.close-btn {
+  margin-top: 16px;
   padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 4px;
+  background: #111;
+  color: #fff;
+  border-radius: 10px;
+  border: none;
   cursor: pointer;
-  font-family: "Poppins", sans-serif;
-  transition: background-color 0.2s ease;
+  font-weight: bold;
 }
 
-#cancel-button {
-  background-color: #ff6666;
+.close-btn:hover {
+  background: #444;
 }
 
-#install-button:hover {
-  background-color: #02b179;
-}
-
-#cancel-button:hover {
-  background-color: #e05555;
+/* Note */
+.sketchy-coin-note {
+  font-size: 13px;
+  margin-top: 12px;
+  color: #666;
 }

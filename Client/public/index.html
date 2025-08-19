@@ -33,23 +33,31 @@
 
       #install-popup-text {
         flex-grow: 1;
-        font-family: "Poppins", sans-serif;
+        font-family: "IM Fell English", sans-serif;
       }
 
-      #install-button,
-      #cancel-button {
-        background-color: #03c988;
-        color: #ffffff;
+      #install-button {
+        background-color: #111;
+        color: #fff;
+
         border: none;
         padding: 10px 20px;
         font-size: 16px;
         border-radius: 4px;
         cursor: pointer;
-        font-family: "Poppins", sans-serif;
+        font-family: "IM Fell English", sans-serif;
       }
 
       #cancel-button {
-        background-color: #ff6666;
+        background-color: #f1f1f1;
+        color: #111;
+
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: "IM Fell English", sans-serif;
       }
     </style>
     <title>MySelpost: Global Chat & Fun Photo Roasting Platform</title>
@@ -104,9 +112,11 @@
       name="twitter:image:alt"
       content="MySelpost – Chat globally and roast photos with friends worldwide"
     />
-    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
-<meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none">
-
+    <meta
+      http-equiv="Cross-Origin-Opener-Policy"
+      content="same-origin-allow-popups"
+    />
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none" />
 
     <!-- Icons -->
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
@@ -147,10 +157,10 @@
           navigator.serviceWorker
             .register("./service-worker.js", { scope: "/" })
             .then(function (registration) {
-              // console.log("Service Worker Registered!");
+              console.log("Service Worker Registered!");
             })
             .catch(function (error) {
-              // console.log("Service Worker Registration Failed:", error);
+              console.log("Service Worker Registration Failed:", error);
             });
         });
       }
@@ -165,7 +175,7 @@
       });
 
       window.addEventListener("appinstalled", function (event) {
-        // console.log("App installed successfully");
+        console.log("App installed successfully");
         document.getElementById("install-popup").style.display = "none";
       });
 
@@ -176,9 +186,9 @@
           window.deferredPrompt.prompt();
           window.deferredPrompt.userChoice.then(function (choiceResult) {
             if (choiceResult.outcome === "accepted") {
-              // console.log("User accepted the install prompt");
+              console.log("User accepted the install prompt");
             } else {
-              // console.log("User dismissed the install prompt");
+              console.log("User dismissed the install prompt");
             }
             window.deferredPrompt = null;
           });

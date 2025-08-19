@@ -1,88 +1,131 @@
-@import url(https://fonts.googleapis.com/css?family=Spicy+Rice:regular);
-@import url(https://fonts.googleapis.com/css?family=Poppins:100,100italic,200,200italic,300,300italic,regular,italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic);
-/* Centered overlay */
+@import url(https://fonts.googleapis.com/css?family=Libertinus+Sans:regular,italic,700);
+@import url(https://fonts.googleapis.com/css?family=Changa+One:regular,italic);
+
+/* Overlay background */
 .feedback-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-.feedback-star-container {
-  text-align: center;
-  margin: 15px 0;
-}
-
-.feedback-submit-btn {
-  font-family: "poppins", serif;
-  font-weight: bold;
-}
-
-.feedback-cancel-btn {
-  font-family: "poppins", serif;
-
-  font-weight: bold;
-}
-
-/* Popup styling */
+/* Popup box */
 .feedback-popup-box {
-  background: white;
-  border-radius: 20px;
-  padding: 20px;
-  width: 90%;
-  max-width: 400px;
-  border: 2px dashed #222;
-  color: black;
-  box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+  animation: scaleIn 0.25s ease;
+  color: #000;
 }
 
+/* Title */
 .feedback-title {
-  font-size: 1.5rem;
-  margin-bottom: 10px;
-  font-family: "spicy rice", serif;
-  padding-bottom: 5px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 16px;
   text-align: center;
+  color: #111;
+  font-family: 'Change One', serif;
 }
 
-/* Feedback textarea */
+/* Stars container */
+.feedback-star-container {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.svg-star {
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.svg-star:hover {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Textarea */
 .feedback-box {
   width: 100%;
-  height: 80px;
-  margin-top: 10px;
-  padding: 8px;
-  border: 2px dashed black;
+  height: 100px;
+  border: 1px solid #ddd;
+  outline: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.95rem;
+  background: #f9f9f9;
+  color: #111;
   resize: none;
-  font-family: "poppins", serif;
+  margin-bottom: 20px;
+    font-family: 'Libertinus Sans', serif;
+
+}
+
+.feedback-box::placeholder {
+  color: #666;
 }
 
 /* Button group */
 .feedback-btn-group {
   display: flex;
   justify-content: space-between;
-  margin-top: 15px;
+  gap: 12px;
 }
 
+/* Buttons */
 .feedback-submit-btn,
 .feedback-cancel-btn {
-  padding: 8px 14px;
-  font-family: inherit;
-  background: white;
-  border: 2px dashed black;
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
-  box-shadow: 3px 3px 0 black;
-  transition: background 0.2s;
+  transition: all 0.25s ease;
 }
 
-.svg-star {
-  fill: #ccc;
-  cursor: pointer;
-  margin: 0 4px;
-  transition: fill 0.2s;
-  user-select: none;
+/* Submit button - black theme */
+.feedback-submit-btn {
+  background: #000;
+  color: #fff;
+}
+
+.feedback-submit-btn:hover {
+  background: #333;
+  transform: translateY(-2px);
+}
+
+/* Cancel button - white theme */
+.feedback-cancel-btn {
+  background: #f1f1f1;
+  color: #000;
+  border: 1px solid #ddd;
+}
+
+.feedback-cancel-btn:hover {
+  background: #e5e5e5;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }

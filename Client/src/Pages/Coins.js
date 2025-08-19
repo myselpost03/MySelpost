@@ -5,7 +5,7 @@ import "../Styles/Coins.css";
 import SketchyAlert from "../Components/SketchyAlert";
 import LoadingIndicator from "../Components/LoadingIndicator";
 import { supabase } from "../Utils/supabaseClient";
-import {trackEvent} from "../Utils/analytics";
+import { trackEvent } from "../Utils/analytics";
 
 const Coins = () => {
   const { id } = useParams();
@@ -108,10 +108,10 @@ const Coins = () => {
   }, []);
 
   const installApp = () => {
-     trackEvent({
-      action: 'button_click',
-      category: 'Mobile Coins Section',
-      label: 'Install App Button',
+    trackEvent({
+      action: "button_click",
+      category: "Mobile Coins Section",
+      label: "Install App Button",
     });
     // Check if app is already installed
     const isInstalled =
@@ -148,9 +148,9 @@ const Coins = () => {
 
   const cancelInstall = () => {
     trackEvent({
-      action: 'button_click',
-      category: 'Mobile Coins Section',
-      label: 'Cancel App Install Button',
+      action: "button_click",
+      category: "Mobile Coins Section",
+      label: "Cancel App Install Button",
     });
     // console.log("User cancelled install prompt");
     setShowPrompt(false);
@@ -162,9 +162,9 @@ const Coins = () => {
 
   const handleInviteClick = async () => {
     trackEvent({
-      action: 'button_click',
-      category: 'Mobile Coins Section',
-      label: 'Invite Button',
+      action: "button_click",
+      category: "Mobile Coins Section",
+      label: "Invite Button",
     });
     setLoading(true);
     const code = generateRandomCode();
@@ -303,10 +303,10 @@ const Coins = () => {
             ⏳ Spend 1 Hour & Earn 3 Coins (Auto Transfer)
           </button>
 
-          <button className="sketchy-coin-btn" onClick={installApp}>
+          {/*  <button className="sketchy-coin-btn" onClick={installApp}>
             🎁 Install App & Get +30 Coins
           </button>
-
+*/}
           <button className="sketchy-coin-btn" onClick={handleInviteClick}>
             📲 Invite Friends & Earn 50 Coins
           </button>
@@ -345,10 +345,10 @@ const Coins = () => {
             </div>
           </div>
         )}
-
+        {/*
         <p className="sketchy-coin-note">
           * Coins are non-refundable & expire in 30 days.
-        </p>
+        </p>*/}
       </div>
 
       {alertMessage && (
@@ -359,7 +359,7 @@ const Coins = () => {
         />
       )}
 
-      {showPrompt && (
+      {/*showPrompt && (
         <div id="install-popup">
           <div id="install-popup-content">
             <span id="install-popup-text">
@@ -373,7 +373,7 @@ const Coins = () => {
             </button>
           </div>
         </div>
-      )}
+      )*/}
     </div>
   );
 };

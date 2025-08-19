@@ -1,74 +1,74 @@
-@import url(https://fonts.googleapis.com/css?family=Patrick+Hand:regular);
-/* Centered Alert Box */
-/* Just remove the animation line */
 .sketchy-alert-new {
   position: fixed;
   top: 50%;
-  max-width: 90vw;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #eee;
-  padding: 20px 30px;
-  border: 2px dashed #555;
-  border-radius: 10px;
-  z-index: 9999;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-  text-align: center;
-  font-family: 'patrick hand', cursive;
-}
-
-.alert-msg{
-  white-space: normal;
-  word-break: break-word;
-}
-
-@media (max-width: 480px) {
-  .sketchy-alert-new {
-    padding: 15px 20px;
-  }
-
-  .sketchy-alert-new .alert-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .sketchy-alert-new button {
-    width: 100%;
-    margin: 5px 0;
-  }
-}
-
-/* Button styles */
-.sketchy-alert-new button {
-  margin-top: 10px;
-  margin-right: 10px;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.sketchy-alert-new button:last-child {
-  margin-right: 0;
-}
-
-.sketchy-alert-new .sketchy-coin-btn {
-  background-color: #eee;
-  color: black;
+  background: #fff9f4;
   border: 2px solid #222;
+  border-radius: 16px;
+  padding: 20px 24px;
+  width: 320px;
+  max-width: 90%;
+  box-shadow: 6px 6px 0px #222;
+  z-index: 1000;
+  animation: popIn 0.25s ease-out;
+  font-family: "Patrick Hand", cursive; /* sketchy vibe */
 }
 
-.sketchy-alert-new .sketchy-close-btn {
-  background-color: #000000;
-  color: white;
-  border: 2px solid #eee;
-  box-shadow: none;
+.alert-content p {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  color: #333;
+  text-align: center;
 }
 
-.sketchy-alert-new .pay-btn {
-  background-color: #16C47F;
-  color: #fff;
-  border: 2px solid #eee;
+.alert-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.pay-btn,
+.sketchy-close-btn {
+  padding: 8px 16px;
+  border: 2px solid #222;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  box-shadow: 3px 3px 0px #222;
+}
+
+.pay-btn {
+  background: #ffeb3b;
+}
+
+.pay-btn:hover {
+  background: #ffd600;
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px #000;
+}
+
+.sketchy-close-btn {
+  background: #ffb3b3;
+}
+
+.sketchy-close-btn:hover {
+  background: #ff6b6b;
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px #000;
+}
+
+/* Animation */
+@keyframes popIn {
+  from {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
 }

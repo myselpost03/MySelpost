@@ -16,20 +16,20 @@ export function isRunningAsPWA() {
   const isEdgeWindowControls =
     window.matchMedia("(display-mode: window-controls-overlay)").matches;
 
-  console.log("📱 User Agent:", navigator.userAgent);
-  console.log("🧠 Detected Platform:");
-  if (isIOSStandalone) console.log("✅ iOS in standalone mode");
-  if (isStandaloneDisplay) console.log("✅ Display mode: standalone");
-  if (isEdgeWindowControls) console.log("✅ Edge with window-controls-overlay");
-  if (isAndroid && isChrome) console.log("📲 Android Chrome detected");
-  if (isSafari) console.log("🍏 Safari browser");
-  if (isFirefox) console.log("🦊 Firefox browser");
-  if (isEdge) console.log("🔷 Edge browser");
+  // console.log("📱 User Agent:", navigator.userAgent);
+  // console.log("🧠 Detected Platform:");
+  // if (isIOSStandalone) console.log("✅ iOS in standalone mode");
+  // if (isStandaloneDisplay) console.log("✅ Display mode: standalone");
+  // if (isEdgeWindowControls) console.log("✅ Edge with window-controls-overlay");
+  // if (isAndroid && isChrome) console.log("📲 Android Chrome detected");
+  // if (isSafari) console.log("🍏 Safari browser");
+  // if (isFirefox) console.log("🦊 Firefox browser");
+  // if (isEdge) console.log("🔷 Edge browser");
 
   const isPWA =
     isIOSStandalone || isStandaloneDisplay || isEdgeWindowControls;
 
-  console.log(isPWA ? "✅ App is running as a PWA" : "🌐 App is running in a browser");
+  // console.log(isPWA ? "✅ App is running as a PWA" : "🌐 App is running in a browser");
 
   return isPWA;
 }

@@ -6,7 +6,6 @@ import "../Styles/Home.css";
 import SketchyAlert from "../Components/SketchyAlert";
 import InviteFAB from "../Components/InviteFAB";
 import { supabase } from "../Utils/supabaseClient";
-import { isRunningAsPWA } from "../Utils/CheckPWA";
 import { trackEvent } from "../Utils/analytics";
 
 const Home = () => {
@@ -85,44 +84,6 @@ const Home = () => {
     }
   };
 
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (!storedUser || !storedUser.id) return;
-
-    if (storedUser && storedUser.id) {
-      setUser(storedUser);
-    } else {
-      setUser(null);
-      return;
-    }
-
-    const rewardKey = `${storedUser.id}`;
-
-    if (isRunningAsPWA() && !localStorage.getItem(rewardKey)) {
-      //console.log("🚀 PWA detected – rewarding 30 coins");
-
-      (async () => {
-        try {
-          const { error } = await supabase.rpc("increment_reward_coins", {
-            user_id_input: storedUser.id,
-            increment_by: 30,
-          });
-
-          if (error) {
-            // console.error("❌ PWA reward error:", error.message);
-          } else {
-            localStorage.setItem(rewardKey, "true");
-            setAlertMessage({
-              text: "🎉 App Installed! You got +30 coins.",
-              withButton: true,
-            });
-          }
-        } catch (err) {
-          // console.error("❗ Unexpected PWA reward error:", err);
-        }
-      })();
-    }
-  }, []);
   const handleChatClick = () => {
     navigate("/chat-entrance");
   };

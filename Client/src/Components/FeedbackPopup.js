@@ -3,7 +3,7 @@ import confetti from "canvas-confetti"; // ✅ Import confetti
 import "../Styles/FeedbackPopup.css";
 import { supabase } from "../Utils/supabaseClient";
 
-const FeedbackPopup = ({ onSubmitSuccess }) => {
+const FeedbackPopup = ({ onSubmitSuccess, onClose }) => {
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [feedback, setFeedback] = useState("");
@@ -83,7 +83,7 @@ const FeedbackPopup = ({ onSubmitSuccess }) => {
                 Submit
               </button>
               <button
-                onClick={() => setShowPopup(false)}
+                onClick={onClose}
                 className="feedback-cancel-btn"
               >
                 Cancel
