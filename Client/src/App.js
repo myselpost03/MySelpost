@@ -4,6 +4,7 @@ import {
   useNavigate,
   Routes,
   Route,
+  useLocation,
 } from "react-router-dom";
 import ProtectedRoute from "./Utils/ProtectedRoute";
 import {
@@ -37,8 +38,8 @@ import LoadingIndicator from "./Components/LoadingIndicator";
 import { supabase } from "./Utils/supabaseClient";
 import SketchyAlert from "./Components/SketchyAlert";
 import InternetStatusAlert from "./Components/InternetStatusAlert";
-import { useLocation } from "react-router-dom";
 import { isRunningAsPWA } from "./CheckPWA";
+import ScrollToTop from "./ScrollToTop";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
@@ -213,45 +214,44 @@ function AppContent() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    if (!storedUser || !storedUser.id) return;
 
-    useEffect(() => {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      if (!storedUser || !storedUser.id) return;
-  
-      if (storedUser && storedUser.id) {
-        setUser(storedUser);
-      } else {
-        setUser(null);
-        return;
-      }
-  
-      const rewardKey = `${storedUser.id}`;
-  
-      if (isRunningAsPWA() && !localStorage.getItem(rewardKey)) {
-        //console.log("🚀 PWA detected – rewarding 30 coins");
-  
-        (async () => {
-          try {
-            const { error } = await supabase.rpc("increment_reward_coins", {
-              user_id_input: storedUser.id,
-              increment_by: 30,
+    if (storedUser && storedUser.id) {
+      setUser(storedUser);
+    } else {
+      setUser(null);
+      return;
+    }
+
+    const rewardKey = `${storedUser.id}`;
+
+    if (isRunningAsPWA() && !localStorage.getItem(rewardKey)) {
+      //console.log("🚀 PWA detected – rewarding 30 coins");
+
+      (async () => {
+        try {
+          const { error } = await supabase.rpc("increment_reward_coins", {
+            user_id_input: storedUser.id,
+            increment_by: 30,
+          });
+
+          if (error) {
+            // console.error("❌ PWA reward error:", error.message);
+          } else {
+            localStorage.setItem(rewardKey, "true");
+            setAlertMessage({
+              text: "🎉 App Installed! You got +30 coins.",
+              withButton: true,
             });
-  
-            if (error) {
-              // console.error("❌ PWA reward error:", error.message);
-            } else {
-              localStorage.setItem(rewardKey, "true");
-              setAlertMessage({
-                text: "🎉 App Installed! You got +30 coins.",
-                withButton: true,
-              });
-            }
-          } catch (err) {
-            // console.error("❗ Unexpected PWA reward error:", err);
           }
-        })();
-      }
-    }, []);
+        } catch (err) {
+          // console.error("❗ Unexpected PWA reward error:", err);
+        }
+      })();
+    }
+  }, []);
 
   useEffect(() => {
     if (!isMobileDevice()) {
@@ -305,6 +305,8 @@ function AppContent() {
   return (
     <>
       <UserStatusWrapper />
+      <ScrollToTop />
+
       <Routes>
         {publicRoutes.map(({ path, component: Component }) => (
           <Route key={path} path={path} element={<Component />} />

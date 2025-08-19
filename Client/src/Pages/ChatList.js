@@ -15,6 +15,7 @@ import {
   FaBellSlash,
   FaCheck,
   FaTimes,
+  FaCamera
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
@@ -1159,6 +1160,12 @@ const ChatList = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const RoastMe = () => {
+    setAlertMessage({
+      text: "Roast Me Feature "
+    })
+  }
+
   return (
     <div className="chatlist-container">
       <Header />
@@ -1314,14 +1321,27 @@ const ChatList = () => {
           </button>
 
           {activeTab === "all" && (
-            <button
-              className="fab-filter-button"
-              onClick={() => setShowAllTabs(true)}
-              title="Filter users"
-            >
-              <FaFilter />
-            </button>
-          )}
+  <>
+    {/* Camera FAB */}
+    <button
+      className="fab-camera-button"
+      onClick={RoastMe}
+      title="Open camera"
+    >
+      <FaCamera />
+    </button>
+
+    {/* Filter FAB */}
+    <button
+      className="fab-filter-button"
+      onClick={() => setShowAllTabs(true)}
+      title="Filter users"
+    >
+      <FaFilter />
+    </button>
+  </>
+)}
+
         </div>
 
         <div
@@ -1611,7 +1631,12 @@ const ChatList = () => {
           onClose={() => setAlertMessage(null)}
         />
       )}
-      {showFeedback && <FeedbackPopup onSubmitSuccess={handleSubmitSuccess} onClose={() => setShowFeedback(false)} />}
+      {showFeedback && (
+        <FeedbackPopup
+          onSubmitSuccess={handleSubmitSuccess}
+          onClose={() => setShowFeedback(false)}
+        />
+      )}
       {showProfileModal && (
         <div className="popup-wrapper">
           <div className="popup-card">

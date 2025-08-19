@@ -11,10 +11,17 @@ import {
   FacebookShareButton,
   TwitterShareButton,
   WhatsappShareButton,
-  RedditShareButton,
 } from "react-share";
+import imageCompression from "browser-image-compression";
 import bannedWords from "../Utils/bannedWords";
 import toast, { Toaster } from "react-hot-toast";
+import {
+  saveRoastImages,
+  getRoastImages,
+  setRoastLastSync,
+  toBlob,
+  getRoastLastSync,
+} from "../Utils/db";
 
 const timeAgo = (date) => {
   const inputDate = new Date(date + "Z"); // 👈 Ensures it's treated as UTC
@@ -41,11 +48,13 @@ function Roast() {
   const navigate = useNavigate();
   const [cards, setCards] = useState([]);
   const [uploading, setUploading] = useState(false);
-
+  const [imageLoaded, setImageLoaded] = useState(false);
+const [showSwipeGuide, setShowSwipeGuide] = useState(
+  localStorage.getItem("hasSeenSwipeGuide") !== "true"
+);
   const [roastingIndex, setRoastingIndex] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fullImage, setFullImage] = useState(null);
-  const [showOverlay, setShowOverlay] = useState(true);
   const [fabOpen, setFabOpen] = useState(false);
   const [showTopRoastPopup, setShowTopRoastPopup] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
@@ -73,62 +82,138 @@ function Roast() {
     }
   };
 
+  
+
   const fetchCardsData = async () => {
     setLoading(true);
-    const { data: images, error: imageErr } = await supabase
-      .from("images")
-      .select("id, image_url, user_id, created_at")
-      .order("created_at", { ascending: false });
+    try {
+      const lastSync = await getRoastLastSync();
+      let images = [];
 
-    if (imageErr) {
-      console.error("Error fetching images:", imageErr);
-      setLoading(false);
-      return;
-    }
-
-    const cardsWithRoasts = await Promise.all(
-      images.map(async (img) => {
-        const { data: roasts, error: roastErr } = await supabase
-          .from("roasts")
-          .select("id, text, user_id")
-          .eq("image_id", img.id)
+      if (!lastSync) {
+        // First-time fetch from Supabase
+        const { data, error } = await supabase
+          .from("images")
+          .select("id, image_url, user_id, created_at")
           .order("created_at", { ascending: false });
 
-        if (roastErr) {
-          console.error("Error fetching roasts:", roastErr);
-          return { ...img, roasts: [], newRoast: "" };
-        }
+        if (error) throw error;
 
-        const roastsWithVotes = await Promise.all(
-          roasts.map(async (r) => {
-            const { count, error: voteErr } = await supabase
-              .from("votes")
-              .select("*", { count: "exact", head: true })
-              .eq("roast_id", r.id)
-              .eq("vote_type", "up");
-
-            if (voteErr) {
-              console.error("Vote error:", voteErr);
-              return { ...r, votes: 0 };
+        // Convert image_url to Blob for IndexedDB
+        const imagesWithBlob = await Promise.all(
+          data.map(async (img) => {
+            try {
+              const blob = await toBlob(img.image_url);
+              return {
+                id: img.id,
+                roast_pic: blob || img.image_url,
+                created_at: img.created_at,
+              };
+            } catch (err) {
+              console.error("Failed to convert roast image:", img.id, err);
+              return {
+                id: img.id,
+                roast_pic: img.image_url,
+                created_at: img.created_at,
+              };
             }
-
-            return { ...r, votes: count || 0 };
           })
         );
 
-        return {
-          image: img.image_url,
-          roasts: roastsWithVotes,
-          newRoast: "",
-          image_id: img.id,
-          created_at: img.created_at, // ✅ include this
-        };
-      })
-    );
+        // Save to IndexedDB
+        await saveRoastImages(imagesWithBlob);
+        await setRoastLastSync(new Date().toISOString());
 
-    setCards(cardsWithRoasts);
-    setCurrentIndex(0);
-    setLoading(false);
+        images = imagesWithBlob;
+      } else {
+        // Fetch new images since lastSync
+        const { data: newImages, error } = await supabase
+          .from("images")
+          .select("id, image_url, user_id, created_at")
+          .gt("created_at", lastSync)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        let newImagesWithBlob = [];
+        if (newImages.length) {
+          newImagesWithBlob = await Promise.all(
+            newImages.map(async (img) => {
+              try {
+                const blob = await toBlob(img.image_url);
+                return {
+                  id: img.id,
+                  roast_pic: blob || img.image_url,
+                  created_at: img.created_at,
+                };
+              } catch (err) {
+                console.error(
+                  "Failed to convert new roast image:",
+                  img.id,
+                  err
+                );
+                return {
+                  id: img.id,
+                  roast_pic: img.image_url,
+                  created_at: img.created_at,
+                };
+              }
+            })
+          );
+
+          await saveRoastImages(newImagesWithBlob);
+          await setRoastLastSync(new Date().toISOString());
+        }
+
+        // Load all images from IndexedDB and sort by created_at descending
+        images = (await getRoastImages()).sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+      }
+
+      // Map to cards with roasts
+      const cardsWithRoasts = await Promise.all(
+        images.map(async (img) => {
+          const { data: roasts } = await supabase
+            .from("roasts")
+            .select("id, text, user_id")
+            .eq("image_id", img.id)
+            .order("created_at", { ascending: false });
+
+          const roastsWithVotes = await Promise.all(
+            (roasts || []).map(async (r) => {
+              const { count } = await supabase
+                .from("votes")
+                .select("*", { count: "exact", head: true })
+                .eq("roast_id", r.id)
+                .eq("vote_type", "up");
+              return { ...r, votes: count || 0 };
+            })
+          );
+
+          // Convert Blob to object URL if needed
+          let imageUrl = img.roast_pic;
+          if (img.roast_pic instanceof Blob) {
+            imageUrl = URL.createObjectURL(img.roast_pic);
+          }
+
+          return {
+            image: imageUrl,
+            roasts: roastsWithVotes,
+            newRoast: "",
+            image_id: img.id,
+            created_at: img.created_at,
+          };
+        })
+      );
+
+      setCards(cardsWithRoasts);
+      setCurrentIndex(0);
+    } catch (err) {
+      console.error("Error fetching cards:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -136,19 +221,8 @@ function Roast() {
   }, []);
 
   useEffect(() => {
-    const hasSeenOverlay = localStorage.getItem("hasSeenSwipeOverlay");
-
-    if (!hasSeenOverlay) {
-      setShowOverlay(true);
-      const timer = setTimeout(() => {
-        setShowOverlay(false);
-        localStorage.setItem("hasSeenSwipeOverlay", "true");
-      }, 4000);
-      return () => clearTimeout(timer);
-    } else {
-      setShowOverlay(false);
-    }
-  }, []);
+    setImageLoaded(false);
+  }, [currentIndex]);
 
   const upvote = async (cardIndex, roastIndex) => {
     const currentUser = JSON.parse(localStorage.getItem("user"));
@@ -288,7 +362,6 @@ function Roast() {
   const handleInputChange = (e, cardIndex) => {
     const inputValue = e.target.value;
 
-    
     const updatedCards = [...cards];
     updatedCards[cardIndex].newRoast = inputValue;
     setCards(updatedCards);
@@ -297,13 +370,18 @@ function Roast() {
   const handleBack = () => navigate(-1);
 
   const handleSwipe = (direction) => {
-    setShowOverlay(false);
-    if (direction === "Left" && currentIndex < cards.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else if (direction === "Right" && currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
-  };
+  if (showSwipeGuide) {
+    setShowSwipeGuide(false);
+    localStorage.setItem("hasSeenSwipeGuide", "true");
+  }
+
+  if (direction === "Left" && currentIndex < cards.length - 1) {
+    setCurrentIndex(currentIndex + 1);
+  } else if (direction === "Right" && currentIndex > 0) {
+    setCurrentIndex(currentIndex - 1);
+  }
+};
+
 
   const swipeHandlers = useSwipeable({
     onSwipedLeft: () => handleSwipe("Left"),
@@ -322,18 +400,44 @@ function Roast() {
       alert("Please log in to upload.");
       return;
     }
-    setUploading(true); // 🟡 Disable the upload icon
+
+    setUploading(true);
 
     const CLOUDINARY_UPLOAD_PRESET = "ml_default";
     const CLOUDINARY_CLOUD_NAME = "dzoctpmmi";
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    // Compress image to ~80KB
+    const compressAndResize = async (file, targetKB = 80) => {
+      let quality = 0.9;
+      let maxWidthOrHeight = 1000;
+      let compressedFile = file;
+
+      for (let i = 0; i < 10; i++) {
+        const options = {
+          maxSizeMB: targetKB / 1024,
+          maxWidthOrHeight,
+          initialQuality: quality,
+          useWebWorker: true,
+        };
+        compressedFile = await imageCompression(file, options);
+        const sizeKB = compressedFile.size / 1024;
+        if (sizeKB <= targetKB) break;
+        quality -= 0.1;
+        maxWidthOrHeight = Math.floor(maxWidthOrHeight * 0.8);
+        if (quality <= 0.1) quality = 0.1;
+        file = compressedFile;
+      }
+      return compressedFile;
+    };
 
     try {
-      // Upload to Cloudinary
+      const compressedFile = await compressAndResize(file, 80);
 
+      const formData = new FormData();
+      formData.append("file", compressedFile);
+      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+      // Upload to Cloudinary
       const cloudinaryRes = await fetch(
         `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
         {
@@ -341,39 +445,56 @@ function Roast() {
           body: formData,
         }
       );
-
       const cloudinaryData = await cloudinaryRes.json();
       const imageUrl = cloudinaryData.secure_url;
 
       if (!imageUrl) {
-        setAlertMessage({
-          text: "Upload failed.",
-          withButton: true,
-        });
+        setAlertMessage({ text: "Upload failed.", withButton: true });
         setUploading(false);
-
         return;
       }
 
       // Save URL to Supabase
-      const { error: insertErr } = await supabase.from("images").insert({
-        image_url: imageUrl,
-        user_id: userId,
-      });
+      const { error: insertErr, data: insertedData } = await supabase
+        .from("images")
+        .insert({ image_url: imageUrl, user_id: userId })
+        .select();
 
       if (insertErr) {
         console.error("Supabase insert error:", insertErr.message);
-        //  alert("Failed to save image info.");
         setUploading(false);
-
         return;
       }
-      console.log("Setting hasUploadedImage in localStorage");
-      localStorage.setItem("hasUploadedImage", "true");
 
+      const newImage = insertedData[0];
+
+      // ✅ Store new image in IndexedDB immediately
+      await saveRoastImages([
+        {
+          id: newImage.id,
+          roast_pic: compressedFile,
+          created_at: newImage.created_at,
+        },
+      ]);
+
+      // Update lastSync timestamp
+      await setRoastLastSync(new Date().toISOString());
+
+      localStorage.setItem("hasUploadedImage", "true");
       toast.success("Image Uploaded Successfully!");
 
-      await fetchCardsData(); // ✅ Refresh data without reloading
+      // Optionally, append this new image to current cards state
+      const updatedCards = [
+        {
+          image: URL.createObjectURL(compressedFile),
+          roasts: [],
+          newRoast: "",
+          image_id: newImage.id,
+          created_at: newImage.created_at,
+        },
+        ...cards,
+      ];
+      setCards(updatedCards);
       setCurrentIndex(0);
     } catch (err) {
       console.error("Upload error:", err);
@@ -412,20 +533,25 @@ function Roast() {
 
       <div className="roast-page" {...swipeHandlers}>
         <div className="roast-card-container">
-          {showOverlay && (
-            <div className="swipe-overlay">👈 Swipe to see next!</div>
-          )}
+{showSwipeGuide && (
+  <div className="swipe-guide-animation">
+    <div className="swipe-arrow swipe-left">⬅️</div>
+    <div className="swipe-text">Swipe to see next roast</div>
+    <div className="swipe-arrow swipe-right">➡️</div>
+  </div>
+)}
 
           <div
-            className={`roast-card animated-card ${
-              showOverlay ? "blurred" : ""
-            }`}
+            className={`roast-card animated-card`}
           >
             <div className="roast-image-container">
+              {!imageLoaded && <div className="shimmer-overlay"></div>}
+
               <img
                 src={cards[currentIndex].image}
                 alt="Roastee"
-                className="roast-image"
+                className={`roast-image ${imageLoaded ? "visible" : "hidden"}`}
+                onLoad={() => setImageLoaded(true)}
                 onClick={() => setFullImage(cards[currentIndex].image)}
               />
 
@@ -472,7 +598,7 @@ function Roast() {
                   )}
                 </button>
               </WhatsappShareButton>
-              </div>
+            </div>
 
             <ul className="roast-list">
               {cards[currentIndex].roasts

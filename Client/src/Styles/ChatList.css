@@ -5,6 +5,12 @@
   box-sizing: border-box;
 }
 
+html, body {
+  touch-action: pan-x pan-y;
+  overflow-x: hidden;
+}
+
+
 .chatlist-container {
   margin-top: 7%; /* reduced from 5% */
   margin-bottom: 2%; /* added to reduce space at the bottom */
@@ -13,8 +19,6 @@
   font-family: "Comic Neue", cursive;
 }
 
-@media only screen and (max-width: 480px) {
-}
 
 /* Desktop-specific tweaks */
 @media (min-width: 768px) {
@@ -717,7 +721,6 @@
   background-color: #fff4cc;
   transform: scale(1.05);
 }
-
 .fab-filter-button {
   position: fixed;
   bottom: 29px;
@@ -736,6 +739,34 @@
   align-items: center;
   justify-content: center;
 }
+
+.fab-camera-button {
+  position: fixed;
+  bottom: 100px; /* adjust distance above filter FAB */
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.15); /* semi-transparent glass look */
+  backdrop-filter: blur(10px) saturate(180%); /* glassmorphism blur */
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  color: #111;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer; /* changed from none so it’s clickable */
+  z-index: 1000;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* stronger shadow for floating effect */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* frosted border */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fab-camera-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
 
 .modal-section {
   margin: 1rem 0;

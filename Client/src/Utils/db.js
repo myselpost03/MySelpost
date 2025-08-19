@@ -15,7 +15,7 @@ export const getDB = async () => {
 };
 
 // Convert image URL to Blob
-const toBlob = async (url) => {
+export const toBlob = async (url) => {
   try {
     const res = await fetch(url);
     return await res.blob(); // returns original size Blob
@@ -105,4 +105,64 @@ export const getUsersFiltered = async ({ activeTab, genderFilter, countryFilter,
   }
 
   return users;
+};
+
+
+export const getRoastDB = async () => {
+  return openDB("RoastDB", 1, {
+    upgrade(db) {
+      if (!db.objectStoreNames.contains("roast_images")) {
+        db.createObjectStore("roast_images", { keyPath: "id" });
+      }
+      if (!db.objectStoreNames.contains("meta")) {
+        db.createObjectStore("meta"); // store lastSync timestamp
+      }
+    },
+  });
+};
+
+// Save roast images
+export const saveRoastImages = async (images) => {
+  const imagesWithBlob = await Promise.all(
+    images.map(async (img) => {
+      if (img.image_url) {
+        try {
+          const blob = await toBlob(img.image_url);
+          return { ...img, roast_pic: blob || img.image_url }; // add `roast_pic` key
+        } catch (err) {
+          console.error("❌ Failed to convert image for roast", img.id, err);
+          return img;
+        }
+      }
+      return img;
+    })
+  );
+   const db = await getRoastDB();
+  const tx = db.transaction("roast_images", "readwrite");
+  for (const img of imagesWithBlob) {
+    tx.store.put(img);
+  }
+  await tx.done;
+  console.log(`[IndexedDB] ✅ Saved ${images.length} roast images as Blob`);
+};
+// Load roast images
+export const getRoastImages = async () => {
+  const db = await getRoastDB();
+  const images = await db.getAll("roast_images");
+  console.log(`[IndexedDB] 📂 Loaded ${images.length} roast images`);
+  return images;
+};
+
+// Metadata
+export const setRoastLastSync = async (timestamp) => {
+  const db = await getRoastDB();
+  await db.put("meta", timestamp, "roastLastSync");
+  console.log(`[IndexedDB] ⏱️ Updated roastLastSync = ${timestamp}`);
+};
+
+export const getRoastLastSync = async () => {
+  const db = await getRoastDB();
+  const lastSync = await db.get("meta", "roastLastSync");
+  console.log(`[IndexedDB] ⏱️ Last roast sync = ${lastSync}`);
+  return lastSync;
 };

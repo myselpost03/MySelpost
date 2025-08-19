@@ -11,7 +11,7 @@
   min-height: 100vh;
   color: #222;
   font-family: "Inter", sans-serif;
- background-color: #f0f0f0;
+  background-color: #f0f0f0;
   background-image:
     /* Subtle paper grain */ repeating-linear-gradient(
       135deg,
@@ -43,13 +43,13 @@
 /* Roast card */
 .roast-card {
   background: #fff;
-border-top-left-radius: 20px;
-border-top-right-radius: 20px;
-border-bottom-left-radius: 20px;
-border-bottom-right-radius: 20px;
-width: 300px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  width: 300px;
   max-width: 90vw;
-  height: 450px;   /* fixed height for card */
+  height: 450px; /* fixed height for card */
   display: flex;
   flex-direction: column;
   text-align: center;
@@ -79,7 +79,7 @@ width: 300px;
   position: absolute;
   bottom: 8px;
   right: 8px;
-  font-family: 'concert one', serif;
+  font-family: "concert one", serif;
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(8px);
   padding: 4px 10px;
@@ -99,7 +99,7 @@ width: 300px;
 .sketchy-share {
   background: #f9f9f9;
   color: #222;
-border: 2px dashed #222;
+  border: 2px dashed #222;
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 13px;
@@ -115,11 +115,11 @@ border: 2px dashed #222;
 .roast-list {
   list-style: none;
   margin: 0px 0;
-padding: 5px;
+  padding: 5px;
   text-align: left;
-  flex: 1;               /* take remaining space */
-  overflow-y: auto;       /* scroll vertically */
-  scrollbar-width: thin;  /* Firefox */
+  flex: 1; /* take remaining space */
+  overflow-y: auto; /* scroll vertically */
+  scrollbar-width: thin; /* Firefox */
   scrollbar-color: #bbb transparent;
 }
 
@@ -144,7 +144,7 @@ padding: 5px;
   padding: 8px 12px;
   margin-bottom: 8px;
   font-size: 12px;
-  font-family: 'RocknRoll One', serif;
+  font-family: "RocknRoll One", serif;
 }
 
 .long-roast {
@@ -158,11 +158,11 @@ padding: 5px;
   padding: 4px 8px;
   cursor: pointer;
   color: #333;
-  border:none;
-  outline:none;
+  border: none;
+  outline: none;
   white-space: nowrap;
   transition: 0.2s;
-font-family: 'spicy rice', serif
+  font-family: "spicy rice", serif;
 }
 
 .vote-button:hover {
@@ -174,15 +174,15 @@ font-family: 'spicy rice', serif
   display: flex;
   margin-top: 12px;
   gap: 8px;
-padding: 0px 20px 20px 20px;
+  padding: 0px 20px 20px 20px;
 }
 
 .roast-input {
   flex: 1;
   background: #eee;
-  
+
   border: none;
-  outline:none;
+  outline: none;
   padding: 8px;
   color: #222;
 }
@@ -193,7 +193,7 @@ padding: 0px 20px 20px 20px;
 
 .roast-button {
   background: #222;
-  border:none;
+  border: none;
   outline: none;
   padding: 8px 14px;
   cursor: pointer;
@@ -201,8 +201,8 @@ padding: 0px 20px 20px 20px;
   font-weight: 1000;
   color: #fff;
   transition: 0.2s;
-margin-right: 20px;
-font-family: 'twinkle star', serif
+  margin-right: 20px;
+  font-family: "twinkle star", serif;
 }
 
 .roast-button:hover {
@@ -244,7 +244,7 @@ font-family: 'twinkle star', serif
   color: #222;
   cursor: pointer;
   transition: 0.2s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .fab-option:hover {
@@ -258,7 +258,7 @@ font-family: 'twinkle star', serif
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -272,7 +272,7 @@ font-family: 'twinkle star', serif
   width: 300px;
   max-width: 90vw;
   text-align: center;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
 }
 
 .close-popup {
@@ -305,9 +305,11 @@ font-family: 'twinkle star', serif
 /* Full image */
 .full-image-overlay {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(255,255,255,0.9);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -318,4 +320,96 @@ font-family: 'twinkle star', serif
   max-height: 90%;
   border-radius: 12px;
   border: 2px solid #ddd;
+}
+
+
+/* Shimmer overlay */
+.shimmer-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  aspect-ratio: 4 / 3.5;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    #e0e0e0 25%,
+    #f5f5f5 50%,
+    #e0e0e0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  z-index: 1; /* Above image until loaded */
+}
+
+.roast-image-container {
+  position: relative;
+  width: 100%;
+}
+
+/* Hide until loaded */
+.roast-image.hidden {
+  opacity: 0;
+}
+
+.roast-image.visible {
+  opacity: 1;
+  transition: opacity 0.4s ease-in;
+}
+
+
+@keyframes shimmer {
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.swipe-guide-animation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+  pointer-events: none; /* allow clicking through */
+}
+
+.swipe-arrow {
+  font-size: 24px;
+  opacity: 0.8;
+  animation: swipeMove 1s infinite alternate;
+}
+
+.swipe-left {
+  animation-delay: 0s;
+}
+
+.swipe-right {
+  animation-delay: 0.5s;
+}
+
+.swipe-text {
+  color: #fff;
+  font-weight: bold;
+  font-size: 16px;
+  text-shadow: 0 0 6px #000;
+  white-space: nowrap;
+}
+
+@keyframes swipeMove {
+  0% { transform: translateX(0); opacity: 0.8; }
+  50% { transform: translateX(-15px); opacity: 1; }
+  100% { transform: translateX(0); opacity: 0.8; }
+}
+
+.swipe-right {
+  animation-name: swipeMoveRight;
+}
+
+@keyframes swipeMoveRight {
+  0% { transform: translateX(0); opacity: 0.8; }
+  50% { transform: translateX(15px); opacity: 1; }
+  100% { transform: translateX(0); opacity: 0.8; }
 }

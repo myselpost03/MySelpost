@@ -47,6 +47,7 @@ const Profile = () => {
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
+
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -100,6 +101,7 @@ const Profile = () => {
       reader.readAsDataURL(file);
     }
   };
+  
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
 
