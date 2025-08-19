@@ -19,10 +19,8 @@ const Chat = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [audioChunks, setAudioChunks] = useState([]);
-  const [loadingImages, setLoadingImages] = useState({});
   const [revealedImages, setRevealedImages] = useState({});
   const [isSending, setIsSending] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSendingImage, setIsSendingImage] = useState(false);
   const [autoDeleteEnabled, setAutoDeleteEnabled] = useState(true);
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
@@ -30,21 +28,31 @@ const Chat = () => {
   const [showPayPal, setShowPayPal] = useState(false);
   const [blockedByOtherUser, setBlockedByOtherUser] = useState(false);
   const [iBlockedOtherUser, setIBlockedOtherUser] = useState(false);
+  const [loadingImages, setLoadingImages] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
   const inputRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const recentMessages = useRef([]);
+  const lastPasted = useRef("");
 
+  // Get reciever id
   const { id: targetId } = useParams();
 
   const { state } = useLocation();
 
+  // Get current user
   const currentUser = JSON.parse(localStorage.getItem("user"));
 
+  // Get target user
   const targetUser = state?.targetUser;
+
+  // Chat storage key
+  const chatStorageKey = `chat_${currentUser.id}_${targetId}`;
 
   const navigate = useNavigate();
 
-  const messagesEndRef = useRef(null);
-
+  // Reset notification unread count
   useEffect(() => {
     if (!targetId || !currentUser?.id) return;
 
@@ -63,6 +71,7 @@ const Chat = () => {
     resetUnreadCount();
   }, [targetId, currentUser]);
 
+  // Check whether use has access of self destruct
   useEffect(() => {
     const checkAccess = async () => {
       if (!currentUser?.id) return;
@@ -82,6 +91,7 @@ const Chat = () => {
     checkAccess();
   }, [currentUser?.id]);
 
+  // Pay to unlock
   useEffect(() => {
     if (showPayPal && window.paypal && currentUser) {
       if (
@@ -135,6 +145,7 @@ const Chat = () => {
     }
   }, [showPayPal, currentUser]);
 
+  // Check block status
   useEffect(() => {
     const checkBlockStatus = async () => {
       try {
@@ -197,65 +208,11 @@ const Chat = () => {
     checkBlockStatus();
   }, [currentUser.id, targetId]);
 
-  const chatStorageKey = `chat_${currentUser.id}_${targetId}`;
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const localData = JSON.parse(localStorage.getItem(chatStorageKey)) || [];
-    setMessages(localData);
-  }, [currentUser.id, targetId]);
-  const loadInitialMessages = async () => {
-    //setIsLoading(true);
-    const { data, error } = await supabase
-      .from("chats")
-      .select("*")
-      .or(
-        `and(sender_id.eq.${currentUser.id},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${currentUser.id})`
-      )
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error("Initial message load failed:", error.message);
-      setIsLoading(false);
-      return;
-    }
-
-    const filtered = data.filter(
-      (msg) =>
-        (msg.sender_id === currentUser.id && msg.receiver_id === targetId) ||
-        (msg.sender_id === targetId && msg.receiver_id === currentUser.id)
-    );
-
-    const formatted = filtered.map((msg) => ({
-      id: msg.id,
-      text: msg.message,
-      type: msg.sender_id === currentUser.id ? "sent" : "received",
-      sender_id: msg.sender_id,
-      time: new Date(msg.created_at).toLocaleTimeString(),
-      status: msg.status,
-      isRequest: msg.is_request,
-      timestamp: msg.created_at,
-      isAudio: msg.type === "audio", // <-- mark audio messages here
-      isImage: msg.type === "image",
-      seen: msg.status === "seen",
-    }));
-
-    setMessages(formatted);
-    if (filtered.length > 0) {
-      setLastFetchedAt(filtered[filtered.length - 1].created_at);
-    }
-    setIsLoading(false); // Done loading
-    // Reset unread count (other user → current user)
-    await supabase
-      .from("unread_counts")
-      .update({ count: 0 })
-      .eq("sender_id", targetId)
-      .eq("receiver_id", currentUser.id);
-  };
   useEffect(() => {
     loadInitialMessages();
   }, [targetId, currentUser.id]);
 
+  // Polling for new messages
   useEffect(() => {
     const interval = setInterval(() => {
       fetchNewMessages();
@@ -273,126 +230,7 @@ const Chat = () => {
     return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
-  const fetchNewMessages = async () => {
-    const query = supabase
-      .from("chats")
-      .select("*")
-      .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-      .order("created_at", { ascending: true });
-
-    if (lastFetchedAt) {
-      query.gt("created_at", lastFetchedAt);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error("Polling error:", error.message);
-      return;
-    }
-
-    const filtered = data.filter(
-      (msg) =>
-        (msg.sender_id === currentUser.id && msg.receiver_id === targetId) ||
-        (msg.sender_id === targetId && msg.receiver_id === currentUser.id)
-    );
-
-    if (filtered.length > 0) {
-      const formatted = filtered.map((msg) => ({
-        id: msg.id,
-        text: msg.message,
-        type: msg.sender_id === currentUser.id ? "sent" : "received",
-        time: new Date(msg.created_at).toLocaleTimeString(),
-        timestamp: msg.created_at,
-        isImage: msg.type === "image",
-      }));
-
-      setMessages((prev) => {
-        const existingIds = new Set(prev.map((m) => m.id));
-        const unique = formatted.filter((msg) => !existingIds.has(msg.id));
-        return [...prev, ...unique];
-      });
-
-      setLastFetchedAt(filtered[filtered.length - 1].created_at);
-    }
-  };
-
-  {
-    /*useEffect(() => {
-    const deleteExpiredReceivedImages = async () => {
-      const cutoffTime = dayjs().subtract(24, "hour").toISOString();
-
-      // 1. Get image messages received by current user older than 24 hours
-      const { data: oldImages, error } = await supabase
-        .from("chats")
-        .select("*")
-        .eq("receiver_id", currentUser.id)
-        .eq("type", "image")
-        .lt("created_at", cutoffTime);
-
-      if (error) {
-        console.error("Error fetching expired images:", error.message);
-        return;
-      }
-
-      if (oldImages.length === 0) return;
-
-      for (const msg of oldImages) {
-        try {
-          // 2. Extract file path from URL
-          const url = new URL(msg.message);
-          const bucketPath = decodeURIComponent(
-            url.pathname.split("/storage/v1/object/public/chat-assets/")[1]
-          );
-
-          // 3. Delete image from storage
-          if (bucketPath) {
-            const { error: deleteError } = await supabase.storage
-              .from("chat-assets")
-              .remove([bucketPath]);
-
-            if (deleteError) {
-              console.error(
-                "Error deleting from storage:",
-                deleteError.message
-              );
-            } else {
-              console.log("✅ Deleted from bucket:", bucketPath);
-            }
-          }
-
-          // 4. Delete message from chats table
-          const { error: deleteChatError } = await supabase
-            .from("chats")
-            .delete()
-            .eq("id", msg.id);
-
-          if (deleteChatError) {
-            console.error(
-              "Error deleting chat entry:",
-              deleteChatError.message
-            );
-          } else {
-            console.log("✅ Deleted image message from DB:", msg.id);
-          }
-
-          // 5. Update local state
-          setMessages((prev) => prev.filter((m) => m.id !== msg.id));
-        } catch (err) {
-          console.error("Error cleaning expired image:", err.message);
-        }
-      }
-    };
-
-    // Run on mount and every 5 minutes
-    deleteExpiredReceivedImages(); // Run once immediately
-    const interval = setInterval(deleteExpiredReceivedImages, 5 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [currentUser.id]);
-*/
-  }
-
+  // Fetch and store talked count
   useEffect(() => {
     const fetchAndStoreTalkedUsers = async () => {
       const { data, error } = await supabase
@@ -451,6 +289,7 @@ const Chat = () => {
     fetchAndStoreTalkedUsers();
   }, []);
 
+  // Update message seen status
   useEffect(() => {
     messages.forEach(async (msg) => {
       if (msg.type === "received" && !msg.seen) {
@@ -471,6 +310,165 @@ const Chat = () => {
     });
   }, [messages]);
 
+  // Recording Audio for Desktops
+  useEffect(() => {
+    if (!mediaRecorder) return;
+
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+      const fileName = `${Date.now()}.webm`;
+      const filePath = `chat-audio/${currentUser.id}/${fileName}`;
+
+      // Upload to Supabase storage
+      const { error: uploadError } = await supabaseStorage.storage
+        .from("chat-audio")
+        .upload(filePath, audioBlob);
+
+      if (uploadError) {
+        console.error("Upload failed:", uploadError.message);
+        return;
+      }
+
+      const { data: publicURLData } = supabaseStorage.storage
+        .from("chat-audio")
+        .getPublicUrl(filePath);
+
+      const audioUrl = publicURLData?.publicUrl;
+
+      // Save message in chats table
+      const { data, error } = await supabase
+        .from("chats")
+        .insert([
+          {
+            sender_id: currentUser.id,
+            receiver_id: targetId,
+            message: audioUrl,
+            type: "audio",
+          },
+        ])
+        .select();
+
+      if (error) {
+        console.error("Insert audio message failed:", error.message);
+        return;
+      }
+
+      if (data && data[0]) {
+        const dbMsg = {
+          id: data[0].id,
+          text: data[0].message,
+          type: "sent",
+          timestamp: data[0].created_at,
+          isAudio: true,
+        };
+        setMessages((prev) => [...prev, dbMsg]);
+      }
+    };
+  }, [mediaRecorder, audioChunks]);
+
+  // Auto Scroll to Bottom of Newest Messages
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
+  // Load initital messages
+  const loadInitialMessages = async () => {
+    //setIsLoading(true);
+    const { data, error } = await supabase
+      .from("chats")
+      .select("*")
+      .or(
+        `and(sender_id.eq.${currentUser.id},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${currentUser.id})`
+      )
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error("Initial message load failed:", error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    const filtered = data.filter(
+      (msg) =>
+        (msg.sender_id === currentUser.id && msg.receiver_id === targetId) ||
+        (msg.sender_id === targetId && msg.receiver_id === currentUser.id)
+    );
+
+    const formatted = filtered.map((msg) => ({
+      id: msg.id,
+      text: msg.message,
+      type: msg.sender_id === currentUser.id ? "sent" : "received",
+      sender_id: msg.sender_id,
+      time: new Date(msg.created_at).toLocaleTimeString(),
+      status: msg.status,
+      isRequest: msg.is_request,
+      timestamp: msg.created_at,
+      isAudio: msg.type === "audio", // <-- mark audio messages here
+      isImage: msg.type === "image",
+      seen: msg.status === "seen",
+    }));
+
+    setMessages(formatted);
+    if (filtered.length > 0) {
+      setLastFetchedAt(filtered[filtered.length - 1].created_at);
+    }
+    setIsLoading(false); // Done loading
+    // Reset unread count (other user → current user)
+    await supabase
+      .from("unread_counts")
+      .update({ count: 0 })
+      .eq("sender_id", targetId)
+      .eq("receiver_id", currentUser.id);
+  };
+
+  // Fetch new messages
+  const fetchNewMessages = async () => {
+    const query = supabase
+      .from("chats")
+      .select("*")
+      .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+      .order("created_at", { ascending: true });
+
+    if (lastFetchedAt) {
+      query.gt("created_at", lastFetchedAt);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Polling error:", error.message);
+      return;
+    }
+
+    const filtered = data.filter(
+      (msg) =>
+        (msg.sender_id === currentUser.id && msg.receiver_id === targetId) ||
+        (msg.sender_id === targetId && msg.receiver_id === currentUser.id)
+    );
+
+    if (filtered.length > 0) {
+      const formatted = filtered.map((msg) => ({
+        id: msg.id,
+        text: msg.message,
+        type: msg.sender_id === currentUser.id ? "sent" : "received",
+        time: new Date(msg.created_at).toLocaleTimeString(),
+        timestamp: msg.created_at,
+        isImage: msg.type === "image",
+      }));
+
+      setMessages((prev) => {
+        const existingIds = new Set(prev.map((m) => m.id));
+        const unique = formatted.filter((msg) => !existingIds.has(msg.id));
+        return [...prev, ...unique];
+      });
+
+      setLastFetchedAt(filtered[filtered.length - 1].created_at);
+    }
+  };
+
+  // Message deletion after 1 minute
   const startDeletionTimer = (messageId) => {
     setTimeout(async () => {
       const msgToDelete = messages.find((m) => m.id === messageId);
@@ -501,33 +499,7 @@ const Chat = () => {
     }, 60 * 1000); // 1 minute
   };
 
-  {
-    /*  const deleteOldMessagesBetweenUsers = async (currentUserId, otherUserId) => {
-    const cutoffTime = dayjs().subtract(24, "hour").toISOString();
-
-    const { error } = await supabase
-      .from("chats")
-      .delete()
-      .lt("created_at", cutoffTime)
-      .or(
-        `and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUserId})`
-      );
-
-    if (error) {
-      console.error("Failed to delete old messages:", error.message);
-    } else {
-      console.log("Messages older than 24h deleted between users.");
-    }
-  };
-
-  useEffect(() => {
-    if (currentUser?.id && targetUser?.id) {
-      deleteOldMessagesBetweenUsers(currentUser.id, targetUser.id);
-    }
-  }, [currentUser?.id, targetUser?.id]);
-*/
-  }
-
+  // Get readable time format for sent messages
   function getTimeAgo(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -551,6 +523,7 @@ const Chat = () => {
     return "just now";
   }
 
+  // Send Message
   const sendMessage = async () => {
     trackEvent({
       action: "button_click",
@@ -600,7 +573,6 @@ const Chat = () => {
 
     setMessages((prev) => {
       const updated = [...prev, localMsg];
-      localStorage.setItem(chatStorageKey, JSON.stringify(updated));
       return updated;
     });
 
@@ -641,7 +613,6 @@ const Chat = () => {
       setMessages((prev) => {
         const filtered = prev.filter((m) => m.id !== tempId);
         const updated = [...filtered, dbMsg];
-        localStorage.setItem(chatStorageKey, JSON.stringify(updated));
         return updated;
       });
     }
@@ -697,12 +668,7 @@ const Chat = () => {
     setIsSending(false);
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      sendMessage();
-    }
-  };
-
+  // Block toggle
   const handleBlockToggle = async () => {
     trackEvent({
       action: "button_click",
@@ -740,9 +706,14 @@ const Chat = () => {
     }
   };
 
-  const recentMessages = useRef([]);
-  const lastPasted = useRef("");
+  // On pressing enter, send message
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      sendMessage();
+    }
+  };
 
+  // Santizing input and detecting abusive words/links/phone number
   const handleInputChange = async (e) => {
     const newText = e.target.value;
     const lowerText = newText.toLowerCase();
@@ -750,7 +721,7 @@ const Chat = () => {
     // Normalize input for smart detection
     const normalizedText = lowerText
       .replace(/\s+/g, "")
-      .replace(/[\-.:\/]/g, "")
+      .replace(/[-.:/]/g, "")
       .replace(/dot/g, ".");
 
     const textsToCheck = [lowerText, normalizedText];
@@ -770,7 +741,7 @@ const Chat = () => {
         if (inputRef.current) inputRef.current.focus();
       }, 100);
 
-      const { data, error } = await supabase.rpc("decrement_decency", {
+      const { error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
 
@@ -793,7 +764,7 @@ const Chat = () => {
         if (inputRef.current) inputRef.current.focus();
       }, 100);
 
-      const { data, error } = await supabase.rpc("decrement_decency", {
+      const { error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
 
@@ -805,7 +776,7 @@ const Chat = () => {
 
     // Phone number check
     const phonePattern = /\b\d{10,13}\b/;
-    if (phonePattern.test(newText.replace(/[\s\-]/g, ""))) {
+    if (phonePattern.test(newText.replace(/[\s-]/g, ""))) {
       setAlertMessage({
         text: "🚫 Sharing phone numbers is not allowed.",
         buttons: ["close"],
@@ -815,7 +786,7 @@ const Chat = () => {
         if (inputRef.current) inputRef.current.focus();
       }, 100);
 
-      const { data, error } = await supabase.rpc("decrement_decency", {
+      const { error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
 
@@ -836,7 +807,7 @@ const Chat = () => {
       setTimeout(() => {
         if (inputRef.current) inputRef.current.focus();
       }, 100);
-      const { data, error } = await supabase.rpc("decrement_decency", {
+      const { error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
 
@@ -849,6 +820,7 @@ const Chat = () => {
     setInput(newText);
   };
 
+  // Detect pasting and deduct the coins
   const handlePaste = async (e) => {
     trackEvent({
       action: "button_click",
@@ -861,7 +833,7 @@ const Chat = () => {
         text: "Pasting is not allowed",
         withButton: true,
       });
-      const { data, error } = await supabase.rpc("decrement_decency", {
+      const { error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
 
@@ -871,36 +843,7 @@ const Chat = () => {
     }
   };
 
-  const handleBack = () => {
-    navigate(-1);
-  };
-
-  const handleFileInputClick = (e) => {
-    const hasUploadedImage =
-      localStorage.getItem("hasUploadedImage") === "true";
-    if (!hasUploadedImage) {
-      setAlertMessage({
-        text: "📸 Upload one post under Roast section to send image.",
-        withButton: true,
-      });
-      e.preventDefault(); // prevent opening file dialog
-      return;
-    }
-
-    if (currentUser.name === "shivani" || currentUser.name === "madison") {
-      return; // no limit for these users
-    }
-
-    const imageSendKey = `imageSentDate_${currentUser.id}`;
-    const lastSentDate = localStorage.getItem(imageSendKey);
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-
-    if (lastSentDate === today) {
-      e.preventDefault(); // Prevents file dialog from opening
-      setAlertMessage("You can only send one image per day.");
-    }
-  };
-
+  // Image upload
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -975,6 +918,34 @@ const Chat = () => {
     setIsSendingImage(false);
   };
 
+  // Image selection for sending
+  const handleFileInputClick = (e) => {
+    const hasUploadedImage =
+      localStorage.getItem("hasUploadedImage") === "true";
+    if (!hasUploadedImage) {
+      setAlertMessage({
+        text: "📸 Upload one post under Roast section to send image.",
+        withButton: true,
+      });
+      e.preventDefault(); // prevent opening file dialog
+      return;
+    }
+
+    if (currentUser.name === "shivani" || currentUser.name === "madison") {
+      return; // no limit for these users
+    }
+
+    const imageSendKey = `imageSentDate_${currentUser.id}`;
+    const lastSentDate = localStorage.getItem(imageSendKey);
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+    if (lastSentDate === today) {
+      e.preventDefault(); // Prevents file dialog from opening
+      setAlertMessage("You can only send one image per day.");
+    }
+  };
+
+  // Delete Sent Image on Click
   const handleImageClick = async (msg) => {
     trackEvent({
       action: "button_click",
@@ -1014,67 +985,7 @@ const Chat = () => {
     }, 10000);
   };
 
-  useEffect(() => {
-    if (!mediaRecorder) return;
-
-    mediaRecorder.onstop = async () => {
-      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-      const fileName = `${Date.now()}.webm`;
-      const filePath = `chat-audio/${currentUser.id}/${fileName}`;
-
-      // Upload to Supabase storage
-      const { error: uploadError } = await supabaseStorage.storage
-        .from("chat-audio")
-        .upload(filePath, audioBlob);
-
-      if (uploadError) {
-        console.error("Upload failed:", uploadError.message);
-        return;
-      }
-
-      const { data: publicURLData } = supabaseStorage.storage
-        .from("chat-audio")
-        .getPublicUrl(filePath);
-
-      const audioUrl = publicURLData?.publicUrl;
-
-      // Save message in chats table
-      const { data, error } = await supabase
-        .from("chats")
-        .insert([
-          {
-            sender_id: currentUser.id,
-            receiver_id: targetId,
-            message: audioUrl,
-            type: "audio",
-          },
-        ])
-        .select();
-
-      if (error) {
-        console.error("Insert audio message failed:", error.message);
-        return;
-      }
-
-      if (data && data[0]) {
-        const dbMsg = {
-          id: data[0].id,
-          text: data[0].message,
-          type: "sent",
-          timestamp: data[0].created_at,
-          isAudio: true,
-        };
-        setMessages((prev) => [...prev, dbMsg]);
-      }
-    };
-  }, [mediaRecorder, audioChunks]);
-
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
-
+  // Mic Icon Click
   const handleMicClick = async () => {
     const hasUploadedImage =
       localStorage.getItem("hasUploadedImage") === "true";
@@ -1163,6 +1074,11 @@ const Chat = () => {
     }
   };
 
+  // Take user to previous page or one step back
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   return (
     <div className="Chat-UI">
       <SketchyHeader
@@ -1227,6 +1143,8 @@ const Chat = () => {
           <div className="auto-delete-notice">
             🕒 Messages will delete on seen
           </div>
+
+          {/* Show user/chat blocked UI */}
           {blockedByOtherUser || iBlockedOtherUser ? (
             <div className="blocked-ui">
               <h2>🚫 Chat Blocked</h2>
@@ -1239,6 +1157,7 @@ const Chat = () => {
             </div>
           ) : (
             <>
+              {/* Show fetched messages */}
               <div className="messages">
                 {messages.map((msg) => (
                   <div
@@ -1290,8 +1209,14 @@ const Chat = () => {
                     ) : (
                       <p>{msg.text}</p>
                     )}
-
-                    <span className="time">{getTimeAgo(msg.timestamp)}</span>
+                    <div className="message-footer">
+                      <span className="time">{getTimeAgo(msg.timestamp)}</span>
+                      {msg.type === "sent" && (
+                        <span className={`time ${msg.seen}`}>
+                          {msg.seen ? "Seen" : "Sent"}
+                        </span>
+                      )}
+                    </div>{" "}
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
@@ -1402,7 +1327,6 @@ const Chat = () => {
           onChange={handleInputChange}
           onKeyDown={handleKeyPress}
           onPaste={handlePaste}
-          autoComplete="off"
           placeholder="Type your message..."
         />
 
@@ -1414,11 +1338,13 @@ const Chat = () => {
         </button>
       </div>
 
+      {/* Show full view image on click */}
       {modalImage && (
         <div className="image-modal" onClick={() => setModalImage(null)}>
           <img src={modalImage} alt="Full View" />
         </div>
       )}
+
       <Toaster />
     </div>
   );
