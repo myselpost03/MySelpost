@@ -7,6 +7,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  background: repeating-linear-gradient(
+      45deg,
+      #fffef9,
+      #fffef9 10px,
+      #f9f7ed 10px,
+      #f9f7ed 20px
+    ),
+    radial-gradient(circle at top left, #fffef9 0%, #f1efdb 100%);
+  background-blend-mode: multiply;
 }
 .messages {
   flex-grow: 1; /* fill available space */
@@ -60,15 +69,6 @@
   height: 75vh;
   padding: 1rem;
 
-  background: repeating-linear-gradient(
-      45deg,
-      #fffef9,
-      #fffef9 10px,
-      #f9f7ed 10px,
-      #f9f7ed 20px
-    ),
-    radial-gradient(circle at top left, #fffef9 0%, #f1efdb 100%);
-  background-blend-mode: multiply;
   animation: sketchy-pop 0.5s ease-out;
   border: 3px dashed #333;
   border-radius: 20px;
@@ -535,12 +535,9 @@
 
 @media (max-width: 480px) {
   .message {
-    margin: 0.4rem 0.6rem; /* vertical 0.4rem, horizontal 0.6rem */
-    /* or padding if you prefer */
-    /* padding: 0.5rem 1rem; */
+    margin: 0.4rem 0.6rem;
   }
 }
-
 
 .auto-delete-notice {
   width: 95%;
@@ -550,10 +547,10 @@
   background: linear-gradient(135deg, #ffecd2, #fcb69f);
   color: #333;
   font-weight: bold;
-  font-family: 'Patrick Hand', cursive, serif;
+  font-family: "Patrick Hand", cursive, serif;
   border-radius: 15px;
   text-align: center;
-  box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
   border: 2px dashed #ff6f61;
   animation: notice-pop 0.5s ease-out;
 }

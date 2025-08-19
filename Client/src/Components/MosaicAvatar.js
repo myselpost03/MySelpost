@@ -38,7 +38,6 @@ export default function MosaicAvatar({
         .eq("user_id", userId)
         .eq("liked_by", currentUserId)
         .single()
-        .catch(() => null);
 
       if (likedError && likedError.code !== "PGRST116") throw likedError; // ignore not found
       setUserLiked(!!likedData);

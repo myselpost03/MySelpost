@@ -847,9 +847,8 @@ const ChatList = () => {
         genderFilter === "all" || user.gender === genderFilter;
       const countryMatch =
         countryFilter === "all" || user.country === countryFilter;
-      const searchMatch = user.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+      const searchMatch =
+        user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
       const pinMatch =
         activeTab === "pinned"
           ? user.pinned

@@ -1,17 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import SketchyHeader from "../Components/SketchyHeader";
-import { supabase } from "../Utils/supabaseClient";
-import LoadingIndicator from "../Components/LoadingIndicator";
-import {
-  FaBan,
-  FaImage,
-  FaMicrophone,
-  FaMoon,
-  FaSun,
-  FaSmile,
-} from "react-icons/fa";
-import dayjs from "dayjs";
+import { supabase, supabaseStorage } from "../Utils/supabaseClient";
+import { FaBan, FaImage, FaMicrophone } from "react-icons/fa";
 import bannedData from "../Utils/bannedWords.json";
 import SketchyAlert from "../Components/SketchyAlert";
 import { trackEvent } from "../Utils/analytics";
@@ -28,8 +19,6 @@ const Chat = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [audioChunks, setAudioChunks] = useState([]);
-  const inputRef = useRef(null);
-
   const [loadingImages, setLoadingImages] = useState({});
   const [revealedImages, setRevealedImages] = useState({});
   const [isSending, setIsSending] = useState(false);
@@ -41,6 +30,8 @@ const Chat = () => {
   const [showPayPal, setShowPayPal] = useState(false);
   const [blockedByOtherUser, setBlockedByOtherUser] = useState(false);
   const [iBlockedOtherUser, setIBlockedOtherUser] = useState(false);
+
+  const inputRef = useRef(null);
 
   const { id: targetId } = useParams();
 
@@ -213,57 +204,55 @@ const Chat = () => {
     const localData = JSON.parse(localStorage.getItem(chatStorageKey)) || [];
     setMessages(localData);
   }, [currentUser.id, targetId]);
+  const loadInitialMessages = async () => {
+    //setIsLoading(true);
+    const { data, error } = await supabase
+      .from("chats")
+      .select("*")
+      .or(
+        `and(sender_id.eq.${currentUser.id},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${currentUser.id})`
+      )
+      .order("created_at", { ascending: true });
 
+    if (error) {
+      console.error("Initial message load failed:", error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    const filtered = data.filter(
+      (msg) =>
+        (msg.sender_id === currentUser.id && msg.receiver_id === targetId) ||
+        (msg.sender_id === targetId && msg.receiver_id === currentUser.id)
+    );
+
+    const formatted = filtered.map((msg) => ({
+      id: msg.id,
+      text: msg.message,
+      type: msg.sender_id === currentUser.id ? "sent" : "received",
+      sender_id: msg.sender_id,
+      time: new Date(msg.created_at).toLocaleTimeString(),
+      status: msg.status,
+      isRequest: msg.is_request,
+      timestamp: msg.created_at,
+      isAudio: msg.type === "audio", // <-- mark audio messages here
+      isImage: msg.type === "image",
+      seen: msg.status === "seen",
+    }));
+
+    setMessages(formatted);
+    if (filtered.length > 0) {
+      setLastFetchedAt(filtered[filtered.length - 1].created_at);
+    }
+    setIsLoading(false); // Done loading
+    // Reset unread count (other user → current user)
+    await supabase
+      .from("unread_counts")
+      .update({ count: 0 })
+      .eq("sender_id", targetId)
+      .eq("receiver_id", currentUser.id);
+  };
   useEffect(() => {
-    const loadInitialMessages = async () => {
-      //setIsLoading(true);
-      const { data, error } = await supabase
-        .from("chats")
-        .select("*")
-        .or(
-          `and(sender_id.eq.${currentUser.id},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${currentUser.id})`
-        )
-        .order("created_at", { ascending: true });
-
-      if (error) {
-        console.error("Initial message load failed:", error.message);
-        setIsLoading(false);
-        return;
-      }
-
-      const filtered = data.filter(
-        (msg) =>
-          (msg.sender_id === currentUser.id && msg.receiver_id === targetId) ||
-          (msg.sender_id === targetId && msg.receiver_id === currentUser.id)
-      );
-
-      const formatted = filtered.map((msg) => ({
-        id: msg.id,
-        text: msg.message,
-        type: msg.sender_id === currentUser.id ? "sent" : "received",
-        sender_id: msg.sender_id,
-        time: new Date(msg.created_at).toLocaleTimeString(),
-        status: msg.status,
-        isRequest: msg.is_request,
-        timestamp: msg.created_at,
-        isAudio: msg.type === "audio", // <-- mark audio messages here
-
-        isImage: msg.type === "image",
-      }));
-
-      setMessages(formatted);
-      if (filtered.length > 0) {
-        setLastFetchedAt(filtered[filtered.length - 1].created_at);
-      }
-      setIsLoading(false); // Done loading
-      // Reset unread count (other user → current user)
-      await supabase
-        .from("unread_counts")
-        .update({ count: 0 })
-        .eq("sender_id", targetId)
-        .eq("receiver_id", currentUser.id);
-    };
-
     loadInitialMessages();
   }, [targetId, currentUser.id]);
 
@@ -274,6 +263,15 @@ const Chat = () => {
 
     return () => clearInterval(interval); // Cleanup on unmount
   }, [lastFetchedAt, targetId, currentUser.id]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      loadInitialMessages();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, []);
 
   const fetchNewMessages = async () => {
     const query = supabase
@@ -319,7 +317,8 @@ const Chat = () => {
     }
   };
 
-  useEffect(() => {
+  {
+    /*useEffect(() => {
     const deleteExpiredReceivedImages = async () => {
       const cutoffTime = dayjs().subtract(24, "hour").toISOString();
 
@@ -391,6 +390,8 @@ const Chat = () => {
 
     return () => clearInterval(interval);
   }, [currentUser.id]);
+*/
+  }
 
   useEffect(() => {
     const fetchAndStoreTalkedUsers = async () => {
@@ -450,7 +451,58 @@ const Chat = () => {
     fetchAndStoreTalkedUsers();
   }, []);
 
-  const deleteOldMessagesBetweenUsers = async (currentUserId, otherUserId) => {
+  useEffect(() => {
+    messages.forEach(async (msg) => {
+      if (msg.type === "received" && !msg.seen) {
+        // Update DB
+        await supabase
+          .from("chats")
+          .update({ status: "seen" })
+          .eq("id", msg.id);
+
+        // Update local state
+        setMessages((prev) =>
+          prev.map((m) => (m.id === msg.id ? { ...m, seen: true } : m))
+        );
+
+        // Start 1-minute deletion timer
+        startDeletionTimer(msg.id);
+      }
+    });
+  }, [messages]);
+
+  const startDeletionTimer = (messageId) => {
+    setTimeout(async () => {
+      const msgToDelete = messages.find((m) => m.id === messageId);
+      if (!msgToDelete) return;
+
+      try {
+        // Delete from Supabase
+        await supabase.from("chats").delete().eq("id", messageId);
+
+        // Delete from storage if image
+        {
+          /*   if (msgToDelete.isImage) {
+        const url = new URL(msgToDelete.text);
+        const filePath = decodeURIComponent(
+          url.pathname.split("/storage/v1/object/public/chat-assets/")[1]
+        );
+        if (filePath) {
+          await supabase.storage.from("chat-assets").remove([filePath]);
+        }
+      }
+*/
+        }
+        // Update local state
+        setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      } catch (err) {
+        console.error("Failed to delete message:", err.message);
+      }
+    }, 60 * 1000); // 1 minute
+  };
+
+  {
+    /*  const deleteOldMessagesBetweenUsers = async (currentUserId, otherUserId) => {
     const cutoffTime = dayjs().subtract(24, "hour").toISOString();
 
     const { error } = await supabase
@@ -473,6 +525,8 @@ const Chat = () => {
       deleteOldMessagesBetweenUsers(currentUser.id, targetUser.id);
     }
   }, [currentUser?.id, targetUser?.id]);
+*/
+  }
 
   function getTimeAgo(dateString) {
     const date = new Date(dateString);
@@ -818,7 +872,6 @@ const Chat = () => {
   };
 
   const handleBack = () => {
-    
     navigate(-1);
   };
 
@@ -868,7 +921,7 @@ const Chat = () => {
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `chat-images/${currentUser.id}/${fileName}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabaseStorage.storage
       .from("chat-assets")
       .upload(filePath, file);
 
@@ -878,7 +931,7 @@ const Chat = () => {
       return;
     }
 
-    const { data: publicURLData } = supabase.storage
+    const { data: publicURLData } = supabaseStorage.storage
       .from("chat-assets")
       .getPublicUrl(filePath);
 
@@ -950,7 +1003,7 @@ const Chat = () => {
 
         // 4. Delete from storage
         if (filePath) {
-          await supabase.storage.from(bucketName).remove([filePath]);
+          await supabaseStorage.storage.from(bucketName).remove([filePath]);
         }
 
         // 5. Update UI (remove all image messages with this URL)
@@ -970,7 +1023,7 @@ const Chat = () => {
       const filePath = `chat-audio/${currentUser.id}/${fileName}`;
 
       // Upload to Supabase storage
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabaseStorage.storage
         .from("chat-audio")
         .upload(filePath, audioBlob);
 
@@ -979,7 +1032,7 @@ const Chat = () => {
         return;
       }
 
-      const { data: publicURLData } = supabase.storage
+      const { data: publicURLData } = supabaseStorage.storage
         .from("chat-audio")
         .getPublicUrl(filePath);
 
@@ -1015,6 +1068,12 @@ const Chat = () => {
       }
     };
   }, [mediaRecorder, audioChunks]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   const handleMicClick = async () => {
     const hasUploadedImage =
@@ -1062,7 +1121,7 @@ const Chat = () => {
           const fileName = `${Date.now()}.${fileExt}`;
           const filePath = `chat-audio/${currentUser.id}/${fileName}`;
 
-          const { error: uploadError } = await supabase.storage
+          const { error: uploadError } = await supabaseStorage.storage
             .from("chat-audio")
             .upload(filePath, blob);
 
@@ -1071,7 +1130,7 @@ const Chat = () => {
             return;
           }
 
-          const { data: publicURLData } = supabase.storage
+          const { data: publicURLData } = supabaseStorage.storage
             .from("chat-audio")
             .getPublicUrl(filePath);
 
@@ -1104,22 +1163,12 @@ const Chat = () => {
     }
   };
 
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
-
-
   return (
     <div className="Chat-UI">
       <SketchyHeader
         title={targetUser.name}
         onBack={handleBack}
       ></SketchyHeader>
-<div className="auto-delete-notice">
-  🕒 Messages will delete on seen
-</div>
 
       {alertMessage && !hasAccess && (
         <SketchyAlert
@@ -1175,7 +1224,9 @@ const Chat = () => {
               </div>
             </div>
           </div>
-
+          <div className="auto-delete-notice">
+            🕒 Messages will delete on seen
+          </div>
           {blockedByOtherUser || iBlockedOtherUser ? (
             <div className="blocked-ui">
               <h2>🚫 Chat Blocked</h2>
@@ -1351,6 +1402,7 @@ const Chat = () => {
           onChange={handleInputChange}
           onKeyDown={handleKeyPress}
           onPaste={handlePaste}
+          autoComplete="off"
           placeholder="Type your message..."
         />
 

@@ -129,7 +129,10 @@ const Profile = () => {
         console.log("📂 Loaded user from IndexedDB");
         setUserData({
           ...cachedUser,
-          avatar: cachedUser.profile_pic || empty,
+          avatar:
+            cachedUser.profile_pic instanceof Blob
+              ? URL.createObjectURL(cachedUser.profile_pic)
+              : empty,
         });
         setForm((prev) => ({
           ...prev,
