@@ -1,70 +1,58 @@
 import React from "react";
-import Header from "../Components/Header";
+import { useNavigate } from "react-router-dom";
+import SketchyHeader from "../Components/SketchyHeader";
 import "../Styles/Privacy.css";
 
 const Privacy = () => {
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   return (
-    <div className="privacy-page">
-      <Header />
+    <>
+      <SketchyHeader title="Privacy" onBack={handleBack} />
       <div className="privacy-container">
-        <h1>Privacy Policy</h1>
-        <p className="last-updated">Last updated: April 7, 2025</p>
-
-        <section>
-          <h2>1. Introduction</h2>
-          <p>
-            MySelpost respects your privacy. This Privacy Policy explains how we collect, use, and protect your personal information when you use our services.
+        <div className="privacy-card">
+          <h1 className="privacy-title">Privacy Policy</h1>
+          <p className="privacy-text">
+            Your privacy is important to us. This Privacy Policy explains how we collect,
+            use, and protect your information when you use our services.
           </p>
-        </section>
 
-        <section>
-          <h2>2. Information We Collect</h2>
-          <p>
-            We may collect information such as your name, email address, and the content you submit (e.g. sketches or prompts). We also collect technical data like browser type, IP address, and usage logs.
+          <h2 className="privacy-subtitle">Information We Collect</h2>
+          <p className="privacy-text">
+            We collect the following information to provide and improve our social networking services:
           </p>
-        </section>
-
-        <section>
-          <h2>3. How We Use Your Information</h2>
-          <p>
-            We use your data to:
-          </p>
-          <ul>
-            <li>Deliver app and website builds based on your input</li>
-            <li>Improve our services and user experience</li>
-            <li>Send project updates and important notifications</li>
+          <ul className="privacy-list">
+            <li><strong className="privacy-subtitle">User-generated content:</strong> comments, posts, messages, and photos only (videos are not collected).</li>
+            <li><strong className="privacy-subtitle">Usage data:</strong> login times, pages visited, interactions, and session duration.</li>
+            <li><strong className="privacy-subtitle">Device and technical data:</strong> IP address (used to determine your country), browser type, and operating system.</li>
+            <li><strong className="privacy-subtitle">LocalStorage:</strong> We use localStorage to persist user preferences; we do not use cookies.</li>
+            <li><strong className="privacy-subtitle">Other information:</strong> any data voluntarily provided to improve user experience.</li>
           </ul>
-        </section>
 
-        <section>
-          <h2>4. Data Protection</h2>
-          <p>
-            Your data is stored securely, and we do not sell or share it with third parties. All sensitive data is encrypted or anonymized.
+          <h2 className="privacy-subtitle">How We Use Your Information</h2>
+          <p className="privacy-text">
+            Your data is used to enhance app functionality, communicate important updates,
+            and ensure security. We do not sell your information to third parties.
           </p>
-        </section>
 
-        <section>
-          <h2>5. Cookies</h2>
-          <p>
-            We use cookies to manage sessions, remember preferences, and track referral bonuses. You can disable cookies in your browser settings.
+          <h2 className="privacy-subtitle">Cookies & Tracking</h2>
+          <p className="privacy-text">
+            Our website doesn't use cookies but uses localStorage and similar technologies to persist user activity
+            and remember preferences.
           </p>
-        </section>
 
-        <section>
-          <h2>6. Your Rights</h2>
-          <p>
-            You have the right to access, correct, or delete your personal information. To request changes, contact us at <a href="mailto:myselpost03@gmail.com">myselpost03@gmail.com</a>.
+          <h2 className="privacy-subtitle">Contact Us</h2>
+          <p className="privacy-text">
+            If you have any questions about this privacy policy, please contact us at
+            myselpost03@gmail.com.
           </p>
-        </section>
-
-        <section>
-          <h2>7. Changes to This Policy</h2>
-          <p>
-            We may update this Privacy Policy occasionally. Significant changes will be announced on our website or via email.
-          </p>
-        </section>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

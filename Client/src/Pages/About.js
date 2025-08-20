@@ -1,81 +1,55 @@
 import React from "react";
-import Header from "../Components/Header";
-import "../Styles/About.css";
+import { useNavigate } from "react-router-dom";
+import SketchyHeader from "../Components/SketchyHeader";
+import "../Styles/Privacy.css"; // Reuse same CSS for consistency
 
-const ABOUT_CONTENT = [
-  {
-    title: "🚀 What We Do",
-    content:
-      "We specialize in turning hand-drawn sketches or text prompts into fully functional digital products. Every creation is custom-built by AI with care and precision.",
-  },
-  {
-    title: "🛠️ How It Works",
-    content: (
-      <>
-        1. <strong>Sketch or Prompt:</strong> Submit your idea in the form of a
-        rough sketch or a simple description.
-        <br />
-        2. <strong>We Build It:</strong> We begin development using AI, ensuring
-        every detail reflects your original vision.
-        <br />
-        3. <strong>Delivery:</strong> You get progress updates and the final
-        product within your selected timeline.
-      </>
-    ),
-  },
-  {
-    title: "💳 Plans & Delivery",
-    content: (
-      <ul>
-        <li>
-          <strong>Sketch Plan:</strong> <em>Free</em> – Delivery in{" "}
-          <strong>48 hours</strong> with <strong>1 monthly point</strong>.
-        </li>
-        <li>
-          <strong>Prompt Plan:</strong> <em>Paid</em> – Delivery in{" "}
-          <strong>Instant hours</strong> with <strong>3 monthly points</strong>.
-        </li>
-        <li>
-          <strong>Business Plan:</strong> <em>Paid</em> – Delivery in{" "}
-          <strong>Instant hours</strong> with <strong>5 monthly points</strong>.
-        </li>
-      </ul>
-    ),
-  },
-  {
-    title: "💡 Our Mission",
-    content:
-      "Everyone has ideas. But not everyone knows how to bring them to life. At MySelpost, we believe in empowering creators of all skill levels by offering handcrafted builds, delivered with love — no coding knowledge required.",
-  },
-];
+const About = () => {
+  const navigate = useNavigate();
 
-const About = () => (
-  <div className="about-page">
-    <Header />
-    <div className="about-content">
-      <h1>Welcome to MySelpost</h1>
-      <p className="intro-text">
-        <strong>MySelpost</strong> is your personal digital builder — where your
-        ideas, no matter how rough, are transformed into polished websites or
-        apps by hand.
-      </p>
+  const handleBack = () => {
+    navigate(-1);
+  };
 
-      {ABOUT_CONTENT.map((section, index) => (
-        <div key={index} className="about-section">
-          <h2>{section.title}</h2>
-          {typeof section.content === "string" ? (
-            <p>{section.content}</p>
-          ) : (
-            section.content
-          )}
+  return (
+    <>
+      <SketchyHeader title="About Us" onBack={handleBack} />
+      <div className="privacy-container">
+        <div className="privacy-card">
+          <h1 className="privacy-title">About Our Platform</h1>
+
+          <p className="privacy-text">
+            Welcome to our social networking platform! We aim to connect people from around the world,
+            providing a safe and engaging space for sharing thoughts, photos, and interacting with others.
+          </p>
+
+          <h2 className="privacy-subtitle">Our Mission</h2>
+          <p className="privacy-text">
+            Our mission is to create a platform where users can freely express themselves, share meaningful
+            content, and build communities while maintaining privacy and security.
+          </p>
+
+          <h2 className="privacy-subtitle">What We Offer</h2>
+          <ul className="privacy-list">
+            <li>Post comments, messages, and photos.</li>
+            <li>Connect and interact with other users safely.</li>
+            <li>Stay updated with the latest posts from your network.</li>
+            <li>Control your data and account privacy settings.</li>
+          </ul>
+
+          <h2 className="privacy-subtitle">Our Values</h2>
+          <p className="privacy-text">
+            We value transparency, privacy, and user safety. Our platform is designed to give you full control
+            over your content and experience.
+          </p>
+
+          <h2 className="privacy-subtitle">Contact Us</h2>
+          <p className="privacy-text">
+            Have questions or suggestions? Reach out to us at myselpost03@gmail.com. We’d love to hear from you!
+          </p>
         </div>
-      ))}
-
-      <div className="about-footer">
-        <p>Got an idea? Let's build it together.</p>
       </div>
-    </div>
-  </div>
-);
+    </>
+  );
+};
 
-export default React.memo(About);
+export default About;

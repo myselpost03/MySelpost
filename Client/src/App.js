@@ -14,6 +14,7 @@ import {
   Sketch,
   AppSketch,
   WebSketch,
+  Updates,
   Prompt,
   Pricing,
   Settings,
@@ -65,6 +66,8 @@ const publicRoutes = [
   { path: "/chat-entrance", component: ChatEntrance },
   { path: "/guest-user", component: GuestUser },
   { path: "/privacy", component: Privacy },
+  
+  { path: "/updates", component: Updates },
   { path: "/contact-us", component: Contact },
   { path: "/pricing", component: Pricing },
   { path: "/chat-list", component: ChatList },

@@ -99,6 +99,10 @@ const Settings = () => {
 
   const handleBack = () => navigate(-1);
   const handleContact = () => navigate("/contact-us");
+  const handlePrivacy = () => navigate("/privacy");
+  const handleTerms = () => navigate("/terms");
+  const handleAbout = () => navigate("/about");
+  const handleUpdates = () => navigate("/updates");
 
   return (
     <>
@@ -122,22 +126,22 @@ const Settings = () => {
             <button className="settings-btn">Go</button>
           </div>
 
-          <div className="settings-item">
+          <div className="settings-item" onClick={handlePrivacy}>
             <span>Privacy Policy</span>
             <button className="settings-btn">View</button>
           </div>
 
-          <div className="settings-item">
+          <div className="settings-item" onClick={handleUpdates}>
             <span>Recent Updates Made</span>
             <button className="settings-btn">View</button>
           </div>
 
-          <div className="settings-item">
+          <div className="settings-item" onClick={handleTerms}>
             <span>Terms of Service</span>
             <button className="settings-btn">View</button>
           </div>
 
-          <div className="settings-item">
+          <div className="settings-item" onClick={handleAbout}>
             <span>About</span>
             <button className="settings-btn">More</button>
           </div>
