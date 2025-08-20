@@ -11,25 +11,7 @@
   min-height: 100vh;
   color: #222;
   font-family: "Inter", sans-serif;
-  background-color: #f0f0f0;
-  background-image:
-    /* Subtle paper grain */ repeating-linear-gradient(
-      135deg,
-      rgba(0, 0, 0, 0.02) 0px,
-      rgba(0, 0, 0, 0.02) 1px,
-      transparent 1px,
-      transparent 5px
-    ),
-    /* Diagonal sketchy lines */
-      repeating-linear-gradient(
-        -45deg,
-        rgba(0, 0, 0, 0.015) 0px,
-        rgba(0, 0, 0, 0.015) 2px,
-        transparent 2px,
-        transparent 6px
-      ),
-    linear-gradient(160deg, #ffffff, #dcdcdc);
-  background-blend-mode: multiply;
+background-color: #aaa;
 }
 
 /* Card container */
@@ -159,6 +141,7 @@
   cursor: pointer;
   color: #333;
   border: none;
+  font-weight: 1000;
   outline: none;
   white-space: nowrap;
   transition: 0.2s;
@@ -322,7 +305,6 @@
   border: 2px solid #ddd;
 }
 
-
 /* Shimmer overlay */
 .shimmer-overlay {
   position: absolute;
@@ -331,12 +313,7 @@
   width: 100%;
   aspect-ratio: 4 / 3.5;
   border-radius: 8px;
-  background: linear-gradient(
-    90deg,
-    #e0e0e0 25%,
-    #f5f5f5 50%,
-    #e0e0e0 75%
-  );
+  background: linear-gradient(90deg, #e0e0e0 25%, #f5f5f5 50%, #e0e0e0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   z-index: 1; /* Above image until loaded */
@@ -356,7 +333,6 @@
   opacity: 1;
   transition: opacity 0.4s ease-in;
 }
-
 
 @keyframes shimmer {
   100% {
@@ -399,9 +375,18 @@
 }
 
 @keyframes swipeMove {
-  0% { transform: translateX(0); opacity: 0.8; }
-  50% { transform: translateX(-15px); opacity: 1; }
-  100% { transform: translateX(0); opacity: 0.8; }
+  0% {
+    transform: translateX(0);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateX(-15px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 0.8;
+  }
 }
 
 .swipe-right {
@@ -409,7 +394,16 @@
 }
 
 @keyframes swipeMoveRight {
-  0% { transform: translateX(0); opacity: 0.8; }
-  50% { transform: translateX(15px); opacity: 1; }
-  100% { transform: translateX(0); opacity: 0.8; }
+  0% {
+    transform: translateX(0);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateX(15px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 0.8;
+  }
 }

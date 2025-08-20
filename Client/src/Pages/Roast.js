@@ -49,9 +49,9 @@ function Roast() {
   const [cards, setCards] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-const [showSwipeGuide, setShowSwipeGuide] = useState(
-  localStorage.getItem("hasSeenSwipeGuide") !== "true"
-);
+  const [showSwipeGuide, setShowSwipeGuide] = useState(
+    localStorage.getItem("hasSeenSwipeGuide") !== "true"
+  );
   const [roastingIndex, setRoastingIndex] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fullImage, setFullImage] = useState(null);
@@ -81,8 +81,6 @@ const [showSwipeGuide, setShowSwipeGuide] = useState(
       localStorage.setItem("hasSharedRoast", "true");
     }
   };
-
-  
 
   const fetchCardsData = async () => {
     setLoading(true);
@@ -370,18 +368,17 @@ const [showSwipeGuide, setShowSwipeGuide] = useState(
   const handleBack = () => navigate(-1);
 
   const handleSwipe = (direction) => {
-  if (showSwipeGuide) {
-    setShowSwipeGuide(false);
-    localStorage.setItem("hasSeenSwipeGuide", "true");
-  }
+    if (showSwipeGuide) {
+      setShowSwipeGuide(false);
+      localStorage.setItem("hasSeenSwipeGuide", "true");
+    }
 
-  if (direction === "Left" && currentIndex < cards.length - 1) {
-    setCurrentIndex(currentIndex + 1);
-  } else if (direction === "Right" && currentIndex > 0) {
-    setCurrentIndex(currentIndex - 1);
-  }
-};
-
+    if (direction === "Left" && currentIndex < cards.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else if (direction === "Right" && currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
 
   const swipeHandlers = useSwipeable({
     onSwipedLeft: () => handleSwipe("Left"),
@@ -523,6 +520,8 @@ const [showSwipeGuide, setShowSwipeGuide] = useState(
   if (!cards.length || loading)
     return (
       <div className="roast-page">
+        <SketchyHeader title="Roast 🔥" onBack={handleBack} />
+
         <LoadingIndicator />
       </div>
     );
@@ -533,17 +532,15 @@ const [showSwipeGuide, setShowSwipeGuide] = useState(
 
       <div className="roast-page" {...swipeHandlers}>
         <div className="roast-card-container">
-{showSwipeGuide && (
-  <div className="swipe-guide-animation">
-    <div className="swipe-arrow swipe-left">⬅️</div>
-    <div className="swipe-text">Swipe to see next roast</div>
-    <div className="swipe-arrow swipe-right">➡️</div>
-  </div>
-)}
+          {showSwipeGuide && (
+            <div className="swipe-guide-animation">
+              <div className="swipe-arrow swipe-left">⬅️</div>
+              <div className="swipe-text">Swipe to see next roast</div>
+              <div className="swipe-arrow swipe-right">➡️</div>
+            </div>
+          )}
 
-          <div
-            className={`roast-card animated-card`}
-          >
+          <div className={`roast-card animated-card`}>
             <div className="roast-image-container">
               {!imageLoaded && <div className="shimmer-overlay"></div>}
 

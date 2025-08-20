@@ -10,6 +10,7 @@ import { getDB, saveUsers } from "../Utils/db";
 import MosaicAvatar from "../Components/MosaicAvatar";
 import imageCompression from "browser-image-compression";
 import { trackEvent } from "../Utils/analytics";
+import LoadingIndicator from "../Components/LoadingIndicator";
 
 const giftList = [
   "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png",
@@ -101,7 +102,7 @@ const Profile = () => {
       reader.readAsDataURL(file);
     }
   };
-  
+
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
 
@@ -173,60 +174,36 @@ const Profile = () => {
   };
   const fetchUser = async () => {
     try {
-      const db = await getDB();
-      let cachedUser = await db.get("users", id); // try to get user from IndexedDB
       const isGoogleUser = currentUser?.google_login;
-      if (!isGoogleUser && cachedUser && cachedUser.profile_pic) {
-        // ✅ Use cached user if available
-        console.log("📂 Loaded user from IndexedDB");
+
+      console.log("🌐 Fetching user from Supabase");
+      const { data, error } = await supabase
+        .from("users")
+        .select(
+          "id, name, talked_to_count, bio, profile_pic, reward_coins, decency_rating"
+        )
+        .eq("id", id)
+        .single();
+
+      if (!error && data) {
         setUserData({
-          ...cachedUser,
-          avatar:
-            cachedUser.profile_pic instanceof Blob
-              ? URL.createObjectURL(cachedUser.profile_pic)
-              : empty,
+          ...data,
+          avatar: data.profile_pic || empty,
         });
         setForm((prev) => ({
           ...prev,
-          name: cachedUser.name || "",
-          bio: cachedUser.bio || "",
+          name: data.name || "",
+          bio: data.bio || "",
         }));
+
+        console.log("✅ User fetched from Supabase");
       } else {
-        // 🔄 Fallback: fetch from Supabase if no cached data
-        console.log("🌐 Fetching user from Supabase (fallback)");
-        const { data, error } = await supabase
-          .from("users")
-          .select(
-            "id, name, talked_to_count, bio, profile_pic, reward_coins, decency_rating"
-          )
-          .eq("id", id)
-          .single();
-
-        if (!error && data) {
-          // Save to IndexedDB for future offline use
-          if (!isGoogleUser) await saveUsers([data]);
-          setUserData({
-            ...data,
-            avatar: data.profile_pic || empty,
-          });
-          setForm((prev) => ({
-            ...prev,
-            name: data.name || "",
-            bio: data.bio || "",
-          }));
-
-          console.log("✅ User fetched from Supabase and saved to IndexedDB");
-        } else {
-          console.error(
-            "❌ Error fetching user from Supabase:",
-            error?.message
-          );
-          setUserData({
-            avatar: empty,
-            name: "",
-            bio: "",
-          });
-        }
+        console.error("❌ Error fetching user from Supabase:", error?.message);
+        setUserData({
+          avatar: empty,
+          name: "",
+          bio: "",
+        });
       }
     } catch (err) {
       console.error("⚠️ fetchUser error:", err);
@@ -390,8 +367,16 @@ const Profile = () => {
     return (
       <>
         <SketchyHeader title="Profile" onBack={handleBack} />
-        <div className="sketchy-profile-wrapper">
-          <div className="sketchy-profile-tab">Loading Profile...</div>
+        <div
+          className="sketchy-profile-wrapper"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "80vh",
+          }}
+        >
+          <LoadingIndicator /> {/* <-- show loading spinner */}
         </div>
       </>
     );
@@ -473,7 +458,6 @@ const Profile = () => {
                     }
                     disabled={status.uploading}
                     style={{ marginTop: 10 }}
-                  
                   >
                     {status.editing
                       ? status.uploading
@@ -493,7 +477,6 @@ const Profile = () => {
                     onClick={() => setShowPopup(true)}
                     disabled={!deferredPrompt}
                     style={{ marginTop: 10 }}
-                    
                   >
                     Install App
                   </button>

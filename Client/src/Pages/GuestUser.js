@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Header from "../Components/Header";
 import "../Styles/ChatList.css";
 import {
@@ -235,6 +235,8 @@ const GuestUser = () => {
         .select(
           "id, name, gender, age, country, status, decency_rating, profile_pic"
         )
+        .neq("country", "IN")
+              
         .order("created_at", { ascending: false })
         .range(page * 10, page * 10 + 9); // Pagination: 10 users per page
 
@@ -264,28 +266,46 @@ const GuestUser = () => {
       withButton: true,
     });
   };
+const filteredGuestUsers = useMemo(() => {
+  // Step 1: Filter based on gender, country, and search
+  let filtered = users.filter((user) => {
+    const genderMatch = genderFilter === "all" || user.gender === genderFilter;
+    const countryMatch = countryFilter === "all" || user.country === countryFilter;
+    const nameMatch = user.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    return genderMatch && countryMatch && nameMatch;
+  });
 
-  const filteredUsers = users
-    .filter((user) => {
-      const genderMatch =
-        genderFilter === "all" || user.gender === genderFilter;
-      const countryMatch =
-        countryFilter === "all" || user.country === countryFilter;
-      const nameMatch = user.name
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      return genderMatch && countryMatch && nameMatch;
-    })
-    .sort((a, b) => {
-      // 1️⃣ Priority: Online status
-      if (a.status === "online" && b.status !== "online") return -1;
-      if (a.status !== "online" && b.status === "online") return 1;
+  // Step 2: Sort by newest first
+  filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-      // 2️⃣ Then: Profile picture
-      const aHasPic = a.profile_pic ? 1 : 0;
-      const bHasPic = b.profile_pic ? 1 : 0;
-      return bHasPic - aHasPic;
-    });
+  // Step 3: Show one user per country (round-robin style)
+  const countryGroups = filtered.reduce((acc, user) => {
+    if (!acc[user.country]) acc[user.country] = [];
+    acc[user.country].push(user);
+    return acc;
+  }, {});
+
+  let roundRobin = [];
+  let index = 0;
+  let added = true;
+  while (added) {
+    added = false;
+    for (const country in countryGroups) {
+      if (countryGroups[country][index]) {
+        roundRobin.push(countryGroups[country][index]);
+        added = true;
+      }
+    }
+    index++;
+  }
+
+  // Optional: limit number of users per page
+  const pageSize = 10;
+  const end = (page + 1) * pageSize;
+
+  return roundRobin.slice(0, end);
+}, [users, genderFilter, countryFilter, searchTerm, page]);
+
 
   return (
     <div className="chatlist-container">
@@ -340,9 +360,9 @@ const GuestUser = () => {
             </button>
           </div>
           <div className="sketchy-list-scrollable">
-            {filteredUsers.length > 0 ? (
+            {filteredGuestUsers.length > 0 ? (
               <>
-                {filteredUsers.map((user) => (
+                {filteredGuestUsers.map((user) => (
                   <>
                     <div className="user-card" onClick={handleAlert}>
                       <div className="user-avatar-wrapper">
