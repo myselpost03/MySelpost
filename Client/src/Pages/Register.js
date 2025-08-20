@@ -135,10 +135,12 @@ const Register = () => {
         } else {
           navigate("/", { replace: true });
         }
+        setLoading(false);
       }, 1500);
     } catch (err) {
       console.error(err);
       toast.error("Google login failed");
+      setLoading(false);
     }
   };
 
@@ -329,6 +331,18 @@ const Register = () => {
         return;
       }
 
+      const { data: existingEmail } = await supabase
+        .from("users")
+        .select("email")
+        .eq("email", formData.email)
+        .single();
+
+      if (existingEmail) {
+        setError("Email is already registered.");
+        setLoading(false);
+        return;
+      }
+
       // File type validation
       const validTypes = ["image/jpeg", "image/png", "image/webp"];
       if (!validTypes.includes(formData.profilePic.type)) {
@@ -424,6 +438,7 @@ const Register = () => {
         } else {
           navigate("/", { replace: true });
         }
+        setLoading(false);
       }, 2000);
     } catch (err) {
       setError(err.message || "Something went wrong");

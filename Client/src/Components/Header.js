@@ -4,7 +4,7 @@ import "../Styles/Header.css";
 import { supabase } from "../Utils/supabaseClient";
 import bcrypt from "bcryptjs";
 import SketchyAlert from "../Components/SketchyAlert";
-import {trackEvent} from "../Utils/analytics";
+import { trackEvent } from "../Utils/analytics";
 
 const Header = () => {
   const [user, setUser] = useState(null);
@@ -88,10 +88,10 @@ const Header = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     trackEvent({
-        action: 'button_click',
-        category: 'Header',
-        label: 'Desktop Login Button',
-      });
+      action: "button_click",
+      category: "Header",
+      label: "Desktop Login Button",
+    });
     setLoggingIn(true);
     const { email, password } = formData;
 
@@ -124,10 +124,10 @@ const Header = () => {
 
   const handleRoast = () => {
     trackEvent({
-        action: 'button_click',
-        category: 'Header',
-        label: 'Roast Button',
-      });
+      action: "button_click",
+      category: "Header",
+      label: "Roast Button",
+    });
     navigate("/roast");
   };
 
@@ -138,9 +138,7 @@ const Header = () => {
   return (
     <header className="header">
       <div className="logo-container">
-        <Link className="logo">
-          MySelpost
-        </Link>
+        <Link className="logo">MySelpost</Link>
         {/*{user && !isMobile && (
           <div className="feature-banner-container">
             <div className="coming-soon-banner">Coming Soon</div>
@@ -224,7 +222,7 @@ const Header = () => {
             <button onClick={handleRoast} className="profile-button">
               Roast
             </button>
-            <span className="new-badge">New</span>
+            {/*<span className="new-badge">New</span>*/}
           </div>
 
           <button

@@ -11,7 +11,11 @@
   min-height: 100vh;
   color: #222;
   font-family: "Inter", sans-serif;
-background-color: #aaa;
+  background: linear-gradient(
+    to right,
+    #7b7c7c,
+    #d7d2cc
+  ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 }
 
 /* Card container */

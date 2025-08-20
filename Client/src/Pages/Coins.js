@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import SketchyHeader from "../Components/SketchyHeader";
 import "../Styles/Coins.css";
 import SketchyAlert from "../Components/SketchyAlert";
-import LoadingIndicator from "../Components/LoadingIndicator";
+import LoadingSpinner from "../Components/LoadingSpinner";
 import { supabase } from "../Utils/supabaseClient";
 import { trackEvent } from "../Utils/analytics";
 
@@ -327,7 +327,7 @@ const Coins = () => {
         {showPayPal && (
           <div id="paypal-button-container" className="paypal-box"></div>
         )}
-        {loading && !showInvitePopup && <LoadingIndicator />}
+        {loading && !showInvitePopup && <LoadingSpinner />}
         {showInvitePopup && (
           <div className="invite-popup">
             <div className="invite-box">

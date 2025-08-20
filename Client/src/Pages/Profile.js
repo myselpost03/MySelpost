@@ -6,11 +6,12 @@ import "../Styles/Profile.css";
 import empty from "../Assets/empty.png";
 import { supabase, supabaseStorage } from "../Utils/supabaseClient";
 import toast, { Toaster } from "react-hot-toast";
-import { getDB, saveUsers } from "../Utils/db";
+import { openDB } from "idb";
 import MosaicAvatar from "../Components/MosaicAvatar";
 import imageCompression from "browser-image-compression";
 import { trackEvent } from "../Utils/analytics";
-import LoadingIndicator from "../Components/LoadingIndicator";
+import LoadingSpinner from "../Components/LoadingSpinner";
+import { dbPromise } from "../Utils/db";
 
 const giftList = [
   "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png",
@@ -172,11 +173,39 @@ const Profile = () => {
       value: 1,
     });
   };
+
+  // 🔹 Utility for saving a single user into IndexedDB
+  const saveUserToIDB = async (user) => {
+    const db = await dbPromise;
+    try {
+      // Only cache if user has a Supabase storage URL (not raw Google avatar)
+      if (user.profile_pic && !user.google_login) {
+        const response = await fetch(user.profile_pic);
+        const blob = await response.blob();
+        await db.put("profile_pics", { id: user.id, blob });
+      }
+
+      // Special case: Google user who has updated profile_pic in Supabase
+      if (
+        user.profile_pic &&
+        user.google_login &&
+        user.profile_pic.includes("supabase.co")
+      ) {
+        const response = await fetch(user.profile_pic);
+        const blob = await response.blob();
+        await db.put("profile_pics", { id: user.id, blob });
+      }
+
+      await db.put("users", user);
+    } catch (err) {
+      console.error("⚠️ saveUserToIDB error:", err);
+    }
+  };
+
   const fetchUser = async () => {
     try {
       const isGoogleUser = currentUser?.google_login;
 
-      console.log("🌐 Fetching user from Supabase");
       const { data, error } = await supabase
         .from("users")
         .select(
@@ -186,54 +215,58 @@ const Profile = () => {
         .single();
 
       if (!error && data) {
+        let avatar = empty;
+        const db = await openDB("UserDB", 1);
+        const cached = await db.get("profile_pics", data.id);
+
+        if (isGoogleUser) {
+          if (data.profile_pic?.includes("supabase")) {
+            // ✅ Supabase-hosted → cache & use
+            if (!cached || cached.url !== data.profile_pic) {
+              await saveUserToIDB(data); // overwrite old one
+              //console.log("♻️ Updated Google-user pic in IndexedDB");
+            }
+            avatar = cached?.blob
+              ? URL.createObjectURL(cached.blob)
+              : data.profile_pic;
+          } else {
+            // ✅ Original Google pic → no caching
+            avatar = data.profile_pic || empty;
+          }
+        } else {
+          // ✅ Non-Google user
+          if (!cached || cached.url !== data.profile_pic) {
+            await saveUserToIDB(data); // overwrite old pic
+            //console.log("♻️ Updated non-Google-user pic in IndexedDB");
+          }
+          avatar = cached?.blob
+            ? URL.createObjectURL(cached.blob)
+            : data.profile_pic || empty;
+        }
+
         setUserData({
           ...data,
-          avatar: data.profile_pic || empty,
+          avatar,
         });
+
         setForm((prev) => ({
           ...prev,
           name: data.name || "",
           bio: data.bio || "",
         }));
 
-        console.log("✅ User fetched from Supabase");
+        //console.log("✅ User fetched successfully");
       } else {
-        console.error("❌ Error fetching user from Supabase:", error?.message);
-        setUserData({
-          avatar: empty,
-          name: "",
-          bio: "",
-        });
+        console.error("❌ Error fetching user:", error?.message);
+        setUserData({ avatar: empty, name: "", bio: "" });
       }
     } catch (err) {
       console.error("⚠️ fetchUser error:", err);
-      setUserData({
-        avatar: empty,
-        name: "",
-        bio: "",
-      });
+      setUserData({ avatar: empty, name: "", bio: "" });
     }
   };
 
-  const fetchGifts = async () => {
-    const receiverId = isCurrentUser ? currentUser.id : id;
-    const { data, error } = await supabase
-      .from("gifts")
-      .select("id, sender_id, gift_type, created_at")
-      .eq("receiver_id", receiverId)
-      .order("created_at", { ascending: false });
-
-    if (data && !error) setReceivedGifts(data);
-    else console.error("Error fetching gifts:", error?.message);
-  };
-
-  useEffect(() => {
-    if (id) {
-      fetchUser();
-      fetchGifts();
-    }
-  }, [id]);
-
+  // 🔹 Handle Update
   const handleUpdate = async () => {
     setStatus((s) => ({ ...s, uploading: true }));
     let profilePicUrl = userData.avatar;
@@ -255,10 +288,12 @@ const Profile = () => {
           .from("profile-pics")
           .getPublicUrl(filePath);
 
-        if (publicUrlData?.publicUrl) profilePicUrl = publicUrlData.publicUrl;
+        if (publicUrlData?.publicUrl) {
+          profilePicUrl = publicUrlData.publicUrl;
+        }
       }
 
-      // 2️⃣ Update user in main Supabase DB
+      // 2️⃣ Update user in Supabase
       const { data: updatedUser, error } = await supabase
         .from("users")
         .update({
@@ -271,8 +306,10 @@ const Profile = () => {
         .single();
 
       if (!error && updatedUser) {
-        // 3️⃣ Update IndexedDB locally
-        await saveUsers([updatedUser]);
+        // 3️⃣ Save/Update IndexedDB (only for non-google OR google after update)
+        if (!currentUser?.google_login || profilePicUrl.includes("supabase")) {
+          await saveUserToIDB(updatedUser);
+        }
 
         // 4️⃣ Update UI immediately
         setUserData((u) => ({
@@ -284,19 +321,39 @@ const Profile = () => {
 
         setStatus({ ...status, editing: false, uploading: false });
         setForm((f) => ({ ...f, imageFile: null }));
+        toast.success("Profile Updated!");
 
-        console.log("✅ User updated in Supabase and IndexedDB");
+        //console.log("✅ User updated in Supabase + IndexedDB");
       } else {
         toast.error("Failed to update.");
-        console.error("Failed to update:", error?.message);
+        console.error("❌ Update failed:", error?.message);
         setStatus((s) => ({ ...s, uploading: false }));
       }
     } catch (err) {
       toast.error("Something went wrong while uploading image.");
-      console.error(err);
+      console.error("⚠️ Update error:", err);
       setStatus((s) => ({ ...s, uploading: false }));
     }
   };
+
+  const fetchGifts = async () => {
+    const receiverId = isCurrentUser ? currentUser.id : id;
+    const { data, error } = await supabase
+      .from("gifts")
+      .select("id, sender_id, gift_type, created_at")
+      .eq("receiver_id", receiverId)
+      .order("created_at", { ascending: false });
+
+    if (data && !error) setReceivedGifts(data);
+    else console.error("Error fetching gifts:", error?.message);
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchUser();
+      fetchGifts();
+    }
+  }, [id]);
 
   const handleSendGift = async (giftUrl, index) => {
     if (status.sendingGift || !userData) return;
@@ -367,16 +424,8 @@ const Profile = () => {
     return (
       <>
         <SketchyHeader title="Profile" onBack={handleBack} />
-        <div
-          className="sketchy-profile-wrapper"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "80vh",
-          }}
-        >
-          <LoadingIndicator /> {/* <-- show loading spinner */}
+        <div>
+          <LoadingSpinner /> {/* <-- show loading spinner */}
         </div>
       </>
     );
@@ -487,7 +536,8 @@ const Profile = () => {
                   >
                     Logout
                   </button>
-                </div>{" "}
+                </div>
+                
               </>
             )}
           </div>

@@ -5,11 +5,11 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   touch-action: pan-x pan-y;
   overflow-x: hidden;
 }
-
 
 .chatlist-container {
   margin-top: 7%; /* reduced from 5% */
@@ -18,7 +18,6 @@ html, body {
   background: #faf8f2;
   font-family: "Comic Neue", cursive;
 }
-
 
 /* Desktop-specific tweaks */
 @media (min-width: 768px) {
@@ -766,7 +765,6 @@ html, body {
   transform: scale(1.1);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
 }
-
 
 .modal-section {
   margin: 1rem 0;

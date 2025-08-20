@@ -3,7 +3,7 @@ import SketchyHeader from "../Components/SketchyHeader";
 import "../Styles/Roast.css";
 import { useNavigate } from "react-router-dom";
 import { useSwipeable } from "react-swipeable";
-import LoadingIndicator from "../Components/LoadingIndicator";
+import LoadingSpinner from "../Components/LoadingSpinner";
 import SketchyAlert from "../Components/SketchyAlert";
 import { supabase } from "../Utils/supabaseClient";
 import { FaFire } from "react-icons/fa";
@@ -519,10 +519,10 @@ function Roast() {
 
   if (!cards.length || loading)
     return (
-      <div className="roast-page">
+      <div>
         <SketchyHeader title="Roast 🔥" onBack={handleBack} />
 
-        <LoadingIndicator />
+        <LoadingSpinner />
       </div>
     );
 

@@ -15,26 +15,19 @@ import {
   FaBellSlash,
   FaCheck,
   FaTimes,
-  FaCamera
+  FaCamera,
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
 import { subscribeUser } from "../Utils/subscribeUser";
 import useDebounce from "../Utils/useDebounce";
-import LoadingIndicator from "../Components/LoadingIndicator";
 import ReactCountryFlag from "react-country-flag";
 import MiniSpinner from "../Components/MiniSpinner";
 import SketchyAlert from "../Components/SketchyAlert";
 import FeedbackPopup from "../Components/FeedbackPopup";
 import { trackEvent } from "../Utils/analytics";
-import {
-  getDB,
-  getUsers,
-  getUsersFiltered,
-  saveUsers,
-  setLastSync,
-  getLastSync,
-} from "../Utils/db.js";
+import { openDB } from "idb";
+import LoadingSpinner from "../Components/LoadingSpinner";
 
 const countryNameToCode = {
   AF: "AF",
@@ -248,7 +241,8 @@ const ChatList = () => {
   const [firstLoad, setFirstLoad] = useState(true);
   const [enabled, setEnabled] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [loading, setLoading] = useState(true);
+const [loading, setLoading] = useState(true); // tab/filter loading
+  const [searchLoading, setSearchLoading] = useState(false); // dedicated search loader
   const [countries, setCountries] = useState([]);
   const [showPremiumNotice, setShowPremiumNotice] = useState(false);
   const [premiumTargetUser, setPremiumTargetUser] = useState(null);
@@ -549,12 +543,12 @@ const ChatList = () => {
 
         if (error) {
           console.error("Supabase insert error:", error);
-          console.log("Failed to save subscription.");
+          //console.log("Failed to save subscription.");
         } else {
-          console.log("Subscribed & saved to Supabase!");
+          //console.log("Subscribed & saved to Supabase!");
         }
       } else {
-        console.log("Subscription already up-to-date.");
+        //console.log("Subscription already up-to-date.");
       }
     } catch (err) {
       console.error("Subscription failed:", err);
@@ -646,61 +640,71 @@ const ChatList = () => {
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [dataChanged, setDataChanged] = useState(false); // ✅ Track if data changed
   const [submitting, setSubmitting] = useState(false); // ✅ Show "Submitting..."
-  useEffect(() => {
-    const logIndexedDBSize = async () => {
-      try {
-        const users = await getUsers(); // fetch all users from IndexedDB
-        const json = JSON.stringify(users); // serialize to string
-        const bytes = new TextEncoder().encode(json).length; // get byte length
-        const kb = (bytes / 1024).toFixed(2);
-        const mb = (bytes / (1024 * 1024)).toFixed(2);
-        console.log(
-          `📦 IndexedDB storage: ${bytes} bytes | ${kb} KB | ${mb} MB`
-        );
-      } catch (err) {
-        console.error("❌ Failed to compute IndexedDB size:", err);
-      }
-    };
 
-    logIndexedDBSize();
-  }, []); // runs once on component mount
-
-  useEffect(() => {
-    // Reset user list when tab changes
+ useEffect(() => {
     setUsers([]);
     setPage(0);
     setHasMore(true);
-  }, [activeTab, genderFilter, countryFilter]);
 
-useEffect(() => {
-  const fetchUsers = async () => {
-    if (debouncedSearchTerm.trim().length > 0 && debouncedSearchTerm.trim().length < 2) {
-      setUsers([]);
-      setLoading(false);
-      setLoadingMore(false);
-      return;
+    // ✅ Show loader only for tab/filter change, not search
+    if (searchTerm.trim() === "") {
+      setLoading(true);
     }
-
-    try {
-      console.log("🔄 Fetching users from Supabase...");
-
-      let query = supabase
-        .from("users")
-        .select("id, name, profile_pic, country, gender, status, age, decency_rating, created_at");
-
-      if (activeTab === "all") query = query.neq("country", "IN").order("created_at", { ascending: false });
-      if (genderFilter !== "all") query = query.eq("gender", genderFilter);
-      if (countryFilter !== "all") query = query.eq("country", countryFilter);
-      if (activeTab === "online") query = query.eq("status", "online").order("created_at", { ascending: false });
-      if (searchTerm.trim() !== "") query = query.ilike("name", `%${searchTerm}%`);
-
-      const { data: fetchedUsers, error } = await query;
-
-      if (error) {
-        console.error("❌ Supabase fetch error:", error);
+  }, [activeTab, genderFilter, countryFilter]);
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (
+        debouncedSearchTerm.trim().length > 0 &&
+        debouncedSearchTerm.trim().length < 2
+      ) {
         setUsers([]);
-      } else {
-        // Fetch pinned list
+        setLoading(false);
+        setLoadingMore(false);
+        return;
+      }
+      if (searchTerm.trim() !== "") {
+        setSearchLoading(true);
+      }
+
+      try {
+        // IndexedDB setup
+        const db = await openDB("UserDB", 1, {
+          upgrade(db) {
+            if (!db.objectStoreNames.contains("profile_pics")) {
+              db.createObjectStore("profile_pics", { keyPath: "id" });
+            }
+          },
+        });
+
+        // Supabase query
+        let query = supabase
+          .from("users")
+          .select(
+            "id, name, profile_pic, country, gender, status, age, decency_rating, created_at"
+          );
+
+        if (activeTab === "all")
+          query = query
+            .neq("country", "IN")
+            .order("created_at", { ascending: false });
+        if (genderFilter !== "all") query = query.eq("gender", genderFilter);
+        if (countryFilter !== "all") query = query.eq("country", countryFilter);
+        if (activeTab === "online")
+          query = query
+            .eq("status", "online")
+            .order("created_at", { ascending: false });
+        if (searchTerm.trim() !== "")
+          query = query.ilike("name", `%${searchTerm}%`);
+
+        const { data: fetchedUsers, error } = await query;
+
+        if (error) {
+          console.error("❌ Supabase fetch error:", error);
+          setUsers([]);
+          return;
+        }
+
+        // Pinned list
         const { data: pinnedData } = await supabase
           .from("pinned_users")
           .select("pinned_user_id")
@@ -708,150 +712,175 @@ useEffect(() => {
 
         const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
 
-        const processed = fetchedUsers
-          .filter((u) => u.id !== user.id)
-          .map((u) => ({
+        // Fetch all cached pics in one go
+        const cachedPics = await db.getAll("profile_pics");
+        const cachedMap = new Map(
+          cachedPics.map((item) => [item.id, item.blob])
+        );
+        const cachedIds = [...cachedMap.keys()];
+
+        if (cachedPics.length === 0) {
+          //console.log("ℹ️ first fetch detected, fetching data from supabase and saved to indexeddb");
+
+          for (const u of fetchedUsers) {
+            if (u.profile_pic) {
+              const response = await fetch(u.profile_pic);
+              const blob = await response.blob();
+              await db.put("profile_pics", { id: u.id, blob });
+            }
+          }
+        } else {
+          //console.log("ℹ️ next fetch detected and loaded data from indexeddb");
+
+          // Detect new users not in IndexedDB
+          const newUsers = fetchedUsers.filter(
+            (u) => !cachedIds.includes(u.id)
+          );
+
+          for (const newU of newUsers) {
+            if (newU.profile_pic) {
+              const response = await fetch(newU.profile_pic);
+              const blob = await response.blob();
+              await db.put("profile_pics", { id: newU.id, blob });
+              //console.log( "ℹ️ new pic added in supabase and saved to indexeddb");
+            }
+          }
+        }
+
+        // Build processed user list using cachedMap (fast O(1) lookup)
+        const processed = fetchedUsers.map((u) => {
+          const blob = cachedMap.get(u.id);
+          const avatar = blob ? URL.createObjectURL(blob) : empty;
+
+          return {
             ...u,
-            avatar: u.profile_pic || empty,
+            avatar,
             notifications: unreadCounts[u.id] || 0,
             pinned: pinnedIds.includes(u.id),
             status: u.status || "offline",
-          }));
+          };
+        });
 
-        console.log(`✅ Processed ${processed.length} users for display`);
+        //console.log(`✅ Processed ${processed.length} users for display`);
         setUsers(processed);
-      }
-    } catch (err) {
-      console.error("⚠️ fetchUsers error:", err);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      setFirstLoad(false);
-    }
-  };
-
-  fetchUsers();
-}, [activeTab, genderFilter, countryFilter, searchTerm]);
-
-// ------------------- filteredUsers logic -------------------
-const filteredUsers = useMemo(() => {
-  let filtered = users.filter((user) => {
-    const genderMatch = genderFilter === "all" || user.gender === genderFilter;
-    const countryMatch = countryFilter === "all" || user.country === countryFilter;
-    const searchMatch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
-    const pinMatch =
-      activeTab === "pinned"
-        ? user.pinned
-        : activeTab === "inbox"
-        ? unreadCounts[user.id] > 0
-        : !(unreadCounts[user.id] > 0);
-    const onlineMatch = activeTab === "online" ? user.status === "online" : true;
-
-    return genderMatch && countryMatch && searchMatch && pinMatch && onlineMatch;
-  });
-
-  // Sort by unread, profile pic, verified/pinned
-  filtered.sort((a, b) => {
-    const aCount = unreadCounts[a.id] || 0;
-    const bCount = unreadCounts[b.id] || 0;
-    if (bCount !== aCount) return bCount - aCount;
-
-    const aHasPic = a.avatar !== empty ? 1 : 0;
-    const bHasPic = b.avatar !== empty ? 1 : 0;
-    if (bHasPic !== aHasPic) return bHasPic - aHasPic;
-
-    const getPriority = (u) => {
-      if (u.verified && u.pinned) return 4000;
-      if (u.verified) return 3000;
-      if (u.pinned) return 2000;
-      return 1000;
-    };
-    return getPriority(b) - getPriority(a);
-  });
-
-  // All tab → round-robin per country, newest first
-  if (activeTab === "all") {
-    const countryGroups = filtered.reduce((acc, user) => {
-      if (!acc[user.country]) acc[user.country] = [];
-      acc[user.country].push(user);
-      return acc;
-    }, {});
-
-    for (const country in countryGroups) {
-      countryGroups[country].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    }
-
-    let roundRobin = [];
-    let index = 0;
-    let added = true;
-    while (added) {
-      added = false;
-      for (const country in countryGroups) {
-        if (countryGroups[country][index]) {
-          roundRobin.push(countryGroups[country][index]);
-          added = true;
+      } catch (err) {
+        console.error("⚠️ fetchUsers error:", err);
+      } finally {
+        if (searchTerm.trim() !== "") {
+          setSearchLoading(false);
+        } else {
+          setLoading(false);
         }
+        setLoadingMore(false);
+        setFirstLoad(false);
       }
-      index++;
-    }
-    filtered = roundRobin;
-  }
-
-  // Online tab → alternate genders
-  if (activeTab === "online") {
-    const females = filtered.filter((u) => u.gender === "female");
-    const males = filtered.filter((u) => u.gender === "male");
-    const others = filtered.filter((u) => u.gender !== "female" && u.gender !== "male");
-
-    const alternated = [];
-    let f = 0, m = 0;
-    while (f < females.length || m < males.length) {
-      if (f < females.length) alternated.push(females[f++]);
-      if (m < males.length) alternated.push(males[m++]);
-    }
-    filtered = [...alternated, ...others];
-  }
-
-  const pageSize = 10;
-  const end = (page + 1) * pageSize;
-  return filtered.slice(0, end);
-}, [users, genderFilter, countryFilter, searchTerm, activeTab, unreadCounts, page]);
-
-useEffect(() => {
-    const checkUserName = async () => {
-      // Open IndexedDB
-      const request = indexedDB.open("UsersDB", 1);
-
-      request.onerror = (event) => {
-        console.error("IndexedDB error:", event.target.error);
-      };
-
-      request.onsuccess = (event) => {
-        const db = event.target.result;
-        const transaction = db.transaction("users", "readonly"); // "users" is the object store name
-        const store = transaction.objectStore("users");
-
-        const getAllRequest = store.getAll(); // fetch all records
-
-        getAllRequest.onsuccess = () => {
-          const users = getAllRequest.result;
-          const foundUser = users.find(user => user.name === "Kritika");
-
-          if (foundUser) {
-            console.log("User 'Kritika' exists:", foundUser);
-          } else {
-            console.log("User 'Kritika' not found");
-          }
-        };
-
-        getAllRequest.onerror = (err) => {
-          console.error("Error fetching users:", err);
-        };
-      };
     };
 
-    checkUserName();
-  }, []);
+    fetchUsers();
+  }, [activeTab, genderFilter, countryFilter, searchTerm]);
+
+  // ------------------- filteredUsers logic -------------------
+  const filteredUsers = useMemo(() => {
+    let filtered = users.filter((user) => {
+      const genderMatch =
+        genderFilter === "all" || user.gender === genderFilter;
+      const countryMatch =
+        countryFilter === "all" || user.country === countryFilter;
+      const searchMatch =
+        user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+      const pinMatch =
+        activeTab === "pinned"
+          ? user.pinned
+          : activeTab === "inbox"
+          ? unreadCounts[user.id] > 0
+          : !(unreadCounts[user.id] > 0);
+      const onlineMatch =
+        activeTab === "online" ? user.status === "online" : true;
+
+      return (
+        genderMatch && countryMatch && searchMatch && pinMatch && onlineMatch
+      );
+    });
+
+    // Sort by unread, profile pic, verified/pinned
+    filtered.sort((a, b) => {
+      const aCount = unreadCounts[a.id] || 0;
+      const bCount = unreadCounts[b.id] || 0;
+      if (bCount !== aCount) return bCount - aCount;
+
+      const aHasPic = a.avatar !== empty ? 1 : 0;
+      const bHasPic = b.avatar !== empty ? 1 : 0;
+      if (bHasPic !== aHasPic) return bHasPic - aHasPic;
+
+      const getPriority = (u) => {
+        if (u.verified && u.pinned) return 4000;
+        if (u.verified) return 3000;
+        if (u.pinned) return 2000;
+        return 1000;
+      };
+      return getPriority(b) - getPriority(a);
+    });
+
+    // All tab → round-robin per country, newest first
+    if (activeTab === "all") {
+      const countryGroups = filtered.reduce((acc, user) => {
+        if (!acc[user.country]) acc[user.country] = [];
+        acc[user.country].push(user);
+        return acc;
+      }, {});
+
+      for (const country in countryGroups) {
+        countryGroups[country].sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+      }
+
+      let roundRobin = [];
+      let index = 0;
+      let added = true;
+      while (added) {
+        added = false;
+        for (const country in countryGroups) {
+          if (countryGroups[country][index]) {
+            roundRobin.push(countryGroups[country][index]);
+            added = true;
+          }
+        }
+        index++;
+      }
+      filtered = roundRobin;
+    }
+
+    // Online tab → alternate genders
+    if (activeTab === "online") {
+      const females = filtered.filter((u) => u.gender === "female");
+      const males = filtered.filter((u) => u.gender === "male");
+      const others = filtered.filter(
+        (u) => u.gender !== "female" && u.gender !== "male"
+      );
+
+      const alternated = [];
+      let f = 0,
+        m = 0;
+      while (f < females.length || m < males.length) {
+        if (f < females.length) alternated.push(females[f++]);
+        if (m < males.length) alternated.push(males[m++]);
+      }
+      filtered = [...alternated, ...others];
+    }
+
+    const pageSize = 10;
+    const end = (page + 1) * pageSize;
+    return filtered.slice(0, end);
+  }, [
+    users,
+    genderFilter,
+    countryFilter,
+    searchTerm,
+    activeTab,
+    unreadCounts,
+    page,
+  ]);
 
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
@@ -956,7 +985,6 @@ useEffect(() => {
       setHasMore(true);
       return;
     }
-
 
     try {
       const { data, error } = await supabase
@@ -1074,18 +1102,18 @@ useEffect(() => {
 
   const RoastMe = () => {
     setAlertMessage({
-      text: "Roast Me Feature "
-    })
-  }
-  if (loading) {
-    return (
-      <div>
-      <Header />
-      
-        <LoadingIndicator />
-      </div>
-    );
-  }
+      text: "Roast Me Feature ",
+    });
+  };
+ 
+
+// 👉 searchLoading can be used inside your list UI
+{searchLoading && (
+  <div className="flex justify-center py-4">
+    <MiniSpinner /> {/* a subtle loader under search results */}
+  </div>
+)}
+
 
   return (
     <div className="chatlist-container">
@@ -1242,27 +1270,28 @@ useEffect(() => {
           </button>
 
           {activeTab === "all" && (
-  <>
-    {/* Camera FAB */}
-    <button
-      className="fab-camera-button"
-      onClick={RoastMe}
-      title="Open camera"
-    >
-      <FaCamera />
-    </button>
+            <>
+              {/* Camera FAB */}
+              <button
+                className="fab-camera-button"
+                onClick={RoastMe}
+                title="Open camera"
+              >
+                <FaCamera />
+              </button>
 
-    {/* Filter FAB */}
-    <button
-      className="fab-filter-button"
-      onClick={() => setShowAllTabs(true)}
-      title="Filter users"
-    >
-      <FaFilter />
-    </button>
-  </>
-)}
 
+
+              {/* Filter FAB */}
+              <button
+                className="fab-filter-button"
+                onClick={() => setShowAllTabs(true)}
+                title="Filter users"
+              >
+                <FaFilter />
+              </button>
+            </>
+          )}
         </div>
 
         <div
@@ -1271,6 +1300,7 @@ useEffect(() => {
           style={{ overflowY: "auto", height: "100vh" }}
           className="sketchy-list-scrollable"
         >
+          {loading && <LoadingSpinner />}
           {filteredUsers.length > 0 ? (
             <>
               {filteredUsers

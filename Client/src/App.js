@@ -34,7 +34,7 @@ import {
   Coins,
   PaymentPage,
 } from "./Pages/index";
-import LoadingIndicator from "./Components/LoadingIndicator";
+import LoadingSpinner from "./Components/LoadingSpinner";
 import { supabase } from "./Utils/supabaseClient";
 import SketchyAlert from "./Components/SketchyAlert";
 import InternetStatusAlert from "./Components/InternetStatusAlert";
@@ -299,7 +299,7 @@ function AppContent() {
 
   if (!ready && isMobileDevice() && location.pathname === "/") {
     // Prevent flicker — show nothing or a loader until redirect happens
-    return <LoadingIndicator />; // could be <LoadingSpinner /> if you want
+    return <LoadingSpinner />; // could be <LoadingSpinner /> if you want
   }
 
   return (

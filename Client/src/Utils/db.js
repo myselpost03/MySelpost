@@ -1,4 +1,13 @@
+// db.js
 import { openDB } from "idb";
+
+export const dbPromise = openDB("UserDB", 1, {
+  upgrade(db) {
+    if (!db.objectStoreNames.contains("profile_pics")) {
+      db.createObjectStore("profile_pics", { keyPath: "id" });
+    }
+  },
+});
 
 // IndexedDB setup
 export const getDB = async () => {
@@ -60,7 +69,9 @@ export const getUsers = async () => {
   // Sort by created_at descending (latest first, like Supabase .order("created_at", { ascending: false }))
   users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-  console.log(`[IndexedDB] 📂 Loaded ${users.length} users (sorted by created_at desc)`);
+  console.log(
+    `[IndexedDB] 📂 Loaded ${users.length} users (sorted by created_at desc)`
+  );
   return users;
 };
 
@@ -78,8 +89,12 @@ export const getLastSync = async () => {
   return lastSync;
 };
 
-
-export const getUsersFiltered = async ({ activeTab, genderFilter, countryFilter, searchTerm }) => {
+export const getUsersFiltered = async ({
+  activeTab,
+  genderFilter,
+  countryFilter,
+  searchTerm,
+}) => {
   const db = await getDB();
   let users = await db.getAll("users");
 
@@ -106,7 +121,6 @@ export const getUsersFiltered = async ({ activeTab, genderFilter, countryFilter,
 
   return users;
 };
-
 
 export const getRoastDB = async () => {
   return openDB("RoastDB", 1, {
@@ -137,7 +151,7 @@ export const saveRoastImages = async (images) => {
       return img;
     })
   );
-   const db = await getRoastDB();
+  const db = await getRoastDB();
   const tx = db.transaction("roast_images", "readwrite");
   for (const img of imagesWithBlob) {
     tx.store.put(img);

@@ -11,7 +11,7 @@ import {
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
-import LoadingIndicator from "../Components/LoadingIndicator";
+import LoadingSpinner from "../Components/LoadingSpinner";
 import ReactCountryFlag from "react-country-flag";
 import SketchyAlert from "../Components/SketchyAlert";
 
@@ -311,7 +311,7 @@ const filteredGuestUsers = useMemo(() => {
     <div className="chatlist-container">
       <Header />
       {loading ? (
-        <LoadingIndicator />
+        <LoadingSpinner />
       ) : (
         <>
           <div className="sketchy-search-wrapper">
