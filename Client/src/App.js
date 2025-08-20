@@ -16,6 +16,7 @@ import {
   WebSketch,
   Prompt,
   Pricing,
+  Settings,
   Roast,
   About,
   Contact,
@@ -49,6 +50,7 @@ const protectedRoutes = [
   { path: "/chat/:id", component: Chat },
   { path: "/profile/:id", component: Profile },
   { path: "/coins/:id", component: Coins },
+  { path: "/settings", component: Settings },
   { path: "/payments/:id", component: PaymentPage },
 ];
 

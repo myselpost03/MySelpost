@@ -23,3 +23,4 @@ export { default as PaymentPage } from "./PaymentPage";
 export { default as ChatEntrance } from "./ChatEntrance";
 export { default as GuestUser } from "./GuestUser";
 export { default as Roast } from "./Roast";
+export { default as Settings } from "./Settings";

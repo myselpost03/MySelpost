@@ -1,4 +1,5 @@
 @import url(https://fonts.googleapis.com/css?family=Freckle+Face:regular);
+@import url(https://fonts.googleapis.com/css?family=Platypi:300,regular,500,600,700,800,300italic,italic,500italic,600italic,700italic,800italic);
 
 .sketchy-header {
   position: fixed; /* Make it fixed */
@@ -6,14 +7,13 @@
   left: 0;
   right: 0;
   z-index: 1000;
-
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 10px;
   background-color: black;
   color: white;
-  font-family: "Freckle Face", cursive;
+  font-family: "Platypi", cursive;
 }
 
 .back-button {

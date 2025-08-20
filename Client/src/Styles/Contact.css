@@ -1,125 +1,119 @@
+/* Page container - center content vertically & horizontally */
 .contact-page {
-    font-family: "Segoe UI", Tahoma, sans-serif;
-    background-color: #f4f6f8;
-    padding: 60px 20px;
-    min-height: 100vh;
-  }
-  
- /* Center vertically too */
+  min-height: 100vh; /* full viewport height */
+  display: flex;
+  justify-content: center; /* horizontal center */
+  align-items: center;     /* vertical center */
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f7;
+  color: #333;
+}
+
+/* Wrapper for content (optional, keeps flex if needed) */
 .contact-wrapper {
-  min-height: calc(100vh - 120px); /* adjusts for header/footer if needed */
+  width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
 }
 
-/* Scale up on larger screens */
-@media (min-width: 768px) {
+/* Card-like container */
+.contact-box {
+  background-color: #fff;
+  padding: 25px 20px;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  max-width: 500px; /* prevents it from stretching too much */
+  width: 100%;
+  transition: transform 0.2s;
+}
+
+.contact-box:hover {
+  transform: translateY(-2px);
+}
+
+/* Form styling */
+.contact-form .form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.contact-form label {
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.contact-form input,
+.contact-form textarea {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  border-color: #111;
+  outline: none;
+}
+
+.contact-form textarea::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+/* Submit button */
+.submit-btn {
+  background-color: #111;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #111;
+  transform: scale(1.03);
+}
+
+.submit-btn:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Thank you message */
+.thank-you {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.thank-you h2 {
+  color: #4b4bff;
+  margin-bottom: 10px;
+}
+
+.thank-you p {
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .contact-page {
+    padding: 15px;
+  }
+
   .contact-box {
-    max-width: 800px;
-    padding: 60px;
-  }
-
-  .contact-box h1 {
-    font-size: 34px;
-  }
-
-  .contact-box p {
-    font-size: 1.1rem;
-  }
-
-  .contact-form label {
-    font-size: 1rem;
-  }
-
-  .contact-form input,
-  .contact-form textarea {
-    font-size: 1rem;
+    padding: 20px 15px;
   }
 
   .submit-btn {
-    font-size: 1.1rem;
-    padding: 14px 28px;
-  }
-
-  .thank-you h2 {
-    font-size: 30px;
+    padding: 10px 16px;
   }
 }
-
-  
-  .contact-box {
-    background: #ffffff;
-    max-width: 600px;
-    width: 100%;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-  }
-  
-  .contact-box h1 {
-    font-size: 28px;
-    margin-bottom: 10px;
-    color: #222;
-  }
-  
-  .contact-box p {
-    color: #555;
-    margin-bottom: 30px;
-  }
-  
-  .contact-form .form-group {
-    margin-bottom: 20px;
-  }
-  
-  .contact-form label {
-    display: block;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 8px;
-  }
-  
-  .contact-form input,
-  .contact-form textarea {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 15px;
-    background: #fafafa;
-    transition: border-color 0.2s ease;
-  }
-  
-  .contact-form input:focus,
-  .contact-form textarea:focus {
-    outline: none;
-    border-color: #000000;
-    background: #fff;
-  }
-  
-  .submit-btn {
-    background-color: #000000;
-    color: #fff;
-    border: none;
-    padding: 12px 22px;
-    font-size: 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  
-  .submit-btn:hover {
-    background-color: #000000;
-  }
-  
-  .thank-you {
-    text-align: center;
-    color: #2c2c2c;
-    padding-top: 20px;
-  }
-  
-  .thank-you h2 {
-    font-size: 26px;
-    margin-bottom: 10px;
-  }
-  

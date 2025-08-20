@@ -19,7 +19,6 @@ import {
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
-import { subscribeUser } from "../Utils/subscribeUser";
 import useDebounce from "../Utils/useDebounce";
 import ReactCountryFlag from "react-country-flag";
 import MiniSpinner from "../Components/MiniSpinner";
@@ -241,7 +240,7 @@ const ChatList = () => {
   const [firstLoad, setFirstLoad] = useState(true);
   const [enabled, setEnabled] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
-const [loading, setLoading] = useState(true); // tab/filter loading
+  const [loading, setLoading] = useState(true); // tab/filter loading
   const [searchLoading, setSearchLoading] = useState(false); // dedicated search loader
   const [countries, setCountries] = useState([]);
   const [showPremiumNotice, setShowPremiumNotice] = useState(false);
@@ -253,16 +252,12 @@ const [loading, setLoading] = useState(true); // tab/filter loading
   const [searchTerm, setSearchTerm] = useState("");
   const [showAllTabs, setShowAllTabs] = useState(false);
   const [allFilter, setAllFilter] = useState("all"); // 'all' or 'online'
-  const [isSubscribed, setIsSubscribed] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
   const [unreadCounts, setUnreadCounts] = useState({});
   const [badgeSeen, setBadgeSeen] = useState("true"); // assume no badge unless told otherwise
   const [inboxUserIds, setInboxUserIds] = useState(new Set());
 
   const navigate = useNavigate();
-  const PUBLIC_VAPID_KEY =
-    "BMt7fVUizCYq_PQkR-gkxa9azLTlzoLVgFQEIDjjJdP35dj2LyvHKCbBnp3YvsYdPmYwjx7gfnoMMhejp9i85-4";
-
   const user = JSON.parse(localStorage.getItem("user"));
 
   const listRef = useRef(null);
@@ -510,84 +505,6 @@ const [loading, setLoading] = useState(true); // tab/filter loading
     return () => clearInterval(interval);
   }, []);
 
-  const handleSubscribe = async () => {
-    try {
-      const subscription = await subscribeUser(PUBLIC_VAPID_KEY);
-      setIsSubscribed(true);
-
-      const data = {
-        endpoint: subscription.endpoint,
-        keys: {
-          p256dh: subscription.keys.p256dh,
-          auth: subscription.keys.auth,
-        },
-        user_id: user.id,
-      };
-
-      // Optionally: Check if subscription already exists before upsert
-      const { data: existing, error: selectError } = await supabase
-        .from("subscriptions")
-        .select("endpoint, keys")
-        .eq("endpoint", subscription.endpoint)
-        .single();
-
-      // Only upsert if changed or not found
-      if (
-        !existing ||
-        existing.keys.p256dh !== data.keys.p256dh ||
-        existing.keys.auth !== data.keys.auth
-      ) {
-        const { error } = await supabase.from("subscriptions").upsert(data, {
-          onConflict: ["endpoint"],
-        });
-
-        if (error) {
-          console.error("Supabase insert error:", error);
-          //console.log("Failed to save subscription.");
-        } else {
-          //console.log("Subscribed & saved to Supabase!");
-        }
-      } else {
-        //console.log("Subscription already up-to-date.");
-      }
-    } catch (err) {
-      console.error("Subscription failed:", err);
-    }
-  };
-
-  useEffect(() => {
-    const storedEnabled = localStorage.getItem("notifications_enabled");
-    if (storedEnabled === "true") setEnabled(true);
-  }, []);
-
-  const askNotificationPermission = async () => {
-    trackEvent({
-      action: "button_click",
-      category: "Chat List Page",
-      label: "Notification Button",
-    });
-    if (Notification.permission === "granted") {
-      setEnabled(true);
-      console.log("Already granted.");
-      return;
-    }
-
-    const permission = await Notification.requestPermission();
-    if (permission === "granted") {
-      setEnabled(true);
-      localStorage.setItem("notifications_enabled", "true");
-      console.log("Push notifications granted.");
-      await handleSubscribe();
-    } else {
-      setEnabled(false);
-      localStorage.setItem("notifications_enabled", "false");
-      setAlertMessage({
-        text: "Push notifications not granted!",
-        withButton: true,
-      });
-    }
-  };
-
   const handleProtectedNavigation = (e, path, targetUser = null) => {
     e.preventDefault();
     const isLoggedIn = localStorage.getItem("user");
@@ -641,7 +558,7 @@ const [loading, setLoading] = useState(true); // tab/filter loading
   const [dataChanged, setDataChanged] = useState(false); // ✅ Track if data changed
   const [submitting, setSubmitting] = useState(false); // ✅ Show "Submitting..."
 
- useEffect(() => {
+  useEffect(() => {
     setUsers([]);
     setPage(0);
     setHasMore(true);
@@ -1105,15 +1022,15 @@ const [loading, setLoading] = useState(true); // tab/filter loading
       text: "Roast Me Feature ",
     });
   };
- 
 
-// 👉 searchLoading can be used inside your list UI
-{searchLoading && (
-  <div className="flex justify-center py-4">
-    <MiniSpinner /> {/* a subtle loader under search results */}
-  </div>
-)}
-
+  // 👉 searchLoading can be used inside your list UI
+  {
+    searchLoading && (
+      <div className="flex justify-center py-4">
+        <MiniSpinner /> {/* a subtle loader under search results */}
+      </div>
+    );
+  }
 
   return (
     <div className="chatlist-container">
@@ -1262,11 +1179,8 @@ const [loading, setLoading] = useState(true); // tab/filter loading
           >
             Online
           </button>
-          <button
-            onClick={askNotificationPermission}
-            className={`notify-btn ${enabled ? "disabled" : "enabled"}`}
-          >
-            {enabled ? <FaBell /> : <FaBellSlash />}
+          <button className={"notify-btn"}>
+            <FaBell />
           </button>
 
           {activeTab === "all" && (
@@ -1279,8 +1193,6 @@ const [loading, setLoading] = useState(true); // tab/filter loading
               >
                 <FaCamera />
               </button>
-
-
 
               {/* Filter FAB */}
               <button

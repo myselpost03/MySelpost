@@ -420,6 +420,10 @@ const Profile = () => {
 
   const handleCoins = () => navigate(`/coins/${currentUser.id}`);
 
+  const handleSettings = () => {
+    navigate('/settings')
+  }
+
   if (!userData) {
     return (
       <>
@@ -537,7 +541,11 @@ const Profile = () => {
                     Logout
                   </button>
                 </div>
-                
+                <button className="settings-btn" onClick={handleSettings}>
+                  <span className="gear">&#9881;</span>{" "}
+                  {/* Unicode gear icon */}
+                  <span className="text">Settings</span>
+                </button>
               </>
             )}
           </div>
