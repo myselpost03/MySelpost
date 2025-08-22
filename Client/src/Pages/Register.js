@@ -22,7 +22,7 @@ const Register = () => {
   const [inviteError, setInviteError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [compressing, setCompressing] = useState(false);
-  const [remainingTime, setRemainingTime] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   const [originalImage, setOriginalImage] = useState(null);
   const [compressedImage, setCompressedImage] = useState(null);
@@ -302,23 +302,19 @@ const Register = () => {
     const originalKB = (file.size / 1024).toFixed(2);
     setOriginalSize(originalKB);
     setOriginalImage(URL.createObjectURL(file));
+    let intervalId;
 
     try {
       setCompressing(true); // 🚀 start compressing
-      // ⏳ start countdown (e.g., 10s max for compression)
-      let timeLeft = 10;
-      setRemainingTime(timeLeft);
+      setElapsedTime(0);
 
-      const interval = setInterval(() => {
-        timeLeft -= 1;
-        setRemainingTime(timeLeft);
-        if (timeLeft <= 0) clearInterval(interval);
+      // ⏱ Start timer
+      const start = Date.now();
+      intervalId = setInterval(() => {
+        const seconds = Math.floor((Date.now() - start) / 1000);
+        setElapsedTime(seconds);
       }, 1000);
-
       const compressedFile = await compressAndResize(file, 10);
-
-      clearInterval(interval);
-      setRemainingTime(0);
 
       const compressedKB = (compressedFile.size / 1024).toFixed(2);
       console.log("Compressed size KB:", compressedFile.size / 1024);
@@ -334,7 +330,7 @@ const Register = () => {
       console.error("Compression error:", error);
     } finally {
       setCompressing(false); // ✅ done compressing
-      setRemainingTime(0);
+      clearInterval(intervalId);
     }
   };
 
@@ -674,9 +670,7 @@ const Register = () => {
                 className="register-btn"
               >
                 {compressing
-                  ? `Compressing... ${
-                      remainingTime > 0 ? `(${remainingTime}s)` : ""
-                    }`
+                  ? `Compressing... (${elapsedTime}s)`
                   : loading
                   ? "Registering..."
                   : "Register"}

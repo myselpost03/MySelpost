@@ -135,7 +135,7 @@ const Login = () => {
           name: decoded.name,
           email: decoded.email,
           coins: existingUser?.reward_coins ?? 0,
-          google_login: true,   
+          google_login: true,
         })
       );
 
@@ -187,14 +187,16 @@ const Login = () => {
             required
           />
 
-{error && <p className="error-msg">{error}</p>}
+          {error && <p className="error-msg">{error}</p>}
+
           <button type="submit" disabled={!isFormValid || loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
+
           <p className="link-to-register">
-            Don't have an account?{" "}
-            <Link to="/register" style={{ textDecoration: "none" }}>
-              Register
+            Forgot Password?{" "}
+            <Link to="/reset-password" style={{ textDecoration: "none" }}>
+              Reset
             </Link>
           </p>
         </form>
