@@ -12,7 +12,9 @@ import {
   FaSearch,
   FaFilter,
   FaBell,
-  FaBellSlash,
+  FaBolt,
+  FaUsers,
+  FaEnvelopeOpenText,
   FaCheck,
   FaTimes,
   FaCamera,
@@ -1242,8 +1244,8 @@ const ChatList = () => {
           style={{ overflowY: "auto", height: "100vh" }}
           className="sketchy-list-scrollable"
         >
-          {loading && <LoadingSpinner />}
-          {filteredUsers.length > 0 ? (
+          {loading ? (<LoadingSpinner />) :
+          filteredUsers.length > 0 ? (
             <>
               {filteredUsers
                 .filter((u) => u.id !== user.id)
@@ -1404,7 +1406,46 @@ const ChatList = () => {
               )}
             </>
           ) : (
-            <div className="no-pinned-users"></div>
+        <div className="no-results-card">
+    {activeTab === "all" && (
+      <>
+        <FaUsers size={40} className="no-icon" />
+        <p className="no-title">No users found</p>
+        
+      </>
+    )}
+
+    {activeTab === "pinned" && (
+      <>
+        <FaThumbtack size={40} className="no-icon" />
+        <p className="no-title">No pinned friends</p>
+        <p className="no-sub">Pin your favorite people to access them quickly.</p>
+      </>
+    )}
+
+    {activeTab === "inbox" && (
+      <>
+        <FaEnvelopeOpenText size={40} className="no-icon" />
+        <p className="no-title">Your inbox is empty</p>
+        <p className="no-sub">Any new messages will show up here.</p>
+       
+      </>
+    )}
+
+    {activeTab === "online" && (
+      <>
+        <FaBolt size={40} className="no-icon" />
+        <p className="no-title">No one’s online</p>
+        <p className="no-sub">Check back later or explore all users.</p>
+        <button
+          onClick={() => setActiveTab("all")}
+          className="retry-btn"
+        >
+          🌍 View All Users
+        </button>
+      </>
+    )}
+  </div>
           )}
         </div>
 
