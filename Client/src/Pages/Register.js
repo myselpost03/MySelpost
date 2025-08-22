@@ -17,7 +17,13 @@ const Register = () => {
     email: "",
     password: "",
     profilePic: null,
+    inviteCode: "",
   });
+  const [inviteError, setInviteError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [compressing, setCompressing] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
+
   const [originalImage, setOriginalImage] = useState(null);
   const [compressedImage, setCompressedImage] = useState(null);
   const [originalSize, setOriginalSize] = useState(0);
@@ -98,6 +104,42 @@ const Register = () => {
     }, 500);
     return () => clearTimeout(timeout);
   }, [formData.email, emailValid]);
+
+  useEffect(() => {
+    if (!formData.password) {
+      setPasswordError("");
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setPasswordError("Password must be at least 8 characters long.");
+    } else {
+      setPasswordError("");
+    }
+  }, [formData.password]);
+
+  useEffect(() => {
+    if (!formData.inviteCode.trim()) {
+      setInviteError(""); // clear if empty
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      const { data: inviteData, error } = await supabase
+        .from("invites")
+        .select("sender_id")
+        .eq("code", formData.inviteCode.trim())
+        .single();
+
+      if (error || !inviteData) {
+        setInviteError("❌ Invalid invite code.");
+      } else {
+        setInviteError(""); // valid code
+      }
+    }, 500); // debounce 0.5s
+
+    return () => clearTimeout(timeout);
+  }, [formData.inviteCode]);
 
   const handleGoogleLogin = async (credentialResponse) => {
     try {
@@ -262,7 +304,22 @@ const Register = () => {
     setOriginalImage(URL.createObjectURL(file));
 
     try {
+      setCompressing(true); // 🚀 start compressing
+      // ⏳ start countdown (e.g., 10s max for compression)
+      let timeLeft = 10;
+      setRemainingTime(timeLeft);
+
+      const interval = setInterval(() => {
+        timeLeft -= 1;
+        setRemainingTime(timeLeft);
+        if (timeLeft <= 0) clearInterval(interval);
+      }, 1000);
+
       const compressedFile = await compressAndResize(file, 10);
+
+      clearInterval(interval);
+      setRemainingTime(0);
+
       const compressedKB = (compressedFile.size / 1024).toFixed(2);
       console.log("Compressed size KB:", compressedFile.size / 1024);
 
@@ -275,6 +332,9 @@ const Register = () => {
       }));
     } catch (error) {
       console.error("Compression error:", error);
+    } finally {
+      setCompressing(false); // ✅ done compressing
+      setRemainingTime(0);
     }
   };
 
@@ -310,14 +370,22 @@ const Register = () => {
       formData.name &&
       formData.email &&
       emailValid &&
-      !nameTaken
+      !nameTaken &&
+      !passwordError
     ) {
       const delay = setTimeout(() => {
         setStep(2);
       }, 500);
       return () => clearTimeout(delay);
     }
-  }, [formData.name, formData.email, emailValid, nameTaken, step]);
+  }, [
+    formData.name,
+    formData.email,
+    emailValid,
+    nameTaken,
+    passwordError,
+    step,
+  ]);
 
   const isFormValid =
     formData.name &&
@@ -366,10 +434,34 @@ const Register = () => {
 
       // File type validation
       const validTypes = ["image/jpeg", "image/png", "image/webp"];
-      if (!validTypes.includes(formData.profilePic.type)) {
-        setError("Only JPG, PNG, or WEBP images are allowed.");
+
+      if (!formData.profilePic.type.startsWith("image/")) {
+        setError("Invalid image file.");
         setLoading(false);
         return;
+      }
+
+      if (!validTypes.includes(formData.profilePic.type)) {
+        setError("Invalid image format. Only JPEG, PNG, JPG allowed.");
+        setLoading(false);
+        return;
+      }
+
+      let inviterId = null;
+      if (formData.inviteCode) {
+        const { data: inviteData, error: inviteError } = await supabase
+          .from("invites")
+          .select("sender_id")
+          .eq("code", formData.inviteCode.trim())
+          .single();
+
+        if (inviteError || !inviteData) {
+          setInviteError("❌ Invalid invite code.");
+          setLoading(false);
+          return;
+        }
+        inviterId = inviteData.sender_id;
+        setInviteError("");
       }
 
       const hashedPassword = await bcrypt.hash(formData.password, 10);
@@ -402,12 +494,20 @@ const Register = () => {
           password: hashedPassword,
           profile_pic: profilePicUrl,
           country: country,
+          inviter_id: inviterId, // ✅ store inviter
+          invite_code_used: formData.inviteCode || null,
           // device_id: deviceId,
         },
       ]);
 
       if (insertError) throw insertError;
 
+      if (inviterId) {
+        await supabase.rpc("increment_reward_coins", {
+          user_id_input: inviterId,
+          increment_by: 50,
+        });
+      }
       // Track registration event
       trackEvent({
         action: "button_click",
@@ -482,13 +582,14 @@ const Register = () => {
           }}
         >
           <h2 className="acct-text">Create an Account</h2>
-          <GoogleLogin
-            onSuccess={handleGoogleLogin}
-            onError={handleGoogleLoginError}
-            ux_mode="popup"
-          />
+
           {step === 1 && (
             <>
+              <GoogleLogin
+                onSuccess={handleGoogleLogin}
+                onError={handleGoogleLoginError}
+                ux_mode="popup"
+              />
               <input
                 type="text"
                 name="name"
@@ -531,7 +632,21 @@ const Register = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
+                className={passwordError ? "invalid" : ""}
               />
+              {passwordError && <p className="error-msg">{passwordError}</p>}
+
+              <input
+                type="text"
+                name="inviteCode"
+                placeholder="Invite Code (optional)"
+                value={formData.inviteCode}
+                onChange={(e) =>
+                  setFormData({ ...formData, inviteCode: e.target.value })
+                }
+                className={`input ${inviteError ? "input-error" : ""}`}
+              />
+              {inviteError && <p className="error-text">{inviteError}</p>}
 
               <div className="profile-pic-selector">
                 <label className="profile-pic-card">
@@ -555,10 +670,16 @@ const Register = () => {
 
               <button
                 type="submit"
-                disabled={!isFormValid || loading}
+                disabled={!isFormValid || loading || compressing}
                 className="register-btn"
               >
-                {loading ? "Registering..." : "Register"}
+                {compressing
+                  ? `Compressing... ${
+                      remainingTime > 0 ? `(${remainingTime}s)` : ""
+                    }`
+                  : loading
+                  ? "Registering..."
+                  : "Register"}
               </button>
 
               <p className="link-to-login">

@@ -358,22 +358,6 @@ const Coins = () => {
           onClose={() => setAlertMessage(null)}
         />
       )}
-
-      {/*showPrompt && (
-        <div id="install-popup">
-          <div id="install-popup-content">
-            <span id="install-popup-text">
-              Install our app for a better experience!
-            </span>
-            <button id="install-button" onClick={installApp}>
-              Install
-            </button>
-            <button id="cancel-button" onClick={cancelInstall}>
-              Cancel
-            </button>
-          </div>
-        </div>
-      )*/}
     </div>
   );
 };

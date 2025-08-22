@@ -1,300 +1,164 @@
-@import url("https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap");
-@import url(https://fonts.googleapis.com/css?family=Love+Ya+Like+A+Sister:regular);
-
-* {
-  -webkit-user-select: none; /* Safari */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none; /* Standard */
-}
-
-/* Hide scrollbar but keep scroll functionality */
-body {
-  overflow-y: scroll;
-  overflow-x: hidden;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-}
-body::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-
-html,
-body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow-y: scroll;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-}
-
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-
-.center-wrapper {
-  height: calc(100vh - 150px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
-
-.button-container {
+/* ===============================
+   ⚪🖤 Light Theme (White Base, Black Accents)
+================================= */
+.background-animated {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  margin-top: 1px;
+  background: #ffffff;
+  color: #111;
+  overflow: hidden;
 }
 
-.sketchy-button {
-  font-family: "love ya like a sister", cursive;
-  font-size: 1.8rem;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  width: 220px;
-  padding: 12px 24px;
-  color: #000;
-  background: #fff;
-  border: 3px solid #000;
-  border-radius: 18px;
-  box-shadow: -3px 3px 0 #000;
-  cursor: pointer;
-  position: relative;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
-  white-space: nowrap;
-  text-align: center;
-}
-
-.sketchy-button-alert {
-  font-family: "love ya like a sister", cursive;
-  font-size: 1.8rem;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  width: 220px;
-  padding: 12px 24px;
-  color: #000;
-  background: #fff;
-  border: 3px solid #000;
-  border-radius: 18px;
-  box-shadow: -3px 3px 0 #000;
-  cursor: pointer;
-  position: relative;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
-  white-space: nowrap;
-  text-align: center;
-}
-
-.sketchy-button:hover {
-  transform: translate(-2px, 2px);
-  box-shadow: -1px 1px 0 #000;
-}
-
-.sketchy-button:active {
-  transform: translate(0, 0);
-  box-shadow: none;
-}
-
-.or-text {
-  font-family: "Patrick Hand", cursive;
-  font-size: 1.8rem;
-  color: #666;
-}
-
-/* Blur background when modal is active */
+/* Blur background when modal/alert open */
 .blurred {
-  filter: blur(4px);
+  filter: blur(5px);
   pointer-events: none;
   user-select: none;
 }
 
-/* Full-screen modal overlay */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(30, 30, 30, 0.6);
+/* ===============================
+   🎯 Center Wrapper
+================================= */
+.center-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
-}
-
-/* Centered modal box */
-.modal {
-  background-color: #fefefe;
-  color: #333;
-  border: 4px solid #333;
-  padding: 20px 25px;
-  border-radius: 12px;
-  font-family: "Segoe UI", sans-serif;
-  width: 250px;
+  min-height: calc(100vh - 100px);
   text-align: center;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
+  padding: 2rem;
 }
 
-.modal .register-link {
-  color: #0077cc;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.modal .register-link:hover {
-  text-decoration: underline;
-}
-
-.close-alert {
-  margin-top: 15px;
-  background-color: #333;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  color: #fff;
-  padding: 1rem;
-  transition: background-color 0.2s;
-}
-
-.close-alert:hover {
-  background-color: #333;
-}
-
-@media (min-width: 768px) {
-  .center-wrapper {
-    height: calc(100vh - 150px);
-    padding: 40px;
-  }
-
-  .sketchy-button {
-    font-size: 2.2rem;
-    width: 280px;
-    padding: 16px 30px;
-  }
-
-  .or-text {
-    font-size: 2rem;
-  }
-
-  .modal {
-    width: 350px;
-    padding: 30px 35px;
-    font-size: 1.1rem;
-  }
-
-  .close-alert {
-    font-size: 1.1rem;
-    padding: 1.2rem;
-  }
-}
-
-/* Sketchy styled alert box */
-.sketchy-alert-box {
-  background-color: #fffefc;
-  color: #222;
-  font-family: "Patrick Hand", cursive;
-  font-size: 1.1rem;
-  border: 3px solid #222;
-  border-radius: 20px;
-  box-shadow: -4px 4px 0px #222;
-  padding: 20px 25px;
-  width: 350px;
-  text-align: center;
-  position: relative;
-  transition: all 0.2s ease-in-out;
-}
-
-.sketchy-alert-box::after {
-  content: "";
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  width: 100%;
-  height: 100%;
-  border: 3px dashed #222;
-  border-radius: 20px;
-  transform: rotate(-1deg);
-  z-index: -1;
-}
-
-/* Link inside alert box */
-.sketchy-link {
-  color: #0077cc;
-  font-weight: bold;
-  text-decoration: underline;
-}
-
-/* Button inside alert */
-
-.sketchy-close-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: -1px 1px 0px #000;
-}
-
-/* Build App Modal */
-.build-app-modal h3 {
-  font-size: 1.4rem;
-  margin-bottom: 10px;
-  color: #2a2a2a;
-}
-
-.build-app-modal .modal-buttons {
+/* ===============================
+   🔘 Buttons
+================================= */
+.button-container {
   display: flex;
-  flex-direction: column;
-  align-items: center; /* Center buttons horizontally */
-  gap: 10px;
-  margin-top: 15px;
-  margin-bottom: 15px;
+  align-items: center;
+  gap: 1.5rem;
 }
 
-.build-app-modal .sketchy-button {
-  width: 150px; /* smaller fixed width */
-  padding: 8px 12px;
-  font-size: 20px;
-  border: 2px dashed #333;
-  background-color: #fefefe;
-  font-family: "love ya like a sister", cursive;
+.sketchy-button {
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 14px;
+  padding: 0.9rem 1.8rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #000;
   cursor: pointer;
-  box-shadow: 2px 2px 0 #000;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+.sketchy-button:hover {
+  background: #000;
+  color: #fff;
+  transform: translateY(-3px) scale(1.05);
+}
+.sketchy-button:active {
+  transform: scale(0.96);
+}
+
+.or-text {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #333;
+  opacity: 0.8;
+}
+
+/* ===============================
+   📦 Modal Overlay
+================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1200;
+  animation: fadeIn 0.35s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ===============================
+   ⚡ Alert / Build Modal Box
+================================= */
+.sketchy-alert-box {
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 20px;
+  padding: 2rem;
+  color: #111;
+  width: 90%;
+  max-width: 420px;
   text-align: center;
-  transition: all 0.2s ease-in-out;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.15);
+  animation: popUp 0.35s ease;
 }
 
-.build-app-modal .sketchy-button:hover {
-  background-color: #e0ffe0;
-  transform: scale(1.02);
+@keyframes popUp {
+  from { transform: translateY(20px) scale(0.9); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
-/* Register Alert Modal */
-.register-alert-modal {
-  background-color: #fff5f5;
-  border-color: #cc0000;
+.sketchy-alert-box h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.8rem;
+  font-weight: 800;
 }
 
-.register-alert-modal p {
-  color: #cc0000;
-  margin-bottom: 12px;
+.sketchy-alert-box p {
+  margin: 0.6rem 0 1rem;
+  font-size: 1rem;
+  color: #333;
 }
 
-.register-alert-modal .sketchy-link {
-  color: #0000cc;
-  text-decoration: underline;
+/* ===============================
+   📑 Modal Buttons
+================================= */
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.2rem 0;
 }
 
 .sketchy-close-btn {
-  margin-top: 10px;
-  background-color: #222;
-  border: 2px dashed #333;
-  padding: 6px 12px;
-  font-family: "patrick hand", cursive;
+  margin-top: 0.8rem;
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 0.6rem 1.4rem;
+  font-weight: 600;
+  color: #000;
   cursor: pointer;
-  color: #fff;
-  box-shadow: 2px 2px 0 #000;
+  transition: all 0.25s ease;
 }
+.sketchy-close-btn:hover {
+  background: #000;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+/* ===============================
+   🔗 Link
+================================= */
+.sketchy-link {
+  color: #000;
+  font-weight: 600;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+.sketchy-link:hover {
+  color: #555;
+}
+
 
 /* Overlay background */
 .popup-wrapper {

@@ -99,7 +99,7 @@ const Settings = () => {
 
   const handleBack = () => navigate(-1);
   const handleContact = () => navigate("/contact-us");
-  const handlePrivacy = () => navigate("/privacy");
+  const handlePrivacy = () => navigate("/privacy-policy");
   const handleTerms = () => navigate("/terms");
   const handleAbout = () => navigate("/about");
   const handleUpdates = () => navigate("/updates");

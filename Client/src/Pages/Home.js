@@ -53,10 +53,30 @@ const Home = () => {
     fetchAndSetUser();
   }, [navigate]);
 
-  const handleProfileChange = (e) => {
+   const handleProfileChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "age") {
+      // allow only numbers
+      if (!/^\d*$/.test(value)) return;
+
+      // restrict to 2 digits
+      if (value.length > 2) return;
+
+      let num = parseInt(value, 10);
+
+      // if user has typed 2 digits, enforce min/max
+      if (value.length === 2 && !isNaN(num)) {
+        if (num < 13) num = 13;
+        if (num > 99) num = 99;
+        setProfileForm((prev) => ({ ...prev, [name]: String(num) }));
+        return;
+      }
+    }
+
     setProfileForm((prev) => ({ ...prev, [name]: value }));
   };
+
 
   const handleProfileSubmit = async () => {
     trackEvent({

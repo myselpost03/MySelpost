@@ -241,15 +241,7 @@ const Header = () => {
           onClose={() => setAlertMessage(null)}
         />
       )}
-      {showZoomed && (
-        <div className="zoom-overlay" onClick={() => setShowZoomed(false)}>
-          <img
-            src="https://i.pinimg.com/736x/b4/41/52/b44152e1ad63150f12efe7a050a0b26c.jpg"
-            alt="Zoomed"
-            className="zoomed-profile-pic"
-          />
-        </div>
-      )}
+      
     </header>
   );
 };

@@ -85,7 +85,10 @@
   color: #555;
   text-align: center;
   margin-top: 5px;
+  font-family: 'patrick hand', serif;
 }
+
+
 
 /* File upload */
 .profile-pic-selector {
@@ -175,4 +178,12 @@ font-family: 'mystery quest', serif
   to { opacity: 1; transform: translateY(0); }
 }
 
+.input-error {
+  border: 1px solid red;
+}
 
+.error-text {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 4px;
+}

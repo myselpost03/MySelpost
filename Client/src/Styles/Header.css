@@ -64,7 +64,7 @@
   text-decoration: none;
   color: #fff;
   font-weight: 500;
-  background-color: #000000;
+  background-color: #000;
   border: none;
   outline: none;
   font-size: 1.1rem;
@@ -108,7 +108,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px; /* Reduced padding to prevent overflow */
-  background-color: #000000;
+  background-color: #000;
   flex-wrap: wrap; /* allow wrapping on small screens */
   box-sizing: border-box;
 }

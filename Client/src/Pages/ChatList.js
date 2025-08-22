@@ -301,23 +301,6 @@ const ChatList = () => {
     fetchAndSetUser();
   }, [navigate]);
 
-  const handleAgeInput = (e) => {
-    let value = e.target.value;
-
-    // limit to 2 digits
-    if (value.length > 2) {
-      value = value.slice(0, 2);
-    }
-
-    // only check if user finished typing (2 digits)
-    if (value.length === 2) {
-      const num = parseInt(value, 10);
-      if (num < 13) value = "13";
-      if (num > 99) value = "99";
-    }
-
-    e.target.value = value;
-  };
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
 

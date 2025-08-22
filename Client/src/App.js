@@ -62,7 +62,7 @@ const publicRoutes = [
   { path: "/roast", component: Roast },
   { path: "/chat-entrance", component: ChatEntrance },
   { path: "/guest-user", component: GuestUser },
-  { path: "/privacy", component: Privacy },
+  { path: "/privacy-policy", component: Privacy },
   { path: "/updates", component: Updates },
   { path: "/contact-us", component: Contact },
   { path: "/pricing", component: Pricing },
