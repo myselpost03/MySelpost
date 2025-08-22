@@ -45,6 +45,16 @@ const Profile = () => {
     alertMessage: "",
   });
   const [receivedGifts, setReceivedGifts] = useState([]);
+  const orientationColors = {
+    gay: "🌈 #1d9bf0", // blue
+    lesbian: "🌸 #e75480", // pink
+    trans: "⚧ #9b59b6", // purple
+    hetero: "⚪ #2ecc71", // green
+    bi: "💜 #ff69b4", // magenta
+  };
+
+  // inside state
+  const [orientation, setOrientation] = useState("");
 
   const handleBack = () => navigate(-1);
 
@@ -220,7 +230,7 @@ const Profile = () => {
       const { data, error } = await supabase
         .from("users")
         .select(
-          "id, name, talked_to_count, bio, profile_pic, reward_coins, decency_rating"
+          "id, name, talked_to_count, bio, profile_pic, reward_coins, decency_rating, orientation"
         )
         .eq("id", id)
         .single();
@@ -269,6 +279,8 @@ const Profile = () => {
           name: data.name || "",
           bio: data.bio || "",
         }));
+        setOrientation(data.orientation || "");
+
         console.log("✅ User fetched successfully");
       } else {
         console.error("❌ Error fetching user:", error?.message);
@@ -314,6 +326,7 @@ const Profile = () => {
           name: form.name,
           bio: form.bio,
           profile_pic: profilePicUrl,
+          orientation, // 🔹 new field
         })
         .eq("id", id)
         .select()
@@ -527,6 +540,42 @@ const Profile = () => {
                 </span>
               </p>
             </div>
+            {isCurrentUser && status.editing ? (
+              <div className="sketchy-orientation-section">
+                <h4 style={{ marginBottom: "6px" }}>Orientation</h4>
+                <div className="sketchy-orientation-options">
+                  {["gay", "lesbian", "trans", "hetero", "bi"].map((o) => (
+                    <label key={o} className="orientation-label">
+                      <input
+                        type="radio"
+                        name="orientation"
+                        value={o}
+                        checked={orientation === o}
+                        onChange={(e) => setOrientation(e.target.value)}
+                      />
+                      {o.charAt(0).toUpperCase() + o.slice(1)}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              orientation && (
+                <div className="orientation-dot">
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: "12px",
+                      height: "12px",
+                      borderRadius: "50%",
+                      backgroundColor:
+                        orientationColors[orientation].split(" ")[1],
+                      marginRight: "6px",
+                    }}
+                  />
+                  {orientationColors[orientation].split(" ")[0]}
+                </div>
+              )
+            )}
 
             {isCurrentUser && (
               <>

@@ -3,6 +3,8 @@ import { supabase } from "../Utils/supabaseClient";
 import bcrypt from "bcryptjs";
 import Header from "../Components/Header";
 import "../Styles/ResetPassword.css";
+import toast, { Toaster } from "react-hot-toast";
+import confetti from "canvas-confetti"; // ✅ Import confettiimport { Toaster } from 'react-hot-toast';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function ResetPassword() {
@@ -56,7 +58,8 @@ export default function ResetPassword() {
 
       if (updateError) throw updateError;
 
-      setMessage("✅ Password reset successful. Please log in.");
+      toast.success("Password reset successful. Please log in.");
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
     } catch (err) {
       setMessage("❌ " + err.message);
     } finally {
@@ -64,8 +67,7 @@ export default function ResetPassword() {
     }
   };
 
-  const isButtonDisabled =
-    loading || !email || !password || !confirmPassword;
+  const isButtonDisabled = loading || !email || !password || !confirmPassword;
 
   return (
     <>
@@ -128,6 +130,8 @@ export default function ResetPassword() {
           {message && <div className="reset-message">{message}</div>}
         </div>
       </div>
+
+      <Toaster />
     </>
   );
 }
