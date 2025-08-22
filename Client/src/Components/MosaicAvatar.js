@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import "../Styles/Profile.css";
+import axios from "axios";
 import { supabase } from "../Utils/supabaseClient";
+import "../Styles/Profile.css";
 
 export default function MosaicAvatar({
   src,
@@ -37,7 +38,7 @@ export default function MosaicAvatar({
         .select("id")
         .eq("user_id", userId)
         .eq("liked_by", currentUserId)
-        .single()
+        .single();
 
       if (likedError && likedError.code !== "PGRST116") throw likedError; // ignore not found
       setUserLiked(!!likedData);
@@ -62,6 +63,11 @@ export default function MosaicAvatar({
     else {
       setLikes((l) => l + 1);
       setUserLiked(true);
+    }
+    if (userId) {
+      await axios.post("http://localhost:5000/like-push", {
+        userId: userId,
+      });
     }
   };
 
@@ -162,7 +168,7 @@ export default function MosaicAvatar({
       <img
         ref={imgRef}
         src={src}
-        alt=""
+        alt="blurred profile"
         className="mosaic-img"
         onLoad={() => setImgLoaded(true)}
         draggable={false}

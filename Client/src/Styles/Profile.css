@@ -5,7 +5,7 @@
 @import url(https://fonts.googleapis.com/css?family=Balsamiq+Sans:regular,italic,700,700italic);
 @import url(https://fonts.googleapis.com/css?family=Patrick+Hand+SC:regular);
 @import url(https://fonts.googleapis.com/css?family=Stylish:regular);
-
+@import url(https://fonts.googleapis.com/css?family=Averia+Libre:300,300italic,regular,italic,700,700italic);
 .sketchy-profile-wrapper {
   max-width: 500px;
   margin: 4rem auto;
@@ -117,9 +117,65 @@
 .sketchy-profile-center {
   flex: 1;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
+.blurred-note {
+  position: absolute;
+  bottom: 50px; /* place below avatar */
+  left: 50%;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: 'Averia Libre', serif;
+  color: #222;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 8px 14px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 250px;
+  backdrop-filter: blur(6px);
+
+  opacity: 0;
+  animation: floatIn 0.6s ease forwards, pulse 2.5s infinite, disappear 1s ease forwards 3s;
+  pointer-events: none; /* avoid blocking clicks */
+}
+
+.hidden{
+  display: none;
+}
+/* Floating entrance */
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 15px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+/* Gentle heartbeat pulse */
+@keyframes pulse {
+  0% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.04); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+/* Fade out after 3s */
+@keyframes disappear {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+    visibility: hidden;
+  }
+}
+
 
 .sketchy-profile-name {
   font-size: 2rem;

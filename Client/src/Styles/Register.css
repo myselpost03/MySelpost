@@ -1,263 +1,178 @@
-@import url(https://fonts.googleapis.com/css?family=Original+Surfer:regular);
-body {
-  margin: 0;
-  font-family: "original surfer", cursive;
-  background-color: #f5f5f5;
-}
+@import url(https://fonts.googleapis.com/css?family=Gabriela:regular);
+@import url(https://fonts.googleapis.com/css?family=Mystery+Quest:regular);
 
+
+/* Container */
 .register-container {
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(to bottom right, #fafafa, #eee);
+  background: #f5f6fa; /* Light gray background */
   padding: 20px;
-  margin-top: 10px; /* Space for header */
-
-  /* Optional: Add responsive margin for desktop only */
-  @media (min-width: 768px) {
-    margin-top: 30px;
-  }
 }
 
-.link-to-login {
-  text-align: center;
-}
-
+/* Form */
 .register-form {
-  background-color: #fff;
-  border: 3px solid #000;
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  padding: 35px;
   border-radius: 16px;
-  box-shadow: 6px 6px 0px #000;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 2.5rem;
-  width: 100%;
-  max-width: 400px;
-  transition: transform 0.2s ease-in-out;
+  gap: 18px;
+  color: #333;
+  position: relative;
+  animation: fadeIn 0.6s ease;
 }
 
-.register-form:hover {
-  transform: scale(1.01);
-}
-
-.register-form h2 {
-  font-family: "original surfer", cursive;
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  color: #222;
+/* Title */
+.acct-text {
   text-align: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 2px solid #333;
+  padding-bottom: 8px;
+  color: #111;
+  font-family: 'gabriela', serif;
 }
 
-.register-form input {
-  padding: 0.9rem 1rem;
-  border: 2px solid #111;
+/* Inputs */
+.register-form input[type="text"],
+.register-form input[type="email"],
+.register-form input[type="password"] {
+  width: 100%;
+  padding: 12px 15px;
   border-radius: 10px;
+  border: 2px solid #ddd;
+  background: #fafafa;
+  color: #111;
   font-size: 1rem;
-  font-family: "original surfer", cursive;
-  background: #fff;
-  transition: border-color 0.3s ease, box-shadow 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .register-form input:focus {
+  border-color: #111;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(0,0,0,0.15);
   outline: none;
-  border-color: #000;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
-.register-form input.invalid {
-  border-color: red;
-  background-color: #ffe6e6;
+/* Invalid states */
+.invalid {
+  border-color: #e63946 !important;
+  background: #ffeaea;
 }
 
-.register-form .error-msg {
-  color: red;
+/* Error messages */
+.error-msg {
+  color: #e63946;
   font-size: 0.85rem;
-  margin-top: -0.5rem;
-  margin-bottom: 1rem;
-  text-align: left;
-}
-
-.register-form button {
-  padding: 0.9rem;
-  font-size: 1rem;
-  background-color: #000;
-  color: white;
-  border: 2px solid #000;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s ease;
-  font-family: "original surfer", cursive;
-}
-
-.register-form button:disabled {
-  background-color: #ccc;
-  color: #666;
-  border-color: #aaa;
-  cursor: not-allowed;
-}
-
-.register-form button:not(:disabled):hover {
-  background-color: #222;
-}
-
-.register-form a {
-  color: #000;
-  text-decoration: underline;
-  font-weight: bold;
-  font-family: "original surfer", cursive;
-  display: inline-block;
-  margin-top: 0.5rem;
-  text-align: center;
-}
-
-@media (min-width: 768px) {
-  .register-form {
-    padding: 3rem 3rem;
-    max-width: 500px;
-  }
-
-  .register-form h2 {
-    font-size: 2.5rem;
-  }
-
-  .register-form input,
-  .register-form button {
-    font-size: 1.1rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .register-form {
-    padding: 1.5rem;
-  }
-
-  .register-form h2 {
-    font-size: 1.6rem;
-  }
-}
-
-/* Toast or alert box */
-.custom-alert-box {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #1d1d1d;
-  color: #fff;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  font-size: 1rem;
-  z-index: 1000;
-  font-family: "original surfer", cursive;
-  animation: fadeSlideDown 0.3s ease;
-}
-
-@keyframes fadeSlideDown {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -10px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
-
-.gender-group {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-.gender-option {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1rem;
-  border: 2px solid #111;
-  border-radius: 10px;
-  background-color: #fff;
-  cursor: pointer;
-  font-family: "original surfer", cursive;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  user-select: none;
-}
-
-.gender-option:hover {
-  background-color: #eee;
-}
-
-.gender-option input {
-  display: none;
-}
-
-.gender-option span {
-  font-size: 1.05rem;
-  font-weight: bold;
-  color: #222;
-}
-
-.gender-option input:checked + span {
-  color: #fff;
-  background-color: #000;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-}
-
-.step-indicator {
-  font-size: 0.95rem;
-  text-align: center;
-  color: #555;
-  font-family: "original surfer", cursive;
   margin-top: -10px;
-  margin-bottom: 10px;
-  background: #f0f0f0;
-  border-radius: 8px;
-  padding: 6px 12px;
-  display: inline-block;
-  box-shadow: 2px 2px 0px #ccc;
-  border: 2px solid #000;
+  margin-bottom: 5px;
+  text-align: left;
+  font-family: 'stylish', serif;
 }
 
+/* Step indicator */
+.step-indicator {
+  font-size: 0.9rem;
+  color: #555;
+  text-align: center;
+  margin-top: 5px;
+}
+
+/* File upload */
 .profile-pic-selector {
   display: flex;
   justify-content: center;
-  margin: 1rem 0;
 }
 
 .profile-pic-card {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 200px;
-  height: 50px;
-  border: 2px dashed #000;
-  border-radius: 16px;
-  cursor: pointer;
-  background-color: #fafafa;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  background: #fafafa;
+  border: 2px dashed #bbb;
+  border-radius: 12px;
+  padding: 18px;
   text-align: center;
-  padding: 1rem;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.3s ease;
 }
 
 .profile-pic-card:hover {
-  background-color: #f0f0f0;
-  transform: scale(1.03);
+  border-color: #111;
+  background: #f0f0f0;
+}
+
+.profile-pic-text {
+  display: block;
+  font-size: 0.8rem;
+  color: #555;
+  font-family: 'schoolbell', serif;
 }
 
 .profile-pic-input {
   display: none;
 }
 
-.profile-pic-text {
-  font-size: 0.95rem;
-  color: #555;
-  font-family: "original surfer", cursive;
-  text-align: center;
+/* Button */
+.register-form button {
+  padding: 12px;
+  border-radius: 30px;
+  border: none;
+  background: #111;
+  color: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
+
+.register-form button:hover:not(:disabled) {
+  background: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+.register-form button:disabled {
+  background: #ccc;
+  color: #777;
+  cursor: not-allowed;
+}
+
+/* Link to login */
+.link-to-login {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #555;
+  font-family: 'gabriela', serif;
+}
+
+.link-to-login a {
+  color: #111;
+  font-weight: bold;
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+  transition: all 0.3s ease;
+}
+
+.link-to-login a:hover {
+  border-bottom: 1px dashed #111;
+}
+
+.register-btn{
+font-family: 'mystery quest', serif
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+

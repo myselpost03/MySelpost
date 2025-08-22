@@ -1,16 +1,23 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import img from "../Assets/404.png";
-import "../Styles/NotFound.css"; 
+import Header from "../Components/Header";
+import "../Styles/NotFound.css";
 
 const NotFound = () => {
   return (
-    <div className="notfound-container">
-      <img src={img} alt="404 Not Found" className="notfound-image" />
-      <h1 className="notfound-title">Page Not Found</h1>
-      <p className="notfound-text">The page you are looking for doesn’t exist or has been moved.</p>
-      <Link to="/" className="notfound-link">Back to Home</Link>
-    </div>
+    <>
+      <Header />
+      <div className="notfound-container">
+        <h1 className="notfound-404">404</h1>
+        <h2 className="notfound-title">Page Not Found</h2>
+        <p className="notfound-text">
+          The page you are looking for doesn’t exist or has been moved.
+        </p>
+        <Link to="/" className="notfound-link">
+          Back to Home
+        </Link>
+      </div>
+    </>
   );
 };
 

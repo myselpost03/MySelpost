@@ -3,7 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import SketchyHeader from "../Components/SketchyHeader";
 import { supabase, supabaseStorage } from "../Utils/supabaseClient";
 import { FaBan, FaImage, FaMicrophone } from "react-icons/fa";
-import bannedData from "../Utils/bannedWords.json";
+import bannedData from "../JSON/bannedWords.json";
 import SketchyAlert from "../Components/SketchyAlert";
 import { trackEvent } from "../Utils/analytics";
 import axios from "axios";
@@ -652,7 +652,7 @@ const Chat = () => {
           // Send push only if not blocked by or blocking the target
           if (messageId && !blockedByOtherUser && !iBlockedOtherUser) {
             try {
-              await axios.post("https://myselpost.onrender.com/send-push", {
+              await axios.post("http://localhost:5000/send-push", {
                 userId: targetId,
                 messageId: messageId,
               });

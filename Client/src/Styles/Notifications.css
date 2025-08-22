@@ -1,0 +1,115 @@
+@import url(https://fonts.googleapis.com/css?family=Fredoka:regular);
+
+.notifications-wrap {
+  min-height: 100vh;
+  padding: 2rem;
+  font-family: "Fredoka", sans-serif;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  margin-top: 70px; 
+}
+
+.notifications-empty {
+  text-align: center;
+  font-size: 2rem;
+  color: #666;
+  margin-top: 2rem;
+}
+
+.notifications-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.notification-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.notification-icon {
+  font-size: 1.6rem;
+  color: #e63946; /* red heart */
+  flex-shrink: 0;
+}
+
+.notification-text {
+  font-size: 1rem;
+  color: #444;
+  margin: 0;
+  white-space: normal;        /* allow wrapping */
+  overflow-wrap: break-word;  /* break long words if needed */
+  word-break: break-word;     /* ensures breaking in all browsers */
+  max-width: 100%;            /* prevent overflow */
+}
+
+.notification-time {
+  font-size: 0.85rem;
+  color: #777;
+  display: block;
+  margin-top: 0.2rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .notifications-wrap {
+    padding: 1rem;
+  }
+
+  .notification-card {
+    padding: 0.8rem 1rem;
+  }
+
+  .notifications-title {
+    font-size: 1.5rem;
+  }
+}
+.load-more-btn {
+  display: block;
+  margin: 1.5rem auto;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #555, #333);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.3s;
+}
+
+.load-more-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #333, #111);
+}
+.fallback-container {
+  display: flex;
+  flex-direction: column; /* keeps image and text stacked */
+  align-items: center;     /* horizontal center */
+  justify-content: center; /* vertical center */
+  height: 100%;            /* takes full height of parent */
+  text-align: center;
+}
+
+.heart {
+  width: 80%;
+  height: 80%;
+}
+

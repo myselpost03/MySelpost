@@ -6,6 +6,9 @@ export const dbPromise = openDB("UserDB", 1, {
     if (!db.objectStoreNames.contains("profile_pics")) {
       db.createObjectStore("profile_pics", { keyPath: "id" });
     }
+    if (!db.objectStoreNames.contains("users")) {
+      db.createObjectStore("users", { keyPath: "id" });
+    }
   },
 });
 
@@ -180,3 +183,5 @@ export const getRoastLastSync = async () => {
   console.log(`[IndexedDB] ⏱️ Last roast sync = ${lastSync}`);
   return lastSync;
 };
+
+

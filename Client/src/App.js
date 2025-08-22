@@ -26,8 +26,6 @@ import {
   NotFound,
   AppDoodle,
   WebDoodle,
-  DoodleExample,
-  Demo,
   Chat,
   ChatEntrance,
   GuestUser,
@@ -35,19 +33,18 @@ import {
   Profile,
   Coins,
   PaymentPage,
+  Demo,
 } from "./Pages/index";
 import LoadingSpinner from "./Components/LoadingSpinner";
 import { supabase } from "./Utils/supabaseClient";
 import SketchyAlert from "./Components/SketchyAlert";
 import InternetStatusAlert from "./Components/InternetStatusAlert";
 import { isRunningAsPWA } from "./CheckPWA";
-import ScrollToTop from "./ScrollToTop";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
   { path: "/app-doodle", component: AppDoodle },
   { path: "/web-doodle", component: WebDoodle },
-  { path: "/doodle-example", component: DoodleExample },
   { path: "/chat/:id", component: Chat },
   { path: "/profile/:id", component: Profile },
   { path: "/coins/:id", component: Coins },
@@ -66,7 +63,6 @@ const publicRoutes = [
   { path: "/chat-entrance", component: ChatEntrance },
   { path: "/guest-user", component: GuestUser },
   { path: "/privacy", component: Privacy },
-  
   { path: "/updates", component: Updates },
   { path: "/contact-us", component: Contact },
   { path: "/pricing", component: Pricing },
@@ -310,8 +306,7 @@ function AppContent() {
   return (
     <>
       <UserStatusWrapper />
-      <ScrollToTop />
-
+      
       <Routes>
         {publicRoutes.map(({ path, component: Component }) => (
           <Route key={path} path={path} element={<Component />} />

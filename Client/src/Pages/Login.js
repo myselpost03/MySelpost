@@ -187,11 +187,11 @@ const Login = () => {
             required
           />
 
-          {error && <p className="error-msg">{error}</p>}
+{error && <p className="error-msg">{error}</p>}
           <button type="submit" disabled={!isFormValid || loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
-          <p>
+          <p className="link-to-register">
             Don't have an account?{" "}
             <Link to="/register" style={{ textDecoration: "none" }}>
               Register

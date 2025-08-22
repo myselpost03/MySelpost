@@ -78,6 +78,27 @@ const Register = () => {
     return false;
   };
 
+  const [emailTaken, setEmailTaken] = useState(false);
+
+  const checkEmailExists = async (email) => {
+    if (!email) return false;
+    const { data } = await supabase
+      .from("users")
+      .select("email")
+      .eq("email", email);
+    return data && data.length > 0;
+  };
+
+  // debounce email check
+  useEffect(() => {
+    if (!formData.email || !emailValid) return;
+    const timeout = setTimeout(async () => {
+      const exists = await checkEmailExists(formData.email);
+      setEmailTaken(exists);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [formData.email, emailValid]);
+
   const handleGoogleLogin = async (credentialResponse) => {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
@@ -495,7 +516,10 @@ const Register = () => {
               {!emailValid && (
                 <p className="error-msg">Please enter a valid email address.</p>
               )}
-              <p className="step-indicator">Step 1 of 2 ✅</p>
+              {emailTaken && (
+                <p className="error-msg">Email is already registered.</p>
+              )}
+              <p className="step-indicator">Step 1 of 2</p>
             </>
           )}
           {step === 2 && (
@@ -529,7 +553,11 @@ const Register = () => {
 
               {error && <p className="error-msg">{error}</p>}
 
-              <button type="submit" disabled={!isFormValid || loading}>
+              <button
+                type="submit"
+                disabled={!isFormValid || loading}
+                className="register-btn"
+              >
                 {loading ? "Registering..." : "Register"}
               </button>
 
@@ -537,7 +565,7 @@ const Register = () => {
                 Already have an account? <Link to="/login">Login</Link>
               </p>
 
-              <p className="step-indicator">Step 2 of 2 📸</p>
+              <p className="step-indicator">Step 2 of 2</p>
             </>
           )}
         </form>

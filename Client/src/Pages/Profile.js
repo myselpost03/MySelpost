@@ -6,12 +6,11 @@ import "../Styles/Profile.css";
 import empty from "../Assets/empty.png";
 import { supabase, supabaseStorage } from "../Utils/supabaseClient";
 import toast, { Toaster } from "react-hot-toast";
-import { openDB } from "idb";
 import MosaicAvatar from "../Components/MosaicAvatar";
 import imageCompression from "browser-image-compression";
 import { trackEvent } from "../Utils/analytics";
 import LoadingSpinner from "../Components/LoadingSpinner";
-import { dbPromise } from "../Utils/db";
+import { openDB } from "idb";
 
 const giftList = [
   "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png",
@@ -26,6 +25,8 @@ const giftCoinRequirements = [50, 300, 150, 10, 400, 100];
 
 const Profile = () => {
   const [showImageModal, setShowImageModal] = useState(false);
+  const [showNote, setShowNote] = useState(false);
+
   // Add new state
   const [showGiftList, setShowGiftList] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
@@ -174,29 +175,40 @@ const Profile = () => {
     });
   };
 
-  // 🔹 Utility for saving a single user into IndexedDB
+  // 🔹 IndexedDB setup
+  const dbPromise = openDB("UserDB", 1, {
+    upgrade(db) {
+      if (!db.objectStoreNames.contains("profile_pics")) {
+        db.createObjectStore("profile_pics", { keyPath: "id" });
+      }
+      if (!db.objectStoreNames.contains("users")) {
+        db.createObjectStore("users", { keyPath: "id" });
+      }
+    },
+  });
+
+  // 🔹 Save a single user to IndexedDB
   const saveUserToIDB = async (user) => {
     const db = await dbPromise;
     try {
-      // Only cache if user has a Supabase storage URL (not raw Google avatar)
-      if (user.profile_pic && !user.google_login) {
+      // Non-Google user → always cache profile_pic
+      if (!user.google_login && user.profile_pic) {
         const response = await fetch(user.profile_pic);
         const blob = await response.blob();
         await db.put("profile_pics", { id: user.id, blob });
       }
 
-      // Special case: Google user who has updated profile_pic in Supabase
-      if (
-        user.profile_pic &&
-        user.google_login &&
-        user.profile_pic.includes("supabase.co")
-      ) {
+      // Google user → only cache if avatar is Supabase-hosted
+      if (user.google_login && user.profile_pic?.includes("supabase.co")) {
         const response = await fetch(user.profile_pic);
         const blob = await response.blob();
         await db.put("profile_pics", { id: user.id, blob });
       }
 
+      // Save/update user data regardless of Google login
       await db.put("users", user);
+
+      console.log(`♻️ User ${user.id} saved to IndexedDB`);
     } catch (err) {
       console.error("⚠️ saveUserToIDB error:", err);
     }
@@ -205,7 +217,6 @@ const Profile = () => {
   const fetchUser = async () => {
     try {
       const isGoogleUser = currentUser?.google_login;
-
       const { data, error } = await supabase
         .from("users")
         .select(
@@ -215,47 +226,50 @@ const Profile = () => {
         .single();
 
       if (!error && data) {
-        let avatar = empty;
-        const db = await openDB("UserDB", 1);
+        const db = await openDB("UserDB", 1, {
+          upgrade(db) {
+            if (!db.objectStoreNames.contains("profile_pics")) {
+              db.createObjectStore("profile_pics", { keyPath: "id" });
+            }
+            if (!db.objectStoreNames.contains("users")) {
+              db.createObjectStore("users", { keyPath: "id" });
+            }
+          },
+        });
+
+        // Try to get cached profile pic
         const cached = await db.get("profile_pics", data.id);
+        let avatar = empty;
 
         if (isGoogleUser) {
           if (data.profile_pic?.includes("supabase")) {
-            // ✅ Supabase-hosted → cache & use
-            if (!cached || cached.url !== data.profile_pic) {
-              await saveUserToIDB(data); // overwrite old one
-              //console.log("♻️ Updated Google-user pic in IndexedDB");
-            }
+            // Supabase-hosted Google user → cache & use
+            if (!cached) await saveUserToIDB(data);
             avatar = cached?.blob
               ? URL.createObjectURL(cached.blob)
               : data.profile_pic;
           } else {
-            // ✅ Original Google pic → no caching
+            // Original Google avatar → no caching
             avatar = data.profile_pic || empty;
           }
         } else {
-          // ✅ Non-Google user
-          if (!cached || cached.url !== data.profile_pic) {
-            await saveUserToIDB(data); // overwrite old pic
-            //console.log("♻️ Updated non-Google-user pic in IndexedDB");
-          }
-          avatar = cached?.blob
-            ? URL.createObjectURL(cached.blob)
+          // Non-Google user → fetch and cache if not present
+          if (!cached) await saveUserToIDB(data);
+
+          // Use blob if available; otherwise fallback to original URL
+          const freshCached = await db.get("profile_pics", data.id);
+          avatar = freshCached?.blob
+            ? URL.createObjectURL(freshCached.blob)
             : data.profile_pic || empty;
         }
 
-        setUserData({
-          ...data,
-          avatar,
-        });
-
+        setUserData({ ...data, avatar });
         setForm((prev) => ({
           ...prev,
           name: data.name || "",
           bio: data.bio || "",
         }));
-
-        //console.log("✅ User fetched successfully");
+        console.log("✅ User fetched successfully");
       } else {
         console.error("❌ Error fetching user:", error?.message);
         setUserData({ avatar: empty, name: "", bio: "" });
@@ -323,7 +337,7 @@ const Profile = () => {
         setForm((f) => ({ ...f, imageFile: null }));
         toast.success("Profile Updated!");
 
-        //console.log("✅ User updated in Supabase + IndexedDB");
+        console.log("✅ User updated in Supabase + IndexedDB");
       } else {
         toast.error("Failed to update.");
         console.error("❌ Update failed:", error?.message);
@@ -421,8 +435,23 @@ const Profile = () => {
   const handleCoins = () => navigate(`/coins/${currentUser.id}`);
 
   const handleSettings = () => {
-    navigate('/settings')
-  }
+    navigate("/settings");
+  };
+
+  useEffect(() => {
+    const alreadyShown = localStorage.getItem("blurredNoteShown");
+    if (!alreadyShown) {
+      setShowNote(true);
+
+      // auto-hide after 3s
+      const timer = setTimeout(() => {
+        setShowNote(false);
+        localStorage.setItem("blurredNoteShown", "true");
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   if (!userData) {
     return (
@@ -556,6 +585,10 @@ const Profile = () => {
               userId={id}
               currentUserId={currentUserId}
             />
+            <span className={`blurred-note ${!showNote ? "hidden" : ""}`}>
+              Each tap clears the blur… <br />
+              reach 1000 likes to see it all!
+            </span>
           </div>
         </div>
 

@@ -1,26 +1,36 @@
-@keyframes sketchyShake {
-  0% { transform: translate(-50%, -50%) rotate(0); }
-  25% { transform: translate(-50%, -50%) rotate(-2deg); }
-  50% { transform: translate(-50%, -50%) rotate(2deg); }
-  75% { transform: translate(-50%, -50%) rotate(-2deg); }
-  100% { transform: translate(-50%, -50%) rotate(0); }
-}
-
 .sketchy-internet-alert {
   position: fixed;
-  top: 50%;
+  top: 20px;
   left: 50%;
-  transform: translate(-50%, -50%);
-    background: linear-gradient(135deg, crimson, #ff4d4d);
-
+  transform: translateX(-50%);
+  background: #000;
   color: #fff;
-  border: 3px dashed #fff;
-  padding: 20px 30px;
+  border: 2px dashed #fff;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: bold;
   border-radius: 12px;
-  font-family: "Comic Sans MS", cursive;
-  font-size: 24px;
-  box-shadow: 4px 4px 0px #000;
-  animation: sketchyShake 0.8s ease-in-out infinite;
-  z-index: 9999;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+  z-index: 1000;
   text-align: center;
+  animation: pulseAlert 1.2s infinite alternate, shakeAlert 0.4s infinite;
+}
+
+/* Pulse glow effect */
+@keyframes pulseAlert {
+  from {
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+  }
+  to {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+  }
+}
+
+/* Slight shaky "sketchy" effect */
+@keyframes shakeAlert {
+  0% { transform: translateX(-50%) rotate(0deg); }
+  25% { transform: translateX(-50%) rotate(1deg); }
+  50% { transform: translateX(-50%) rotate(0deg); }
+  75% { transform: translateX(-50%) rotate(-1deg); }
+  100% { transform: translateX(-50%) rotate(0deg); }
 }

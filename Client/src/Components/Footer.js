@@ -40,63 +40,6 @@ const Footer = () => {
 
       <div className="footer-bottom">
         <p>© {new Date().getFullYear()} MySelpost. All rights reserved.</p>
-        <div style={{ marginTop: "10px" }}>
-          <a
-            href="https://game-sprunki.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Game Sprunki"
-            style={{ color: "#fff", textDecoration: "underline" }}
-          >
-            Game Sprunki
-          </a>
-        </div>
-        <div style={{ marginTop: "10px" }}>
-          <a
-            href="https://kontext-ai.com/"
-            style={{ color: "#fff", textDecoration: "underline" }}
-          >
-            Kontext AI
-          </a>
-        </div>
-
-        <div style={{ marginTop: "10px" }}>
-          <a
-            href="https://submitaitools.org/"
-            style={{ color: "#fff", textDecoration: "underline" }}
-          >
-            Submit AI Tools
-          </a>
-        </div>
-        <div style={{ marginTop: "10px" }}>
-          <a
-            href="https://yo.directory/"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: "#fff", textDecoration: "underline" }}
-          >
-            <img
-              src="https://cdn.prod.website-files.com/65c1546fa73ea974db789e3d/65e1e171f89ebfa7bd0129ac_yodirectory-featured.png"
-              alt="yo.directory"
-              style={{ width: "150px", height: "54px" }}
-              width="150"
-              height="54"
-            />
-          </a>
-        </div>
-         <a
-          href="https://twelve.tools"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            src="https://twelve.tools/badge0-white.svg"
-            alt="Featured on Twelve Tools"
-            width="200"
-            height="54"
-            style={{ marginTop: "10px" }}
-          />
-        </a>
       </div>
     </footer>
   );

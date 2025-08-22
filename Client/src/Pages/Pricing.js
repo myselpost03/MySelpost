@@ -3,14 +3,15 @@ import { useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import "../Styles/Pricing.css";
 import { supabase } from "../Utils/supabaseClient";
-import AlertBox from "../Components/AlertBox"; // Import custom alert component
+
+import SketchyAlert from "../Components/SketchyAlert";
 
 const Pricing = () => {
   const navigate = useNavigate();
   const [isBusinessUnlocked, setIsBusinessUnlocked] = useState(false);
   const [showPayPal, setShowPayPal] = useState(false);
   const [email, setEmail] = useState("");
-  const [showAlert, setShowAlert] = useState(false); // State to manage the custom alert
+  const [alertMessage, setAlertMessage] = useState(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -31,14 +32,13 @@ const Pricing = () => {
 
   const handleBusiness = () => {
     if (!email) {
-      setShowAlert(true); // Show the custom alert if not logged in
+      setAlertMessage({
+        text: "Please login first to unlock the business features.",
+        withButton: true,
+      });
       return;
     }
     setShowPayPal(true);
-  };
-
-  const handleCloseAlert = () => {
-    setShowAlert(false); // Close the alert
   };
 
   const renderPayPalButton = () => {
@@ -85,12 +85,7 @@ const Pricing = () => {
     <div className="pricing-page">
       <Header />
 
-      {showAlert && (
-        <AlertBox
-          message="Please log in first to unlock business features."
-          onClose={handleCloseAlert}
-        />
-      )}
+      {alertMessage && <SketchyAlert />}
       <div className="pricing-container">
         <div className="plans-wrapper">
           {/* Sketch Plan */}

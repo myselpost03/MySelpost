@@ -25,7 +25,7 @@ import MiniSpinner from "../Components/MiniSpinner";
 import SketchyAlert from "../Components/SketchyAlert";
 import FeedbackPopup from "../Components/FeedbackPopup";
 import { trackEvent } from "../Utils/analytics";
-import { openDB } from "idb";
+import { dbPromise } from "../Utils/db";
 import LoadingSpinner from "../Components/LoadingSpinner";
 
 const countryNameToCode = {
@@ -299,8 +299,44 @@ const ChatList = () => {
     fetchAndSetUser();
   }, [navigate]);
 
+  const handleAgeInput = (e) => {
+    let value = e.target.value;
+
+    // limit to 2 digits
+    if (value.length > 2) {
+      value = value.slice(0, 2);
+    }
+
+    // only check if user finished typing (2 digits)
+    if (value.length === 2) {
+      const num = parseInt(value, 10);
+      if (num < 13) value = "13";
+      if (num > 99) value = "99";
+    }
+
+    e.target.value = value;
+  };
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "age") {
+      // allow only numbers
+      if (!/^\d*$/.test(value)) return;
+
+      // restrict to 2 digits
+      if (value.length > 2) return;
+
+      let num = parseInt(value, 10);
+
+      // if user has typed 2 digits, enforce min/max
+      if (value.length === 2 && !isNaN(num)) {
+        if (num < 13) num = 13;
+        if (num > 99) num = 99;
+        setProfileForm((prev) => ({ ...prev, [name]: String(num) }));
+        return;
+      }
+    }
+
     setProfileForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -568,6 +604,7 @@ const ChatList = () => {
       setLoading(true);
     }
   }, [activeTab, genderFilter, countryFilter]);
+
   useEffect(() => {
     const fetchUsers = async () => {
       if (
@@ -585,13 +622,7 @@ const ChatList = () => {
 
       try {
         // IndexedDB setup
-        const db = await openDB("UserDB", 1, {
-          upgrade(db) {
-            if (!db.objectStoreNames.contains("profile_pics")) {
-              db.createObjectStore("profile_pics", { keyPath: "id" });
-            }
-          },
-        });
+        const db = await dbPromise;
 
         // Supabase query
         let query = supabase
@@ -824,8 +855,7 @@ const ChatList = () => {
       const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
       if (diffDays < 7) return; // Already shown within the past 7 days
     }
-
-    const delayMs = 30000;
+    const delayMs = 90 * 1000; // 1 min 30 sec
 
     const timeout = setTimeout(() => {
       setShowFeedback(true);
@@ -1540,7 +1570,23 @@ const ChatList = () => {
               onChange={handleProfileChange}
             />
 
-            <button className="submit-funky-btn" onClick={handleClick}>
+            <button
+              className={`submit-funky-btn ${
+                !profileForm.gender ||
+                !profileForm.age ||
+                parseInt(profileForm.age, 10) < 13 ||
+                parseInt(profileForm.age, 10) > 99
+                  ? "disabled"
+                  : ""
+              }`}
+              onClick={handleClick}
+              disabled={
+                !profileForm.gender ||
+                !profileForm.age ||
+                parseInt(profileForm.age, 10) < 13 ||
+                parseInt(profileForm.age, 10) > 99
+              }
+            >
               Submit
             </button>
           </div>

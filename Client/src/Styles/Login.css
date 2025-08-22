@@ -1,126 +1,133 @@
-@import url('https://fonts.googleapis.com/css2?family=original surfer&display=swap');
+@import url(https://fonts.googleapis.com/css?family=IM+Fell+Great+Primer:regular,italic);
 
-body {
-  margin: 0;
-  font-family: 'original surfer', cursive;
-  background: #f5f5f5;
-}
-
+/* Container */
 .login-container {
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
-  min-height: 100vh;
-  background: linear-gradient(to bottom right, #fafafa, #eee);
+  background: #f5f6fa; /* light gray background */
+  padding: 20px;
 }
 
+/* Form */
 .login-form {
   width: 100%;
-  max-width: 400px;
-  background-color: white;
-  padding: 2.5rem;
-  border: 3px solid #000;
+  max-width: 380px;
+  background: #fff;
+  padding: 35px;
   border-radius: 16px;
-  box-shadow: 6px 6px 0px #000;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  gap: 1rem;
-  transition: transform 0.2s ease-in-out;
+  gap: 18px;
+  color: #333;
+  position: relative;
+  animation: fadeIn 0.6s ease;
 }
 
-.login-form:hover {
-  transform: scale(1.01);
-}
-
+/* Title */
 .login-form h2 {
-  font-size: 2rem;
-  color: #222;
-  margin-bottom: 1rem;
   text-align: center;
-  font-family: 'original surfer', cursive;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 2px solid #333;
+  padding-bottom: 8px;
+  color: #111;
+  font-family: 'im fell great primer', serif;
 }
 
-.login-form input {
-  padding: 0.9rem 1rem;
-  border: 2px solid #111;
+/* Inputs */
+.login-form input[type="text"],
+.login-form input[type="password"] {
+  width: 100%;
+  padding: 12px 15px;
   border-radius: 10px;
+  border: 2px solid #ddd;
+  background: #fafafa;
+  color: #111;
   font-size: 1rem;
-  font-family: 'original surfer', cursive;
-  background: #fff;
-  transition: border-color 0.3s ease, box-shadow 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .login-form input:focus {
+  border-color: #111;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(0,0,0,0.15);
   outline: none;
-  border-color: #000;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
-.login-form input.invalid {
-  border-color: red;
-  background-color: #ffe6e6;
+/* Invalid states */
+.invalid {
+  border-color: #e63946 !important;
+  background: #ffeaea;
 }
 
+/* Error messages */
 .login-form .error-msg {
-  color: red;
+  color: #e63946 !important;  /* force red */
   font-size: 0.9rem;
-  margin-top: -0.5rem;
-  margin-bottom: 0.5rem;
-  text-align: left;
+  font-weight: bold;
+  text-align: center;
 }
 
+
+/* Button */
 .login-form button {
-  padding: 0.9rem;
-  font-size: 1rem;
-  background-color: #000;
-  color: white;
-  border: 2px solid #000;
-  border-radius: 10px;
-  cursor: pointer;
+  padding: 12px;
+  border-radius: 30px;
+  border: none;
+  background: #111;
+  color: #fff;
   font-weight: bold;
-  transition: background-color 0.2s ease;
-  font-family: 'original surfer', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+font-family: 'mystery quest', serif
+}
+
+.login-form button:hover:not(:disabled) {
+  background: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
 
 .login-form button:disabled {
-  background-color: #ccc;
-  color: #666;
-  border-color: #aaa;
+  background: #ccc;
+  color: #777;
   cursor: not-allowed;
 }
 
-.login-form button:not(:disabled):hover {
-  background-color: #222;
-}
-
+/* Bottom text */
 .login-form p {
-  font-size: 0.9rem;
   text-align: center;
-  white-space: nowrap
+  font-size: 0.9rem;
+  color: #555;
 }
 
-.login-form a {
-  color: #000;
-  text-decoration: underline;
+.login-form p a {
+  color: #111;
   font-weight: bold;
-  font-family: 'original surfer', cursive;
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+  transition: all 0.3s ease;
 }
 
-/* Responsive boost */
-@media (min-width: 768px) {
-  .login-form {
-    padding: 3rem 3rem;
-    max-width: 500px;
-  }
+.link-to-register{
+  
+  font-family: 'grabriela', serif;
+}
 
-  .login-form h2 {
-    font-size: 2.5rem;
-  }
+.login-form p a:hover {
+  border-bottom: 1px dashed #111;
+}
 
-  .login-form input,
-  .login-form button {
-    font-size: 1.1rem;
-  }
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }

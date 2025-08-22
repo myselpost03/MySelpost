@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import first from "../Assets/1.jpg";
 import second from "../Assets/2.jpg";
 import Lottie from "lottie-react";
-import arrow from "../Assets/arrow.json";
+import arrow from "../JSON/arrow.json";
 import draw from "../Assets/draw.png"; // Add your image for the new FAB
 import "../Styles/Sketch.css";
 

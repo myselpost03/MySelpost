@@ -13,7 +13,7 @@ import {
   WhatsappShareButton,
 } from "react-share";
 import imageCompression from "browser-image-compression";
-import bannedWords from "../Utils/bannedWords";
+import bannedWords from "../JSON/bannedWords.json";
 import toast, { Toaster } from "react-hot-toast";
 import {
   saveRoastImages,
@@ -520,7 +520,7 @@ function Roast() {
   if (!cards.length || loading)
     return (
       <div>
-        <SketchyHeader title="Roast 🔥" onBack={handleBack} />
+        <SketchyHeader title="Roast" onBack={handleBack} />
 
         <LoadingSpinner />
       </div>
@@ -528,7 +528,7 @@ function Roast() {
 
   return (
     <>
-      <SketchyHeader title="Roast 🔥" onBack={handleBack} />
+      <SketchyHeader title="Roast" onBack={handleBack} />
 
       <div className="roast-page" {...swipeHandlers}>
         <div className="roast-card-container">
@@ -546,7 +546,7 @@ function Roast() {
 
               <img
                 src={cards[currentIndex].image}
-                alt="Roastee"
+                alt="Roast Card"
                 className={`roast-image ${imageLoaded ? "visible" : "hidden"}`}
                 onLoad={() => setImageLoaded(true)}
                 onClick={() => setFullImage(cards[currentIndex].image)}

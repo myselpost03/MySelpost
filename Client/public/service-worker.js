@@ -1,3 +1,4 @@
+
 const CACHE_NAME = "my-cache-v1";
 const clientFolderURL = "/Client";
 const staticAssets = ["/", clientFolderURL];
@@ -82,3 +83,4 @@ self.addEventListener("notificationclick", function (event) {
     })
   );
 });
+
