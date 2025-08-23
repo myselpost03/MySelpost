@@ -24,4 +24,5 @@ export { default as Roast } from "./Roast";
 export { default as Settings } from "./Settings";
 export { default as Updates } from "./Updates";
 export { default as ResetPassword } from "./ResetPassword";
+export { default as Notifications } from "./Notifications";
 export { default as Demo } from "./Demo";

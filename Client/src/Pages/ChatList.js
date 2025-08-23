@@ -11,7 +11,7 @@ import {
   FaThumbtack,
   FaSearch,
   FaFilter,
-  FaBell,
+  FaHeart,
   FaBolt,
   FaUsers,
   FaEnvelopeOpenText,
@@ -258,6 +258,7 @@ const ChatList = () => {
   const [unreadCounts, setUnreadCounts] = useState({});
   const [badgeSeen, setBadgeSeen] = useState("true"); // assume no badge unless told otherwise
   const [inboxUserIds, setInboxUserIds] = useState(new Set());
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
@@ -300,6 +301,52 @@ const ChatList = () => {
 
     fetchAndSetUser();
   }, [navigate]);
+
+  useEffect(() => {
+    const fetchNotificationsCount = async () => {
+      try {
+        // --- Likes (unseen only) ---
+        const { data: likes, error: likesErr } = await supabase
+          .from("likes")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("seen", false);
+
+        if (likesErr) throw likesErr;
+
+        // --- My Images ---
+        const { data: myImages, error: imagesErr } = await supabase
+          .from("images")
+          .select("id")
+          .eq("user_id", user.id);
+
+        if (imagesErr) throw imagesErr;
+
+        let roasts = [];
+        if (myImages?.length > 0) {
+          const imageIds = myImages.map((img) => img.id);
+
+          const { data: roastData, error: roastErr } = await supabase
+            .from("roasts")
+            .select("id")
+            .in("image_id", imageIds)
+            .neq("user_id", user.id)
+            .eq("seen", false); // 👈 only unseen
+
+          if (roastErr) throw roastErr;
+
+          roasts = roastData || [];
+        }
+
+        // --- Total unseen count ---
+        setNotificationCount((likes?.length || 0) + (roasts?.length || 0));
+      } catch (err) {
+        console.error("Error fetching notification count:", err);
+      }
+    };
+
+    fetchNotificationsCount();
+  }, [user.id]);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
@@ -1023,6 +1070,17 @@ const ChatList = () => {
   const handleContextMenu = (e) => {
     e.preventDefault(); // Prevent right-click menu
   };
+
+  const formatCount = (num) => {
+    if (num >= 1_000_000) {
+      return (num / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+    }
+    if (num >= 1_000) {
+      return (num / 1_000).toFixed(1).replace(/\.0$/, "") + "k";
+    }
+    return num.toString();
+  };
+
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -1036,6 +1094,35 @@ const ChatList = () => {
     setAlertMessage({
       text: "Roast Me Feature ",
     });
+  };
+
+  const handleNotification = async () => {
+    setNotificationCount(0); // reset UI immediately
+
+    // Mark all likes as seen
+    await supabase
+      .from("likes")
+      .update({ seen: true })
+      .eq("user_id", user.id)
+      .eq("seen", false);
+
+    // Mark all roasts as seen
+    const { data: myImages } = await supabase
+      .from("images")
+      .select("id")
+      .eq("user_id", user.id);
+
+    if (myImages?.length > 0) {
+      const imageIds = myImages.map((img) => img.id);
+      await supabase
+        .from("roasts")
+        .update({ seen: true })
+        .in("image_id", imageIds)
+        .eq("seen", false);
+    }
+
+    // now navigate or open notification page if needed
+    navigate("/notifications");
   };
 
   // 👉 searchLoading can be used inside your list UI
@@ -1194,28 +1281,32 @@ const ChatList = () => {
           >
             Online
           </button>
-          <button className={"notify-btn"}>
-            <FaBell />
+          <button className="sketchy-tab" onClick={() => setShowAllTabs(true)}>
+            <FaFilter style={{ marginRight: "6px" }} />
           </button>
 
           {activeTab === "all" && (
             <>
-              {/* Camera FAB */}
-              <button
+              {/*           <button
                 className="fab-camera-button"
                 onClick={RoastMe}
                 title="Open camera"
               >
                 <FaCamera />
               </button>
-
+*/}
               {/* Filter FAB */}
               <button
-                className="fab-filter-button"
-                onClick={() => setShowAllTabs(true)}
-                title="Filter users"
+                className="fab-heart-button"
+                onClick={handleNotification}
+                title="Notification"
               >
-                <FaFilter />
+                <FaHeart />
+                {notificationCount > 0 && (
+                  <span className="heart-fab-count">
+                    {formatCount(notificationCount)}
+                  </span>
+                )}
               </button>
             </>
           )}
@@ -1227,8 +1318,9 @@ const ChatList = () => {
           style={{ overflowY: "auto", height: "100vh" }}
           className="sketchy-list-scrollable"
         >
-          {loading ? (<LoadingSpinner />) :
-          filteredUsers.length > 0 ? (
+          {loading ? (
+            <LoadingSpinner />
+          ) : filteredUsers.length > 0 ? (
             <>
               {filteredUsers
                 .filter((u) => u.id !== user.id)
@@ -1297,6 +1389,7 @@ const ChatList = () => {
                               >
                                 {user.decency_rating}
                               </span>
+                              
                             </div>
                           )}
                       </div>
@@ -1389,46 +1482,48 @@ const ChatList = () => {
               )}
             </>
           ) : (
-        <div className="no-results-card">
-    {activeTab === "all" && (
-      <>
-        <FaUsers size={40} className="no-icon" />
-        <p className="no-title">No users found</p>
-        
-      </>
-    )}
+            <div className="no-results-card">
+              {activeTab === "all" && (
+                <>
+                  <FaUsers size={40} className="no-icon" />
+                  <p className="no-title">No users found</p>
+                </>
+              )}
 
-    {activeTab === "pinned" && (
-      <>
-        <FaThumbtack size={40} className="no-icon" />
-        <p className="no-title">No pinned friends</p>
-        <p className="no-sub">Pin your favorite people to access them quickly.</p>
-      </>
-    )}
+              {activeTab === "pinned" && (
+                <>
+                  <FaThumbtack size={40} className="no-icon" />
+                  <p className="no-title">No pinned friends</p>
+                  <p className="no-sub">
+                    Pin your favorite people to access them quickly.
+                  </p>
+                </>
+              )}
 
-    {activeTab === "inbox" && (
-      <>
-        <FaEnvelopeOpenText size={40} className="no-icon" />
-        <p className="no-title">Your inbox is empty</p>
-        <p className="no-sub">Any new messages will show up here.</p>
-       
-      </>
-    )}
+              {activeTab === "inbox" && (
+                <>
+                  <FaEnvelopeOpenText size={40} className="no-icon" />
+                  <p className="no-title">Your inbox is empty</p>
+                  <p className="no-sub">Any new messages will show up here.</p>
+                </>
+              )}
 
-    {activeTab === "online" && (
-      <>
-        <FaBolt size={40} className="no-icon" />
-        <p className="no-title">No one’s online</p>
-        <p className="no-sub">Check back later or explore all users.</p>
-        <button
-          onClick={() => setActiveTab("all")}
-          className="retry-btn"
-        >
-          🌍 View All Users
-        </button>
-      </>
-    )}
-  </div>
+              {activeTab === "online" && (
+                <>
+                  <FaBolt size={40} className="no-icon" />
+                  <p className="no-title">No one’s online</p>
+                  <p className="no-sub">
+                    Check back later or explore all users.
+                  </p>
+                  <button
+                    onClick={() => setActiveTab("all")}
+                    className="retry-btn"
+                  >
+                    🌍 View All Users
+                  </button>
+                </>
+              )}
+            </div>
           )}
         </div>
 
