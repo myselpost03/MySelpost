@@ -15,7 +15,7 @@ import {
 import { SketchPicker } from "react-color";
 import Header from "../Components/Header";
 import "../Styles/Doodle.css";
-import { supabase } from "../Utils/supabaseClient";
+import { supabase, supabaseStorage } from "../Utils/supabaseClient";
 
 const AppDoodle = () => {
   // Canvas and drawing references
@@ -383,7 +383,7 @@ const AppDoodle = () => {
 
         const fileName = `${path}_${email}_${safeAppName}.png`;
 
-        const { data, error } = await supabase.storage
+        const { error } = await supabaseStorage.storage
           .from("doodle")
           .upload(fileName, blob, {
             contentType: "image/png",

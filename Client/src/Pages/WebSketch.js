@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Header from "../Components/Header";
 import "../Styles/AppSketch.css";
 import confetti from "canvas-confetti";
-import { supabase } from "../Utils/supabaseClient";
+import { supabase, supabaseStorage } from "../Utils/supabaseClient";
 import {
   FacebookShareButton,
   TwitterShareButton,
@@ -270,7 +270,7 @@ const WebSketch = () => {
     const safeWebsiteName = appName.replace(/[^\w\s]/gi, "").replace(/\s+/g, "_");
     const uniqueName = `${userEmail}_${pagePath}_${safeWebsiteName}.${fileExt}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabaseStorage.storage
       .from("sketches")
       .upload(uniqueName, file);
 
@@ -280,7 +280,7 @@ const WebSketch = () => {
       return;
     }
 
-    const { data } = supabase.storage.from("sketches").getPublicUrl(uniqueName);
+    const { data } = supabaseStorage.storage.from("sketches").getPublicUrl(uniqueName);
 
     setUploadedUrl(data.publicUrl);
     setShowCustomAlert(true);
