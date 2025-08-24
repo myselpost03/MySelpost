@@ -21,6 +21,8 @@ export default function MosaicAvatar({
   const canvasRef = useRef(null);
   const imgRef = useRef(null);
 
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+
   // Optimized fetch
   const fetchLikes = async () => {
     try {
@@ -64,10 +66,15 @@ export default function MosaicAvatar({
       setLikes((l) => l + 1);
       setUserLiked(true);
     }
-    if (userId) {
-      await axios.post("http://localhost:5000/like-push", {
-        userId: userId,
+     // 🔔 Send push notification to the owner
+    try {
+      await axios.post("http://localhost:5000/send-like-push", {
+        userId, // the owner of the pic
+        likedByName: currentUser?.username || "Someone",
       });
+      console.log("✅ Push notification sent!");
+    } catch (err) {
+      console.error("❌ Error sending push notification:", err);
     }
   };
 

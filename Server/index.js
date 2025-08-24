@@ -24,8 +24,17 @@ const supabase = createClient(
 const ONE_SIGNAL_APP_ID = process.env.ONE_SIGNAL_APP_ID;
 const ONE_SIGNAL_API_KEY = process.env.ONE_SIGNAL_API_KEY;
 
+// Helper
+function formatLikes(count) {
+  if (count === 1) return "1 like";
+  if (count < 1000) return `${count} likes`;
+  if (count < 1_000_000)
+    return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}k likes`;
+  return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, "")}M likes`;
+}
+
+// Delete player from database
 app.delete("/delete-player", async (req, res) => {
-  
   const { playerId, userId } = req.body;
 
   if (!playerId || !userId) {
@@ -48,6 +57,7 @@ app.delete("/delete-player", async (req, res) => {
   }
 });
 
+// Schedule push notifications for all players
 app.post("/schedule-push", async (req, res) => {
   const { userId, title, message, url } = req.body;
 
@@ -112,6 +122,65 @@ app.post("/schedule-push", async (req, res) => {
       console.error("❌ Error sending scheduled push:", err);
     }
   }, 30_000); // 30 seconds
+});
+
+// Schedule like push notification
+app.post("/send-like-push", async (req, res) => {
+  const { userId, likedByName } = req.body;
+
+  if (!userId) return res.status(400).json({ error: "Missing userId" });
+
+  try {
+    // 1. Count unseen likes
+    const { data: unseenLikes, error } = await supabase
+      .from("likes")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("seen", false);
+
+    if (error) throw error;
+
+    if (!unseenLikes || unseenLikes.length === 0) {
+      return res.json({ message: "No new likes, skip push" });
+    }
+
+    // 2. Get player_ids
+    const { data: players, error: playerErr } = await supabase
+      .from("players")
+      .select("player_id")
+      .eq("user_id", userId);
+
+    if (playerErr) throw playerErr;
+    if (!players?.length)
+      return res.status(404).json({ error: "No player IDs" });
+
+    const playerIds = players.map((p) => p.player_id);
+
+    // 3. Send push with count
+    await axios.post(
+      "https://onesignal.com/api/v1/notifications",
+      {
+        app_id: ONE_SIGNAL_APP_ID,
+        include_player_ids: playerIds,
+        headings: { en: "❤️ New Likes!" },
+        contents: { en: `You have ${formatLikes(unseenLikes.length)}.` },
+        url: "https://yourwebsite.com/notifications",
+      },
+      { headers: { Authorization: `Basic ${ONE_SIGNAL_API_KEY}` } }
+    );
+
+    res.json({ success: true, count: unseenLikes.length });
+
+    // 4. Optionally mark them as notified (not necessarily seen)
+    await supabase
+      .from("likes")
+      .update({ notified: true })
+      .eq("user_id", userId)
+      .eq("seen", false);
+  } catch (err) {
+    console.error("❌ Error sending like push:", err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app._router.stack.forEach((r) => {

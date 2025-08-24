@@ -313,33 +313,8 @@ const ChatList = () => {
           .eq("seen", false);
 
         if (likesErr) throw likesErr;
-
-        // --- My Images ---
-        const { data: myImages, error: imagesErr } = await supabase
-          .from("images")
-          .select("id")
-          .eq("user_id", user.id);
-
-        if (imagesErr) throw imagesErr;
-
-        let roasts = [];
-        if (myImages?.length > 0) {
-          const imageIds = myImages.map((img) => img.id);
-
-          const { data: roastData, error: roastErr } = await supabase
-            .from("roasts")
-            .select("id")
-            .in("image_id", imageIds)
-            .neq("user_id", user.id)
-            .eq("seen", false); // 👈 only unseen
-
-          if (roastErr) throw roastErr;
-
-          roasts = roastData || [];
-        }
-
         // --- Total unseen count ---
-        setNotificationCount((likes?.length || 0) + (roasts?.length || 0));
+        setNotificationCount(likes?.length || 0);
       } catch (err) {
         console.error("Error fetching notification count:", err);
       }

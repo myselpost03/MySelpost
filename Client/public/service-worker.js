@@ -28,44 +28,6 @@ self.addEventListener("activate", (evt) => {
   );
 });
 
-let appVisible = false;
-
-// Setup BroadcastChannel listener
-const visibilityChannel = new BroadcastChannel("chat_app_visibility");
-visibilityChannel.onmessage = (event) => {
-  appVisible = event.data?.visible === true;
-};
-
-// Handle Push
-self.addEventListener("push", function (event) {
-  const data = event.data?.json() || {};
-  const title = data.title || "Inbox";
-
-   const options = {
-    body: data.body || 'You got new messages.',
-    tag: data.tag || "default-tag", // prevent stacking
-    icon: "/inbox.png",    
-    badge: "/myselpost.png",
-    requireInteraction: true,      // keeps notification until user interacts
-  };
-
-  event.waitUntil(
-    (async () => {
-      const allClients = await clients.matchAll({ type: "window", includeUncontrolled: true });
-
-      const isClientOpen = allClients.length > 0;
-
-      if (isClientOpen && appVisible) {
-        console.log("🔕 Push suppressed — app is visible and focused");
-        return;
-      }
-
-      // Show notification only if app is not actively visible
-      await self.registration.showNotification(title, options);
-    })()
-  );
-});
-
 // Handle Notification Click
 self.addEventListener("notificationclick", function (event) {
 
