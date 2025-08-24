@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import cors from "cors";
+import axios from "axios";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,6 +23,30 @@ const supabase = createClient(
 
 const ONE_SIGNAL_APP_ID = process.env.ONE_SIGNAL_APP_ID;
 const ONE_SIGNAL_API_KEY = process.env.ONE_SIGNAL_API_KEY;
+
+app.delete("/delete-player", async (req, res) => {
+  
+  const { playerId, userId } = req.body;
+
+  if (!playerId || !userId) {
+    return res.status(400).json({ error: "Missing playerId or userId" });
+  }
+
+  try {
+    const { error } = await supabase
+      .from("players")
+      .delete()
+      .eq("player_id", playerId)
+      .eq("user_id", userId);
+
+    if (error) throw error;
+
+    res.json({ success: true, message: "Player deleted successfully" });
+  } catch (err) {
+    console.error("❌ Error deleting player:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 app.post("/schedule-push", async (req, res) => {
   const { userId, title, message, url } = req.body;
@@ -54,23 +79,35 @@ app.post("/schedule-push", async (req, res) => {
   // Delay push 30s
   setTimeout(async () => {
     try {
-      const response = await fetch("https://onesignal.com/api/v1/notifications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Basic ${ONE_SIGNAL_API_KEY}`,
-        },
-        body: JSON.stringify({
+      const response = await axios.post(
+        "https://onesignal.com/api/v1/notifications",
+        {
           app_id: ONE_SIGNAL_APP_ID,
           include_player_ids: playerIds,
           headings: { en: title || "New Message" },
           contents: { en: message || "This came 30s later!" },
           url: url || "https://yourwebsite.com",
-        }),
-      });
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Basic ${ONE_SIGNAL_API_KEY}`,
+          },
+        }
+      );
 
-      const data = await response.json();
+      const data = await response.data;
       console.log("✅ OneSignal 30s Push Response:", data);
+
+      // 🔑 Cleanup expired/invalid player_ids
+      if (data.errors && data.errors.length > 0) {
+        console.warn("⚠️ Some player_ids failed:", data.errors);
+
+        // If OneSignal rejected playerIds → remove them from Supabase
+        await supabase.from("players").delete().in("player_id", playerIds);
+
+        console.log("🗑️ Invalid player_ids removed from Supabase");
+      }
     } catch (err) {
       console.error("❌ Error sending scheduled push:", err);
     }

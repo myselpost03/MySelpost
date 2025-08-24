@@ -42,6 +42,7 @@ import { supabase } from "./Utils/supabaseClient";
 import SketchyAlert from "./Components/SketchyAlert";
 import InternetStatusAlert from "./Components/InternetStatusAlert";
 import { isRunningAsPWA } from "./CheckPWA";
+import OneSignal from "react-onesignal";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
