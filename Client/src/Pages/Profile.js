@@ -11,6 +11,8 @@ import imageCompression from "browser-image-compression";
 import { trackEvent } from "../Utils/analytics";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import { openDB } from "idb";
+import axios from "axios";
+import OneSignal from "react-onesignal";
 
 const giftList = [
   "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png",
@@ -26,6 +28,7 @@ const giftCoinRequirements = [50, 300, 150, 10, 400, 100];
 const Profile = () => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [showNote, setShowNote] = useState(false);
+const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Add new state
   const [showGiftList, setShowGiftList] = useState(false);
@@ -438,11 +441,30 @@ const Profile = () => {
     }
   };
 
+  const handleUnsubscribe = async () => {
+    try {
+      const playerId = OneSignal.User.PushSubscription.id;
+      if (!playerId) {
+        console.log("⚠️ No active push subscription found on this device");
+      } else if (currentUser?.id) {
+        await axios.delete("http://localhost:5000/delete-player", {
+          data: {
+            userId: currentUser.id,
+            playerId,
+          },
+        });
+      }
+
+      await OneSignal.User.PushSubscription.optOut();
+    } catch (error) {
+      console.error("Error deleting the player:", error);
+    }
+  };
+
   const handleLogout = async () => {
+    await handleUnsubscribe();
     localStorage.clear();
-    window.location.href = "/";
-    //  localStorage.removeItem("user");
-    //  localStorage.removeItem("activeTab");
+    navigate("/");
   };
 
   const handleCoins = () => navigate(`/coins/${currentUser.id}`);

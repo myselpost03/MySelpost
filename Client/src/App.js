@@ -42,7 +42,6 @@ import { supabase } from "./Utils/supabaseClient";
 import SketchyAlert from "./Components/SketchyAlert";
 import InternetStatusAlert from "./Components/InternetStatusAlert";
 import { isRunningAsPWA } from "./CheckPWA";
-import OneSignal from "react-onesignal";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
@@ -184,7 +183,7 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation(); // ✅ get current path
   const [ready, setReady] = useState(false); // ✅ prevent early render
-
+  
   useEffect(() => {
     const visibilityChannel = new BroadcastChannel("chat_app_visibility");
     const sendVisibility = () => {
@@ -311,7 +310,7 @@ function AppContent() {
   return (
     <>
       <UserStatusWrapper />
-      
+
       <Routes>
         {publicRoutes.map(({ path, component: Component }) => (
           <Route key={path} path={path} element={<Component />} />

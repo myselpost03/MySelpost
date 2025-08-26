@@ -487,13 +487,26 @@ const ChatList = () => {
     return () => clearInterval(interval);
   }, [user.id]);
 
-  const handleUserClick = (clickedId) => {
+  const handleUserClick = async (clickedId) => {
     setUsers((prevUsers) =>
       prevUsers.map((user) =>
         user.id === clickedId ? { ...user, notifications: 0 } : user
       )
     );
+
+    await supabase
+      .from("users")
+      .update({ active_route: '/chat/' })
+      .eq("id", user.id);
   };
+
+  const handleRouteUpdate = async () => {
+    await supabase
+      .from("users")
+      .update({ active_route: '/chat/' })
+      .eq("id", user.id);
+    
+  }
 
   useEffect(() => {
     const used = new Set(users.map((u) => u.country));
@@ -1176,6 +1189,7 @@ const ChatList = () => {
             onClick={() => {
               setActiveTab("pinned");
               localStorage.setItem("activeTab", "pinned");
+              handleRouteUpdate();
             }}
             style={{ position: "relative" }}
           >
@@ -1201,6 +1215,7 @@ const ChatList = () => {
               setActiveTab("inbox");
               resetBadgeSeen();
               localStorage.setItem("activeTab", "inbox");
+              handleRouteUpdate()
             }}
             style={{ position: "relative" }}
           >
@@ -1364,7 +1379,6 @@ const ChatList = () => {
                               >
                                 {user.decency_rating}
                               </span>
-                              
                             </div>
                           )}
                       </div>

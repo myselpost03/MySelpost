@@ -7,8 +7,8 @@ import bannedData from "../JSON/bannedWords.json";
 import SketchyAlert from "../Components/SketchyAlert";
 import { trackEvent } from "../Utils/analytics";
 import axios from "axios";
-import OneSignal from "react-onesignal";
 import toast, { Toaster } from "react-hot-toast";
+import OneSignal from "react-onesignal";
 import "../Styles/Chat.css";
 
 let oneSignalInitialized = false;
@@ -672,16 +672,12 @@ const Chat = () => {
               if (!routeError) {
                 const receiverRoute = receiverData?.active_route;
 
-                if (receiverRoute !== `/chat/${currentUser.id}`) {
+                if (!receiverRoute?.startsWith("/chat/")) {
                   await initOneSignal();
 
-                  const res = await axios.post(
-                    "http://localhost:5000/send-message-push",
-                    {
-                      userId: targetId,
-                    }
-                  );
-                  console.log("✅ Push request success:", res.data);
+                  await axios.post("http://localhost:5000/send-message-push", {
+                    userId: targetId,
+                  });
                 } else {
                   console.log(
                     "🔕 Push skipped: Receiver already in same chat route."
@@ -1106,9 +1102,42 @@ const Chat = () => {
     }
   };
 
+  useEffect(() => {
+    // Detect BACK button (browser navigation)
+    const handlePopState = async () => {
+      await supabase
+        .from("users")
+        .update({ active_route: `/` })
+        .eq("id", currentUser.id);
+    };
+    window.addEventListener("popstate", handlePopState);
+
+    // Detect BACKGROUND / FOREGROUND (like Home or Recent Apps button)
+    const handleVisibilityChange = async () => {
+      if (document.hidden) {
+        await supabase
+          .from("users")
+          .update({ active_route: `/` })
+          .eq("id", currentUser.id);
+      } else {
+        //console.log("📱 App moved to foreground");
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
   // Take user to previous page or one step back
-  const handleBack = () => {
+  const handleBack = async () => {
     navigate(-1);
+    await supabase
+      .from("users")
+      .update({ active_route: `/` })
+      .eq("id", currentUser.id);
   };
 
   return (

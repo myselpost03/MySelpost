@@ -33,31 +33,7 @@ function formatLikes(count) {
   return `${(count / 1_000_000).toFixed(1).replace(/\.0$/, "")}M likes`;
 }
 
-// Delete player from database
-app.delete("/delete-player", async (req, res) => {
-  const { playerId, userId } = req.body;
-
-  if (!playerId || !userId) {
-    return res.status(400).json({ error: "Missing playerId or userId" });
-  }
-
-  try {
-    const { error } = await supabase
-      .from("players")
-      .delete()
-      .eq("player_id", playerId)
-      .eq("user_id", userId);
-
-    if (error) throw error;
-
-    res.json({ success: true, message: "Player deleted successfully" });
-  } catch (err) {
-    console.error("❌ Error deleting player:", err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Schedule push notifications for all players
+// Schedule push notifications for all players after 30 seconds
 app.post("/schedule-push", async (req, res) => {
   const { userId, title, message, url } = req.body;
 
@@ -219,7 +195,7 @@ app.post("/send-like-push", async (req, res) => {
   }
 });
 
-//! Schedule like push notification
+// Schedule message push notification
 app.post("/send-message-push", async (req, res) => {
   const { userId } = req.body;
 
@@ -229,7 +205,25 @@ app.post("/send-message-push", async (req, res) => {
   }
 
   try {
-    // 1️⃣ Fetch player_ids for the user
+    // 1️⃣ Fetch user's current route
+    const { data: userData, error: userErr } = await supabase
+      .from("users")
+      .select("active_route")
+      .eq("id", userId)
+      .single();
+
+    if (userErr) throw userErr;
+    if (!userData) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // 2️⃣ Check if user is on their chat page
+    if (userData.active_route?.startsWith("/chat/")) {
+      console.log(`ℹ️ User ${userId} is currently in chat. No push sent.`);
+      return res.json({ success: true, message: "User in chat, push skipped" });
+    }
+
+    // 3️⃣ Fetch player_ids for the user
     const { data: players, error: playerErr } = await supabase
       .from("players")
       .select("player_id")
@@ -237,17 +231,15 @@ app.post("/send-message-push", async (req, res) => {
 
     if (playerErr) throw playerErr;
     if (!players?.length) {
-      //console.log(`❌ No player IDs found for user ${userId}`);
       return res.status(404).json({ error: "No player IDs" });
     }
 
     const playerIds = players.map((p) => p.player_id);
-    //console.log(`✅ Found player IDs for user ${userId}:`, playerIds);
 
-    // 2️⃣ Respond immediately so frontend isn't blocked
+    // 4️⃣ Respond immediately so frontend isn't blocked
     res.json({ success: true, message: "Push request received", playerIds });
 
-    // 3️⃣ Fire push after a tiny delay (200ms)
+    // 5️⃣ Fire push after a tiny delay
     setTimeout(async () => {
       try {
         const payload = {
@@ -255,8 +247,8 @@ app.post("/send-message-push", async (req, res) => {
           include_player_ids: playerIds,
           headings: { en: "New Message!" },
           contents: { en: "You have unread messages." },
-          url: "https://myselpost.com/chat-list", // optional
-          collapse_id: `chat_${userId}`, // prevents duplicate pushes
+          url: "https://myselpost.com/chat-list",
+          collapse_id: `chat_${userId}`,
           chrome_web_icon: "https://myselpost.com/inbox.png",
           chrome_web_badge: "https://myselpost.com/myselpost.png",
         };
@@ -267,9 +259,7 @@ app.post("/send-message-push", async (req, res) => {
           { headers: { Authorization: `Basic ${ONE_SIGNAL_API_KEY}` } }
         );
 
-        //console.log("✅ OneSignal Push Response:", response.data);
-
-        // 4️⃣ Cleanup invalid player_ids
+        // 6️⃣ Cleanup invalid player_ids
         if (response.data.errors && response.data.errors.length > 0) {
           console.warn("⚠️ Some player_ids invalid:", response.data.errors);
 
@@ -289,10 +279,34 @@ app.post("/send-message-push", async (req, res) => {
           err.response?.data || err.message
         );
       }
-    }, 200); // 200ms delay ensures browser processes push
+    }, 200);
   } catch (err) {
     console.error("❌ Error in send-message-push route:", err);
     return res.status(500).json({ error: err.response?.data || err.message });
+  }
+});
+
+// Delete player from database
+app.delete("/delete-player", async (req, res) => {
+  const { playerId, userId } = req.body;
+
+  if (!playerId || !userId) {
+    return res.status(400).json({ error: "Missing playerId or userId" });
+  }
+
+  try {
+    const { error } = await supabase
+      .from("players")
+      .delete()
+      .eq("player_id", playerId)
+      .eq("user_id", userId);
+
+    if (error) throw error;
+
+    res.json({ success: true, message: "Player deleted successfully" });
+  } catch (err) {
+    console.error("❌ Error deleting player:", err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 

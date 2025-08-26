@@ -1,19 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import OneSignal from "react-onesignal";
 import SketchyHeader from "../Components/SketchyHeader";
 import { supabase } from "../Utils/supabaseClient";
 import { subscribeUser } from "../Utils/subscribeUser";
 import { trackEvent } from "../Utils/analytics";
 import "../Styles/Settings.css";
 
+// ✅ Global flag to track if initialized
+let oneSignalInitialized = false;
+
+const initOneSignal = async () => {
+  if (!window.OneSignal) {
+    console.error("❌ OneSignal SDK not loaded");
+    return;
+  }
+
+  if (!oneSignalInitialized) {
+    await OneSignal.init({
+      appId: "38c069c8-b71d-4c44-ac8b-f3a92bcb9f94",
+      allowLocalhostAsSecureOrigin: true,
+    });
+    oneSignalInitialized = true;
+    console.log("✅ OneSignal initialized once");
+  } else {
+    console.log("ℹ️ OneSignal already initialized, skipping");
+  }
+};
+
 const Settings = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   const navigate = useNavigate();
-  const PUBLIC_VAPID_KEY =
-    "BMt7fVUizCYq_PQkR-gkxa9azLTlzoLVgFQEIDjjJdP35dj2LyvHKCbBnp3YvsYdPmYwjx7gfnoMMhejp9i85-4";
-  const user = JSON.parse(localStorage.getItem("user"));
+  const currentUser = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     const savedState = localStorage.getItem("notificationsEnabled");
@@ -24,77 +45,47 @@ const Settings = () => {
 
   const handleSubscribe = async () => {
     try {
-      const subscription = await subscribeUser(PUBLIC_VAPID_KEY);
-      setIsSubscribed(true);
+      await initOneSignal();
 
-      const data = {
-        endpoint: subscription.endpoint,
-        keys: {
-          p256dh: subscription.keys.p256dh,
-          auth: subscription.keys.auth,
-        },
-        user_id: user.id,
-      };
+      // Ask permission
+      await OneSignal.Notifications.requestPermission();
 
-      // Optionally: Check if subscription already exists before upsert
-      const { data: existing, error: selectError } = await supabase
-        .from("subscriptions")
-        .select("endpoint, keys")
-        .eq("endpoint", subscription.endpoint)
-        .single();
+      if (Notification.permission === "granted") {
+        await OneSignal.User.PushSubscription.optIn();
+        const playerId = OneSignal.User.PushSubscription.id;
+        console.log("✅ Player ID:", playerId);
 
-      // Only upsert if changed or not found
-      if (
-        !existing ||
-        existing.keys.p256dh !== data.keys.p256dh ||
-        existing.keys.auth !== data.keys.auth
-      ) {
-        const { error } = await supabase.from("subscriptions").upsert(data, {
-          onConflict: ["endpoint"],
-        });
+        const { data, error } = await supabase
+          .from("players")
+          .upsert(
+            { player_id: playerId, user_id: currentUser?.id },
+            { onConflict: "player_id" }
+          );
 
         if (error) {
-          console.error("Supabase insert error:", error);
-          //console.log("Failed to save subscription.");
+          console.error("❌ Error saving player to Supabase:", error.message);
         } else {
-          //console.log("Subscribed & saved to Supabase!");
+          console.log("✅ Player saved to Supabase:", data);
         }
       } else {
-        //console.log("Subscription already up-to-date.");
+        console.log("⚠️ Notification permission not granted");
       }
     } catch (err) {
-      console.error("Subscription failed:", err);
-    }
-  };
-
-  const askNotificationPermission = async () => {
-    trackEvent({
-      action: "button_click",
-      category: "Chat List Page",
-      label: "Notification Button",
-    });
-    if (Notification.permission === "granted") {
-      console.log("Already granted.");
-      return;
-    }
-
-    const permission = await Notification.requestPermission();
-    if (permission === "granted") {
-      console.log("Push notifications granted.");
-      await handleSubscribe();
+      console.error("❌ Error subscribing for push:", err);
     }
   };
 
   const handleNotificationsChange = (e) => {
-    const isEnabled = e.target.checked; // new value
-    setNotificationsEnabled(isEnabled);
-    localStorage.setItem("notificationsEnabled", isEnabled);
+    const isEnabled = e.target.checked;
 
     if (isEnabled) {
-      askNotificationPermission();
+      setNotificationsEnabled(true);
+      localStorage.setItem("notificationsEnabled", "true");
+      handleSubscribe();
+    } else {
+      // ❌ Prevent disabling manually
+      e.preventDefault();
     }
-    // Optional: handle disable case if needed
-    // else { console.log("Notifications disabled"); }
   };
 
   const handleBack = () => navigate(-1);
@@ -115,7 +106,7 @@ const Settings = () => {
               <input
                 type="checkbox"
                 checked={notificationsEnabled}
-                onChange={handleNotificationsChange} // handle only here
+                onChange={handleNotificationsChange}
               />
               <span className="slider round"></span>
             </label>
