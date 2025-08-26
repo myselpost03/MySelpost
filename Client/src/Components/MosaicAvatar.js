@@ -1,7 +1,28 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
+import OneSignal from "react-onesignal";
 import { supabase } from "../Utils/supabaseClient";
 import "../Styles/Profile.css";
+
+let oneSignalInitialized = false;
+
+const initOneSignal = async () => {
+  if (!window.OneSignal) {
+    console.error("❌ OneSignal SDK not loaded");
+    return;
+  }
+
+  if (!oneSignalInitialized) {
+    await OneSignal.init({
+      appId: "38c069c8-b71d-4c44-ac8b-f3a92bcb9f94",
+      allowLocalhostAsSecureOrigin: true,
+    });
+    oneSignalInitialized = true;
+    console.log("✅ OneSignal initialized once");
+  } else {
+    console.log("ℹ️ OneSignal already initialized, skipping");
+  }
+};
 
 export default function MosaicAvatar({
   src,
@@ -20,8 +41,6 @@ export default function MosaicAvatar({
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const imgRef = useRef(null);
-
-  const currentUser = JSON.parse(localStorage.getItem("user"));
 
   // Optimized fetch
   const fetchLikes = async () => {
@@ -66,11 +85,12 @@ export default function MosaicAvatar({
       setLikes((l) => l + 1);
       setUserLiked(true);
     }
-     // 🔔 Send push notification to the owner
+    // 🔔 Send push notification to the owner
     try {
+      await initOneSignal();
+
       await axios.post("http://localhost:5000/send-like-push", {
-        userId, // the owner of the pic
-        likedByName: currentUser?.username || "Someone",
+        userId,
       });
       console.log("✅ Push notification sent!");
     } catch (err) {

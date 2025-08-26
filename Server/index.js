@@ -126,60 +126,173 @@ app.post("/schedule-push", async (req, res) => {
 
 // Schedule like push notification
 app.post("/send-like-push", async (req, res) => {
-  const { userId, likedByName } = req.body;
+  const { userId } = req.body;
 
-  if (!userId) return res.status(400).json({ error: "Missing userId" });
+  if (!userId) {
+    console.log("❌ Missing userId in request body");
+    return res.status(400).json({ error: "Missing userId" });
+  }
 
   try {
-    // 1. Count unseen likes
-    const { data: unseenLikes, error } = await supabase
+    // 1️⃣ Count unseen likes
+    const { data: unseenLikes, error: likesErr } = await supabase
       .from("likes")
       .select("*")
       .eq("user_id", userId)
       .eq("seen", false);
 
-    if (error) throw error;
+    if (likesErr) throw likesErr;
 
     if (!unseenLikes || unseenLikes.length === 0) {
+      //console.log(`🔕 User ${userId} has no unseen likes`);
       return res.json({ message: "No new likes, skip push" });
     }
 
-    // 2. Get player_ids
+    // 2️⃣ Get player_ids
     const { data: players, error: playerErr } = await supabase
       .from("players")
       .select("player_id")
       .eq("user_id", userId);
 
     if (playerErr) throw playerErr;
-    if (!players?.length)
+    if (!players?.length) {
+      //console.log(`❌ No player IDs found for user ${userId}`);
       return res.status(404).json({ error: "No player IDs" });
+    }
 
     const playerIds = players.map((p) => p.player_id);
+    //console.log(`✅ Found player IDs for user ${userId}:`, playerIds);
 
-    // 3. Send push with count
-    await axios.post(
-      "https://onesignal.com/api/v1/notifications",
-      {
-        app_id: ONE_SIGNAL_APP_ID,
-        include_player_ids: playerIds,
-        headings: { en: "❤️ New Likes!" },
-        contents: { en: `You have ${formatLikes(unseenLikes.length)}.` },
-        url: "https://yourwebsite.com/notifications",
-      },
-      { headers: { Authorization: `Basic ${ONE_SIGNAL_API_KEY}` } }
-    );
+    // 3️⃣ Respond immediately
+    res.json({ success: true, count: unseenLikes.length, playerIds });
 
-    res.json({ success: true, count: unseenLikes.length });
+    // 4️⃣ Send push after a tiny delay (200ms)
+    setTimeout(async () => {
+      try {
+        const payload = {
+          app_id: ONE_SIGNAL_APP_ID,
+          include_player_ids: playerIds,
+          headings: { en: "❤️ New Likes!" },
+          contents: {
+            en: `You have ${formatLikes(unseenLikes.length)}.`, // formatLikes: 1 like / 2 likes
+          },
+          url: "https://myselpost.com/chat-list",
+          chrome_web_icon: "https://myselpost.com/heart.png",
+          chrome_web_badge: "https://myselpost.com/myselpost.png",
+        };
 
-    // 4. Optionally mark them as notified (not necessarily seen)
-    await supabase
-      .from("likes")
-      .update({ notified: true })
-      .eq("user_id", userId)
-      .eq("seen", false);
+        const response = await axios.post(
+          "https://onesignal.com/api/v1/notifications",
+          payload,
+          { headers: { Authorization: `Basic ${ONE_SIGNAL_API_KEY}` } }
+        );
+
+        //console.log("✅ OneSignal Like Push Response:", response.data);
+
+        // 5️⃣ Cleanup invalid player_ids
+        if (response.data.errors && response.data.errors.length > 0) {
+          console.warn("⚠️ Some player_ids invalid:", response.data.errors);
+
+          await supabase
+            .from("players")
+            .delete()
+            .in(
+              "player_id",
+              response.data.errors.map((e) => e.id)
+            );
+
+          console.log("🗑️ Removed invalid player_ids from Supabase");
+        }
+      } catch (err) {
+        console.error(
+          "❌ Error sending like push:",
+          err.response?.data || err.message
+        );
+      }
+    }, 200); // 200ms delay
   } catch (err) {
-    console.error("❌ Error sending like push:", err.message);
-    res.status(500).json({ error: err.message });
+    console.error(
+      "❌ Error in send-like-push route:",
+      err.response?.data || err.message
+    );
+    return res.status(500).json({ error: err.response?.data || err.message });
+  }
+});
+
+//! Schedule like push notification
+app.post("/send-message-push", async (req, res) => {
+  const { userId } = req.body;
+
+  if (!userId) {
+    console.log("❌ Missing userId in request body");
+    return res.status(400).json({ error: "Missing userId" });
+  }
+
+  try {
+    // 1️⃣ Fetch player_ids for the user
+    const { data: players, error: playerErr } = await supabase
+      .from("players")
+      .select("player_id")
+      .eq("user_id", userId);
+
+    if (playerErr) throw playerErr;
+    if (!players?.length) {
+      //console.log(`❌ No player IDs found for user ${userId}`);
+      return res.status(404).json({ error: "No player IDs" });
+    }
+
+    const playerIds = players.map((p) => p.player_id);
+    //console.log(`✅ Found player IDs for user ${userId}:`, playerIds);
+
+    // 2️⃣ Respond immediately so frontend isn't blocked
+    res.json({ success: true, message: "Push request received", playerIds });
+
+    // 3️⃣ Fire push after a tiny delay (200ms)
+    setTimeout(async () => {
+      try {
+        const payload = {
+          app_id: ONE_SIGNAL_APP_ID,
+          include_player_ids: playerIds,
+          headings: { en: "New Message!" },
+          contents: { en: "You have unread messages." },
+          url: "https://myselpost.com/chat-list", // optional
+          collapse_id: `chat_${userId}`, // prevents duplicate pushes
+          chrome_web_icon: "https://myselpost.com/inbox.png",
+          chrome_web_badge: "https://myselpost.com/myselpost.png",
+        };
+
+        const response = await axios.post(
+          "https://onesignal.com/api/v1/notifications",
+          payload,
+          { headers: { Authorization: `Basic ${ONE_SIGNAL_API_KEY}` } }
+        );
+
+        //console.log("✅ OneSignal Push Response:", response.data);
+
+        // 4️⃣ Cleanup invalid player_ids
+        if (response.data.errors && response.data.errors.length > 0) {
+          console.warn("⚠️ Some player_ids invalid:", response.data.errors);
+
+          await supabase
+            .from("players")
+            .delete()
+            .in(
+              "player_id",
+              response.data.errors.map((e) => e.id)
+            );
+
+          console.log("🗑️ Removed invalid player_ids from Supabase");
+        }
+      } catch (err) {
+        console.error(
+          "❌ Error sending push:",
+          err.response?.data || err.message
+        );
+      }
+    }, 200); // 200ms delay ensures browser processes push
+  } catch (err) {
+    console.error("❌ Error in send-message-push route:", err);
+    return res.status(500).json({ error: err.response?.data || err.message });
   }
 });
 

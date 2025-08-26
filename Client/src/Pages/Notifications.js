@@ -113,7 +113,7 @@ export default function Notifications() {
         {!loading && notifications.length === 0 && (
           <div className="fallback-container">
             <img src={heart} alt="hanging hearts" className="heart" />
-            <p className="notifications-empty">No Notifications Yet</p>
+            <p className="notifications-empty">No Likes Yet</p>
           </div>
         )}
 

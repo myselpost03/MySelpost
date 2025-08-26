@@ -7,8 +7,29 @@ import bannedData from "../JSON/bannedWords.json";
 import SketchyAlert from "../Components/SketchyAlert";
 import { trackEvent } from "../Utils/analytics";
 import axios from "axios";
+import OneSignal from "react-onesignal";
 import toast, { Toaster } from "react-hot-toast";
 import "../Styles/Chat.css";
+
+let oneSignalInitialized = false;
+
+const initOneSignal = async () => {
+  if (!window.OneSignal) {
+    console.error("❌ OneSignal SDK not loaded");
+    return;
+  }
+
+  if (!oneSignalInitialized) {
+    await OneSignal.init({
+      appId: "38c069c8-b71d-4c44-ac8b-f3a92bcb9f94",
+      allowLocalhostAsSecureOrigin: true,
+    });
+    oneSignalInitialized = true;
+    console.log("✅ OneSignal initialized once");
+  } else {
+    console.log("ℹ️ OneSignal already initialized, skipping");
+  }
+};
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -46,9 +67,6 @@ const Chat = () => {
 
   // Get target user
   const targetUser = state?.targetUser;
-
-  // Chat storage key
-  const chatStorageKey = `chat_${currentUser.id}_${targetId}`;
 
   const navigate = useNavigate();
 
@@ -642,20 +660,34 @@ const Chat = () => {
             .eq("sender_id", currentUser.id)
             .eq("receiver_id", targetId);
 
-          // Update badge_seen to false
-          await supabase
-            .from("users")
-            .update({ badge_seen: false })
-            .eq("id", targetId);
-
-          // Send push with messageId
           // Send push only if not blocked by or blocking the target
           if (messageId && !blockedByOtherUser && !iBlockedOtherUser) {
             try {
-              await axios.post("http://localhost:5000/send-push", {
-                userId: targetId,
-                messageId: messageId,
-              });
+              const { data: receiverData, error: routeError } = await supabase
+                .from("users")
+                .select("active_route")
+                .eq("id", targetId)
+                .single();
+
+              if (!routeError) {
+                const receiverRoute = receiverData?.active_route;
+
+                if (receiverRoute !== `/chat/${currentUser.id}`) {
+                  await initOneSignal();
+
+                  const res = await axios.post(
+                    "http://localhost:5000/send-message-push",
+                    {
+                      userId: targetId,
+                    }
+                  );
+                  console.log("✅ Push request success:", res.data);
+                } else {
+                  console.log(
+                    "🔕 Push skipped: Receiver already in same chat route."
+                  );
+                }
+              }
             } catch (err) {
               console.error("❌ Error sending push:", err.message);
             }
