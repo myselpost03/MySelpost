@@ -14,8 +14,12 @@ const initOneSignal = async () => {
 
   if (!oneSignalInitialized) {
     await OneSignal.init({
-      appId: "38c069c8-b71d-4c44-ac8b-f3a92bcb9f94",
-      allowLocalhostAsSecureOrigin: true,
+      appId: "2018cba1-59ea-4116-87a0-6f8dad9cf527",
+      safari_web_id: "web.onesignal.auto.487bfeae-71a3-407e-85d8-1b40bd783a80",
+      notifyButton: {
+        enable: true,
+      },
+      //allowLocalhostAsSecureOrigin: true,
     });
     oneSignalInitialized = true;
     console.log("✅ OneSignal initialized once");
@@ -89,7 +93,7 @@ export default function MosaicAvatar({
     try {
       await initOneSignal();
 
-      await axios.post("http://localhost:5000/send-like-push", {
+      await axios.post("https://myselpost.onrender.com/send-like-push", {
         userId,
       });
       console.log("✅ Push notification sent!");

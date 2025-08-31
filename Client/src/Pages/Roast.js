@@ -82,7 +82,7 @@ function Roast() {
     }
   };
 
-  const fetchCardsData = async () => {
+  {/*const fetchCardsData = async () => {
     setLoading(true);
     try {
       const lastSync = await getRoastLastSync();
@@ -212,7 +212,127 @@ function Roast() {
     } finally {
       setLoading(false);
     }
-  };
+  };*/}
+
+  const fetchCardsData = async () => {
+  setLoading(true);
+  try {
+    const lastSync = await getRoastLastSync();
+    let images = [];
+
+    if (!lastSync) {
+      // First-time fetch from Supabase
+      const { data, error } = await supabase
+        .from("images")
+        .select("id, image_url, user_id, created_at")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      // Parallel blob conversion
+      const imagesWithBlob = await Promise.allSettled(
+        data.map(async (img) => {
+          const blob = await toBlob(img.image_url).catch(() => null);
+          return {
+            id: img.id,
+            roast_pic: blob || img.image_url,
+            created_at: img.created_at,
+          };
+        })
+      );
+
+      const validImages = imagesWithBlob
+        .filter((r) => r.status === "fulfilled")
+        .map((r) => r.value);
+
+      await saveRoastImages(validImages);
+      await setRoastLastSync(new Date().toISOString());
+
+      images = validImages;
+    } else {
+      // Fetch only new images since lastSync
+      const { data: newImages, error } = await supabase
+        .from("images")
+        .select("id, image_url, user_id, created_at")
+        .gt("created_at", lastSync)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      if (newImages.length) {
+        const newImagesWithBlob = await Promise.allSettled(
+          newImages.map(async (img) => {
+            const blob = await toBlob(img.image_url).catch(() => null);
+            return {
+              id: img.id,
+              roast_pic: blob || img.image_url,
+              created_at: img.created_at,
+            };
+          })
+        );
+
+        const validNew = newImagesWithBlob
+          .filter((r) => r.status === "fulfilled")
+          .map((r) => r.value);
+
+        await saveRoastImages(validNew);
+        await setRoastLastSync(new Date().toISOString());
+      }
+
+      // Load all from IndexedDB (fast)
+      images = (await getRoastImages()).sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+    }
+
+    // ✅ Fetch all roasts in one query
+    const { data: allRoasts } = await supabase
+      .from("roasts")
+      .select("id, text, user_id, image_id, created_at")
+      .in("image_id", images.map((img) => img.id));
+
+    // ✅ Fetch all votes in one query
+    const { data: allVotes } = await supabase
+      .from("votes")
+      .select("roast_id, vote_type")
+      .in("roast_id", allRoasts?.map((r) => r.id) || []);
+
+    const voteCountMap = {};
+    (allVotes || []).forEach((v) => {
+      if (v.vote_type === "up") {
+        voteCountMap[v.roast_id] = (voteCountMap[v.roast_id] || 0) + 1;
+      }
+    });
+
+    // Build final cards
+    const cardsWithRoasts = images.map((img) => {
+      const relatedRoasts = (allRoasts || [])
+        .filter((r) => r.image_id === img.id)
+        .map((r) => ({ ...r, votes: voteCountMap[r.id] || 0 }));
+
+      const imageUrl =
+        img.roast_pic instanceof Blob
+          ? URL.createObjectURL(img.roast_pic)
+          : img.roast_pic;
+
+      return {
+        image: imageUrl,
+        roasts: relatedRoasts.sort((a, b) => b.votes - a.votes),
+        newRoast: "",
+        image_id: img.id,
+        created_at: img.created_at,
+      };
+    });
+
+    setCards(cardsWithRoasts);
+    setCurrentIndex(0);
+  } catch (err) {
+    console.error("Error fetching cards:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchCardsData();
@@ -401,7 +521,7 @@ function Roast() {
     setUploading(true);
 
     const CLOUDINARY_UPLOAD_PRESET = "ml_default";
-    const CLOUDINARY_CLOUD_NAME = "dzoctpmmi";
+    const CLOUDINARY_CLOUD_NAME = "dqhajyve8";
 
     // Compress image to ~80KB
     const compressAndResize = async (file, targetKB = 80) => {

@@ -496,17 +496,16 @@ const ChatList = () => {
 
     await supabase
       .from("users")
-      .update({ active_route: '/chat/' })
+      .update({ active_route: "/chat/" })
       .eq("id", user.id);
   };
 
   const handleRouteUpdate = async () => {
     await supabase
       .from("users")
-      .update({ active_route: '/chat/' })
+      .update({ active_route: "/chat/" })
       .eq("id", user.id);
-    
-  }
+  };
 
   useEffect(() => {
     const used = new Set(users.map((u) => u.country));
@@ -625,7 +624,7 @@ const ChatList = () => {
     }
   }, [activeTab, genderFilter, countryFilter]);
 
-  useEffect(() => {
+  {/*useEffect(() => {
     const fetchUsers = async () => {
       if (
         debouncedSearchTerm.trim().length > 0 &&
@@ -691,7 +690,7 @@ const ChatList = () => {
           //console.log("ℹ️ first fetch detected, fetching data from supabase and saved to indexeddb");
 
           for (const u of fetchedUsers) {
-            if (u.profile_pic) {
+            if (u.profile_pic && u.profile_pic.startsWith("http")) {
               const response = await fetch(u.profile_pic);
               const blob = await response.blob();
               await db.put("profile_pics", { id: u.id, blob });
@@ -706,11 +705,10 @@ const ChatList = () => {
           );
 
           for (const newU of newUsers) {
-            if (newU.profile_pic) {
+            if (newU.profile_pic && newU.profile_pic.startsWith("http")) {
               const response = await fetch(newU.profile_pic);
               const blob = await response.blob();
               await db.put("profile_pics", { id: newU.id, blob });
-              //console.log( "ℹ️ new pic added in supabase and saved to indexeddb");
             }
           }
         }
@@ -746,6 +744,110 @@ const ChatList = () => {
 
     fetchUsers();
   }, [activeTab, genderFilter, countryFilter, searchTerm]);
+*/}
+
+// Fetch users with IndexedDB caching
+useEffect(() => {
+  const fetchUsers = async () => {
+    if (
+      debouncedSearchTerm.trim().length > 0 &&
+      debouncedSearchTerm.trim().length < 2
+    ) {
+      setUsers([]);
+      setLoading(false);
+      setLoadingMore(false);
+      return;
+    }
+    if (searchTerm.trim() !== "") {
+      setSearchLoading(true);
+    }
+
+    try {
+      const db = await dbPromise;
+
+      // Supabase query (same as your code)
+      let query = supabase
+        .from("users")
+        .select("id, name, profile_pic, country, gender, status, age, decency_rating, created_at");
+
+      if (activeTab === "all")
+        query = query.neq("country", "IN").order("created_at", { ascending: false });
+      if (genderFilter !== "all") query = query.eq("gender", genderFilter);
+      if (countryFilter !== "all") query = query.eq("country", countryFilter);
+      if (activeTab === "online")
+        query = query.eq("status", "online").order("created_at", { ascending: false });
+      if (searchTerm.trim() !== "")
+        query = query.ilike("name", `%${searchTerm}%`);
+
+      const { data: fetchedUsers, error } = await query;
+      if (error) throw error;
+
+      // Pinned users
+      const { data: pinnedData } = await supabase
+        .from("pinned_users")
+        .select("pinned_user_id")
+        .eq("user_id", user.id);
+
+      const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
+
+      // Load cached blobs
+      const cachedPics = await db.getAll("profile_pics");
+      let cachedMap = new Map(cachedPics.map((item) => [item.id, item.blob]));
+
+      // Detect missing blobs
+      const missing = fetchedUsers.filter(
+        (u) => u.profile_pic && !cachedMap.has(u.id)
+      );
+
+      if (missing.length > 0) {
+        console.log(`🖼 Fetching ${missing.length} new profile pics in parallel...`);
+
+        // Fetch all in parallel
+        const downloads = await Promise.allSettled(
+          missing.map(async (u) => {
+            const res = await fetch(u.profile_pic);
+            const blob = await res.blob();
+            await db.put("profile_pics", { id: u.id, blob });
+            return { id: u.id, blob };
+          })
+        );
+
+        // Merge new blobs into cachedMap
+        downloads.forEach((d) => {
+          if (d.status === "fulfilled") {
+            cachedMap.set(d.value.id, d.value.blob);
+          }
+        });
+      }
+
+      // Build user list
+      const processed = fetchedUsers.map((u) => {
+        const blob = cachedMap.get(u.id);
+        const avatar = blob ? URL.createObjectURL(blob) : empty;
+        return {
+          ...u,
+          avatar,
+          notifications: unreadCounts[u.id] || 0,
+          pinned: pinnedIds.includes(u.id),
+          status: u.status || "offline",
+        };
+      });
+
+      setUsers(processed);
+      console.log(`✅ Processed ${processed.length} users`);
+
+    } catch (err) {
+      console.error("⚠️ fetchUsers error:", err);
+    } finally {
+      if (searchTerm.trim() !== "") setSearchLoading(false);
+      else setLoading(false);
+      setLoadingMore(false);
+      setFirstLoad(false);
+    }
+  };
+
+  fetchUsers();
+}, [activeTab, genderFilter, countryFilter, searchTerm]);
 
   // ------------------- filteredUsers logic -------------------
   const filteredUsers = useMemo(() => {
@@ -1213,9 +1315,8 @@ const ChatList = () => {
             className={`sketchy-tab ${activeTab === "inbox" ? "active" : ""}`}
             onClick={() => {
               setActiveTab("inbox");
-              resetBadgeSeen();
               localStorage.setItem("activeTab", "inbox");
-              handleRouteUpdate()
+              handleRouteUpdate();
             }}
             style={{ position: "relative" }}
           >

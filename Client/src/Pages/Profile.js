@@ -200,12 +200,12 @@ const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     },
   });
 
-  // 🔹 Save a single user to IndexedDB
+  {/*/ 🔹 Save a single user to IndexedDB
   const saveUserToIDB = async (user) => {
     const db = await dbPromise;
     try {
       // Non-Google user → always cache profile_pic
-      if (!user.google_login && user.profile_pic) {
+      if (!user.google_login && user.profile_pic && user.profile_pic.startsWith("http")) {
         const response = await fetch(user.profile_pic);
         const blob = await response.blob();
         await db.put("profile_pics", { id: user.id, blob });
@@ -226,8 +226,9 @@ const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
       console.error("⚠️ saveUserToIDB error:", err);
     }
   };
+*/}
 
-  const fetchUser = async () => {
+  {/*const fetchUser = async () => {
     try {
       const isGoogleUser = currentUser?.google_login;
       const { data, error } = await supabase
@@ -294,6 +295,107 @@ const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
       setUserData({ avatar: empty, name: "", bio: "" });
     }
   };
+*/}
+
+
+// Save user + profile_pic to IndexedDB (update if changed)
+const saveUserToIDB = async (user) => {
+  const db = await dbPromise;
+  try {
+    const existing = await db.get("profile_pics", user.id);
+
+    if (user.profile_pic) {
+      let shouldUpdate = false;
+
+      // If no cache → must save
+      if (!existing) {
+        shouldUpdate = true;
+        console.log(`💾 No cached profile pic found, will save new one for ${user.id}`);
+      }
+      // If cached but Supabase has new URL → update
+      else if (existing.url !== user.profile_pic) {
+        shouldUpdate = true;
+        console.log(`🔄 Profile pic changed for ${user.id}, updating cache`);
+      }
+
+      if (shouldUpdate) {
+        try {
+          const response = await fetch(user.profile_pic + `?t=${Date.now()}`); // bust CDN cache
+          const blob = await response.blob();
+          await db.put("profile_pics", { id: user.id, blob, url: user.profile_pic });
+          console.log(`💾 Profile pic cached/updated for user ${user.id}`);
+        } catch (fetchErr) {
+          console.warn("⚠️ Could not fetch profile_pic, skipped caching:", fetchErr);
+        }
+      } else {
+        console.log(`⚡ Cached profile pic for user ${user.id} is still valid, skipping update`);
+      }
+    }
+
+    // Always update full user object (bio, name, etc.)
+    await db.put("users", user);
+
+  } catch (err) {
+    console.error("⚠️ saveUserToIDB error:", err);
+  }
+};
+
+
+
+// Fetch user from Supabase + IndexedDB caching
+const fetchUser = async () => {
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .select("id, name, talked_to_count, bio, profile_pic, reward_coins, decency_rating, orientation")
+      .eq("id", id)
+      .single();
+
+    if (error || !data) {
+      console.error("❌ Error fetching user:", error?.message);
+      setUserData({ avatar: empty, name: "", bio: "" });
+      return;
+    }
+
+    const db = await dbPromise;
+
+    // Try to get cached avatar first
+    const cached = await db.get("profile_pics", data.id);
+    let avatar;
+    let loadedFromCache = false;
+
+    if (cached?.blob) {
+      avatar = URL.createObjectURL(cached.blob);
+      console.log(`📦 Loaded profile pic for user ${data.id} from IndexedDB (blob).`);
+      loadedFromCache = true;
+    } else if (data.profile_pic) {
+      avatar = data.profile_pic;
+      console.log(`🌐 Loaded profile pic for user ${data.id} from Supabase/network URL.`);
+    } else {
+      avatar = empty;
+      console.log(`❌ No profile pic found for user ${data.id}, using default empty.png`);
+    }
+
+    // Only cache if we didn’t already load from IndexedDB
+    if (!loadedFromCache) {
+      await saveUserToIDB(data);
+    }
+
+    setUserData({ ...data, avatar });
+    setForm((prev) => ({
+      ...prev,
+      name: data.name || "",
+      bio: data.bio || "",
+    }));
+    setOrientation(data.orientation || "");
+
+    console.log("✅ User fetch complete");
+  } catch (err) {
+    console.error("⚠️ fetchUser error:", err);
+    setUserData({ avatar: empty, name: "", bio: "" });
+  }
+};
+
 
   // 🔹 Handle Update
   const handleUpdate = async () => {
@@ -442,24 +544,47 @@ const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   };
 
   const handleUnsubscribe = async () => {
-    try {
-      const playerId = OneSignal.User.PushSubscription.id;
-      if (!playerId) {
-        console.log("⚠️ No active push subscription found on this device");
-      } else if (currentUser?.id) {
-        await axios.delete("http://localhost:5000/delete-player", {
-          data: {
-            userId: currentUser.id,
-            playerId,
-          },
-        });
-      }
+  try {
+    if (!currentUser?.id) return;
 
-      await OneSignal.User.PushSubscription.optOut();
-    } catch (error) {
-      console.error("Error deleting the player:", error);
+    // Fetch player_id from Supabase
+    const { data, error } = await supabase
+      .from("players") // replace with your actual table
+      .select("player_id")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching player_id from Supabase:", error.message);
+      return;
     }
-  };
+
+    const playerId = data?.player_id;
+
+    if (!playerId) {
+      console.log("⚠️ No active push subscription found in Supabase");
+      return;
+    }
+
+    // Call backend to delete the player
+    await axios.delete("https://myselpost.onrender.com/delete-player", {
+      data: {
+        userId: currentUser.id,
+        playerId,
+      },
+    });
+
+    // Optionally opt-out locally (if needed)
+    if (window.OneSignal) {
+      await OneSignal.User.PushSubscription.optOut();
+    }
+
+    console.log("✅ Player unsubscribed successfully");
+  } catch (error) {
+    console.error("Error deleting the player:", error);
+  }
+};
+
 
   const handleLogout = async () => {
     await handleUnsubscribe();

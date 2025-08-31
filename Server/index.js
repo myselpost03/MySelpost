@@ -9,11 +9,13 @@ const PORT = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: [
+      "https://myselpost.com",
+      "https://www.myselpost.com"
+    ],
     credentials: true,
   })
 );
-
 app.use(express.json());
 
 const supabase = createClient(
