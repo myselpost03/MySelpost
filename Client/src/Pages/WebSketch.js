@@ -572,21 +572,21 @@ const WebSketch = () => {
             </div>*/}
             <div className="react-share-buttons">
               <FacebookShareButton
-                url="https://myselpost.com/sketch"
+                url="https://www.myselpost.com/sketch"
                 quote="Get your website built from a sketch!"
                 onShareWindowClose={handleBonusClaim}
               >
                 <button className="share-coin-button">📘 Facebook</button>
               </FacebookShareButton>
               <TwitterShareButton
-                url="https://myselpost.com/sketch"
+                url="https://www.myselpost.com/sketch"
                 title="I just got a website built from a hand-drawn sketch. Try it yourself!"
                 onShareWindowClose={handleBonusClaim}
               >
                 <button className="share-coin-button">🐦 Twitter</button>
               </TwitterShareButton>
               <WhatsappShareButton
-                url="https://myselpost.com/sketch"
+                url="https://www.myselpost.com/sketch"
                 title="Build a website from your hand-drawn sketch!"
                 separator=":: "
                 onShareWindowClose={handleBonusClaim}
@@ -594,7 +594,7 @@ const WebSketch = () => {
                 <button className="share-coin-button">🟢 WhatsApp</button>
               </WhatsappShareButton>
               <TelegramShareButton
-                url="https://myselpost.com/sketch"
+                url="https://www.myselpost.com/sketch"
                 title="Get your website built from a sketch!"
                 onShareWindowClose={handleBonusClaim}
               >

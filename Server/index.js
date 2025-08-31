@@ -154,9 +154,9 @@ app.post("/send-like-push", async (req, res) => {
           contents: {
             en: `You have ${formatLikes(unseenLikes.length)}.`, // formatLikes: 1 like / 2 likes
           },
-          url: "https://myselpost.com/chat-list",
-          chrome_web_icon: "https://myselpost.com/heart.png",
-          chrome_web_badge: "https://myselpost.com/myselpost.png",
+          url: "https://www.myselpost.com/chat-list",
+          chrome_web_icon: "https://www.myselpost.com/heart.png",
+          chrome_web_badge: "https://www.myselpost.com/myselpost.png",
         };
 
         const response = await axios.post(
@@ -249,10 +249,10 @@ app.post("/send-message-push", async (req, res) => {
           include_player_ids: playerIds,
           headings: { en: "New Message!" },
           contents: { en: "You have unread messages." },
-          url: "https://myselpost.com/chat-list",
+          url: "https://www.myselpost.com/chat-list",
           collapse_id: `chat_${userId}`,
-          chrome_web_icon: "https://myselpost.com/inbox.png",
-          chrome_web_badge: "https://myselpost.com/myselpost.png",
+          chrome_web_icon: "https://www.myselpost.com/inbox.png",
+          chrome_web_badge: "https://www.myselpost.com/myselpost.png",
         };
 
         const response = await axios.post(
