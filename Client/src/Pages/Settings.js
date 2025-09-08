@@ -1,40 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import OneSignal from "react-onesignal";
 import SketchyHeader from "../Components/SketchyHeader";
+import OneSignal from 'react-onesignal';
 import { supabase } from "../Utils/supabaseClient";
-import { subscribeUser } from "../Utils/subscribeUser";
 import { trackEvent } from "../Utils/analytics";
 import "../Styles/Settings.css";
 
-// ✅ Global flag to track if initialized
-let oneSignalInitialized = false;
-
-const initOneSignal = async () => {
-  if (!window.OneSignal) {
-    console.error("❌ OneSignal SDK not loaded");
-    return;
-  }
-
-  if (!oneSignalInitialized) {
-    await OneSignal.init({
-      appId: "2018cba1-59ea-4116-87a0-6f8dad9cf527",
-      safari_web_id: "web.onesignal.auto.487bfeae-71a3-407e-85d8-1b40bd783a80",
-      notifyButton: {
-        enable: true,
-      }, //allowLocalhostAsSecureOrigin: true,
-    });
-    oneSignalInitialized = true;
-    console.log("✅ OneSignal initialized once");
-  } else {
-    console.log("ℹ️ OneSignal already initialized, skipping");
-  }
-};
-
 const Settings = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
 
   const navigate = useNavigate();
   const currentUser = JSON.parse(localStorage.getItem("user"));
@@ -48,8 +21,6 @@ const Settings = () => {
 
   const handleSubscribe = async () => {
     try {
-      await initOneSignal();
-
       // Ask permission
       await OneSignal.Notifications.requestPermission();
 
@@ -103,7 +74,7 @@ const Settings = () => {
       <SketchyHeader title="Settings" onBack={handleBack} />
       <div className="settings-container">
         <div className="settings-card">
-          <div className="settings-item">
+          {/*<div className="settings-item">
             <span>Push Notifications</span>
             <label className="switch">
               <input
@@ -113,7 +84,7 @@ const Settings = () => {
               />
               <span className="slider round"></span>
             </label>
-          </div>
+          </div>*/}
 
           <div className="settings-item" onClick={handleContact}>
             <span>Contact Us</span>

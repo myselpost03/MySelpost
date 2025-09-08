@@ -5,6 +5,8 @@ import { supabase } from "../Utils/supabaseClient";
 import bcrypt from "bcryptjs";
 import SketchyAlert from "../Components/SketchyAlert";
 import { trackEvent } from "../Utils/analytics";
+import { FaFire } from "react-icons/fa";
+
 
 const Header = () => {
   const [user, setUser] = useState(null);
@@ -138,7 +140,7 @@ const Header = () => {
   return (
     <header className="header">
       <div className="logo-container">
-        <Link className="logo">MySelpost</Link>
+        <Link to='/' className="logo">MySelpost</Link>
         {/*{user && !isMobile && (
           <div className="feature-banner-container">
             <div className="coming-soon-banner">Coming Soon</div>

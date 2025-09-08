@@ -751,6 +751,36 @@ body {
   transform: scale(0.95);
 }
 
+.fab-roast-button {
+  position: fixed;
+  bottom: 29px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  color: white;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #000, #4b4a4a);
+
+  font-size: 1.7rem;
+  z-index: 1000;
+  box-shadow: 0 6px 15px rgba(255, 255, 255, 0.15);
+  border: none;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fab-roast-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
+}
+
+.fab-roast-button:active {
+  transform: scale(0.95);
+}
+
 .fab-camera-button {
   position: fixed;
   bottom: 100px; /* adjust distance above filter FAB */

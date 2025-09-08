@@ -41,7 +41,9 @@ import LoadingSpinner from "./Components/LoadingSpinner";
 import { supabase } from "./Utils/supabaseClient";
 import SketchyAlert from "./Components/SketchyAlert";
 import InternetStatusAlert from "./Components/InternetStatusAlert";
+import FeedbackPopup from "./Components/FeedbackPopup";
 import { isRunningAsPWA } from "./CheckPWA";
+import { trackEvent } from "./Utils/analytics";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
@@ -179,11 +181,13 @@ function UserStatusWrapper() {
 
 function AppContent() {
   const [alertMessage, setAlertMessage] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const location = useLocation(); // ✅ get current path
   const [ready, setReady] = useState(false); // ✅ prevent early render
-  
+
   useEffect(() => {
     const visibilityChannel = new BroadcastChannel("chat_app_visibility");
     const sendVisibility = () => {
@@ -259,6 +263,38 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
+    const hasSubmitted = localStorage.getItem("feedback_submitted");
+    if (hasSubmitted === "true") return;
+
+    const lastShown = localStorage.getItem("last_feedback_shown");
+    const now = new Date();
+
+    if (lastShown) {
+      const lastDate = new Date(lastShown);
+      const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+      if (diffDays < 7) return; // Already shown within the past 7 days
+    }
+    const delayMs = 90 * 1000; // 1 min 30 sec
+
+    const timeout = setTimeout(() => {
+      setShowFeedback(true);
+      localStorage.setItem("last_feedback_shown", now.toISOString());
+    }, delayMs);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  const handleSubmitSuccess = () => {
+    trackEvent({
+      action: "button_click",
+      category: "Chat List Page",
+      label: "Feedback Submission Button",
+    });
+    localStorage.setItem("feedback_submitted", "true");
+    setShowFeedback(false);
+  };
+
+  useEffect(() => {
     if (!isMobileDevice()) {
       setReady(true); // render routes normally on desktop
       return;
@@ -290,7 +326,6 @@ function AppContent() {
 
     const protectedRoutes = [
       "/chat-list",
-      "/roast",
       "/chat/:id",
       "/profile/:id",
     ];
@@ -334,6 +369,12 @@ function AppContent() {
           message={alertMessage.text}
           withButton={alertMessage.withButton}
           onClose={() => setAlertMessage(null)}
+        />
+      )}
+      {showFeedback && (
+        <FeedbackPopup
+          onSubmitSuccess={handleSubmitSuccess}
+          onClose={() => setShowFeedback(false)}
         />
       )}
     </>

@@ -1,5 +1,3 @@
-@import url(https://fonts.googleapis.com/css?family=IM+Fell+Great+Primer:regular,italic);
-
 /* Container */
 .login-container {
   min-height: 100vh;
@@ -37,7 +35,6 @@
   border-bottom: 2px solid #333;
   padding-bottom: 8px;
   color: #111;
-  font-family: 'im fell great primer', serif;
 }
 
 /* Inputs */
@@ -56,7 +53,7 @@
 .login-form input:focus {
   border-color: #111;
   background: #fff;
-  box-shadow: 0 0 8px rgba(0,0,0,0.15);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
   outline: none;
 }
 
@@ -68,14 +65,12 @@
 
 /* Error messages */
 .login-form .error-msg {
-  color: #e63946 !important;  /* force red */
+  color: #e63946 !important; /* force red */
   font-size: 0.9rem;
   font-weight: bold;
   text-align: center;
-    font-family: 'stylish', serif;
-
+  font-family: "stylish", serif;
 }
-
 
 /* Button */
 .login-form button {
@@ -88,14 +83,12 @@
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  
-font-family: 'mystery quest', serif
 }
 
 .login-form button:hover:not(:disabled) {
   background: #333;
   transform: translateY(-2px);
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .login-form button:disabled {
@@ -119,10 +112,6 @@ font-family: 'mystery quest', serif
   transition: all 0.3s ease;
 }
 
-.link-to-register{
-  
-  font-family: 'grabriela', serif;
-}
 
 .login-form p a:hover {
   border-bottom: 1px dashed #111;
@@ -130,7 +119,12 @@ font-family: 'mystery quest', serif
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-

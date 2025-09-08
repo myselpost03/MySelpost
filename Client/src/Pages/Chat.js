@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
-import SketchyHeader from "../Components/SketchyHeader";
+import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
+import ChatHeader from "../Components/ChatHeader";
 import { supabase, supabaseStorage } from "../Utils/supabaseClient";
 import { FaBan, FaImage, FaMicrophone } from "react-icons/fa";
 import bannedData from "../JSON/bannedWords.json";
@@ -8,31 +8,7 @@ import SketchyAlert from "../Components/SketchyAlert";
 import { trackEvent } from "../Utils/analytics";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
-import OneSignal from "react-onesignal";
 import "../Styles/Chat.css";
-
-let oneSignalInitialized = false;
-
-const initOneSignal = async () => {
-  if (!window.OneSignal) {
-    console.error("❌ OneSignal SDK not loaded");
-    return;
-  }
-
-  if (!oneSignalInitialized) {
-    await OneSignal.init({
-      appId: "2018cba1-59ea-4116-87a0-6f8dad9cf527",
-      safari_web_id: "web.onesignal.auto.487bfeae-71a3-407e-85d8-1b40bd783a80",
-      notifyButton: {
-        enable: true,
-      }, //allowLocalhostAsSecureOrigin: true,
-    });
-    oneSignalInitialized = true;
-    console.log("✅ OneSignal initialized once");
-  } else {
-    console.log("ℹ️ OneSignal already initialized, skipping");
-  }
-};
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -54,6 +30,7 @@ const Chat = () => {
   const [iBlockedOtherUser, setIBlockedOtherUser] = useState(false);
   const [loadingImages, setLoadingImages] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [showNotice, setShowNotice] = useState(false);
 
   const inputRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -517,7 +494,7 @@ const Chat = () => {
       } catch (err) {
         console.error("Failed to delete message:", err.message);
       }
-    }, 60 * 1000); // 1 minute
+    }, 60 * 60 * 1000); // 1 hour
   };
 
   // Get readable time format for sent messages
@@ -638,6 +615,12 @@ const Chat = () => {
       });
     }
 
+    if (blockedByOtherUser || iBlockedOtherUser) {
+      console.log("🚫 Skipped: Message blocked, no unread count or push");
+      setIsSending(false);
+      return;
+    }
+
     await supabase
       .from("unread_counts")
       .upsert(
@@ -676,11 +659,12 @@ const Chat = () => {
                 const receiverRoute = receiverData?.active_route;
 
                 if (!receiverRoute?.startsWith("/chat/")) {
-                  await initOneSignal();
-
-                  await axios.post("https://myselpost.onrender.com/send-message-push", {
-                    userId: targetId,
-                  });
+                  await axios.post(
+                    "https://myselpost.onrender.com/send-message-push",
+                    {
+                      userId: targetId,
+                    }
+                  );
                 } else {
                   console.log(
                     "🔕 Push skipped: Receiver already in same chat route."
@@ -858,6 +842,13 @@ const Chat = () => {
       category: "Chat Page",
       label: "Paste Button",
     });
+
+    // Allow pasting for Shivani and Madison
+    const allowedUsers = ["shivani", "madison"];
+    if (allowedUsers.includes(currentUser?.name?.toLowerCase())) {
+      return; // ✅ do nothing, allow paste
+    }
+
     const pastedText = e.clipboardData.getData("text/plain").toLowerCase();
     if (pastedText) {
       setAlertMessage({
@@ -955,9 +946,25 @@ const Chat = () => {
       localStorage.getItem("hasUploadedImage") === "true";
     if (!hasUploadedImage) {
       setAlertMessage({
-        text: "📸 Upload one post under Roast section to send image.",
+        text: (
+          <>
+            📸 Upload one post under{" "}
+            <Link
+              to="/roast"
+              style={{
+                color: "#e63946",
+                fontWeight: "bold",
+                textDecoration: "underline",
+              }}
+            >
+              Roast
+            </Link>{" "}
+            section to send image.
+          </>
+        ),
         withButton: true,
       });
+
       e.preventDefault(); // prevent opening file dialog
       return;
     }
@@ -1143,12 +1150,26 @@ const Chat = () => {
       .eq("id", currentUser.id);
   };
 
+  useEffect(() => {
+    const hasSeenNotice = localStorage.getItem("autoDeleteNoticeSeen");
+    if (!hasSeenNotice) {
+      setShowNotice(true);
+
+      const timer = setTimeout(() => {
+        setShowNotice(false);
+        localStorage.setItem("autoDeleteNoticeSeen", "true"); // mark as seen
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   return (
     <div className="Chat-UI">
-      <SketchyHeader
+      <ChatHeader
         title={targetUser?.name || "Chat"}
         onBack={handleBack}
-      ></SketchyHeader>
+      ></ChatHeader>
 
       {alertMessage && !hasAccess && (
         <SketchyAlert
@@ -1204,10 +1225,11 @@ const Chat = () => {
               </div>
             </div>
           </div>
-          <div className="auto-delete-notice">
-            🕒 Messages will delete on seen
-          </div>
-
+          {showNotice && (
+            <div className="auto-delete-notice">
+              🕒 Messages will delete on seen
+            </div>
+          )}
           {/* Show user/chat blocked UI */}
           {blockedByOtherUser || iBlockedOtherUser ? (
             <div className="blocked-ui">

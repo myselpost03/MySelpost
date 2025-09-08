@@ -3,73 +3,103 @@
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
  xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 
  http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-<!-- created with Free Online Sitemap Generator https://sitemap-generator.org/ -->
+
+  <!-- Homepage -->
   <url>
-   <loc>https://www.myselpost.com/</loc>
-   <lastmod>2025-04-10T14:51:36.459Z</lastmod>
-   <priority>1.00</priority>
- </url>
- <url>
+    <loc>https://www.myselpost.com/</loc>
+    <lastmod>2025-04-10T14:51:36.459Z</lastmod>
+    <priority>1.00</priority>
+  </url>
+
+  <url>
     <loc>https://www.myselpost.com/sketch</loc>
-    <lastmod>2025-07-19</lastmod>
+    <lastmod>2025-09-02T00:00:00+00:00</lastmod>
     <priority>0.80</priority>
   </url>
   <url>
     <loc>https://www.myselpost.com/app-sketch</loc>
-    <lastmod>2025-07-19</lastmod>
+    <lastmod>2025-09-02T00:00:00+00:00</lastmod>
     <priority>0.80</priority>
   </url>
   <url>
     <loc>https://www.myselpost.com/web-sketch</loc>
-    <lastmod>2025-07-19</lastmod>
+    <lastmod>2025-09-02T00:00:00+00:00</lastmod>
     <priority>0.70</priority>
   </url>
   <url>
     <loc>https://www.myselpost.com/pricing</loc>
-    <lastmod>2025-07-19</lastmod>
-    <priority>0.70</priority>
-  </url>
-  <url>
-    <loc>https://www.myselpost.com/contact-us</loc>
-    <lastmod>2025-07-19</lastmod>
+    <lastmod>2025-09-02T00:00:00+00:00</lastmod>
     <priority>0.70</priority>
   </url>
   <url>
     <loc>https://www.myselpost.com/prompt</loc>
-    <lastmod>2025-07-19</lastmod>
+    <lastmod>2025-09-02T00:00:00+00:00</lastmod>
     <priority>0.70</priority>
   </url>
   <url>
     <loc>https://www.myselpost.com/login</loc>
-    <lastmod>2025-07-19</lastmod>
+    <lastmod>2025-09-02T00:00:00+00:00</lastmod>
     <priority>0.70</priority>
   </url>
   <url>
     <loc>https://www.myselpost.com/register</loc>
-    <lastmod>2025-07-19</lastmod>
+    <lastmod>2025-09-02T00:00:00+00:00</lastmod>
     <priority>0.70</priority>
   </url>
-    <url>
+  <url>
     <loc>https://www.myselpost.com/chat</loc>
-    <lastmod>2025-07-19</lastmod>
+    <lastmod>2025-09-02T00:00:00+00:00</lastmod>
     <priority>0.70</priority>
   </url>
-    <url>
+  <url>
+    <loc>https://www.myselpost.com/guest-user</loc>
+    <lastmod>2025-09-02T00:00:00+00:00</lastmod>
+    <priority>0.70</priority>
+  </url>
+
+  <url>
     <loc>https://www.myselpost.com/chat-list</loc>
-    <lastmod>2025-07-19</lastmod>
+    <lastmod>2025-09-02T00:00:00+00:00</lastmod>
     <priority>0.70</priority>
   </url>
-    </url>
-    <url>
-    <loc>https://www.myselpost.com/profile</loc>
-    <lastmod>2025-07-19</lastmod>
+  <url>
+    <loc>https://www.myselpost.com/roast</loc>
+    <lastmod>2025-09-02</lastmod>
     <priority>0.70</priority>
   </url>
-    </url>
-    </url>
-    <url>
-    <loc>https://www.myselpost.com/coins</loc>
-    <lastmod>2025-07-19</lastmod>
+  <url>
+    <loc>https://www.myselpost.com/settings</loc>
+    <lastmod>2025-09-02</lastmod>
+    <priority>0.70</priority>
+  </url>
+
+  <url>
+    <loc>https://www.myselpost.com/about</loc>
+    <lastmod>2025-09-02</lastmod>
+    <priority>0.70</priority>
+  </url>
+
+  <url>
+    <loc>https://www.myselpost.com/updates</loc>
+    <lastmod>2025-09-02</lastmod>
+    <priority>0.70</priority>
+  </url>
+
+  <url>
+    <loc>https://www.myselpost.com/contact-us</loc>
+    <lastmod>2025-09-02</lastmod>
+    <priority>0.70</priority>
+  </url>
+
+  <url>
+    <loc>https://www.myselpost.com/terms</loc>
+    <lastmod>2025-09-02</lastmod>
+    <priority>0.70</priority>
+  </url>
+
+  <url>
+    <loc>https://www.myselpost.com/privacy-policy</loc>
+    <lastmod>2025-09-02</lastmod>
     <priority>0.70</priority>
   </url>
 </urlset>

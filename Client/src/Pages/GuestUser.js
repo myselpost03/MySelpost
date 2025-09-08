@@ -5,10 +5,13 @@ import "../Styles/ChatList.css";
 import {
   FaCircle,
   FaMars,
+  FaFire,
   FaVenus,
   FaEnvelope,
   FaThumbtack,
   FaSearch,
+  FaMapMarkerAlt,
+  FaFilter
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
@@ -234,12 +237,12 @@ const GuestUser = () => {
       const { data, error } = await supabase
         .from("users")
         .select(
-          "id, name, gender, age, country, status, decency_rating, profile_pic"
+          "id, name, gender, age, country, status, decency_rating, profile_pic, google_login, created_at"
         )
         .neq("country", "IN")
-
-        .order("created_at", { ascending: false })
-        .range(page * 10, page * 10 + 9); // Pagination: 10 users per page
+        .order("google_login", { ascending: true }) // false (0) comes first, true (1) comes later
+        .order("created_at", { ascending: false }) // newest first within each group
+        .range(page * 10, page * 10 + 9);
 
       if (error) {
         console.error("Error fetching users:", error);
@@ -350,7 +353,7 @@ const GuestUser = () => {
                 handleAlert();
               }}
             >
-              Gender ▼
+              Inbox
             </button>
             <button
               className="sketchy-tab"
@@ -360,7 +363,28 @@ const GuestUser = () => {
                 handleAlert();
               }}
             >
-              Country ▼
+              Online
+            </button>
+            <button
+              className="sketchy-tab"
+              onClick={() => {
+                setShowCountryTabs(true);
+                setShowGenderTabs(false);
+                handleAlert();
+              }}
+            >
+              <FaMapMarkerAlt />
+            </button>
+
+            <button
+              className="sketchy-tab"
+              onClick={() => {
+                setShowCountryTabs(true);
+                setShowGenderTabs(false);
+                handleAlert();
+              }}
+            >
+              <FaFilter />
             </button>
           </div>
           <div className="sketchy-list-scrollable">
@@ -531,6 +555,14 @@ const GuestUser = () => {
           onClose={() => setAlertMessage(null)}
         />
       )}
+       <Link to='/roast'
+                      className="fab-roast-button"
+                      title="Notification"
+                    >
+                      <FaFire />
+                   
+                    </Link>
+                  
     </div>
   );
 };

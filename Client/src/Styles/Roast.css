@@ -175,19 +175,24 @@
   color: #aaa;
 }
 
+
 .roast-button {
   background: #222;
   border: none;
   outline: none;
-  padding: 8px 14px;
+  padding: 1px 1px; /* slightly wider */
   cursor: pointer;
-  font-weight: bold;
   font-weight: 1000;
   color: #fff;
   transition: 0.2s;
   margin-right: 20px;
   font-family: "twinkle star", serif;
+
+  white-space: nowrap;   /* prevents text wrapping */
+  min-width: 60px;      /* reserves enough space for both texts */
+  text-align: center;    /* keeps text centered */
 }
+
 
 .roast-button:hover {
   background: #f1f1f1;
@@ -200,8 +205,8 @@
   right: 24px;
   background: #fff;
   border-radius: 50%;
- border: none;
- outline: none;
+  border: none;
+  outline: none;
   width: 56px;
   height: 56px;
   font-size: 22px;

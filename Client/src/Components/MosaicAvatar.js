@@ -1,32 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
-import OneSignal from "react-onesignal";
 import { supabase } from "../Utils/supabaseClient";
 import "../Styles/Profile.css";
-
-let oneSignalInitialized = false;
-
-const initOneSignal = async () => {
-  if (!window.OneSignal) {
-    console.error("❌ OneSignal SDK not loaded");
-    return;
-  }
-
-  if (!oneSignalInitialized) {
-    await OneSignal.init({
-      appId: "2018cba1-59ea-4116-87a0-6f8dad9cf527",
-      safari_web_id: "web.onesignal.auto.487bfeae-71a3-407e-85d8-1b40bd783a80",
-      notifyButton: {
-        enable: true,
-      },
-      //allowLocalhostAsSecureOrigin: true,
-    });
-    oneSignalInitialized = true;
-    console.log("✅ OneSignal initialized once");
-  } else {
-    console.log("ℹ️ OneSignal already initialized, skipping");
-  }
-};
 
 export default function MosaicAvatar({
   src,
@@ -91,7 +66,6 @@ export default function MosaicAvatar({
     }
     // 🔔 Send push notification to the owner
     try {
-      await initOneSignal();
 
       await axios.post("https://myselpost.onrender.com/send-like-push", {
         userId,

@@ -11,6 +11,7 @@ import {
   FaThumbtack,
   FaSearch,
   FaFilter,
+  FaMapMarkerAlt,
   FaHeart,
   FaBolt,
   FaUsers,
@@ -25,10 +26,10 @@ import useDebounce from "../Utils/useDebounce";
 import ReactCountryFlag from "react-country-flag";
 import MiniSpinner from "../Components/MiniSpinner";
 import SketchyAlert from "../Components/SketchyAlert";
-import FeedbackPopup from "../Components/FeedbackPopup";
 import { trackEvent } from "../Utils/analytics";
 import { dbPromise } from "../Utils/db";
 import LoadingSpinner from "../Components/LoadingSpinner";
+import Maps from "../Components/Maps";
 
 const countryNameToCode = {
   AF: "AF",
@@ -241,8 +242,9 @@ const ChatList = () => {
   });
   const [firstLoad, setFirstLoad] = useState(true);
   const [enabled, setEnabled] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [loading, setLoading] = useState(true); // tab/filter loading
+  const [hasFetched, setHasFetched] = useState(false); // 👈 new flag
+
   const [searchLoading, setSearchLoading] = useState(false); // dedicated search loader
   const [countries, setCountries] = useState([]);
   const [showPremiumNotice, setShowPremiumNotice] = useState(false);
@@ -624,8 +626,12 @@ const ChatList = () => {
     }
   }, [activeTab, genderFilter, countryFilter]);
 
-  {/*useEffect(() => {
+  // Fetch users with IndexedDB caching
+  useEffect(() => {
     const fetchUsers = async () => {
+      setLoading(true);
+      setHasFetched(false); // reset before fetch starts
+
       if (
         debouncedSearchTerm.trim().length > 0 &&
         debouncedSearchTerm.trim().length < 2
@@ -640,10 +646,9 @@ const ChatList = () => {
       }
 
       try {
-        // IndexedDB setup
         const db = await dbPromise;
 
-        // Supabase query
+        // Supabase query (same as your code)
         let query = supabase
           .from("users")
           .select(
@@ -664,14 +669,9 @@ const ChatList = () => {
           query = query.ilike("name", `%${searchTerm}%`);
 
         const { data: fetchedUsers, error } = await query;
+        if (error) throw error;
 
-        if (error) {
-          console.error("❌ Supabase fetch error:", error);
-          setUsers([]);
-          return;
-        }
-
-        // Pinned list
+        // Pinned users
         const { data: pinnedData } = await supabase
           .from("pinned_users")
           .select("pinned_user_id")
@@ -679,45 +679,42 @@ const ChatList = () => {
 
         const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
 
-        // Fetch all cached pics in one go
+        // Load cached blobs
         const cachedPics = await db.getAll("profile_pics");
-        const cachedMap = new Map(
-          cachedPics.map((item) => [item.id, item.blob])
+        let cachedMap = new Map(cachedPics.map((item) => [item.id, item.blob]));
+
+        // Detect missing blobs
+        const missing = fetchedUsers.filter(
+          (u) => u.profile_pic && !cachedMap.has(u.id)
         );
-        const cachedIds = [...cachedMap.keys()];
 
-        if (cachedPics.length === 0) {
-          //console.log("ℹ️ first fetch detected, fetching data from supabase and saved to indexeddb");
-
-          for (const u of fetchedUsers) {
-            if (u.profile_pic && u.profile_pic.startsWith("http")) {
-              const response = await fetch(u.profile_pic);
-              const blob = await response.blob();
-              await db.put("profile_pics", { id: u.id, blob });
-            }
-          }
-        } else {
-          //console.log("ℹ️ next fetch detected and loaded data from indexeddb");
-
-          // Detect new users not in IndexedDB
-          const newUsers = fetchedUsers.filter(
-            (u) => !cachedIds.includes(u.id)
+        if (missing.length > 0) {
+          console.log(
+            `🖼 Fetching ${missing.length} new profile pics in parallel...`
           );
 
-          for (const newU of newUsers) {
-            if (newU.profile_pic && newU.profile_pic.startsWith("http")) {
-              const response = await fetch(newU.profile_pic);
-              const blob = await response.blob();
-              await db.put("profile_pics", { id: newU.id, blob });
+          // Fetch all in parallel
+          const downloads = await Promise.allSettled(
+            missing.map(async (u) => {
+              const res = await fetch(u.profile_pic);
+              const blob = await res.blob();
+              await db.put("profile_pics", { id: u.id, blob });
+              return { id: u.id, blob };
+            })
+          );
+
+          // Merge new blobs into cachedMap
+          downloads.forEach((d) => {
+            if (d.status === "fulfilled") {
+              cachedMap.set(d.value.id, d.value.blob);
             }
-          }
+          });
         }
 
-        // Build processed user list using cachedMap (fast O(1) lookup)
+        // Build user list
         const processed = fetchedUsers.map((u) => {
           const blob = cachedMap.get(u.id);
           const avatar = blob ? URL.createObjectURL(blob) : empty;
-
           return {
             ...u,
             avatar,
@@ -727,16 +724,16 @@ const ChatList = () => {
           };
         });
 
-        //console.log(`✅ Processed ${processed.length} users for display`);
         setUsers(processed);
+        setHasFetched(true); // ✅ only mark fetched after success
+
+        console.log(`✅ Processed ${processed.length} users`);
       } catch (err) {
         console.error("⚠️ fetchUsers error:", err);
+        setHasFetched(true); // mark as finished, even on error
       } finally {
-        if (searchTerm.trim() !== "") {
-          setSearchLoading(false);
-        } else {
-          setLoading(false);
-        }
+        if (searchTerm.trim() !== "") setSearchLoading(false);
+        else setLoading(false);
         setLoadingMore(false);
         setFirstLoad(false);
       }
@@ -744,110 +741,6 @@ const ChatList = () => {
 
     fetchUsers();
   }, [activeTab, genderFilter, countryFilter, searchTerm]);
-*/}
-
-// Fetch users with IndexedDB caching
-useEffect(() => {
-  const fetchUsers = async () => {
-    if (
-      debouncedSearchTerm.trim().length > 0 &&
-      debouncedSearchTerm.trim().length < 2
-    ) {
-      setUsers([]);
-      setLoading(false);
-      setLoadingMore(false);
-      return;
-    }
-    if (searchTerm.trim() !== "") {
-      setSearchLoading(true);
-    }
-
-    try {
-      const db = await dbPromise;
-
-      // Supabase query (same as your code)
-      let query = supabase
-        .from("users")
-        .select("id, name, profile_pic, country, gender, status, age, decency_rating, created_at");
-
-      if (activeTab === "all")
-        query = query.neq("country", "IN").order("created_at", { ascending: false });
-      if (genderFilter !== "all") query = query.eq("gender", genderFilter);
-      if (countryFilter !== "all") query = query.eq("country", countryFilter);
-      if (activeTab === "online")
-        query = query.eq("status", "online").order("created_at", { ascending: false });
-      if (searchTerm.trim() !== "")
-        query = query.ilike("name", `%${searchTerm}%`);
-
-      const { data: fetchedUsers, error } = await query;
-      if (error) throw error;
-
-      // Pinned users
-      const { data: pinnedData } = await supabase
-        .from("pinned_users")
-        .select("pinned_user_id")
-        .eq("user_id", user.id);
-
-      const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
-
-      // Load cached blobs
-      const cachedPics = await db.getAll("profile_pics");
-      let cachedMap = new Map(cachedPics.map((item) => [item.id, item.blob]));
-
-      // Detect missing blobs
-      const missing = fetchedUsers.filter(
-        (u) => u.profile_pic && !cachedMap.has(u.id)
-      );
-
-      if (missing.length > 0) {
-        console.log(`🖼 Fetching ${missing.length} new profile pics in parallel...`);
-
-        // Fetch all in parallel
-        const downloads = await Promise.allSettled(
-          missing.map(async (u) => {
-            const res = await fetch(u.profile_pic);
-            const blob = await res.blob();
-            await db.put("profile_pics", { id: u.id, blob });
-            return { id: u.id, blob };
-          })
-        );
-
-        // Merge new blobs into cachedMap
-        downloads.forEach((d) => {
-          if (d.status === "fulfilled") {
-            cachedMap.set(d.value.id, d.value.blob);
-          }
-        });
-      }
-
-      // Build user list
-      const processed = fetchedUsers.map((u) => {
-        const blob = cachedMap.get(u.id);
-        const avatar = blob ? URL.createObjectURL(blob) : empty;
-        return {
-          ...u,
-          avatar,
-          notifications: unreadCounts[u.id] || 0,
-          pinned: pinnedIds.includes(u.id),
-          status: u.status || "offline",
-        };
-      });
-
-      setUsers(processed);
-      console.log(`✅ Processed ${processed.length} users`);
-
-    } catch (err) {
-      console.error("⚠️ fetchUsers error:", err);
-    } finally {
-      if (searchTerm.trim() !== "") setSearchLoading(false);
-      else setLoading(false);
-      setLoadingMore(false);
-      setFirstLoad(false);
-    }
-  };
-
-  fetchUsers();
-}, [activeTab, genderFilter, countryFilter, searchTerm]);
 
   // ------------------- filteredUsers logic -------------------
   const filteredUsers = useMemo(() => {
@@ -963,38 +856,6 @@ useEffect(() => {
         setLoadingMore(false);
       }, 800); // simulate load delay
     }
-  };
-
-  useEffect(() => {
-    const hasSubmitted = localStorage.getItem("feedback_submitted");
-    if (hasSubmitted === "true") return;
-
-    const lastShown = localStorage.getItem("last_feedback_shown");
-    const now = new Date();
-
-    if (lastShown) {
-      const lastDate = new Date(lastShown);
-      const diffDays = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
-      if (diffDays < 7) return; // Already shown within the past 7 days
-    }
-    const delayMs = 90 * 1000; // 1 min 30 sec
-
-    const timeout = setTimeout(() => {
-      setShowFeedback(true);
-      localStorage.setItem("last_feedback_shown", now.toISOString());
-    }, delayMs);
-
-    return () => clearTimeout(timeout);
-  }, []);
-
-  const handleSubmitSuccess = () => {
-    trackEvent({
-      action: "button_click",
-      category: "Chat List Page",
-      label: "Feedback Submission Button",
-    });
-    localStorage.setItem("feedback_submitted", "true");
-    setShowFeedback(false);
   };
 
   const togglePin = async (targetUserId) => {
@@ -1124,17 +985,6 @@ useEffect(() => {
         user.id === userId ? { ...user, pinned: !user.pinned } : user
       )
     );
-  };
-
-  const resetBadgeSeen = async () => {
-    const { error } = await supabase
-      .from("users")
-      .update({ badge_seen: true })
-      .in("id", user.id);
-
-    if (error) {
-      console.error("Error resetting badge_seen:", error);
-    }
   };
 
   const handleMarkAllAsSeen = async () => {
@@ -1372,6 +1222,19 @@ useEffect(() => {
           >
             Online
           </button>
+
+          <button
+            className={`sketchy-tab ${activeTab === "maps" ? "active" : ""}`}
+            onClick={() => {
+              const newTab = activeTab === "maps" ? "all" : "maps";
+              setActiveTab(newTab);
+              setAllFilter(newTab === "maps" ? "maps" : "all");
+              localStorage.setItem("activeTab", newTab);
+            }}
+          >
+            <FaMapMarkerAlt style={{ marginRight: "6px" }} />
+          </button>
+
           <button className="sketchy-tab" onClick={() => setShowAllTabs(true)}>
             <FaFilter style={{ marginRight: "6px" }} />
           </button>
@@ -1407,9 +1270,13 @@ useEffect(() => {
           ref={listRef}
           onScroll={handleScroll}
           style={{ overflowY: "auto", height: "100vh" }}
-          className="sketchy-list-scrollable"
+          className={`${
+            activeTab === "maps" ? "maps-active" : "sketchy-list-scrollable "
+          }`}
         >
-          {loading ? (
+          {activeTab === "maps" ? (
+            <Maps />
+          ) : loading ? (
             <LoadingSpinner />
           ) : filteredUsers.length > 0 ? (
             <>
@@ -1571,7 +1438,7 @@ useEffect(() => {
                 </div>
               )}
             </>
-          ) : (
+          ) : hasFetched ? (
             <div className="no-results-card">
               {activeTab === "all" && (
                 <>
@@ -1613,8 +1480,10 @@ useEffect(() => {
                   </button>
                 </>
               )}
+
+              {activeTab === "maps" && <Maps />}
             </div>
-          )}
+          ) : null}
         </div>
 
         {showAllTabs && (
@@ -1733,12 +1602,7 @@ useEffect(() => {
           onClose={() => setAlertMessage(null)}
         />
       )}
-      {showFeedback && (
-        <FeedbackPopup
-          onSubmitSuccess={handleSubmitSuccess}
-          onClose={() => setShowFeedback(false)}
-        />
-      )}
+
       {showProfileModal && (
         <div className="popup-wrapper">
           <div className="popup-card">

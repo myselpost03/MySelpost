@@ -7,7 +7,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: repeating-linear-gradient(
+
+    background: repeating-linear-gradient(
       45deg,
       #fffef9,
       #fffef9 10px,
@@ -552,9 +553,12 @@
   text-align: center;
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
   border: 2px dashed #ff6f61;
-  animation: notice-pop 0.5s ease-out;
+
+  /* New animations */
+  animation: notice-pop 0.5s ease-out, notice-fadeout 0.5s ease-in 4.5s forwards;
 }
 
+/* Pop-in effect */
 @keyframes notice-pop {
   0% {
     transform: scale(0.8);
@@ -566,5 +570,21 @@
   }
   100% {
     transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Fade-out effect after 4.5s (timing matches the JS hide) */
+@keyframes notice-fadeout {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.02); /* subtle bounce */
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
   }
 }

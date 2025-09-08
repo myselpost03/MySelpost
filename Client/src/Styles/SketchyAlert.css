@@ -11,7 +11,7 @@
   max-width: 90%;
   box-shadow: 6px 6px 0px #222;
   z-index: 1000;
-  animation: popIn 0.25s ease-out;
+  animation: popInSmooth 0.35s cubic-bezier(0.25, 1.5, 0.5, 1);
   font-family: "Patrick Hand", cursive; /* sketchy vibe */
 }
 
@@ -62,13 +62,17 @@
 }
 
 /* Animation */
-@keyframes popIn {
-  from {
-    transform: translate(-50%, -50%) scale(0.8);
+@keyframes popInSmooth {
+  0% {
+    transform: translate(-50%, -50%) scale(0.7);
     opacity: 0;
   }
-  to {
-    transform: translate(-50%, -50%) scale(1);
+  60% {
+    transform: translate(-50%, -50%) scale(1.05);
     opacity: 1;
   }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
+

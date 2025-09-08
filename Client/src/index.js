@@ -4,6 +4,23 @@ import "./index.css";
 import App from "./App";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import reportWebVitals from "./reportWebVitals";
+import OneSignal from "react-onesignal";
+
+let oneSignalInitialized = false;
+
+async function initOneSignal() {
+  if (!oneSignalInitialized) {
+    await OneSignal.init({
+      appId: "8ef3762d-5350-4d7e-ac13-70870b237852",
+      safari_web_id: "web.onesignal.auto.31f2bfbe-48d0-4a72-b7e0-d44022a2d3bb",
+      // allowLocalhostAsSecureOrigin: true, // only if testing on localhost
+    });
+    oneSignalInitialized = true;
+    console.log("✅ OneSignal initialized globally");
+  }
+}
+
+initOneSignal();
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const clientId =
