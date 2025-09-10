@@ -1,10 +1,10 @@
 .spinner-container {
-top: 200px;
+  top: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100vh; /* full screen */
-  background: #faf8f2; /* you can change this */
+  background: #faf8f2; 
 }
 
 .spinner {

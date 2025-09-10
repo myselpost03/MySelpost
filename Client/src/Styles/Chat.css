@@ -8,7 +8,7 @@
   flex-direction: column;
   align-items: center;
 
-    background: repeating-linear-gradient(
+  background: repeating-linear-gradient(
       45deg,
       #fffef9,
       #fffef9 10px,
@@ -134,7 +134,17 @@
 .message.sent {
   align-self: flex-end;
   background-color: #c0f5c0;
-  font-family: "patrick hand", serif;
+  font-family: "Patrick Hand", serif;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideFadeIn 0.5s forwards; /* duration and forwards to keep final state */
+}
+
+@keyframes slideFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .message.received {
@@ -586,5 +596,34 @@
   100% {
     opacity: 0;
     transform: translateY(-10px) scale(0.95);
+  }
+}
+
+/* Centering container */
+.bw-loader-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+}
+
+/* Rotating circle */
+.bw-loader {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #000; /* black */
+  border-top: 4px solid #fff; /* white */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Spin keyframes */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }

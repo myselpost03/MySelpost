@@ -8,6 +8,7 @@ import SketchyAlert from "../Components/SketchyAlert";
 import { trackEvent } from "../Utils/analytics";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import imageCompression from "browser-image-compression";
 import "../Styles/Chat.css";
 
 const Chat = () => {
@@ -595,6 +596,12 @@ const Chat = () => {
       setIsSending(false);
       return;
     }
+    if (!error) {
+      // ✅ mark this chat partner as part of Inbox
+      await supabase
+        .from("pinned_users")
+        .upsert([{ user_id: currentUser.id, pinned_user_id: targetId }]);
+    }
 
     let messageId = null;
 
@@ -727,8 +734,7 @@ const Chat = () => {
       sendMessage();
     }
   };
-
-  // Santizing input and detecting abusive words/links/phone number
+  // Sanitizing input and detecting abusive words/links/phone number
   const handleInputChange = async (e) => {
     const newText = e.target.value;
     const lowerText = newText.toLowerCase();
@@ -811,8 +817,13 @@ const Chat = () => {
       return;
     }
 
-    // Detect copy-paste if large jump in text length
-    if (newText.length - input.length > 10 && newText !== lastPasted.current) {
+    // Detect copy-paste if large jump in text length (skip Shivani & Madison)
+    const allowPasteUsers = ["Shivani", "Madison"];
+    if (
+      !allowPasteUsers.includes(currentUser.name) &&
+      newText.length - input.length > 10 &&
+      newText !== lastPasted.current
+    ) {
       lastPasted.current = newText;
       setAlertMessage({
         text: "⚠️ Pasting long text is not allowed.",
@@ -835,7 +846,7 @@ const Chat = () => {
     setInput(newText);
   };
 
-  // Detect pasting and deduct the coins
+  // Detect pasting and deduct the coins (skip Shivani & Madison)
   const handlePaste = async (e) => {
     trackEvent({
       action: "button_click",
@@ -843,26 +854,52 @@ const Chat = () => {
       label: "Paste Button",
     });
 
-    // Allow pasting for Shivani and Madison
-    const allowedUsers = ["shivani", "madison"];
-    if (allowedUsers.includes(currentUser?.name?.toLowerCase())) {
-      return; // ✅ do nothing, allow paste
-    }
+    const allowPasteUsers = ["Shivani", "Madison"];
 
-    const pastedText = e.clipboardData.getData("text/plain").toLowerCase();
-    if (pastedText) {
-      setAlertMessage({
-        text: "Pasting is not allowed",
-        withButton: true,
-      });
-      const { error } = await supabase.rpc("decrement_decency", {
-        user_id_input: currentUser.id,
-      });
+    if (!allowPasteUsers.includes(currentUser.name)) {
+      const pastedText = e.clipboardData.getData("text/plain").toLowerCase();
+      if (pastedText) {
+        setAlertMessage({
+          text: "Pasting is not allowed",
+          withButton: true,
+        });
+        const { error } = await supabase.rpc("decrement_decency", {
+          user_id_input: currentUser.id,
+        });
 
-      if (error) {
-        console.error("❌ RPC error:", error.message);
+        if (error) {
+          console.error("❌ RPC error:", error.message);
+        }
       }
     }
+  };
+
+  // Utility: compress + resize
+  const compressAndResize = async (file, targetKB = 60) => {
+    let quality = 0.9;
+    let maxWidthOrHeight = 1000;
+    let compressedFile = file;
+
+    for (let i = 0; i < 10; i++) {
+      const options = {
+        maxSizeMB: targetKB / 1024, // KB → MB
+        maxWidthOrHeight,
+        initialQuality: quality,
+        useWebWorker: true,
+      };
+
+      compressedFile = await imageCompression(file, options);
+      const sizeKB = compressedFile.size / 1024;
+
+      if (sizeKB <= targetKB) break;
+
+      quality -= 0.1;
+      maxWidthOrHeight = Math.floor(maxWidthOrHeight * 0.8);
+      if (quality <= 0.1) quality = 0.1;
+      file = compressedFile;
+    }
+
+    return compressedFile;
   };
 
   // Image upload
@@ -870,7 +907,8 @@ const Chat = () => {
     const file = e.target.files[0];
     if (!file) return;
     // Allow unlimited images if currentUser.name is shivani or madison
-    if (!(currentUser.name === "Shivani" || currentUser.name === "Madison")) {
+    {
+      /*if (!(currentUser.name === "Shivani" || currentUser.name === "Madison")) {
       const imageSendKey = `imageSentDate_${currentUser.id}`;
       const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
       const lastSentDate = localStorage.getItem(imageSendKey);
@@ -880,15 +918,23 @@ const Chat = () => {
         setAlertMessage("You can only send one image per day.");
         return;
       }
+    }*/
     }
     setIsSendingImage(true);
+    // 🔹 compress before upload
+    let uploadFile = file;
+    try {
+      uploadFile = await compressAndResize(file, 60); // target ~60KB
+    } catch (err) {
+      console.error("Image compression failed, using original:", err);
+    }
     const fileExt = file.name.split(".").pop();
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `chat-images/${currentUser.id}/${fileName}`;
 
     const { error: uploadError } = await supabaseStorage.storage
       .from("chat-assets")
-      .upload(filePath, file);
+      .upload(filePath, uploadFile);
 
     if (uploadError) {
       console.error("Upload failed:", uploadError.message);
@@ -919,7 +965,19 @@ const Chat = () => {
       setIsSendingImage(false);
       return;
     }
-
+    const messageId = data?.[0]?.id;
+    if (messageId) {
+      // Update unread counts
+      await supabase.from("unread_counts").upsert(
+        {
+          sender_id: currentUser.id,
+          receiver_id: targetId,
+          count: 1,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: ["sender_id", "receiver_id"] }
+      );
+    }
     if (data && data[0]) {
       const dbMsg = {
         id: data[0].id,
@@ -942,7 +1000,8 @@ const Chat = () => {
 
   // Image selection for sending
   const handleFileInputClick = (e) => {
-    const hasUploadedImage =
+    {
+      /* const hasUploadedImage =
       localStorage.getItem("hasUploadedImage") === "true";
     if (!hasUploadedImage) {
       setAlertMessage({
@@ -968,7 +1027,8 @@ const Chat = () => {
       e.preventDefault(); // prevent opening file dialog
       return;
     }
-
+*/
+    }
     if (currentUser.name === "shivani" || currentUser.name === "madison") {
       return; // no limit for these users
     }
@@ -977,9 +1037,11 @@ const Chat = () => {
     const lastSentDate = localStorage.getItem(imageSendKey);
     const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-    if (lastSentDate === today) {
+    {
+      /*if (lastSentDate === today) {
       e.preventDefault(); // Prevents file dialog from opening
       setAlertMessage("You can only send one image per day.");
+    }*/
     }
   };
 
@@ -1427,7 +1489,31 @@ const Chat = () => {
       {/* Show full view image on click */}
       {modalImage && (
         <div className="image-modal" onClick={() => setModalImage(null)}>
-          <img src={modalImage} alt="Full View" />
+          <div style={{ position: "relative", textAlign: "center" }}>
+            {/* Loader */}
+            <div id="loader" className="bw-loader-container">
+              <div className="bw-loader"></div>
+            </div>
+
+            <img
+              src={modalImage}
+              alt="Full View"
+              style={{
+                maxWidth: "90%",
+                maxHeight: "90%",
+                display: "block",
+                margin: "0 auto",
+              }}
+              onLoad={() => {
+                const loader = document.getElementById("loader");
+                if (loader) loader.style.display = "none";
+              }}
+              onError={() => {
+                const loader = document.getElementById("loader");
+                if (loader) loader.firstChild.style.borderTopColor = "red";
+              }}
+            />
+          </div>
         </div>
       )}
 

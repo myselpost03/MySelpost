@@ -337,6 +337,24 @@ const Register = () => {
   const handleChange = async (e) => {
     const { name, value, files } = e.target;
 
+    if (name === "name") {
+      // ✅ Allow only letters, numbers, underscore, and dots
+      const regex = /^[a-zA-Z0-9._]{1,12}$/;
+
+      if (value === "" || regex.test(value)) {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: value,
+        }));
+        setError(""); // clear error if valid
+      } else {
+        setError(
+          "Name can only contain letters, numbers, underscores, and dots (max 20 characters)."
+        );
+      }
+      return;
+    }
+
     if (name === "email") {
       setEmailValid(isEmailValid(value));
     }
@@ -600,6 +618,7 @@ const Register = () => {
                   Name already taken. Please choose another.
                 </p>
               )}
+              {error.includes("Name") && <p className="error-msg">{error}</p>}
 
               <input
                 type="email"

@@ -8,7 +8,7 @@ import {
   FaVenus,
   FaCheckCircle,
   FaEnvelope,
-  FaThumbtack,
+  FaComments,
   FaSearch,
   FaFilter,
   FaMapMarkerAlt,
@@ -18,7 +18,6 @@ import {
   FaEnvelopeOpenText,
   FaCheck,
   FaTimes,
-  FaCamera,
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
@@ -561,12 +560,32 @@ const ChatList = () => {
     const interval = setInterval(refreshUsers, 30000);
     return () => clearInterval(interval);
   }, []);
+  const getAutoPinnedIds = () => {
+    return JSON.parse(localStorage.getItem("autoPinnedUsers") || "[]");
+  };
+
+  // Add a user to auto-pinned list with max limit of 10
+  const addAutoPinnedId = (userId) => {
+    let current = getAutoPinnedIds();
+    if (!current.includes(userId)) {
+      if (current.length < 10) {
+        current.push(userId); // add if space available
+      } else {
+        // Replace last one with new user
+        current[current.length - 1] = userId;
+      }
+      localStorage.setItem("autoPinnedUsers", JSON.stringify(current));
+    }
+  };
 
   const handleProtectedNavigation = (e, path, targetUser = null) => {
     e.preventDefault();
     const isLoggedIn = localStorage.getItem("user");
 
     if (isLoggedIn) {
+      // Auto-pin this user
+      addAutoPinnedId(targetUser.id);
+
       // console.log("Logged in user:", user);
 
       // 🚫 Restrict if non-US user (except Akriti) tries to chat with US user
@@ -582,7 +601,30 @@ const ChatList = () => {
       }
 */
       }
-      navigate(path, { state: { targetUser } }); // 👈 Pass clicked user to next screen
+      // --- Manage auto-pinned users ---
+      const maxPinned = 10;
+      const autoPinnedIds = JSON.parse(
+        localStorage.getItem("autoPinnedUsers") || "[]"
+      );
+
+      // If user is not already pinned
+      if (!autoPinnedIds.includes(targetUser.id)) {
+        if (autoPinnedIds.length >= maxPinned) {
+          // Remove the oldest (first) pinned user
+          autoPinnedIds.shift();
+        }
+        autoPinnedIds.push(targetUser.id);
+        localStorage.setItem("autoPinnedUsers", JSON.stringify(autoPinnedIds));
+      }
+
+      // Update local state so UI shows the pin immediately
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
+          u.id === targetUser.id ? { ...u, pinned: true } : u
+        )
+      );
+
+      navigate(path, { state: { targetUser } });
     } else {
       navigate("/register");
     }
@@ -710,6 +752,7 @@ const ChatList = () => {
             }
           });
         }
+        const autoPinnedIds = getAutoPinnedIds();
 
         // Build user list
         const processed = fetchedUsers.map((u) => {
@@ -719,7 +762,8 @@ const ChatList = () => {
             ...u,
             avatar,
             notifications: unreadCounts[u.id] || 0,
-            pinned: pinnedIds.includes(u.id),
+            pinned: pinnedIds.includes(u.id) || autoPinnedIds.includes(u.id), // ✅ include auto-pins
+
             status: u.status || "offline",
           };
         });
@@ -860,7 +904,6 @@ const ChatList = () => {
 
   const togglePin = async (targetUserId) => {
     const user = JSON.parse(localStorage.getItem("user"));
-
     if (!user) return;
 
     const alreadyPinned = users.find((u) => u.id === targetUserId && u.pinned);
@@ -878,23 +921,68 @@ const ChatList = () => {
             u.id === targetUserId ? { ...u, pinned: false } : u
           )
         );
+
+        // Also update localStorage
+        const autoPinned =
+          JSON.parse(localStorage.getItem("autoPinnedUsers")) || [];
+        localStorage.setItem(
+          "autoPinnedUsers",
+          JSON.stringify(autoPinned.filter((id) => id !== targetUserId))
+        );
       } else {
         console.error("Error unpinning:", error.message);
       }
     } else {
       // Pin
-      const { error } = await supabase
+      // 1. Get current pinned users count from Supabase
+      const { data: currentPinned, error: fetchError } = await supabase
+        .from("pinned_users")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true }); // oldest first
+
+      if (fetchError) {
+        console.error("Error fetching pinned users:", fetchError.message);
+        return;
+      }
+
+      // 2. If already 10 pinned, remove the oldest one
+      if (currentPinned.length >= 10) {
+        const oldest = currentPinned[0];
+        const { error: deleteError } = await supabase
+          .from("pinned_users")
+          .delete()
+          .match({ user_id: user.id, pinned_user_id: oldest.pinned_user_id });
+
+        if (deleteError) {
+          console.error(
+            "Error removing oldest pinned user:",
+            deleteError.message
+          );
+          return;
+        }
+      }
+
+      // 3. Insert new pinned user
+      const { error: insertError } = await supabase
         .from("pinned_users")
         .insert([{ user_id: user.id, pinned_user_id: targetUserId }]);
 
-      if (!error) {
+      if (!insertError) {
         setUsers((prevUsers) =>
           prevUsers.map((u) =>
             u.id === targetUserId ? { ...u, pinned: true } : u
           )
         );
+
+        // Update localStorage
+        const autoPinned =
+          JSON.parse(localStorage.getItem("autoPinnedUsers")) || [];
+        autoPinned.push(targetUserId);
+        if (autoPinned.length > 10) autoPinned.shift();
+        localStorage.setItem("autoPinnedUsers", JSON.stringify(autoPinned));
       } else {
-        console.error("Error pinning:", error.message);
+        console.error("Error pinning:", insertError.message);
       }
     }
   };
@@ -1035,6 +1123,17 @@ const ChatList = () => {
       text: "Roast Me Feature ",
     });
   };
+  const handleFilterClick = () => {
+    // Check notification permission
+    if (Notification.permission === "granted") {
+      setShowAllTabs(true);
+    } else {
+      // Show alert if permission not granted
+      setAlertMessage({
+        text: "To use this feature, allow notification permission",
+      });
+    }
+  };
 
   const handleNotification = async () => {
     setNotificationCount(0); // reset UI immediately
@@ -1145,7 +1244,7 @@ const ChatList = () => {
             }}
             style={{ position: "relative" }}
           >
-            📌 Pinned
+            Chats
             {hasPinnedNotification && (
               <span
                 className="sketchy-badge pinned-tab-badge"
@@ -1235,7 +1334,7 @@ const ChatList = () => {
             <FaMapMarkerAlt style={{ marginRight: "6px" }} />
           </button>
 
-          <button className="sketchy-tab" onClick={() => setShowAllTabs(true)}>
+          <button className="sketchy-tab" onClick={handleFilterClick}>
             <FaFilter style={{ marginRight: "6px" }} />
           </button>
 
@@ -1403,13 +1502,13 @@ const ChatList = () => {
                         </span>
 
                         <div className="spacer" />
-                        <FaThumbtack
+                        {/*<FaThumbtack
                           className={`pin-icon ${user.pinned ? "pinned" : ""}`}
                           onClick={(e) => {
                             handlePinToggle(e, user.id);
                             togglePin(user.id);
                           }}
-                        />
+                        />*/}
                         <FaEnvelope
                           className="dm-envelope"
                           onClick={(e) =>
@@ -1449,10 +1548,10 @@ const ChatList = () => {
 
               {activeTab === "pinned" && (
                 <>
-                  <FaThumbtack size={40} className="no-icon" />
-                  <p className="no-title">No pinned friends</p>
+                  <FaComments size={40} className="no-icon" />
+                  <p className="no-title">No Chats Yet</p>
                   <p className="no-sub">
-                    Pin your favorite people to access them quickly.
+                    Once you send messages, they’ll appear in your chat history.
                   </p>
                 </>
               )}
@@ -1598,7 +1697,7 @@ const ChatList = () => {
       {alertMessage && (
         <SketchyAlert
           message={alertMessage.text}
-          withButton={alertMessage.withButton}
+          buttons={["allow", "close"]}
           onClose={() => setAlertMessage(null)}
         />
       )}

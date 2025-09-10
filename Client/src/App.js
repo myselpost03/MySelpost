@@ -44,6 +44,7 @@ import InternetStatusAlert from "./Components/InternetStatusAlert";
 import FeedbackPopup from "./Components/FeedbackPopup";
 import { isRunningAsPWA } from "./CheckPWA";
 import { trackEvent } from "./Utils/analytics";
+import {ChatProvider} from "./Context/ChatContext";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
@@ -187,6 +188,29 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation(); // ✅ get current path
   const [ready, setReady] = useState(false); // ✅ prevent early render
+
+  useEffect(() => {
+    let isDeveloper = false;
+
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      if (storedUser?.name === "Shivani") {
+        isDeveloper = true;
+      }
+    } catch (e) {
+      // ignore JSON errors
+    }
+
+    if (!isDeveloper) {
+      console.log = () => {};
+      console.warn = () => {};
+      console.error = () => {};
+      console.info = () => {};
+      console.debug = () => {};
+    } else {
+      console.log("👩‍💻 Developer mode enabled for Developer — logs active");
+    }
+  }, []);
 
   useEffect(() => {
     const visibilityChannel = new BroadcastChannel("chat_app_visibility");
@@ -345,7 +369,7 @@ function AppContent() {
   return (
     <>
       <UserStatusWrapper />
-
+ <ChatProvider>
       <Routes>
         {publicRoutes.map(({ path, component: Component }) => (
           <Route key={path} path={path} element={<Component />} />
@@ -362,7 +386,7 @@ function AppContent() {
           />
         ))}
         <Route path="*" element={<NotFound />} />
-      </Routes>
+      </Routes></ChatProvider>
       <InternetStatusAlert />
       {alertMessage && (
         <SketchyAlert

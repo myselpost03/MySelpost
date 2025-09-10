@@ -608,7 +608,7 @@ const Profile = () => {
   const handleLogout = async () => {
     setLoggingOut(true); // Show "Logging out..."
     try {
-      await handleUnsubscribe(); // Unsubscribe from push notifications or cleanup
+      //await handleUnsubscribe(); // Unsubscribe from push notifications or cleanup
       localStorage.clear(); // Clear localStorage
       navigate("/"); // Redirect to homepage/login
     } catch (err) {
@@ -905,8 +905,8 @@ const Profile = () => {
             <button
               onClick={handleInstall}
               style={{
-                backgroundColor: "#03c988",
-                color: "#ffffff",
+                backgroundColor: "#111",
+                color: "#fff",
                 border: "none",
                 padding: "10px 20px",
                 fontSize: "16px",
@@ -919,8 +919,8 @@ const Profile = () => {
             <button
               onClick={handleCancel}
               style={{
-                backgroundColor: "#ff6666",
-                color: "#ffffff",
+                backgroundColor: "#f1f1f1",
+                color: "#111",
                 border: "none",
                 padding: "10px 20px",
                 fontSize: "16px",

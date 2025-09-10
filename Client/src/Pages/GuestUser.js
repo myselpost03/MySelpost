@@ -11,7 +11,7 @@ import {
   FaThumbtack,
   FaSearch,
   FaMapMarkerAlt,
-  FaFilter
+  FaFilter,
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
@@ -342,7 +342,7 @@ const GuestUser = () => {
               onClick={handleAlert}
               style={{ position: "relative" }}
             >
-              📌 Pinned
+              Chats
             </button>
 
             <button
@@ -485,13 +485,13 @@ const GuestUser = () => {
                             <FaCircle />
                           </span>
 
-                          <div className="spacer" />
+                         {/* <div className="spacer" />
                           <FaThumbtack
                             className={`pin-icon ${
                               user.pinned ? "pinned" : ""
                             }`}
                             onClick={handleAlert}
-                          />
+                          />*/}
                           <FaEnvelope
                             className="dm-envelope"
                             onClick={handleAlert}
@@ -555,14 +555,9 @@ const GuestUser = () => {
           onClose={() => setAlertMessage(null)}
         />
       )}
-       <Link to='/roast'
-                      className="fab-roast-button"
-                      title="Notification"
-                    >
-                      <FaFire />
-                   
-                    </Link>
-                  
+      <Link to="/roast" className="fab-roast-button" title="Notification">
+        <FaFire />
+      </Link>
     </div>
   );
 };
