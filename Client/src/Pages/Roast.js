@@ -82,7 +82,6 @@ function Roast() {
     }
   };
 
-
   const fetchCardsData = async () => {
     setLoading(true);
     try {

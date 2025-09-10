@@ -47,7 +47,6 @@ body {
   color: #333;
 }
 
-
 .chatlist-container {
   margin-top: 7%; /* reduced from 5% */
   margin-bottom: 2%; /* added to reduce space at the bottom */
@@ -881,7 +880,6 @@ body {
 @media (max-width: 480px) {
   .user-card {
     border: none;
-    
   }
 }
 

@@ -1174,205 +1174,210 @@ const ChatList = () => {
   }
 
   return (
-    <div className="chatlist-container">
+    <>
       <Header />
-      <h2 className="chatlist-title">🖋️ Your Circles</h2>
+      <div className="chatlist-container">
+        <h2 className="chatlist-title">🖋️ Your Circles</h2>
 
-      <>
-        <div className="sketchy-search-wrapper">
-          <div className="search-input-container">
-            <input
-              type="text"
-              className="sketchy-search"
-              placeholder="🔍 Search users..."
-              value={searchTerm}
-              onChange={(e) => {
-                const value = e.target.value;
-                setSearchTerm(value);
+        <>
+          <div className="sketchy-search-wrapper">
+            <div className="search-input-container">
+              <input
+                type="text"
+                className="sketchy-search"
+                placeholder="🔍 Search users..."
+                value={searchTerm}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSearchTerm(value);
 
-                if (value.trim() === "") {
-                  setPage(0);
-                  setUsers([]);
-                  setHasMore(true);
-                  setActiveTab("all");
-                  localStorage.setItem("activeTab", "all");
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSearchSubmit();
-                }
-              }}
-            />
-
-            {/* Show cross icon inside input when there is text */}
-            {searchTerm.trim() !== "" && (
-              <button
-                className="clear-search-button"
-                onClick={async () => {
-                  setSearchTerm(""); // clear input
-                  setPage(0);
-                  setHasMore(true);
-                  setActiveTab("all");
-                  localStorage.setItem("activeTab", "all");
-
-                  setLoading(true); // ✅ show spinner while loading "All" tab
-
-                  try {
-                    const { data, error } = await supabase
-                      .from("users")
-                      .select(
-                        "id, name, profile_pic, country, gender, status, age, decency_rating, created_at"
-                      )
-                      .order("created_at", { ascending: false });
-
-                    if (error) throw error;
-
-                    // Process users as usual
-                    const processed = data.map((u) => ({
-                      ...u,
-                      avatar: u.profile_pic || empty,
-                      notifications: unreadCounts[u.id] || 0,
-                      pinned: false, // reset pinned if needed
-                      status: u.status || "offline",
-                    }));
-
-                    setUsers(processed);
-                  } catch (err) {
-                    console.error("Error loading all users:", err);
-                  } finally {
-                    setLoading(false); // ✅ hide spinner
+                  if (value.trim() === "") {
+                    setPage(0);
+                    setUsers([]);
+                    setHasMore(true);
+                    setActiveTab("all");
+                    localStorage.setItem("activeTab", "all");
                   }
                 }}
-                title="Clear search"
-              >
-                <FaTimes />
-              </button>
-            )}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearchSubmit();
+                  }
+                }}
+              />
+
+              {/* Show cross icon inside input when there is text */}
+              {searchTerm.trim() !== "" && (
+                <button
+                  className="clear-search-button"
+                  onClick={async () => {
+                    setSearchTerm(""); // clear input
+                    setPage(0);
+                    setHasMore(true);
+                    setActiveTab("all");
+                    localStorage.setItem("activeTab", "all");
+
+                    setLoading(true); // ✅ show spinner while loading "All" tab
+
+                    try {
+                      const { data, error } = await supabase
+                        .from("users")
+                        .select(
+                          "id, name, profile_pic, country, gender, status, age, decency_rating, created_at"
+                        )
+                        .order("created_at", { ascending: false });
+
+                      if (error) throw error;
+
+                      // Process users as usual
+                      const processed = data.map((u) => ({
+                        ...u,
+                        avatar: u.profile_pic || empty,
+                        notifications: unreadCounts[u.id] || 0,
+                        pinned: false, // reset pinned if needed
+                        status: u.status || "offline",
+                      }));
+
+                      setUsers(processed);
+                    } catch (err) {
+                      console.error("Error loading all users:", err);
+                    } finally {
+                      setLoading(false); // ✅ hide spinner
+                    }
+                  }}
+                  title="Clear search"
+                >
+                  <FaTimes />
+                </button>
+              )}
+            </div>
+
+            {/* Search icon outside input */}
+            <button className="search-button" onClick={handleSearchSubmit}>
+              <FaSearch />
+            </button>
           </div>
 
-          {/* Search icon outside input */}
-          <button className="search-button" onClick={handleSearchSubmit}>
-            <FaSearch />
-          </button>
-        </div>
+          <div className="tab-bar">
+            <button
+              className={`sketchy-tab ${activeTab === "all" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("all");
+                localStorage.setItem("activeTab", "all");
+              }}
+            >
+              All
+            </button>
+            <button
+              className={`sketchy-tab ${
+                activeTab === "pinned" ? "active" : ""
+              }`}
+              onClick={() => {
+                setActiveTab("pinned");
+                localStorage.setItem("activeTab", "pinned");
+                handleRouteUpdate();
+              }}
+              style={{ position: "relative" }}
+            >
+              Chats
+              {hasPinnedNotification && (
+                <span
+                  className="sketchy-badge pinned-tab-badge"
+                  style={{
+                    position: "absolute",
+                    top: "-6px",
+                    right: "-6px",
+                    fontSize: "0.7rem",
+                    backgroundColor: "#e53935",
+                    padding: "0.4rem",
+                    borderRadius: "50px",
+                  }}
+                ></span>
+              )}
+            </button>
+            <button
+              className={`sketchy-tab ${activeTab === "inbox" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("inbox");
+                localStorage.setItem("activeTab", "inbox");
+                handleRouteUpdate();
+              }}
+              style={{ position: "relative" }}
+            >
+              Inbox
+              {Object.values(unreadCounts).some((count) => count > 0) && (
+                <span
+                  className="sketchy-badge pinned-tab-badge"
+                  style={{
+                    position: "absolute",
+                    top: "-6px",
+                    right: "-6px",
+                    fontSize: "0.7rem",
+                    backgroundColor: "#e53935",
+                    padding: "0.4rem",
+                    borderRadius: "50px",
+                  }}
+                ></span>
+              )}
+            </button>
+            {activeTab === "inbox" &&
+              Object.values(unreadCounts).some((c) => c > 0) && (
+                <button
+                  onClick={handleMarkAllAsSeen}
+                  className="mark-all-seen-btn"
+                  style={{
+                    position: "fixed",
+                    bottom: "50px",
+                    right: "20px",
+                    zIndex: 999,
+                    padding: "0.8rem 1.2rem",
+                    backgroundColor: "#222",
+                    color: "white",
+                    borderRadius: "30px",
+                    border: "none",
+                    cursor: "pointer",
+                    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
+                    fontWeight: "bold",
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  <FaCheck size={20} color="white" />
+                </button>
+              )}
 
-        <div className="tab-bar">
-          <button
-            className={`sketchy-tab ${activeTab === "all" ? "active" : ""}`}
-            onClick={() => {
-              setActiveTab("all");
-              localStorage.setItem("activeTab", "all");
-            }}
-          >
-            All
-          </button>
-          <button
-            className={`sketchy-tab ${activeTab === "pinned" ? "active" : ""}`}
-            onClick={() => {
-              setActiveTab("pinned");
-              localStorage.setItem("activeTab", "pinned");
-              handleRouteUpdate();
-            }}
-            style={{ position: "relative" }}
-          >
-            Chats
-            {hasPinnedNotification && (
-              <span
-                className="sketchy-badge pinned-tab-badge"
-                style={{
-                  position: "absolute",
-                  top: "-6px",
-                  right: "-6px",
-                  fontSize: "0.7rem",
-                  backgroundColor: "#e53935",
-                  padding: "0.4rem",
-                  borderRadius: "50px",
-                }}
-              ></span>
-            )}
-          </button>
-          <button
-            className={`sketchy-tab ${activeTab === "inbox" ? "active" : ""}`}
-            onClick={() => {
-              setActiveTab("inbox");
-              localStorage.setItem("activeTab", "inbox");
-              handleRouteUpdate();
-            }}
-            style={{ position: "relative" }}
-          >
-            Inbox
-            {Object.values(unreadCounts).some((count) => count > 0) && (
-              <span
-                className="sketchy-badge pinned-tab-badge"
-                style={{
-                  position: "absolute",
-                  top: "-6px",
-                  right: "-6px",
-                  fontSize: "0.7rem",
-                  backgroundColor: "#e53935",
-                  padding: "0.4rem",
-                  borderRadius: "50px",
-                }}
-              ></span>
-            )}
-          </button>
-          {activeTab === "inbox" &&
-            Object.values(unreadCounts).some((c) => c > 0) && (
-              <button
-                onClick={handleMarkAllAsSeen}
-                className="mark-all-seen-btn"
-                style={{
-                  position: "fixed",
-                  bottom: "50px",
-                  right: "20px",
-                  zIndex: 999,
-                  padding: "0.8rem 1.2rem",
-                  backgroundColor: "#222",
-                  color: "white",
-                  borderRadius: "30px",
-                  border: "none",
-                  cursor: "pointer",
-                  boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
-                  fontWeight: "bold",
-                  fontSize: "0.95rem",
-                }}
-              >
-                <FaCheck size={20} color="white" />
-              </button>
-            )}
+            <button
+              className={`sketchy-tab ${
+                activeTab === "online" ? "active" : ""
+              }`}
+              onClick={() => {
+                const newTab = activeTab === "online" ? "all" : "online";
+                setActiveTab(newTab);
+                setAllFilter(newTab === "online" ? "online" : "all");
+                localStorage.setItem("activeTab", newTab);
+              }}
+            >
+              Online
+            </button>
 
-          <button
-            className={`sketchy-tab ${activeTab === "online" ? "active" : ""}`}
-            onClick={() => {
-              const newTab = activeTab === "online" ? "all" : "online";
-              setActiveTab(newTab);
-              setAllFilter(newTab === "online" ? "online" : "all");
-              localStorage.setItem("activeTab", newTab);
-            }}
-          >
-            Online
-          </button>
+            <button
+              className={`sketchy-tab ${activeTab === "maps" ? "active" : ""}`}
+              onClick={() => {
+                const newTab = activeTab === "maps" ? "all" : "maps";
+                setActiveTab(newTab);
+                setAllFilter(newTab === "maps" ? "maps" : "all");
+                localStorage.setItem("activeTab", newTab);
+              }}
+            >
+              <FaMapMarkerAlt style={{ marginRight: "6px" }} />
+            </button>
 
-          <button
-            className={`sketchy-tab ${activeTab === "maps" ? "active" : ""}`}
-            onClick={() => {
-              const newTab = activeTab === "maps" ? "all" : "maps";
-              setActiveTab(newTab);
-              setAllFilter(newTab === "maps" ? "maps" : "all");
-              localStorage.setItem("activeTab", newTab);
-            }}
-          >
-            <FaMapMarkerAlt style={{ marginRight: "6px" }} />
-          </button>
+            <button className="sketchy-tab" onClick={handleFilterClick}>
+              <FaFilter style={{ marginRight: "6px" }} />
+            </button>
 
-          <button className="sketchy-tab" onClick={handleFilterClick}>
-            <FaFilter style={{ marginRight: "6px" }} />
-          </button>
-
-          {activeTab === "all" && (
-            <>
-              {/*           <button
+            {activeTab === "all" && (
+              <>
+                {/*           <button
                 className="fab-camera-button"
                 onClick={RoastMe}
                 title="Open camera"
@@ -1380,422 +1385,433 @@ const ChatList = () => {
                 <FaCamera />
               </button>
 */}
-              {/* Filter FAB */}
-              <button
-                className="fab-heart-button"
-                onClick={handleNotification}
-                title="Notification"
-              >
-                <FaHeart />
-                {notificationCount > 0 && (
-                  <span className="heart-fab-count">
-                    {formatCount(notificationCount)}
-                  </span>
-                )}
-              </button>
-            </>
-          )}
-        </div>
+                {/* Filter FAB */}
+                <button
+                  className="fab-heart-button"
+                  onClick={handleNotification}
+                  title="Notification"
+                >
+                  <FaHeart />
+                  {notificationCount > 0 && (
+                    <span className="heart-fab-count">
+                      {formatCount(notificationCount)}
+                    </span>
+                  )}
+                </button>
+              </>
+            )}
+          </div>
 
-        <div
-          ref={listRef}
-          onScroll={handleScroll}
-          style={{ overflowY: "auto", height: "100vh" }}
-          className={`${
-            activeTab === "maps" ? "maps-active" : "sketchy-list-scrollable "
-          }`}
-        >
-          {activeTab === "maps" ? (
-            <Maps />
-          ) : searchLoading || loading ? ( // ✅ show spinner if either search or tab is loading
-            <LoadingSpinner />
-          ) : filteredUsers.length > 0 ? (
-            <>
-              {filteredUsers
-                .filter((u) => u.id !== user.id)
-                .map((user) => (
-                  <Link
-                    to="#"
-                    key={user.id}
-                    className={`user-card ${
-                      user.notifications > 0 ? "has-notification" : ""
-                    }`}
-                    onClick={(e) => {
-                      handleUserClick(user.id);
-                      handleProtectedNavigation(e, `/chat/${user.id}`, user);
-                    }}
-                  >
-                    <div className="user-avatar-wrapper">
-                      <Link
-                        to={`/profile/${user.id}`}
-                        onClick={(e) => {
-                          e.stopPropagation(); // 👈 prevent parent click
-                        }}
-                      >
-                        <img
-                          src={user.avatar}
-                          alt="avatar"
-                          onContextMenu={handleContextMenu}
-                          className="user-avatar"
-                        />
-                      </Link>
-
-                      {unreadCounts[user.id] > 0 && (
-                        <span className="sketchy-badge">
-                          {unreadCounts[user.id]}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="user-info">
-                      <div className="user-top-row">
-                        <span className="user-name">{user.name}</span>
-                        {user.verified && (
-                          <FaCheckCircle className="verified-icon" />
-                        )}
-                        {user.decency_rating !== null &&
-                          user.decency_rating !== undefined && (
-                            <div className="decency-label">
-                              <span
-                                className={` ${
-                                  user.decency_rating >= 8
-                                    ? "star"
-                                    : user.decency_rating >= 5
-                                    ? "medium-rating"
-                                    : "low-rating"
-                                }`}
-                              >
-                                ★
-                              </span>
-                              <span
-                                className={` ${
-                                  user.decency_rating >= 8
-                                    ? "star-rating"
-                                    : user.decency_rating >= 5
-                                    ? "medium-number-rating"
-                                    : "low-number-rating"
-                                }`}
-                              >
-                                {user.decency_rating}
-                              </span>
-                            </div>
-                          )}
-                      </div>
-
-                      <div className="user-bottom-row">
-                        <span
-                          className="country"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
+          <div
+            ref={listRef}
+            onScroll={handleScroll}
+            style={{ overflowY: "auto", height: "100vh" }}
+            className={`${
+              activeTab === "maps" ? "maps-active" : "sketchy-list-scrollable "
+            }`}
+          >
+            {activeTab === "maps" ? (
+              <Maps />
+            ) : searchLoading || loading ? ( // ✅ show spinner if either search or tab is loading
+              <LoadingSpinner />
+            ) : filteredUsers.length > 0 ? (
+              <>
+                {filteredUsers
+                  .filter((u) => u.id !== user.id)
+                  .map((user) => (
+                    <Link
+                      to="#"
+                      key={user.id}
+                      className={`user-card ${
+                        user.notifications > 0 ? "has-notification" : ""
+                      }`}
+                      onClick={(e) => {
+                        handleUserClick(user.id);
+                        handleProtectedNavigation(e, `/chat/${user.id}`, user);
+                      }}
+                    >
+                      <div className="user-avatar-wrapper">
+                        <Link
+                          to={`/profile/${user.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation(); // 👈 prevent parent click
                           }}
                         >
-                          {user.country && countryNameToCode[user.country] && (
-                            <ReactCountryFlag
-                              countryCode={countryNameToCode[user.country]}
-                              svg
-                              style={{
-                                width: "1.5em",
-                                height: "1.5em",
-                                borderRadius: "3px",
-                              }}
-                              title={user.country}
-                            />
+                          <img
+                            src={user.avatar}
+                            alt="avatar"
+                            onContextMenu={handleContextMenu}
+                            className="user-avatar"
+                          />
+                        </Link>
+
+                        {unreadCounts[user.id] > 0 && (
+                          <span className="sketchy-badge">
+                            {unreadCounts[user.id]}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="user-info">
+                        <div className="user-top-row">
+                          <span className="user-name">{user.name}</span>
+                          {user.verified && (
+                            <FaCheckCircle className="verified-icon" />
                           )}
-                          {user.country || "Hidden"}
-                        </span>
-                        {user.age && (
+                          {user.decency_rating !== null &&
+                            user.decency_rating !== undefined && (
+                              <div className="decency-label">
+                                <span
+                                  className={` ${
+                                    user.decency_rating >= 8
+                                      ? "star"
+                                      : user.decency_rating >= 5
+                                      ? "medium-rating"
+                                      : "low-rating"
+                                  }`}
+                                >
+                                  ★
+                                </span>
+                                <span
+                                  className={` ${
+                                    user.decency_rating >= 8
+                                      ? "star-rating"
+                                      : user.decency_rating >= 5
+                                      ? "medium-number-rating"
+                                      : "low-number-rating"
+                                  }`}
+                                >
+                                  {user.decency_rating}
+                                </span>
+                              </div>
+                            )}
+                        </div>
+
+                        <div className="user-bottom-row">
                           <span
-                            className="user-age"
+                            className="country"
                             style={{
                               display: "flex",
                               alignItems: "center",
-                              gap: "4px",
-                              marginLeft: "8px",
-                              fontSize: "0.95em",
+                              gap: "6px",
                             }}
                           >
-                            {user.age}
+                            {user.country &&
+                              countryNameToCode[user.country] && (
+                                <ReactCountryFlag
+                                  countryCode={countryNameToCode[user.country]}
+                                  svg
+                                  style={{
+                                    width: "1.5em",
+                                    height: "1.5em",
+                                    borderRadius: "3px",
+                                  }}
+                                  title={user.country}
+                                />
+                              )}
+                            {user.country || "Hidden"}
                           </span>
-                        )}
+                          {user.age && (
+                            <span
+                              className="user-age"
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                marginLeft: "8px",
+                                fontSize: "0.95em",
+                              }}
+                            >
+                              {user.age}
+                            </span>
+                          )}
 
-                        {user.gender === "male" ? (
-                          <FaMars className="gender-icon male" />
-                        ) : (
-                          <FaVenus className="gender-icon female" />
-                        )}
-                        <span
-                          className={`status-dot ${
-                            user.status === "online" ? "online" : "offline"
-                          }`}
-                        >
-                          <FaCircle />
-                        </span>
+                          {user.gender === "male" ? (
+                            <FaMars className="gender-icon male" />
+                          ) : (
+                            <FaVenus className="gender-icon female" />
+                          )}
+                          <span
+                            className={`status-dot ${
+                              user.status === "online" ? "online" : "offline"
+                            }`}
+                          >
+                            <FaCircle />
+                          </span>
 
-                        <div className="spacer" />
-                        {/*<FaThumbtack
+                          <div className="spacer" />
+                          {/*<FaThumbtack
                           className={`pin-icon ${user.pinned ? "pinned" : ""}`}
                           onClick={(e) => {
                             handlePinToggle(e, user.id);
                             togglePin(user.id);
                           }}
                         />*/}
-                        <FaEnvelope
-                          className="dm-envelope"
-                          onClick={(e) =>
-                            handleProtectedNavigation(
-                              e,
-                              `/chat/${user.id}`,
-                              user
-                            )
-                          }
-                        />
+                          <FaEnvelope
+                            className="dm-envelope"
+                            onClick={(e) =>
+                              handleProtectedNavigation(
+                                e,
+                                `/chat/${user.id}`,
+                                user
+                              )
+                            }
+                          />
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                ))}
-              {hasMore && (
-                <div
-                  ref={observerRef}
-                  style={{
-                    textAlign: "center",
-                    margin: "20px 0",
-                    paddingBottom: "1rem",
-                  }}
-                >
-                  {loadingMore && <MiniSpinner />}{" "}
-                  {/* Use your custom spinner */}
-                </div>
-              )}
-            </>
-          ) : hasFetched ? (
-            <div className="no-results-card">
-              {activeTab === "all" && (
-                <>
-                  <FaUsers size={40} className="no-icon" />
-                  <p className="no-title">No users found</p>
-                </>
-              )}
-
-              {activeTab === "pinned" && (
-                <>
-                  <FaComments size={40} className="no-icon" />
-                  <p className="no-title">No Chats Yet</p>
-                  <p className="no-sub">
-                    Once you send messages, they’ll appear in your chat history.
-                  </p>
-                </>
-              )}
-
-              {activeTab === "inbox" && (
-                <>
-                  <FaEnvelopeOpenText size={40} className="no-icon" />
-                  <p className="no-title">Your inbox is empty</p>
-                  <p className="no-sub">Any new messages will show up here.</p>
-                </>
-              )}
-
-              {activeTab === "online" && (
-                <>
-                  <FaBolt size={40} className="no-icon" />
-                  <p className="no-title">No one’s online</p>
-                  <p className="no-sub">
-                    Check back later or explore all users.
-                  </p>
-                  <button
-                    onClick={() => setActiveTab("all")}
-                    className="retry-btn"
-                  >
-                    🌍 View All Users
-                  </button>
-                </>
-              )}
-
-              {activeTab === "maps" && <Maps />}
-            </div>
-          ) : null}
-        </div>
-
-        {showAllTabs && (
-          <div className="modal-backdrop" onClick={() => setShowAllTabs(false)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <h3 className="modal-title">🎛️ Filters</h3>
-
-              <div className="modal-section">
-                <h4>Gender</h4>
-                <div className="btn-group">
-                  {["all", "male", "female"].map((g) => (
-                    <button
-                      key={g}
-                      className={`modal-btn ${
-                        genderFilter === g ? "active" : ""
-                      }`}
-                      onClick={() => {
-                        setGenderFilter(g);
-                        setShowAllTabs(false);
-                      }}
-                    >
-                      {g === "all"
-                        ? "🌐 All Genders"
-                        : g === "male"
-                        ? "♂️ Male"
-                        : "♀️ Female"}
-                    </button>
+                    </Link>
                   ))}
-                </div>
-              </div>
-
-              <div className="modal-section">
-                <h4>Country</h4>
-                <div className="btn-group">
-                  <button
-                    className={`modal-btn ${
-                      countryFilter === "all" ? "active" : ""
-                    }`}
-                    onClick={() => {
-                      setCountryFilter("all");
-                      setShowAllTabs(false);
+                {hasMore && (
+                  <div
+                    ref={observerRef}
+                    style={{
+                      textAlign: "center",
+                      margin: "20px 0",
+                      paddingBottom: "1rem",
                     }}
                   >
-                    🌍 All Countries
-                  </button>
-                  {countries.map((c) => (
+                    {loadingMore && <MiniSpinner />}{" "}
+                    {/* Use your custom spinner */}
+                  </div>
+                )}
+              </>
+            ) : hasFetched ? (
+              <div className="no-results-card">
+                {activeTab === "all" && (
+                  <>
+                    <FaUsers size={40} className="no-icon" />
+                    <p className="no-title">No users found</p>
+                  </>
+                )}
+
+                {activeTab === "pinned" && (
+                  <>
+                    <FaComments size={40} className="no-icon" />
+                    <p className="no-title">No Chats Yet</p>
+                    <p className="no-sub">
+                      Once you send messages, they’ll appear in your chat
+                      history.
+                    </p>
+                  </>
+                )}
+
+                {activeTab === "inbox" && (
+                  <>
+                    <FaEnvelopeOpenText size={40} className="no-icon" />
+                    <p className="no-title">Your inbox is empty</p>
+                    <p className="no-sub">
+                      Any new messages will show up here.
+                    </p>
+                  </>
+                )}
+
+                {activeTab === "online" && (
+                  <>
+                    <FaBolt size={40} className="no-icon" />
+                    <p className="no-title">No one’s online</p>
+                    <p className="no-sub">
+                      Check back later or explore all users.
+                    </p>
                     <button
-                      key={c}
+                      onClick={() => setActiveTab("all")}
+                      className="retry-btn"
+                    >
+                      🌍 View All Users
+                    </button>
+                  </>
+                )}
+
+                {activeTab === "maps" && <Maps />}
+              </div>
+            ) : null}
+          </div>
+
+          {showAllTabs && (
+            <div
+              className="modal-backdrop"
+              onClick={() => setShowAllTabs(false)}
+            >
+              <div
+                className="modal-content"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="modal-title">🎛️ Filters</h3>
+
+                <div className="modal-section">
+                  <h4>Gender</h4>
+                  <div className="btn-group">
+                    {["all", "male", "female"].map((g) => (
+                      <button
+                        key={g}
+                        className={`modal-btn ${
+                          genderFilter === g ? "active" : ""
+                        }`}
+                        onClick={() => {
+                          setGenderFilter(g);
+                          setShowAllTabs(false);
+                        }}
+                      >
+                        {g === "all"
+                          ? "🌐 All Genders"
+                          : g === "male"
+                          ? "♂️ Male"
+                          : "♀️ Female"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="modal-section">
+                  <h4>Country</h4>
+                  <div className="btn-group">
+                    <button
                       className={`modal-btn ${
-                        countryFilter === c ? "active" : ""
+                        countryFilter === "all" ? "active" : ""
                       }`}
                       onClick={() => {
-                        setCountryFilter(c);
+                        setCountryFilter("all");
                         setShowAllTabs(false);
                       }}
                     >
-                      {countryNameToCode[c] && (
-                        <ReactCountryFlag
-                          countryCode={countryNameToCode[c]}
-                          svg
-                          style={{
-                            width: "1.2em",
-                            height: "1.2em",
-                            marginRight: "8px",
-                          }}
-                        />
-                      )}
-                      {c}
+                      🌍 All Countries
                     </button>
-                  ))}
+                    {countries.map((c) => (
+                      <button
+                        key={c}
+                        className={`modal-btn ${
+                          countryFilter === c ? "active" : ""
+                        }`}
+                        onClick={() => {
+                          setCountryFilter(c);
+                          setShowAllTabs(false);
+                        }}
+                      >
+                        {countryNameToCode[c] && (
+                          <ReactCountryFlag
+                            countryCode={countryNameToCode[c]}
+                            svg
+                            style={{
+                              width: "1.2em",
+                              height: "1.2em",
+                              marginRight: "8px",
+                            }}
+                          />
+                        )}
+                        {c}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+              </div>
+            </div>
+          )}
+        </>
+
+        {showPremiumNotice && (
+          <div
+            className="premium-modal-overlay"
+            onClick={() => setShowPremiumNotice(false)}
+          >
+            <div
+              className="premium-modal-box"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="premium-modal-title">🌍 Premium Chat</h2>
+              <p className="premium-modal-message">
+                Pay to chat with premium country people.
+              </p>
+              <div className="premium-modal-buttons">
+                <button
+                  className="premium-btn premium-pay-btn"
+                  onClick={() => {
+                    setShowPremiumNotice(false);
+                    handlePaypalRedirect();
+                    // Replace this with actual payment logic
+                  }}
+                >
+                  💰 Pay to Unlock
+                </button>
+                <button
+                  className="premium-btn premium-cancel-btn"
+                  onClick={() => setShowPremiumNotice(false)}
+                >
+                  ❌ Cancel
+                </button>
               </div>
             </div>
           </div>
         )}
-      </>
+        {alertMessage && (
+          <SketchyAlert
+            message={alertMessage.text}
+            buttons={["allow", "close"]}
+            onClose={() => setAlertMessage(null)}
+          />
+        )}
+        {showProfileModal && (
+          <div className="popup-wrapper">
+            <div className="popup-card">
+              <h3 className="popup-title">Hey there!</h3>
+              <p className="popup-text">
+                Tell us your age and gender to continue.
+              </p>
 
-      {showPremiumNotice && (
-        <div
-          className="premium-modal-overlay"
-          onClick={() => setShowPremiumNotice(false)}
-        >
-          <div
-            className="premium-modal-box"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="premium-modal-title">🌍 Premium Chat</h2>
-            <p className="premium-modal-message">
-              Pay to chat with premium country people.
-            </p>
-            <div className="premium-modal-buttons">
+              <div className="option-row">
+                <label className="option-box">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="male"
+                    checked={profileForm.gender === "male"}
+                    onChange={handleProfileChange}
+                  />{" "}
+                  Male
+                </label>
+                <label className="option-box">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="female"
+                    checked={profileForm.gender === "female"}
+                    onChange={handleProfileChange}
+                  />{" "}
+                  Female
+                </label>
+              </div>
+
+              <input
+                type="number"
+                className="input-field"
+                placeholder="Enter your age"
+                name="age"
+                value={profileForm.age}
+                onChange={handleProfileChange}
+              />
+
               <button
-                className="premium-btn premium-pay-btn"
-                onClick={() => {
-                  setShowPremiumNotice(false);
-                  handlePaypalRedirect();
-                  // Replace this with actual payment logic
-                }}
+                className={`submit-funky-btn ${
+                  !profileForm.gender ||
+                  !profileForm.age ||
+                  parseInt(profileForm.age, 10) < 13 ||
+                  parseInt(profileForm.age, 10) > 99
+                    ? "disabled"
+                    : ""
+                }`}
+                onClick={handleClick}
+                disabled={
+                  !profileForm.gender ||
+                  !profileForm.age ||
+                  parseInt(profileForm.age, 10) < 13 ||
+                  parseInt(profileForm.age, 10) > 99
+                }
               >
-                💰 Pay to Unlock
-              </button>
-              <button
-                className="premium-btn premium-cancel-btn"
-                onClick={() => setShowPremiumNotice(false)}
-              >
-                ❌ Cancel
+                Submit
               </button>
             </div>
           </div>
-        </div>
-      )}
-      {alertMessage && (
-        <SketchyAlert
-          message={alertMessage.text}
-          buttons={["allow", "close"]}
-          onClose={() => setAlertMessage(null)}
-        />
-      )}
-      {showProfileModal && (
-        <div className="popup-wrapper">
-          <div className="popup-card">
-            <h3 className="popup-title">Hey there!</h3>
-            <p className="popup-text">
-              Tell us your age and gender to continue.
-            </p>
-
-            <div className="option-row">
-              <label className="option-box">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="male"
-                  checked={profileForm.gender === "male"}
-                  onChange={handleProfileChange}
-                />{" "}
-                Male
-              </label>
-              <label className="option-box">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="female"
-                  checked={profileForm.gender === "female"}
-                  onChange={handleProfileChange}
-                />{" "}
-                Female
-              </label>
-            </div>
-
-            <input
-              type="number"
-              className="input-field"
-              placeholder="Enter your age"
-              name="age"
-              value={profileForm.age}
-              onChange={handleProfileChange}
-            />
-
-            <button
-              className={`submit-funky-btn ${
-                !profileForm.gender ||
-                !profileForm.age ||
-                parseInt(profileForm.age, 10) < 13 ||
-                parseInt(profileForm.age, 10) > 99
-                  ? "disabled"
-                  : ""
-              }`}
-              onClick={handleClick}
-              disabled={
-                !profileForm.gender ||
-                !profileForm.age ||
-                parseInt(profileForm.age, 10) < 13 ||
-                parseInt(profileForm.age, 10) > 99
-              }
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };
 

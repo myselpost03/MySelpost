@@ -200,124 +200,24 @@ const Profile = () => {
     },
   });
 
-  {
-    /*/ 🔹 Save a single user to IndexedDB
-  const saveUserToIDB = async (user) => {
-    const db = await dbPromise;
-    try {
-      // Non-Google user → always cache profile_pic
-      if (!user.google_login && user.profile_pic && user.profile_pic.startsWith("http")) {
-        const response = await fetch(user.profile_pic);
-        const blob = await response.blob();
-        await db.put("profile_pics", { id: user.id, blob });
-      }
-
-      // Google user → only cache if avatar is Supabase-hosted
-      if (user.google_login && user.profile_pic?.includes("supabase.co")) {
-        const response = await fetch(user.profile_pic);
-        const blob = await response.blob();
-        await db.put("profile_pics", { id: user.id, blob });
-      }
-
-      // Save/update user data regardless of Google login
-      await db.put("users", user);
-
-      console.log(`♻️ User ${user.id} saved to IndexedDB`);
-    } catch (err) {
-      console.error("⚠️ saveUserToIDB error:", err);
-    }
-  };
-*/
-  }
-
-  {
-    /*const fetchUser = async () => {
-    try {
-      const isGoogleUser = currentUser?.google_login;
-      const { data, error } = await supabase
-        .from("users")
-        .select(
-          "id, name, talked_to_count, bio, profile_pic, reward_coins, decency_rating, orientation"
-        )
-        .eq("id", id)
-        .single();
-
-      if (!error && data) {
-        const db = await openDB("UserDB", 1, {
-          upgrade(db) {
-            if (!db.objectStoreNames.contains("profile_pics")) {
-              db.createObjectStore("profile_pics", { keyPath: "id" });
-            }
-            if (!db.objectStoreNames.contains("users")) {
-              db.createObjectStore("users", { keyPath: "id" });
-            }
-          },
-        });
-
-        // Try to get cached profile pic
-        const cached = await db.get("profile_pics", data.id);
-        let avatar = empty;
-
-        if (isGoogleUser) {
-          if (data.profile_pic?.includes("supabase")) {
-            // Supabase-hosted Google user → cache & use
-            if (!cached) await saveUserToIDB(data);
-            avatar = cached?.blob
-              ? URL.createObjectURL(cached.blob)
-              : data.profile_pic;
-          } else {
-            // Original Google avatar → no caching
-            avatar = data.profile_pic || empty;
-          }
-        } else {
-          // Non-Google user → fetch and cache if not present
-          if (!cached) await saveUserToIDB(data);
-
-          // Use blob if available; otherwise fallback to original URL
-          const freshCached = await db.get("profile_pics", data.id);
-          avatar = freshCached?.blob
-            ? URL.createObjectURL(freshCached.blob)
-            : data.profile_pic || empty;
-        }
-
-        setUserData({ ...data, avatar });
-        setForm((prev) => ({
-          ...prev,
-          name: data.name || "",
-          bio: data.bio || "",
-        }));
-        setOrientation(data.orientation || "");
-
-        console.log("✅ User fetched successfully");
-      } else {
-        console.error("❌ Error fetching user:", error?.message);
-        setUserData({ avatar: empty, name: "", bio: "" });
-      }
-    } catch (err) {
-      console.error("⚠️ fetchUser error:", err);
-      setUserData({ avatar: empty, name: "", bio: "" });
-    }
-  };
-*/
-  }
-
   // Save user + profile_pic to IndexedDB (update if changed)
   const saveUserToIDB = async (user) => {
     const db = await dbPromise;
+
     try {
       const existing = await db.get("profile_pics", user.id);
 
       if (user.profile_pic) {
         let shouldUpdate = false;
 
-        // If no cache → must save
+        // If no cached pic → must save
         if (!existing) {
           shouldUpdate = true;
           console.log(
             `💾 No cached profile pic found, will save new one for ${user.id}`
           );
         }
-        // If cached but Supabase has new URL → update
+        // If cached but URL changed → update
         else if (existing.url !== user.profile_pic) {
           shouldUpdate = true;
           console.log(`🔄 Profile pic changed for ${user.id}, updating cache`);
@@ -343,6 +243,12 @@ const Profile = () => {
           console.log(
             `⚡ Cached profile pic for user ${user.id} is still valid, skipping update`
           );
+        }
+      } else {
+        // User removed profile pic → delete from IndexedDB
+        if (existing) {
+          await db.delete("profile_pics", user.id);
+          console.log(`🗑️ Removed cached profile pic for user ${user.id}`);
         }
       }
 
@@ -466,7 +372,7 @@ const Profile = () => {
           ...u,
           name: form.name,
           bio: form.bio,
-          avatar: profilePicUrl,
+          avatar: profilePicUrl || empty,
         }));
 
         setStatus({ ...status, editing: false, uploading: false });
@@ -873,7 +779,7 @@ const Profile = () => {
           >
             <div className="sketchy-blur-overlay" />
             <img
-              src={userData.avatar}
+              src={userData.avatar || empty}
               alt="Full Avatar"
               className="sketchy-fullscreen-image"
             />
