@@ -1,8 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Caveat&display=swap");
 @import url("https://fonts.googleapis.com/css?family=Patrick+Hand:regular");
 
-
-
 .Chat-UI {
   font-family: "Comic Sans MS", "Caveat", cursive;
   min-height: 100vh;
@@ -191,7 +189,6 @@
   transition: background 0.2s ease, transform 0.1s ease;
 }
 
-
 .input-area button:not(.gif-btn) {
   background-color: #222;
   color: white;
@@ -285,10 +282,6 @@
   cursor: pointer;
   font-family: "patrick hand", serif;
 }
-
-
-
-
 
 /* Top actions */
 .top-actions {
@@ -676,7 +669,7 @@
 .gif-search-header h4 {
   margin: 0;
   color: #ffffff;
-  font-family: 'Patrick Hand', cursive;
+  font-family: "Patrick Hand", cursive;
   font-size: 1.2rem;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -715,7 +708,7 @@
   border-radius: 25px;
   background: #111;
   color: #fff;
-  font-family: 'Patrick Hand', cursive;
+  font-family: "Patrick Hand", cursive;
   font-size: 1rem;
   outline: none;
   transition: all 0.3s ease;
@@ -737,7 +730,7 @@
   border: 2px solid #333;
   border-radius: 25px;
   cursor: pointer;
-  font-family: 'Patrick Hand', cursive;
+  font-family: "Patrick Hand", cursive;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -747,13 +740,18 @@
 }
 
 .gif-search-input button:before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: all 0.5s ease;
 }
 
@@ -789,7 +787,7 @@
   grid-column: 1 / -1;
   text-align: center;
   color: #fff;
-  font-family: 'Patrick Hand', cursive;
+  font-family: "Patrick Hand", cursive;
   padding: 20px;
 }
 
@@ -803,13 +801,17 @@
 }
 
 .gif-item:before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg, rgba(0, 0, 0, 0.8), rgba(255, 255, 255, 0.1));
+  background: linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.8),
+    rgba(255, 255, 255, 0.1)
+  );
   opacity: 0;
   transition: all 0.3s ease;
   z-index: 1;
@@ -898,17 +900,17 @@
     padding: 12px;
     border-radius: 15px 15px 0 0;
   }
-  
+
   .gif-results {
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
-  
+
   .gif-search-input {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .gif-search-input button {
     width: 100%;
   }
@@ -928,14 +930,21 @@
   cursor: pointer;
 }
 
-
 @media (max-width: 320px) {
   .gif-results {
     grid-template-columns: 1fr;
   }
-  
+
   .gif-item video,
   .gif-item img {
     height: 120px;
   }
+}
+.abusive-word {
+  display: inline-block; /* ensures filter works */
+  filter: blur(5px);
+  background-color: #eee;
+  border-radius: 4px;
+  padding: 0 2px;
+  margin-right: 2px;
 }

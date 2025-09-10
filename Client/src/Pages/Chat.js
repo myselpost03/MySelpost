@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import ChatHeader from "../Components/ChatHeader";
 import { supabase, supabaseStorage } from "../Utils/supabaseClient";
-import { FaBan, FaFilm, FaImage, FaMicrophone } from "react-icons/fa";
+import { FaImage, FaMicrophone } from "react-icons/fa";
 import bannedData from "../JSON/bannedWords.json";
 import SketchyAlert from "../Components/SketchyAlert";
 import { trackEvent } from "../Utils/analytics";
@@ -544,7 +544,8 @@ const Chat = () => {
       label: "Send Message Button",
     });
 
-    if (!input.trim()) {
+    const messageText = input.trim();
+    if (!messageText) {
       setIsSending(false);
       return;
     }
@@ -555,8 +556,8 @@ const Chat = () => {
     // Remove messages older than 15 seconds
     recentMessages.current = recent.filter((msg) => now - msg.time < 15000);
 
-    // Prevent spamming same message
-    if (recentMessages.current.some((msg) => msg.text === input.trim())) {
+    // Prevent sending same message repeatedly
+    if (recentMessages.current.some((msg) => msg.text === messageText)) {
       setAlertMessage({
         text: "⚠️ You are sending the same message repeatedly.",
         buttons: ["close"],
@@ -566,133 +567,75 @@ const Chat = () => {
         user_id_input: currentUser.id,
       });
 
-      if (error) {
-        console.error("❌ RPC error:", error.message);
-      }
+      if (error) console.error("❌ RPC error:", error.message);
+      setIsSending(false);
       return;
     }
 
-    recentMessages.current.push({ text: input.trim(), time: now });
-
-    const messageText = input.trim();
-    const timestamp = new Date().toISOString();
-    const tempId = Date.now();
-
-    const localMsg = {
-      id: tempId,
-      localId: tempId,
-      text: messageText,
-      type: "sent",
-      time: new Date().toLocaleTimeString(),
-      timestamp,
-    };
-
-    setMessages((prev) => {
-      const updated = [...prev, localMsg];
-      return updated;
-    });
-
+    recentMessages.current.push({ text: messageText, time: now });
     setInput("");
-    requestAnimationFrame(() => {
-      inputRef.current?.focus();
-    });
+    inputRef.current?.focus();
+    const isAbusive = bannedData.abusiveWords.some((w) =>
+      input.toLowerCase().includes(w.toLowerCase())
+    );
+    // Insert message into DB
+    try {
+      const { data, error } = await supabase
+        .from("chats")
+        .insert([
+          {
+            sender_id: currentUser.id,
+            receiver_id: targetId,
+            message: messageText,
+            type: "text",
+            is_abusive: isAbusive,
+          },
+        ])
+        .select();
 
-    const newMessage = {
-      sender_id: currentUser.id,
-      receiver_id: targetId,
-      message: messageText,
-    };
+      if (error) throw error;
 
-    const { data, error } = await supabase
-      .from("chats")
-      .insert([newMessage])
-      .select();
+      if (data && data[0]) {
+        const dbMsg = {
+          id: data[0].id,
+          text: data[0].message,
+          type: "sent",
+          time: new Date(data[0].created_at).toLocaleTimeString(),
+          timestamp: data[0].created_at,
+        };
 
-    if (error) {
-      console.error("❌ Supabase insert error:", error.message);
-      setIsSending(false);
-      return;
-    }
-    if (!error) {
-      // ✅ mark this chat partner as part of Inbox
-      await supabase
-        .from("pinned_users")
-        .upsert([{ user_id: currentUser.id, pinned_user_id: targetId }]);
-    }
+        // Directly update messages from DB
+        setMessages((prev) => [...prev, dbMsg]);
 
-    let messageId = null;
+        // Ensure chat partner is pinned
+        await supabase
+          .from("pinned_users")
+          .upsert([{ user_id: currentUser.id, pinned_user_id: targetId }]);
 
-    if (data && data[0]) {
-      messageId = data[0].id;
-
-      const dbMsg = {
-        id: messageId,
-        text: data[0].message,
-        type: "sent",
-        time: new Date(data[0].created_at).toLocaleTimeString(),
-        timestamp: data[0].created_at,
-      };
-
-      // update in-place using localId (tempId). Keep localId so key stays same.
-      setMessages((prev) => {
-        let found = false;
-        const updated = prev.map((m) => {
-          if (m.localId === tempId) {
-            found = true;
-            return {
-              ...m, // keep object position & localId (so key is stable)
-              id: dbMsg.id,
-              text: dbMsg.text,
-              time: dbMsg.time,
-              timestamp: dbMsg.timestamp,
-            };
-          }
-          return m;
-        });
-
-        // fallback: if local temp not found (edge-case), append dbMsg only if it's not already present
-        if (!found) {
-          const already = prev.some((m) => m.id === dbMsg.id);
-          if (!already) updated.push(dbMsg);
-        }
-
-        return updated;
-      });
-    }
-
-    if (blockedByOtherUser || iBlockedOtherUser) {
-      console.log("🚫 Skipped: Message blocked, no unread count or push");
-      setIsSending(false);
-      return;
-    }
-
-    await supabase
-      .from("unread_counts")
-      .upsert(
-        {
-          sender_id: currentUser.id,
-          receiver_id: targetId,
-          count: 1,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: ["sender_id", "receiver_id"] }
-      )
-      .select()
-      .then(async ({ data, error }) => {
-        if (!error && data?.[0]) {
-          const newCount = data[0].count + 1;
-
-          await supabase
+        // Update unread counts
+        if (!blockedByOtherUser && !iBlockedOtherUser) {
+          const { data: unreadData, error: unreadError } = await supabase
             .from("unread_counts")
-            .update({
-              count: newCount,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("sender_id", currentUser.id)
-            .eq("receiver_id", targetId);
+            .upsert(
+              {
+                sender_id: currentUser.id,
+                receiver_id: targetId,
+                count: 1,
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: ["sender_id", "receiver_id"] }
+            )
+            .select();
 
-          // Send push only if not blocked by or blocking the target
-          if (messageId && !blockedByOtherUser && !iBlockedOtherUser) {
+          if (!unreadError && unreadData?.[0]) {
+            const newCount = unreadData[0].count + 1;
+            await supabase
+              .from("unread_counts")
+              .update({ count: newCount, updated_at: new Date().toISOString() })
+              .eq("sender_id", currentUser.id)
+              .eq("receiver_id", targetId);
+
+            // Send push if receiver not in same chat
             try {
               const { data: receiverData, error: routeError } = await supabase
                 .from("users")
@@ -702,30 +645,26 @@ const Chat = () => {
 
               if (!routeError) {
                 const receiverRoute = receiverData?.active_route;
-
                 if (!receiverRoute?.startsWith("/chat/")) {
                   await axios.post(
                     "https://myselpost.onrender.com/send-message-push",
-                    {
-                      userId: targetId,
-                    }
-                  );
-                } else {
-                  console.log(
-                    "🔕 Push skipped: Receiver already in same chat route."
+                    { userId: targetId }
                   );
                 }
               }
             } catch (err) {
               console.error("❌ Error sending push:", err.message);
             }
-          } else {
-            console.log("🔕 Push notification skipped due to block status.");
           }
+        } else {
+          console.log("🚫 Message blocked, push skipped.");
         }
-      });
-
-    setIsSending(false);
+      }
+    } catch (err) {
+      console.error("❌ Supabase insert error:", err.message);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   // Block toggle
@@ -772,88 +711,56 @@ const Chat = () => {
       sendMessage();
     }
   };
+
   // Sanitizing input and detecting abusive words/links/phone number
   const handleInputChange = async (e) => {
     const newText = e.target.value;
-    const lowerText = newText.toLowerCase();
+    setInput(newText);
 
     // Normalize input for smart detection
+    const lowerText = newText.toLowerCase();
     const normalizedText = lowerText
-      .replace(/[\s\-.:/]/g, "") // remove only certain characters, not all spaces blindly
+      .replace(/[\s\-.:/]/g, "")
       .replace(/dot/g, ".");
 
-    const textsToCheck = [lowerText, normalizedText];
-
     // Abusive check
-    const hasAbuse = bannedData.abusiveWords.some((word) =>
+    const abusiveWordsInText = bannedData.abusiveWords.filter((word) =>
       lowerText.includes(word.toLowerCase())
     );
 
-    if (hasAbuse) {
-      setAlertMessage({
-        text: "🚫 Abusive words are not allowed.",
-        buttons: ["close"],
-      });
-      setInput("");
-      setTimeout(() => {
-        if (inputRef.current) inputRef.current.focus();
-      }, 100);
-
+    if (abusiveWordsInText.length > 0) {
+      // Decrement decency in DB
       const { error } = await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
-
-      if (error) {
-        console.error("❌ RPC error:", error.message);
-      }
-
-      return;
+      if (error) console.error("❌ RPC error:", error.message);
     }
 
-    // Link check (use normalizedText to detect obfuscated links)
+    // Link check
     const hasLink = bannedData.bannedLinks.some((link) =>
       normalizedText.includes(link.toLowerCase())
     );
     if (hasLink) {
-      setAlertMessage("🚫 Links or obfuscated links are not allowed.");
       setInput("");
-      setTimeout(() => {
-        if (inputRef.current) inputRef.current.focus();
-      }, 100);
-
-      const { error } = await supabase.rpc("decrement_decency", {
+      inputRef.current?.focus();
+      await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
-
-      if (error) {
-        console.error("❌ RPC error:", error.message);
-      }
       return;
     }
 
     // Phone number check
     const phonePattern = /\b\d{10,13}\b/;
     if (phonePattern.test(newText.replace(/[\s-]/g, ""))) {
-      setAlertMessage({
-        text: "🚫 Sharing phone numbers is not allowed.",
-        buttons: ["close"],
-      });
       setInput("");
-      setTimeout(() => {
-        if (inputRef.current) inputRef.current.focus();
-      }, 100);
-
-      const { error } = await supabase.rpc("decrement_decency", {
+      inputRef.current?.focus();
+      await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
-
-      if (error) {
-        console.error("❌ RPC error:", error.message);
-      }
       return;
     }
 
-    // Detect copy-paste if large jump in text length (skip Shivani & Madison)
+    // Detect copy-paste
     const allowPasteUsers = ["Shivani", "Madison"];
     if (
       !allowPasteUsers.includes(currentUser.name) &&
@@ -866,20 +773,12 @@ const Chat = () => {
         buttons: ["close"],
       });
       setInput("");
-      setTimeout(() => {
-        if (inputRef.current) inputRef.current.focus();
-      }, 100);
-      const { error } = await supabase.rpc("decrement_decency", {
+      inputRef.current?.focus();
+      await supabase.rpc("decrement_decency", {
         user_id_input: currentUser.id,
       });
-
-      if (error) {
-        console.error("❌ RPC error:", error.message);
-      }
       return;
     }
-
-    setInput(newText);
   };
 
   // Detect pasting and deduct the coins (skip Shivani & Madison)
@@ -1523,7 +1422,37 @@ const Chat = () => {
                         <audio controls src={msg.text} />
                       </div>
                     ) : (
-                      <p>{msg.text}</p>
+                      <p>
+                        {msg.text.split(/\s+/).map((word, i) => {
+                          const normalized = word
+                            .toLowerCase()
+                            .replace(/[\s\-.:/]/g, "");
+                          const isWordAbusive = bannedData.abusiveWords.some(
+                            (w) => normalized.includes(w.toLowerCase())
+                          );
+
+                          return (
+                            <span
+                              key={i}
+                              style={{
+                                // Blur if the whole message is abusive OR this word is abusive
+                                filter:
+                                  msg.is_abusive || isWordAbusive
+                                    ? "blur(5px)"
+                                    : "none",
+                                backgroundColor: isWordAbusive
+                                  ? "#eee"
+                                  : "transparent",
+                                borderRadius: "4px",
+                                padding: "0 2px",
+                                marginRight: "2px",
+                              }}
+                            >
+                              {word}
+                            </span>
+                          );
+                        })}
+                      </p>
                     )}
                     <div className="message-footer">
                       <span className="time">{getTimeAgo(msg.timestamp)}</span>
