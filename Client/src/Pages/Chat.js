@@ -564,6 +564,7 @@ const Chat = () => {
 
     const localMsg = {
       id: tempId,
+      localId: tempId,
       text: messageText,
       type: "sent",
       time: new Date().toLocaleTimeString(),
@@ -606,21 +607,42 @@ const Chat = () => {
     let messageId = null;
 
     if (data && data[0]) {
-      messageId = data[0].id;
-      const dbMsg = {
-        id: messageId,
-        text: data[0].message,
-        type: "sent",
-        time: new Date(data[0].created_at).toLocaleTimeString(),
-        timestamp: data[0].created_at,
-      };
+  messageId = data[0].id;
 
-      setMessages((prev) => {
-        const filtered = prev.filter((m) => m.id !== tempId);
-        const updated = [...filtered, dbMsg];
-        return updated;
-      });
+  const dbMsg = {
+    id: messageId,
+    text: data[0].message,
+    type: "sent",
+    time: new Date(data[0].created_at).toLocaleTimeString(),
+    timestamp: data[0].created_at,
+  };
+
+  // update in-place using localId (tempId). Keep localId so key stays same.
+  setMessages((prev) => {
+    let found = false;
+    const updated = prev.map((m) => {
+      if (m.localId === tempId) {
+        found = true;
+        return {
+          ...m, // keep object position & localId (so key is stable)
+          id: dbMsg.id,
+          text: dbMsg.text,
+          time: dbMsg.time,
+          timestamp: dbMsg.timestamp,
+        };
+      }
+      return m;
+    });
+
+    // fallback: if local temp not found (edge-case), append dbMsg only if it's not already present
+    if (!found) {
+      const already = prev.some((m) => m.id === dbMsg.id);
+      if (!already) updated.push(dbMsg);
     }
+
+    return updated;
+  });
+}
 
     if (blockedByOtherUser || iBlockedOtherUser) {
       console.log("🚫 Skipped: Message blocked, no unread count or push");
@@ -1308,11 +1330,11 @@ const Chat = () => {
               {/* Show fetched messages */}
               <div className="messages">
                 {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`message ${msg.type} ${msg.status || ""}`}
-                    onClick={() => msg.isImage && handleImageClick(msg)}
-                  >
+  <div
+    key={msg.localId ?? msg.id} // <- stable key: prefer localId if present
+    className={`message ${msg.type} ${msg.status || ""}`}
+    onClick={() => msg.isImage && handleImageClick(msg)}
+  >
                     {msg.isImage ? (
                       msg.type === "sent" ? (
                         <p>
