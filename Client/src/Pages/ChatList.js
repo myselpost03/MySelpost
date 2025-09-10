@@ -239,6 +239,7 @@ const ChatList = () => {
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem("activeTab") || "all";
   });
+  const [clickedUserId, setClickedUserId] = useState(null);
   const [firstLoad, setFirstLoad] = useState(true);
   const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(true); // tab/filter loading
@@ -560,6 +561,7 @@ const ChatList = () => {
     const interval = setInterval(refreshUsers, 30000);
     return () => clearInterval(interval);
   }, []);
+
   const getAutoPinnedIds = () => {
     return JSON.parse(localStorage.getItem("autoPinnedUsers") || "[]");
   };
@@ -658,12 +660,11 @@ const ChatList = () => {
   const [submitting, setSubmitting] = useState(false); // ✅ Show "Submitting..."
 
   useEffect(() => {
-    setUsers([]);
-    setPage(0);
-    setHasMore(true);
-
-    // ✅ Show loader only for tab/filter change, not search
+    // Only trigger for tabs/filters, not search
     if (searchTerm.trim() === "") {
+      setUsers([]);
+      setPage(0);
+      setHasMore(true);
       setLoading(true);
     }
   }, [activeTab, genderFilter, countryFilter]);
@@ -784,7 +785,7 @@ const ChatList = () => {
     };
 
     fetchUsers();
-  }, [activeTab, genderFilter, countryFilter, searchTerm]);
+  }, [activeTab, genderFilter, countryFilter]);
 
   // ------------------- filteredUsers logic -------------------
   const filteredUsers = useMemo(() => {
@@ -1003,6 +1004,7 @@ const ChatList = () => {
       setHasMore(true);
       return;
     }
+    setSearchLoading(true); // ✅ Show spinner only on button click
 
     try {
       const { data, error } = await supabase
@@ -1037,6 +1039,7 @@ const ChatList = () => {
       console.error("Search error:", err.message);
     } finally {
       setLoading(false);
+      setSearchLoading(false); // ✅ Hide spinner after search
     }
   };
 
@@ -1137,7 +1140,7 @@ const ChatList = () => {
 
   const handleNotification = async () => {
     setNotificationCount(0); // reset UI immediately
-
+    navigate("/notifications");
     // Mark all likes as seen
     await supabase
       .from("likes")
@@ -1159,9 +1162,6 @@ const ChatList = () => {
         .in("image_id", imageIds)
         .eq("seen", false);
     }
-
-    // now navigate or open notification page if needed
-    navigate("/notifications");
   };
 
   // 👉 searchLoading can be used inside your list UI
@@ -1180,49 +1180,81 @@ const ChatList = () => {
 
       <>
         <div className="sketchy-search-wrapper">
-          <input
-            type="text"
-            className="sketchy-search"
-            placeholder="🔍 Search users..."
-            value={searchTerm}
-            onChange={(e) => {
-              const value = e.target.value;
-              setSearchTerm(value);
+          <div className="search-input-container">
+            <input
+              type="text"
+              className="sketchy-search"
+              placeholder="🔍 Search users..."
+              value={searchTerm}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSearchTerm(value);
 
-              if (value.trim() === "") {
-                setPage(0);
-                setUsers([]);
-                setHasMore(true);
-                setActiveTab("all");
-                localStorage.setItem("activeTab", "all");
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSearchSubmit();
-              }
-            }}
-          />
-
-          {searchTerm.trim() === "" ? (
-            <button className="search-button" onClick={handleSearchSubmit}>
-              <FaSearch />
-            </button>
-          ) : (
-            <button
-              className="search-button"
-              onClick={() => {
-                setSearchTerm("");
-                setPage(0);
-                setUsers([]);
-                setHasMore(true);
-                setActiveTab("all");
-                localStorage.setItem("activeTab", "all");
+                if (value.trim() === "") {
+                  setPage(0);
+                  setUsers([]);
+                  setHasMore(true);
+                  setActiveTab("all");
+                  localStorage.setItem("activeTab", "all");
+                }
               }}
-            >
-              <FaTimes />
-            </button>
-          )}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearchSubmit();
+                }
+              }}
+            />
+
+            {/* Show cross icon inside input when there is text */}
+            {searchTerm.trim() !== "" && (
+              <button
+                className="clear-search-button"
+                onClick={async () => {
+                  setSearchTerm(""); // clear input
+                  setPage(0);
+                  setHasMore(true);
+                  setActiveTab("all");
+                  localStorage.setItem("activeTab", "all");
+
+                  setLoading(true); // ✅ show spinner while loading "All" tab
+
+                  try {
+                    const { data, error } = await supabase
+                      .from("users")
+                      .select(
+                        "id, name, profile_pic, country, gender, status, age, decency_rating, created_at"
+                      )
+                      .order("created_at", { ascending: false });
+
+                    if (error) throw error;
+
+                    // Process users as usual
+                    const processed = data.map((u) => ({
+                      ...u,
+                      avatar: u.profile_pic || empty,
+                      notifications: unreadCounts[u.id] || 0,
+                      pinned: false, // reset pinned if needed
+                      status: u.status || "offline",
+                    }));
+
+                    setUsers(processed);
+                  } catch (err) {
+                    console.error("Error loading all users:", err);
+                  } finally {
+                    setLoading(false); // ✅ hide spinner
+                  }
+                }}
+                title="Clear search"
+              >
+                <FaTimes />
+              </button>
+            )}
+          </div>
+
+          {/* Search icon outside input */}
+          <button className="search-button" onClick={handleSearchSubmit}>
+            <FaSearch />
+          </button>
         </div>
 
         <div className="tab-bar">
@@ -1375,7 +1407,7 @@ const ChatList = () => {
         >
           {activeTab === "maps" ? (
             <Maps />
-          ) : loading ? (
+          ) : searchLoading || loading ? ( // ✅ show spinner if either search or tab is loading
             <LoadingSpinner />
           ) : filteredUsers.length > 0 ? (
             <>
@@ -1701,7 +1733,6 @@ const ChatList = () => {
           onClose={() => setAlertMessage(null)}
         />
       )}
-
       {showProfileModal && (
         <div className="popup-wrapper">
           <div className="popup-card">

@@ -524,13 +524,19 @@ const Chat = () => {
 
   // Send Message
   const sendMessage = async () => {
+    if (isSending) return;
+    setIsSending(true);
+    
     trackEvent({
       action: "button_click",
       category: "Chat Page",
       label: "Send Message Button",
     });
 
-    if (!input.trim()) return;
+    if (!input.trim()) {
+      setIsSending(false);
+      return;
+    }
 
     const now = Date.now();
     const recent = recentMessages.current;
@@ -556,7 +562,6 @@ const Chat = () => {
     }
 
     recentMessages.current.push({ text: input.trim(), time: now });
-    setIsSending(true);
 
     const messageText = input.trim();
     const timestamp = new Date().toISOString();
@@ -607,42 +612,42 @@ const Chat = () => {
     let messageId = null;
 
     if (data && data[0]) {
-  messageId = data[0].id;
+      messageId = data[0].id;
 
-  const dbMsg = {
-    id: messageId,
-    text: data[0].message,
-    type: "sent",
-    time: new Date(data[0].created_at).toLocaleTimeString(),
-    timestamp: data[0].created_at,
-  };
+      const dbMsg = {
+        id: messageId,
+        text: data[0].message,
+        type: "sent",
+        time: new Date(data[0].created_at).toLocaleTimeString(),
+        timestamp: data[0].created_at,
+      };
 
-  // update in-place using localId (tempId). Keep localId so key stays same.
-  setMessages((prev) => {
-    let found = false;
-    const updated = prev.map((m) => {
-      if (m.localId === tempId) {
-        found = true;
-        return {
-          ...m, // keep object position & localId (so key is stable)
-          id: dbMsg.id,
-          text: dbMsg.text,
-          time: dbMsg.time,
-          timestamp: dbMsg.timestamp,
-        };
-      }
-      return m;
-    });
+      // update in-place using localId (tempId). Keep localId so key stays same.
+      setMessages((prev) => {
+        let found = false;
+        const updated = prev.map((m) => {
+          if (m.localId === tempId) {
+            found = true;
+            return {
+              ...m, // keep object position & localId (so key is stable)
+              id: dbMsg.id,
+              text: dbMsg.text,
+              time: dbMsg.time,
+              timestamp: dbMsg.timestamp,
+            };
+          }
+          return m;
+        });
 
-    // fallback: if local temp not found (edge-case), append dbMsg only if it's not already present
-    if (!found) {
-      const already = prev.some((m) => m.id === dbMsg.id);
-      if (!already) updated.push(dbMsg);
+        // fallback: if local temp not found (edge-case), append dbMsg only if it's not already present
+        if (!found) {
+          const already = prev.some((m) => m.id === dbMsg.id);
+          if (!already) updated.push(dbMsg);
+        }
+
+        return updated;
+      });
     }
-
-    return updated;
-  });
-}
 
     if (blockedByOtherUser || iBlockedOtherUser) {
       console.log("🚫 Skipped: Message blocked, no unread count or push");
@@ -763,15 +768,14 @@ const Chat = () => {
 
     // Normalize input for smart detection
     const normalizedText = lowerText
-      .replace(/\s+/g, "")
-      .replace(/[-.:/]/g, "")
+      .replace(/[\s\-.:/]/g, "") // remove only certain characters, not all spaces blindly
       .replace(/dot/g, ".");
 
     const textsToCheck = [lowerText, normalizedText];
 
     // Abusive check
     const hasAbuse = bannedData.abusiveWords.some((word) =>
-      textsToCheck.some((text) => text.includes(word.toLowerCase()))
+      lowerText.includes(word.toLowerCase())
     );
 
     if (hasAbuse) {
@@ -795,11 +799,10 @@ const Chat = () => {
       return;
     }
 
-    // Link check
+    // Link check (use normalizedText to detect obfuscated links)
     const hasLink = bannedData.bannedLinks.some((link) =>
-      textsToCheck.some((text) => text.includes(link.toLowerCase()))
+      normalizedText.includes(link.toLowerCase())
     );
-
     if (hasLink) {
       setAlertMessage("🚫 Links or obfuscated links are not allowed.");
       setInput("");
@@ -1330,11 +1333,11 @@ const Chat = () => {
               {/* Show fetched messages */}
               <div className="messages">
                 {messages.map((msg) => (
-  <div
-    key={msg.localId ?? msg.id} // <- stable key: prefer localId if present
-    className={`message ${msg.type} ${msg.status || ""}`}
-    onClick={() => msg.isImage && handleImageClick(msg)}
-  >
+                  <div
+                    key={msg.localId ?? msg.id} // <- stable key: prefer localId if present
+                    className={`message ${msg.type} ${msg.status || ""}`}
+                    onClick={() => msg.isImage && handleImageClick(msg)}
+                  >
                     {msg.isImage ? (
                       msg.type === "sent" ? (
                         <p>

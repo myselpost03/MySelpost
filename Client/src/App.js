@@ -44,7 +44,6 @@ import InternetStatusAlert from "./Components/InternetStatusAlert";
 import FeedbackPopup from "./Components/FeedbackPopup";
 import { isRunningAsPWA } from "./CheckPWA";
 import { trackEvent } from "./Utils/analytics";
-import {ChatProvider} from "./Context/ChatContext";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
@@ -186,8 +185,8 @@ function AppContent() {
 
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ get current path
-  const [ready, setReady] = useState(false); // ✅ prevent early render
+  const location = useLocation(); 
+  const [ready, setReady] = useState(false); 
 
   useEffect(() => {
     let isDeveloper = false;
@@ -369,7 +368,6 @@ function AppContent() {
   return (
     <>
       <UserStatusWrapper />
- <ChatProvider>
       <Routes>
         {publicRoutes.map(({ path, component: Component }) => (
           <Route key={path} path={path} element={<Component />} />
@@ -386,7 +384,7 @@ function AppContent() {
           />
         ))}
         <Route path="*" element={<NotFound />} />
-      </Routes></ChatProvider>
+      </Routes>
       <InternetStatusAlert />
       {alertMessage && (
         <SketchyAlert
