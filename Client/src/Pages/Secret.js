@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Header from "../Components/Header";
 import { supabase } from "../Utils/supabaseClient";
-import "../Styles/Demo.css";
+import "../Styles/Secret.css";
 
-const Demo = () => {
+const Secret = () => {
   const [secret, setSecret] = useState("");
   const [submittedSecrets, setSubmittedSecrets] = useState([]);
   const [now, setNow] = useState(new Date());
@@ -90,4 +90,4 @@ const Demo = () => {
   );
 };
 
-export default Demo;
+export default Secret;

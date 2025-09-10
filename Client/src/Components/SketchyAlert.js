@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import OneSignal from "react-onesignal";
 import { supabase } from "../Utils/supabaseClient";
 import "../Styles/SketchyAlert.css";
@@ -8,6 +9,8 @@ const SketchyAlert = ({ message, buttons = ["close"], onClose, onPay }) => {
 
   const user = JSON.parse(localStorage.getItem("user"));
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const isSubscribed =
       localStorage.getItem("notificationsEnabled") === "true";
@@ -15,7 +18,7 @@ const SketchyAlert = ({ message, buttons = ["close"], onClose, onPay }) => {
   }, []);
 
   const handleSubscribe = async () => {
-    console.log('clciked')
+    console.log("clciked");
     try {
       // Ask permission
       await OneSignal.Notifications.requestPermission();
@@ -47,6 +50,10 @@ const SketchyAlert = ({ message, buttons = ["close"], onClose, onPay }) => {
     }
   };
 
+  const handleGuest = () => {
+    navigate("/share-secret");
+  };
+
   return (
     <div className="sketchy-alert-new">
       <div className="alert-content">
@@ -66,6 +73,12 @@ const SketchyAlert = ({ message, buttons = ["close"], onClose, onPay }) => {
               disabled={subscribed} // disable only if already subscribed
             >
               {subscribed ? "Granted" : "Allow"}
+            </button>
+          )}
+
+          {buttons.includes("guest") && (
+            <button className="sketchy-alert-close-btn" onClick={handleGuest}>
+              Guest
             </button>
           )}
           {buttons.includes("close") && (

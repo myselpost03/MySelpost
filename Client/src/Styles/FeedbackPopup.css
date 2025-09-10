@@ -1,5 +1,4 @@
 @import url(https://fonts.googleapis.com/css?family=Libertinus+Sans:regular,italic,700);
-@import url(https://fonts.googleapis.com/css?family=Changa+One:regular,italic);
 
 /* Overlay background */
 .feedback-overlay {
@@ -35,7 +34,6 @@
   margin-bottom: 16px;
   text-align: center;
   color: #111;
-  font-family: 'Change One', serif;
 }
 
 /* Stars container */

@@ -485,7 +485,7 @@ const GuestUser = () => {
                             <FaCircle />
                           </span>
 
-                         {/* <div className="spacer" />
+                          {/* <div className="spacer" />
                           <FaThumbtack
                             className={`pin-icon ${
                               user.pinned ? "pinned" : ""
@@ -551,7 +551,7 @@ const GuestUser = () => {
       {alertMessage && (
         <SketchyAlert
           message={alertMessage.text}
-          withButton={alertMessage.withButton}
+          buttons={["guest", "close"]}
           onClose={() => setAlertMessage(null)}
         />
       )}
