@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
 import OneSignal from "react-onesignal";
-import { FaRegBell, FaRegBellSlash } from "react-icons/fa";
+import { FaRegBell, FaRegBellSlash, FaBan } from "react-icons/fa";
 import { supabase } from "../Utils/supabaseClient";
 import "../Styles/ChatHeader.css";
 
-const ChatHeader = ({ title, onBack }) => {
-
+const ChatHeader = ({ title, onBack, onBlockToggle, isBlocked }) => {
   const [subscribed, setSubscribed] = useState(false);
-
-  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     const isSubscribed =
@@ -18,7 +15,6 @@ const ChatHeader = ({ title, onBack }) => {
 
   const handleSubscribe = async () => {
     try {
-      // Ask permission
       await OneSignal.Notifications.requestPermission();
 
       if (Notification.permission === "granted") {
@@ -26,6 +22,7 @@ const ChatHeader = ({ title, onBack }) => {
         const playerId = OneSignal.User.PushSubscription.id;
         console.log("✅ Player ID:", playerId);
 
+        const user = JSON.parse(localStorage.getItem("user"));
         const { data, error } = await supabase
           .from("players")
           .upsert(
@@ -55,17 +52,38 @@ const ChatHeader = ({ title, onBack }) => {
       </button>
       <h1 className="chat-header-title">{title}</h1>
 
-      <button
-        className="chat-bell-icon"
-        onClick={handleSubscribe}
-        disabled={subscribed}
-      >
-        {subscribed ? (
-          <FaRegBell style={{ marginRight: "6px" }} />
-        ) : (
-          <FaRegBellSlash style={{ marginRight: "6px" }} />
-        )}
-      </button>
+      <div className="chat-header-actions">
+        {/* Block button - just calls the function passed from parent */}
+        <button
+          onClick={onBlockToggle}
+          aria-label={isBlocked ? "Unblock user" : "Block user"}
+          title={isBlocked ? "Unblock user" : "Block user"}
+          style={{
+            background: "none",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+            color: isBlocked ? "#ff6f61" : "#fff",
+            fontSize: "1.2rem",
+          }}
+        >
+          <FaBan />
+        </button>
+
+        {/* Notification bell */}
+        <button
+          className="chat-bell-icon"
+          onClick={handleSubscribe}
+          disabled={subscribed}
+          title={subscribed ? "Notifications enabled" : "Enable notifications"}
+        >
+          {subscribed ? (
+            <FaRegBell style={{ marginRight: "6px" }} />
+          ) : (
+            <FaRegBellSlash style={{ marginRight: "6px" }} />
+          )}
+        </button>
+      </div>
     </div>
   );
 };

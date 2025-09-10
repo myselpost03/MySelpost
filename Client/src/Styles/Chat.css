@@ -1,6 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Caveat&display=swap");
 @import url("https://fonts.googleapis.com/css?family=Patrick+Hand:regular");
 
+
+
 .Chat-UI {
   font-family: "Comic Sans MS", "Caveat", cursive;
   min-height: 100vh;
@@ -177,7 +179,20 @@
   background-color: #fff;
 }
 
-.input-area button {
+.gif-btn {
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 4px 6px;
+  color: #444;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+
+.input-area button:not(.gif-btn) {
   background-color: #222;
   color: white;
   padding: 0.6rem 1rem;
@@ -270,6 +285,10 @@
   cursor: pointer;
   font-family: "patrick hand", serif;
 }
+
+
+
+
 
 /* Top actions */
 .top-actions {
@@ -377,6 +396,7 @@
     align-items: center;
     z-index: 999;
     box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    flex-wrap: nowrap;
   }
 
   /* Adjust input text style in fixed input */
@@ -625,5 +645,297 @@
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+
+.gif-search-panel {
+  position: fixed;
+  bottom: 60px;
+  left: 0;
+  right: 0;
+  background: #000000;
+  border-top: 2px solid #333;
+  padding: 15px;
+  z-index: 1000;
+  max-height: 60vh;
+  overflow-y: auto;
+  box-shadow: 0 -4px 20px rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px 20px 0 0;
+}
+
+.gif-search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #333;
+}
+
+.gif-search-header h4 {
+  margin: 0;
+  color: #ffffff;
+  font-family: 'Patrick Hand', cursive;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.gif-search-header button {
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.gif-search-header button:hover {
+  background: #555;
+  transform: rotate(90deg);
+}
+
+.gif-search-input {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.gif-search-input input {
+  flex: 1;
+  padding: 12px 15px;
+  border: 2px solid #333;
+  border-radius: 25px;
+  background: #111;
+  color: #fff;
+  font-family: 'Patrick Hand', cursive;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.gif-search-input input:focus {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.gif-search-input input::placeholder {
+  color: #888;
+}
+
+.gif-search-input button {
+  padding: 12px 20px;
+  background: linear-gradient(45deg, #000, #333);
+  color: #fff;
+  border: 2px solid #333;
+  border-radius: 25px;
+  cursor: pointer;
+  font-family: 'Patrick Hand', cursive;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.gif-search-input button:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: all 0.5s ease;
+}
+
+.gif-search-input button:hover:before {
+  left: 100%;
+}
+
+.gif-search-input button:hover {
+  background: linear-gradient(45deg, #333, #555);
+  border-color: #fff;
+  transform: translateY(-2px);
+}
+
+.gif-search-input button:disabled {
+  background: #222;
+  color: #666;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.gif-search-input button:disabled:before {
+  display: none;
+}
+
+.gif-results {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.gif-results > div:first-child {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #fff;
+  font-family: 'Patrick Hand', cursive;
+  padding: 20px;
+}
+
+.gif-item {
+  cursor: pointer;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  position: relative;
+}
+
+.gif-item:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(0, 0, 0, 0.8), rgba(255, 255, 255, 0.1));
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+.gif-item:hover:before {
+  opacity: 1;
+}
+
+.gif-item:hover {
+  transform: scale(1.05);
+  border-color: #fff;
+  box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+  z-index: 2;
+}
+
+.gif-item video,
+.gif-item img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  display: block;
+  transition: all 0.3s ease;
+}
+
+.gif-item:hover video,
+.gif-item:hover img {
+  transform: scale(1.1);
+}
+
+/* Scrollbar styling */
+.gif-search-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.gif-search-panel::-webkit-scrollbar-track {
+  background: #111;
+  border-radius: 3px;
+}
+
+.gif-search-panel::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+.gif-search-panel::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Animation for panel appearance */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.gif-search-panel {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.gif-results > div:first-child {
+  animation: pulse 1.5s infinite;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .gif-search-panel {
+    padding: 12px;
+    border-radius: 15px 15px 0 0;
+  }
+  
+  .gif-results {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .gif-search-input {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .gif-search-input button {
+    width: 100%;
+  }
+}
+
+.chat-gif {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 12px;
+  object-fit: cover;
+  margin: 4px 0;
+  transition: transform 0.2s ease-in-out;
+}
+
+.chat-gif:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+
+@media (max-width: 320px) {
+  .gif-results {
+    grid-template-columns: 1fr;
+  }
+  
+  .gif-item video,
+  .gif-item img {
+    height: 120px;
   }
 }

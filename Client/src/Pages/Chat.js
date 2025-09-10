@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import ChatHeader from "../Components/ChatHeader";
 import { supabase, supabaseStorage } from "../Utils/supabaseClient";
-import { FaBan, FaImage, FaMicrophone } from "react-icons/fa";
+import { FaBan, FaFilm, FaImage, FaMicrophone } from "react-icons/fa";
 import bannedData from "../JSON/bannedWords.json";
 import SketchyAlert from "../Components/SketchyAlert";
 import { trackEvent } from "../Utils/analytics";
@@ -32,11 +32,18 @@ const Chat = () => {
   const [loadingImages, setLoadingImages] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [showNotice, setShowNotice] = useState(false);
+  const [showGifSearch, setShowGifSearch] = useState(false);
+  const [gifQuery, setGifQuery] = useState("");
+  const [gifs, setGifs] = useState([]);
+  const [gifLoading, setGifLoading] = useState(false);
+  const [isSendingGif, setIsSendingGif] = useState(false);
+  const [sendingGifId, setSendingGifId] = useState(null);
 
   const inputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const recentMessages = useRef([]);
   const lastPasted = useRef("");
+  const sendingGifRef = useRef(false);
 
   // Get reciever id
   const { id: targetId } = useParams();
@@ -406,6 +413,8 @@ const Chat = () => {
       timestamp: msg.created_at,
       isAudio: msg.type === "audio", // <-- mark audio messages here
       isImage: msg.type === "image",
+      isGif: msg.type === "gif", // 👈 mark GIFs
+      gifUrl: msg.type === "gif" ? msg.message : null, // 👈 store URL
       seen: msg.status === "seen",
     }));
 
@@ -455,6 +464,8 @@ const Chat = () => {
         time: new Date(msg.created_at).toLocaleTimeString(),
         timestamp: msg.created_at,
         isImage: msg.type === "image",
+        isGif: msg.type === "gif", // <-- ADD THIS
+        gifUrl: msg.type === "gif" ? msg.message : null,
       }));
 
       setMessages((prev) => {
@@ -526,7 +537,7 @@ const Chat = () => {
   const sendMessage = async () => {
     if (isSending) return;
     setIsSending(true);
-    
+
     trackEvent({
       action: "button_click",
       category: "Chat Page",
@@ -1199,6 +1210,134 @@ const Chat = () => {
     }
   };
 
+  const fetchGifs = async () => {
+    if (!gifQuery.trim()) return;
+
+    setGifLoading(true);
+    setGifs([]);
+
+    try {
+      const customerId = "user_" + Math.random().toString(36).substr(2, 9);
+      const API_KEY =
+        process.env.REACT_APP_KLIPY_KEY ||
+        "QE4eFLlyLYo5GpWgrwgmKLojHdUZh9K5Ys8fJUmBO77H5G2xUFAzmxk2WiHDuMWf";
+      const BASE = "https://api.klipy.com/api/v1";
+      const endpoint = `${BASE}/${API_KEY}/gifs/search?q=${encodeURIComponent(
+        gifQuery.trim()
+      )}&per_page=12&customer_id=${customerId}&content_filter=medium&locale=en`;
+
+      const res = await axios.get(endpoint);
+      const gifData = res.data?.data?.data || [];
+
+      const mapped = gifData.map((gif, i) => {
+        let url = null;
+        if (gif.file?.hd?.gif?.url) {
+          url = gif.file.hd.gif.url;
+        } else if (gif.file?.md?.gif?.url) {
+          url = gif.file.md.gif.url;
+        } else if (gif.file?.sm?.gif?.url) {
+          url = gif.file.sm.gif.url;
+        } else if (gif.file?.xs?.gif?.url) {
+          url = gif.file.xs.gif.url;
+        }
+
+        let mp4Url = null;
+        if (gif.file?.hd?.mp4?.url) {
+          mp4Url = gif.file.hd.mp4.url;
+        } else if (gif.file?.md?.mp4?.url) {
+          mp4Url = gif.file.md.mp4.url;
+        } else if (gif.file?.sm?.mp4?.url) {
+          mp4Url = gif.file.sm.mp4.url;
+        }
+
+        return {
+          id: gif.id || i,
+          url: url,
+          mp4Url: mp4Url,
+          title: gif.title || `GIF ${i}`,
+          slug: gif.slug,
+        };
+      });
+
+      setGifs(mapped);
+    } catch (err) {
+      console.error("Error fetching gifs", err);
+      setGifs([]);
+    } finally {
+      setGifLoading(false);
+    }
+  };
+
+  // Add this function to send a GIF
+  const sendGif = async (gif) => {
+    // 🚫 Hard block duplicates instantly
+    if (sendingGifRef.current) return;
+    sendingGifRef.current = true;
+    setIsSending(true);
+    setSendingGifId(gif.id); // 🟢 Show "Sending..." on this GIF
+
+    const gifUrl = gif.url || `https://klipy.com/gif/${gif.slug || gif.id}`;
+
+    try {
+      const { data, error } = await supabase
+        .from("chats")
+        .insert([
+          {
+            sender_id: currentUser.id,
+            receiver_id: targetId,
+            message: gifUrl,
+            type: "gif",
+          },
+        ])
+        .select();
+
+      if (error) {
+        console.error("Failed to send GIF:", error.message);
+        return;
+      }
+
+      if (data && data[0]) {
+        const dbMsg = {
+          id: data[0].id,
+          text: data[0].message,
+          type: "sent",
+          isGif: true,
+          gifUrl: data[0].message,
+          time: new Date(data[0].created_at).toLocaleTimeString(),
+          timestamp: data[0].created_at,
+        };
+
+        setMessages((prev) => [...prev, dbMsg]);
+
+        // Auto-delete after 1 minute
+        setTimeout(async () => {
+          try {
+            await supabase.from("chats").delete().eq("id", dbMsg.id);
+            setMessages((prev) => prev.filter((m) => m.id !== dbMsg.id));
+          } catch (err) {
+            console.error("Error deleting GIF:", err.message);
+          }
+        }, 60 * 1000);
+      }
+
+      await supabase.from("unread_counts").upsert(
+        {
+          sender_id: currentUser.id,
+          receiver_id: targetId,
+          count: 1,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: ["sender_id", "receiver_id"] }
+      );
+
+      setShowGifSearch(false);
+    } finally {
+      sendingGifRef.current = false;
+      setIsSending(false);
+      setSendingGifId(null); // 🔴 Remove "Sending..." overlay
+    }
+  };
+
   useEffect(() => {
     // Detect BACK button (browser navigation)
     const handlePopState = async () => {
@@ -1256,6 +1395,8 @@ const Chat = () => {
       <ChatHeader
         title={targetUser?.name || "Chat"}
         onBack={handleBack}
+        onBlockToggle={handleBlockToggle}
+        isBlocked={isBlocked}
       ></ChatHeader>
 
       {alertMessage && !hasAccess && (
@@ -1338,7 +1479,9 @@ const Chat = () => {
                     className={`message ${msg.type} ${msg.status || ""}`}
                     onClick={() => msg.isImage && handleImageClick(msg)}
                   >
-                    {msg.isImage ? (
+                    {msg.isGif ? (
+                      <img src={msg.gifUrl} alt="GIF" className="chat-gif" />
+                    ) : msg.isImage ? (
                       msg.type === "sent" ? (
                         <p>
                           <em>📤 Sent image</em>
@@ -1469,25 +1612,16 @@ const Chat = () => {
         </div>
         <div className="icon-wrapper">
           <button
-            onClick={handleBlockToggle}
-            className="icon-btn block-icon-btn"
-            aria-label={isBlocked ? "Unblock user" : "Block user"}
-            title={isBlocked ? "Unblock user" : "Block user"}
-            style={{
-              background: "none",
-              border: "none",
-              padding: 0,
-              cursor: "pointer",
-              color: isBlocked ? "#ff6f61" : "#444",
-              fontSize: "1.2rem",
-            }}
+            className="gif-btn"
+            onClick={() => setShowGifSearch(!showGifSearch)}
           >
-            <FaBan />
+            GIF
           </button>
         </div>
+
         {/*
         <div className="icon-wrapper">
-          <FaMicrophone
+          <FaGift
             onClick={handleMicClick}
             className="icon-btn"
             style={{ cursor: "pointer", color: isRecording ? "#ff6f61" : "#444" }}
@@ -1505,7 +1639,9 @@ const Chat = () => {
 
         <button
           onClick={sendMessage}
-          disabled={isSending || isSendingImage || !input.trim()}
+          disabled={
+            isSending || isSendingImage || isSendingGif || !input.trim()
+          }
         >
           {isSending ? "➤" : "➤"}
         </button>
@@ -1541,7 +1677,82 @@ const Chat = () => {
           </div>
         </div>
       )}
+      {showGifSearch && (
+        <div className="gif-search-panel">
+          <div className="gif-search-header">
+            <h4>Search GIFs</h4>
+            <button onClick={() => setShowGifSearch(false)}>×</button>
+          </div>
 
+          <div className="gif-search-input">
+            <input
+              placeholder="Search GIFs (e.g. cats)"
+              value={gifQuery}
+              onChange={(e) => setGifQuery(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && fetchGifs()}
+            />
+            <button onClick={fetchGifs} disabled={gifLoading}>
+              {gifLoading ? "Searching..." : "Search"}
+            </button>
+          </div>
+
+          <div className="gif-results">
+            {gifLoading && (
+              <div style={{ marginLeft: "15%" }}>Loading GIFs...</div>
+            )}
+            {gifs.map((gif) => (
+              <div
+                key={gif.id}
+                className="gif-item"
+                onClick={() => !isSending && sendGif(gif)}
+              >
+                {gif.mp4Url ? (
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    style={{
+                      width: "100%",
+                      height: "100px",
+                      objectFit: "cover",
+                    }}
+                  >
+                    <source src={gif.mp4Url} type="video/mp4" />
+                  </video>
+                ) : (
+                  <img
+                    src={gif.url}
+                    alt={gif.title}
+                    style={{
+                      width: "100%",
+                      height: "100px",
+                      objectFit: "cover",
+                    }}
+                  />
+                )}
+                {sendingGifId === gif.id && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      background: "rgba(0,0,0,0.6)",
+                      color: "white",
+                      padding: "4px 8px",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                    }}
+                  >
+                    Sending...
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <Toaster />
     </div>
   );
