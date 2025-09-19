@@ -5,6 +5,7 @@ import App from "./App";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import reportWebVitals from "./reportWebVitals";
 import OneSignal from "react-onesignal";
+import './i18n.js';
 
 let oneSignalInitialized = false;
 

@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import { trackEvent } from "../Utils/analytics";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
+import i18n from "../i18n";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -59,12 +60,12 @@ const Login = () => {
         .single();
 
       if (fetchError || !data) {
-        throw new Error("Invalid email or user not found.");
+        throw new Error(i18n.t("invalidUser"));
       }
 
       const passwordMatch = await bcrypt.compare(password, data.password);
       if (!passwordMatch) {
-        throw new Error("Incorrect password.");
+        throw new Error(i18n.t("incorrectPassword"));
       }
 
       localStorage.setItem(
@@ -89,7 +90,7 @@ const Login = () => {
         navigate("/", { replace: true }); // Or wherever you want desktop users to land
       }
     } catch (err) {
-      setError(err.message || "Login failed.");
+      setError(err.message || i18n.t("loginFailed"));
     } finally {
       setLoading(false);
     }
@@ -152,12 +153,12 @@ const Login = () => {
       }
     } catch (err) {
       console.error(err);
-      setError("Google login failed");
+      setError(i18n.t("googleLogin"));
     }
   };
 
   const handleGoogleLoginError = () => {
-    setError("Google login failed");
+    setError(i18n.t("googleLoginFailed"));
   };
 
   return (
@@ -165,23 +166,23 @@ const Login = () => {
       <Header />
       <div className="login-container">
         <form className="login-form" onSubmit={handleSubmit}>
-          <h2>Log In</h2>
+          <h2>{i18n.t("logIN")}</h2>
 
           <input
             type="text"
             name="identifier"
-            placeholder="Email or Name"
+            placeholder={i18n.t("emailPlaceholder")}
             value={formData.identifier}
             onChange={handleChange}
             required
             className={!emailValid ? "invalid" : ""}
           />
-          {!emailValid && <p className="error-msg">Email format invalid</p>}
+          {!emailValid && <p className="error-msg">{i18n.t("emailInvalid")}</p>}
 
           <input
             type="password"
             name="password"
-            placeholder="Password"
+            placeholder={i18n.t("password")}
             value={formData.password}
             onChange={handleChange}
             required
@@ -190,13 +191,13 @@ const Login = () => {
           {error && <p className="error-msg">{error}</p>}
 
           <button type="submit" disabled={!isFormValid || loading}>
-            {loading ? "Logging in..." : "Login"}
+            {loading ? i18n.t("loggingIn") : i18n.t("login")}
           </button>
 
           <p className="link-to-register">
-            Forgot Password?{" "}
+            {i18n.t("forgotPassword")}
             <Link to="/reset-password" style={{ textDecoration: "none" }}>
-              Reset
+              {""} {i18n.t("reset")}
             </Link>
           </p>
         </form>

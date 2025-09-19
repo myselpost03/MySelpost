@@ -29,6 +29,7 @@ import { trackEvent } from "../Utils/analytics";
 import { dbPromise } from "../Utils/db";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import Maps from "../Components/Maps";
+import i18n from "../i18n";
 
 const countryNameToCode = {
   AF: "AF",
@@ -1133,7 +1134,7 @@ const ChatList = () => {
     } else {
       // Show alert if permission not granted
       setAlertMessage({
-        text: "To use this feature, allow notification permission",
+        text: i18n.t("notificationPermission")
       });
     }
   };
@@ -1185,7 +1186,7 @@ const ChatList = () => {
               <input
                 type="text"
                 className="sketchy-search"
-                placeholder="🔍 Search users..."
+                placeholder={`🔍 ${i18n.t("searchUsers")}`}
                 value={searchTerm}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -1266,7 +1267,7 @@ const ChatList = () => {
                 localStorage.setItem("activeTab", "all");
               }}
             >
-              All
+              {i18n.t("all")}
             </button>
             <button
               className={`sketchy-tab ${
@@ -1279,7 +1280,7 @@ const ChatList = () => {
               }}
               style={{ position: "relative" }}
             >
-              Chats
+              {i18n.t("chats")}
               {hasPinnedNotification && (
                 <span
                   className="sketchy-badge pinned-tab-badge"
@@ -1304,7 +1305,7 @@ const ChatList = () => {
               }}
               style={{ position: "relative" }}
             >
-              Inbox
+              {i18n.t("inbox")}
               {Object.values(unreadCounts).some((count) => count > 0) && (
                 <span
                   className="sketchy-badge pinned-tab-badge"
@@ -1356,7 +1357,7 @@ const ChatList = () => {
                 localStorage.setItem("activeTab", newTab);
               }}
             >
-              Online
+              {i18n.t("online")}
             </button>
 
             <button
@@ -1580,17 +1581,16 @@ const ChatList = () => {
                 {activeTab === "all" && (
                   <>
                     <FaUsers size={40} className="no-icon" />
-                    <p className="no-title">No users found</p>
+                    <p className="no-title">{i18n.t("noUsers")}</p>
                   </>
                 )}
 
                 {activeTab === "pinned" && (
                   <>
                     <FaComments size={40} className="no-icon" />
-                    <p className="no-title">No Chats Yet</p>
+                    <p className="no-title">{i18n.t("noChats")}</p>
                     <p className="no-sub">
-                      Once you send messages, they’ll appear in your chat
-                      history.
+                      {i18n.t("inoxHistory")}
                     </p>
                   </>
                 )}
@@ -1598,9 +1598,9 @@ const ChatList = () => {
                 {activeTab === "inbox" && (
                   <>
                     <FaEnvelopeOpenText size={40} className="no-icon" />
-                    <p className="no-title">Your inbox is empty</p>
+                    <p className="no-title">{i18n.t("inboxEmpty")}</p>
                     <p className="no-sub">
-                      Any new messages will show up here.
+                      {i18n.t("newMessages")}
                     </p>
                   </>
                 )}
@@ -1635,7 +1635,7 @@ const ChatList = () => {
                 className="modal-content"
                 onClick={(e) => e.stopPropagation()}
               >
-                <h3 className="modal-title">🎛️ Filters</h3>
+                <h3 className="modal-title">🎛️ {i18n.t("filters")}</h3>
 
                 <div className="modal-section">
                   <h4>Gender</h4>
@@ -1652,17 +1652,17 @@ const ChatList = () => {
                         }}
                       >
                         {g === "all"
-                          ? "🌐 All Genders"
+                          ? `🌐 ${i18n.t("allGenders")}`
                           : g === "male"
-                          ? "♂️ Male"
-                          : "♀️ Female"}
+                          ? `♂️ ${i18n.t("male")}`
+                          : `♀️ ${i18n.t("female")}`}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="modal-section">
-                  <h4>Country</h4>
+                  <h4>{i18n.t("country")}</h4>
                   <div className="btn-group">
                     <button
                       className={`modal-btn ${
@@ -1673,7 +1673,7 @@ const ChatList = () => {
                         setShowAllTabs(false);
                       }}
                     >
-                      🌍 All Countries
+                      🌍 {i18n.t("allCountries")}
                     </button>
                     {countries.map((c) => (
                       <button
@@ -1751,9 +1751,9 @@ const ChatList = () => {
         {showProfileModal && (
           <div className="popup-wrapper">
             <div className="popup-card">
-              <h3 className="popup-title">Hey there!</h3>
+              <h3 className="popup-title">{i18n.t("hey")}</h3>
               <p className="popup-text">
-                Tell us your age and gender to continue.
+                {i18n.t("askAgeGender")}
               </p>
 
               <div className="option-row">
@@ -1765,7 +1765,7 @@ const ChatList = () => {
                     checked={profileForm.gender === "male"}
                     onChange={handleProfileChange}
                   />{" "}
-                  Male
+                  {i18n.t("male")}
                 </label>
                 <label className="option-box">
                   <input
@@ -1775,14 +1775,14 @@ const ChatList = () => {
                     checked={profileForm.gender === "female"}
                     onChange={handleProfileChange}
                   />{" "}
-                  Female
+                  {i18n.t("Female")}
                 </label>
               </div>
 
               <input
                 type="number"
                 className="input-field"
-                placeholder="Enter your age"
+                placeholder={i18n.t("enterAge")}
                 name="age"
                 value={profileForm.age}
                 onChange={handleProfileChange}
@@ -1805,7 +1805,7 @@ const ChatList = () => {
                   parseInt(profileForm.age, 10) > 99
                 }
               >
-                Submit
+                {i18n.t("submit")}
               </button>
             </div>
           </div>

@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import OneSignal from "react-onesignal";
 import { supabase } from "../Utils/supabaseClient";
+import i18n from "../i18n";
 import "../Styles/SketchyAlert.css";
 
-const SketchyAlert = ({ message, buttons = ["close"], onClose, onPay }) => {
+const SketchyAlert = ({ message, buttons = ["close"], onClose, onNews, onPay }) => {
   const [subscribed, setSubscribed] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user"));
@@ -18,7 +19,6 @@ const SketchyAlert = ({ message, buttons = ["close"], onClose, onPay }) => {
   }, []);
 
   const handleSubscribe = async () => {
-    console.log("clciked");
     try {
       // Ask permission
       await OneSignal.Notifications.requestPermission();
@@ -54,6 +54,10 @@ const SketchyAlert = ({ message, buttons = ["close"], onClose, onPay }) => {
     navigate("/share-secret");
   };
 
+  const handleNews = () => {
+    navigate("/news")
+  }
+
   return (
     <div className="sketchy-alert-new">
       <div className="alert-content">
@@ -78,12 +82,17 @@ const SketchyAlert = ({ message, buttons = ["close"], onClose, onPay }) => {
 
           {buttons.includes("guest") && (
             <button className="sketchy-alert-close-btn" onClick={handleGuest}>
-              Guest
+              {i18n.t("guest")}
             </button>
           )}
           {buttons.includes("close") && (
             <button className="sketchy-alert-close-btn" onClick={onClose}>
-              Close
+              {i18n.t("close")}
+            </button>
+          )}
+          {buttons.includes("news") && (
+            <button className="sketchy-alert-close-btn" onClick={handleNews}>
+              {i18n.t("news")}
             </button>
           )}
         </div>

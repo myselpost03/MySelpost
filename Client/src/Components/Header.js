@@ -5,8 +5,7 @@ import { supabase } from "../Utils/supabaseClient";
 import bcrypt from "bcryptjs";
 import SketchyAlert from "../Components/SketchyAlert";
 import { trackEvent } from "../Utils/analytics";
-import { FaFire } from "react-icons/fa";
-
+import { useTranslation } from "react-i18next";
 
 const Header = () => {
   const [user, setUser] = useState(null);
@@ -19,6 +18,8 @@ const Header = () => {
   const [alertMessage, setAlertMessage] = useState(null);
   const [showZoomed, setShowZoomed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const { t, i18n } = useTranslation();
+
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -186,7 +187,7 @@ const Header = () => {
                     ? "Logging in..."
                     : checking
                     ? "Checking..."
-                    : "Login"}
+                    : t("Login")}
                 </button>
 
                 <button
@@ -194,7 +195,7 @@ const Header = () => {
                   className="profile-button"
                   onClick={() => navigate("/register")}
                 >
-                  Register
+                  {t("Register")}
                 </button>
                 <div className="roast-button-container"></div>
               </nav>
@@ -206,14 +207,14 @@ const Header = () => {
                 onClick={() => handleMobileRedirect("/login")}
                 className="profile-button"
               >
-                Login
+               {t("login")}
               </button>
               <button
                 type="button"
                 onClick={handleChat}
                 className="profile-button"
               >
-                Register
+                {t("register")}
               </button>
             </nav>
           )}
@@ -222,7 +223,7 @@ const Header = () => {
         <div className="nav-logged-in">
           <div className="roast-button-container">
             <button onClick={handleRoast} className="profile-button">
-              Roast
+              {t("roast")}
             </button>
             {/*<span className="new-badge">New</span>*/}
           </div>
@@ -232,7 +233,7 @@ const Header = () => {
             onClick={() => navigate(`/profile/${user.id}`)}
             className="profile-button"
           >
-            Profile
+            {t("profile")}
           </button>
         </div>
       )}

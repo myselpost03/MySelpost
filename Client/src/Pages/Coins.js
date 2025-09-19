@@ -6,6 +6,7 @@ import SketchyAlert from "../Components/SketchyAlert";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import { supabase } from "../Utils/supabaseClient";
 import { trackEvent } from "../Utils/analytics";
+import i18n from "../i18n";
 
 const Coins = () => {
   const { id } = useParams();
@@ -120,7 +121,7 @@ const Coins = () => {
 
     if (isInstalled) {
       setAlertMessage({
-        text: "✅ Installed already! If not then refresh the page",
+        text: `✅ ${i18n.t("alreadyInstalled")}`,
         withButton: true,
       });
       return;
@@ -140,7 +141,7 @@ const Coins = () => {
       });
     } else {
       setAlertMessage({
-        text: "✅ Installed already! If not then refresh the page", //"❌ Install not available now",
+        text: `✅ ${i18n.t("alreadyInstalled")}`, //"❌ Install not available now",
         withButton: true,
       });
     }
@@ -180,7 +181,7 @@ const Coins = () => {
       // Only log unexpected errors, not "row not found"
       // console.error("Error checking existing invite:", fetchError.message);
       setAlertMessage({
-        text: "❌ Something went wrong. Try again later.",
+        text: `❌ ${i18n.t("errorTryLater")}`,
         withButton: true,
       });
       setLoading(false);
@@ -208,7 +209,7 @@ const Coins = () => {
     if (response.error) {
       // console.error("Error saving invite code:", response.error.message);
       setAlertMessage({
-        text: "❌ Failed to generate invite code. Try again.",
+        text: `❌ ${i18n.t("inviteCodeFailed")}`,
         withButton: true,
       });
       setLoading(false);
@@ -291,16 +292,16 @@ const Coins = () => {
 
   return (
     <div className="sketchy-coins-container">
-      <SketchyHeader title="Coins" onBack={handleBack} />
+      <SketchyHeader title={i18n.t("coins")} onBack={handleBack} />
       <div className="sketchy-coins-box">
-        <h1 className="sketchy-coins-title">💰 Get More Coins</h1>
+        <h1 className="sketchy-coins-title">💰 {i18n.t("getMoreCoins")}</h1>
         <p className="sketchy-coins-desc">
-          Use coins to send gifts, unlock features, and surprise friends!
+          {i18n.t("useCoins")}
         </p>
 
         <div className="sketchy-coins-options">
           <button className="sketchy-coin-btn">
-            ⏳ Spend 1 Hour & Earn 3 Coins (Auto Transfer)
+            ⏳ {i18n.t("earnCoins")}
           </button>
 
           {/*  <button className="sketchy-coin-btn" onClick={installApp}>
@@ -308,7 +309,7 @@ const Coins = () => {
           </button>
 */}
           <button className="sketchy-coin-btn" onClick={handleInviteClick}>
-            📲 Invite Friends & Earn 50 Coins
+            📲 {i18n.t("inviteEarn")}
           </button>
 
           <button
@@ -320,7 +321,7 @@ const Coins = () => {
               window.location.href = paymentLink;
             }}*/
           >
-            🛒 Buy 100 Coins - {user?.country === "IN" ? "₹86" : "$1"}
+            🛒 {i18n.t("buyCoins")} - {user?.country === "IN" ? "₹86" : "$1"}
           </button>
         </div>
 
@@ -331,16 +332,16 @@ const Coins = () => {
         {showInvitePopup && (
           <div className="invite-popup">
             <div className="invite-box">
-              <h3>Your Invite Code</h3>
+              <h3>{i18n.t("yourInviteCode")}</h3>
               <p className="invite-code">{inviteCode}</p>
               <p>
-                Share this with your friend. You’ll get 50 coins if they use it.
+                {i18n.t("shareCoins")}
               </p>
               <button
                 onClick={() => setShowInvitePopup(false)}
                 className="close-btn"
               >
-                Close
+                {i18n.t("close")}
               </button>
             </div>
           </div>

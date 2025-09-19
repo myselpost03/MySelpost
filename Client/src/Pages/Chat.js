@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import ChatHeader from "../Components/ChatHeader";
 import { supabase, supabaseStorage } from "../Utils/supabaseClient";
-import { FaImage, FaMicrophone } from "react-icons/fa";
+import { FaImage } from "react-icons/fa";
 import bannedData from "../JSON/bannedWords.json";
 import SketchyAlert from "../Components/SketchyAlert";
 import { trackEvent } from "../Utils/analytics";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import imageCompression from "browser-image-compression";
+import i18n from "../i18n";
 import "../Styles/Chat.css";
 
 const Chat = () => {
@@ -530,7 +531,7 @@ const Chat = () => {
       }
     }
 
-    return "just now";
+    return i18n.t("justNow");
   }
 
   // Send Message
@@ -559,7 +560,7 @@ const Chat = () => {
     // Prevent sending same message repeatedly
     if (recentMessages.current.some((msg) => msg.text === messageText)) {
       setAlertMessage({
-        text: "⚠️ You are sending the same message repeatedly.",
+        text: `⚠️ ${i18n.t("spamMessage")}`,
         buttons: ["close"],
       });
 
@@ -687,7 +688,7 @@ const Chat = () => {
         return;
       }
       setIsBlocked(true);
-      toast.success("This user has been blocked.");
+      toast.success(i18n.t("userBlocked"));
     } else {
       const { error } = await supabase
         .from("blocked_users")
@@ -696,12 +697,12 @@ const Chat = () => {
         .eq("blocked_id", targetId);
 
       if (error) {
-        toast.error("Failed to unblock user.");
+        toast.error(i18n.t("unblockFailed"));
         console.error("Unblock failed:", error.message);
         return;
       }
       setIsBlocked(false);
-      toast.success("User has been unblocked.");
+      toast.success(i18n.t("userUnblocked"));
     }
   };
 
@@ -769,7 +770,7 @@ const Chat = () => {
     ) {
       lastPasted.current = newText;
       setAlertMessage({
-        text: "⚠️ Pasting long text is not allowed.",
+        text: `⚠️ ${i18n.t("pasteLongNotAllowed")}`,
         buttons: ["close"],
       });
       setInput("");
@@ -795,7 +796,7 @@ const Chat = () => {
       const pastedText = e.clipboardData.getData("text/plain").toLowerCase();
       if (pastedText) {
         setAlertMessage({
-          text: "Pasting is not allowed",
+          text: i18n.t("pasteNotAllowed"),
           withButton: true,
         });
         const { error } = await supabase.rpc("decrement_decency", {
@@ -1354,17 +1355,17 @@ const Chat = () => {
           </div>
           {showNotice && (
             <div className="auto-delete-notice">
-              🕒 Messages will delete on seen
+              🕒 {i18n.t("autoDelete")}
             </div>
           )}
           {/* Show user/chat blocked UI */}
           {blockedByOtherUser || iBlockedOtherUser ? (
             <div className="blocked-ui">
-              <h2>🚫 Chat Blocked</h2>
-              {iBlockedOtherUser && <p>You have blocked this user.</p>}
+              <h2>🚫 {i18n.t("chatBlocked")}</h2>
+              {iBlockedOtherUser && <p>{i18n.t("youBlocked")}</p>}
               {blockedByOtherUser && (
                 <p>
-                  This user has blocked you. You can no longer send messages.
+                  {i18n.t("blockedByUser")}
                 </p>
               )}
             </div>
@@ -1383,7 +1384,7 @@ const Chat = () => {
                     ) : msg.isImage ? (
                       msg.type === "sent" ? (
                         <p>
-                          <em>📤 Sent image</em>
+                          <em>📤 {i18n.t("sentImage")}</em>
                         </p>
                       ) : (
                         <div className="chat-image-wrapper">
@@ -1399,7 +1400,7 @@ const Chat = () => {
                               }}
                             >
                               <p className="click-to-reveal-text">
-                                Click to Reveal Image
+                                {i18n.t("revealImage")}
                               </p>
                             </div>
                           ) : (
@@ -1458,7 +1459,7 @@ const Chat = () => {
                       <span className="time">{getTimeAgo(msg.timestamp)}</span>
                       {msg.type === "sent" && (
                         <span className={`time ${msg.seen}`}>
-                          {msg.seen ? "Seen" : "Sent"}
+                          {msg.seen ? i18n.t("seen") : i18n.t("sent")}
                         </span>
                       )}
                     </div>{" "}
@@ -1488,14 +1489,12 @@ const Chat = () => {
                 </div>
 
                 <div className="icon-wrapper">
-                  <FaMicrophone
-                    onClick={handleMicClick}
-                    className="icon-btn"
-                    style={{
-                      cursor: "pointer",
-                      color: isRecording ? "#ff6f61" : "#444",
-                    }}
-                  />
+                  <button
+                    className="gif-btn"
+                    onClick={() => setShowGifSearch(!showGifSearch)}
+                  >
+                    GIF
+                  </button>
                 </div>
 
                 <input
@@ -1505,7 +1504,7 @@ const Chat = () => {
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
                   onPaste={handlePaste}
-                  placeholder="Type your message..."
+                  placeholder={i18n.t("typeMessage")}
                 />
 
                 <button
@@ -1563,7 +1562,7 @@ const Chat = () => {
           onChange={handleInputChange}
           onKeyDown={handleKeyPress}
           onPaste={handlePaste}
-          placeholder="Type your message..."
+          placeholder={i18n.t("typeMessage")}
         />
 
         <button
@@ -1609,25 +1608,27 @@ const Chat = () => {
       {showGifSearch && (
         <div className="gif-search-panel">
           <div className="gif-search-header">
-            <h4>Search GIFs</h4>
+            <h4>{i18n.t("searchGifs")}</h4>
             <button onClick={() => setShowGifSearch(false)}>×</button>
           </div>
 
           <div className="gif-search-input">
             <input
-              placeholder="Search GIFs (e.g. cats)"
+              placeholder={i18n.t("searchGifExample")}
               value={gifQuery}
               onChange={(e) => setGifQuery(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && fetchGifs()}
             />
             <button onClick={fetchGifs} disabled={gifLoading}>
-              {gifLoading ? "Searching..." : "Search"}
+              {gifLoading ? i18n.t("searching") : i18n.t("search")}
             </button>
           </div>
 
           <div className="gif-results">
             {gifLoading && (
-              <div style={{ marginLeft: "15%" }}>Loading GIFs...</div>
+              <div style={{ marginLeft: "15%" }}>
+                {i18n.t("loadingGifs")}
+              </div>
             )}
             {gifs.map((gif) => (
               <div
@@ -1674,9 +1675,33 @@ const Chat = () => {
                       fontSize: "12px",
                     }}
                   >
-                    Sending...
+                  {i18n.t("sending")}
                   </div>
                 )}
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "0",
+                    left: "0",
+                    width: "100%",
+                    textAlign: "center",
+                    background: "rgba(0,0,0,0.3)",
+                    color: "white",
+                    fontSize: "10px",
+                    padding: "2px 0",
+                    borderBottomLeftRadius: "4px",
+                    borderBottomRightRadius: "4px",
+                  }}
+                >
+                  {i18n.t("gifVia")}{" "}
+                  <a
+                    href="https://klipy.com"
+                    target="_blank"
+                    style={{ color: "white", textDecoration: "underline" }}
+                  >
+                    Klipy
+                  </a>
+                </div>
               </div>
             ))}
           </div>

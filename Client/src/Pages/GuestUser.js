@@ -18,6 +18,7 @@ import { supabase } from "../Utils/supabaseClient";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import ReactCountryFlag from "react-country-flag";
 import SketchyAlert from "../Components/SketchyAlert";
+import i18n from "../i18n";
 
 const countryNameToCode = {
   AF: "AF",
@@ -266,7 +267,7 @@ const GuestUser = () => {
 
   const handleAlert = () => {
     setAlertMessage({
-      text: "You have to log in to access the chat & other features.",
+      text: i18n.t("loginForChat"),
       withButton: true,
     });
   };
@@ -325,7 +326,7 @@ const GuestUser = () => {
             <input
               type="text"
               className="sketchy-search"
-              placeholder="🔍 Search users..."
+              placeholder={`🔍 ${i18n.t("searchUsers")}`}
               value={searchTerm}
               onChange={(e) => {
                 handleAlert();
@@ -336,13 +337,13 @@ const GuestUser = () => {
             </button>
           </div>
           <div className="tab-bar">
-            <button className={`sketchy-tab`}>All</button>
+            <button className={`sketchy-tab`}>{i18n.t("all")}</button>
             <button
               className={`sketchy-tab`}
               onClick={handleAlert}
               style={{ position: "relative" }}
             >
-              Chats
+              {i18n.t("chats")}
             </button>
 
             <button
@@ -353,7 +354,7 @@ const GuestUser = () => {
                 handleAlert();
               }}
             >
-              Inbox
+              {i18n.t("inbox")}
             </button>
             <button
               className="sketchy-tab"
@@ -363,7 +364,7 @@ const GuestUser = () => {
                 handleAlert();
               }}
             >
-              Online
+              {i18n.t("online")}
             </button>
             <button
               className="sketchy-tab"
@@ -504,7 +505,7 @@ const GuestUser = () => {
                 {hasMore && (
                   <div style={{ textAlign: "center", margin: "-10px 0" }}>
                     <button className="sketchy-load-more" onClick={handleAlert}>
-                      {loadingMore ? "Loading..." : "🌀 Load More"}
+                      {loadingMore ? "Loading..." : `🌀 ${i18n.t("loadMore")} `}
                     </button>
                   </div>
                 )}
@@ -514,7 +515,7 @@ const GuestUser = () => {
                     style={{ textDecoration: "none" }}
                     className="policy-link"
                   >
-                    About
+                    {i18n.t("about")}
                   </Link>{" "}
                   ·{" "}
                   <Link
@@ -522,7 +523,7 @@ const GuestUser = () => {
                     style={{ textDecoration: "none" }}
                     className="policy-link"
                   >
-                    Privacy
+                    {i18n.t("privacy")}
                   </Link>{" "}
                   ·{" "}
                   <Link
@@ -530,7 +531,7 @@ const GuestUser = () => {
                     style={{ textDecoration: "none" }}
                     className="policy-link"
                   >
-                    Terms
+                    {i18n.t("terms")}
                   </Link>{" "}
                   ·{" "}
                   <Link
@@ -538,7 +539,7 @@ const GuestUser = () => {
                     style={{ textDecoration: "none" }}
                     className="policy-link"
                   >
-                    Contact
+                    {i18n.t("contact")}
                   </Link>
                 </div>
               </>
@@ -551,8 +552,7 @@ const GuestUser = () => {
       {alertMessage && (
         <SketchyAlert
           message={alertMessage.text}
-          buttons={["guest", "close"]}
-          onClose={() => setAlertMessage(null)}
+          buttons={["guest", "news"]}
         />
       )}
       <Link to="/roast" className="fab-roast-button" title="Notification">

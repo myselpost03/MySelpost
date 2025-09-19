@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import confetti from "canvas-confetti"; // ✅ Import confetti
 import "../Styles/FeedbackPopup.css";
+import i18n from "../i18n";
 import { supabase } from "../Utils/supabaseClient";
 
 const FeedbackPopup = ({ onSubmitSuccess, onClose }) => {
@@ -68,25 +69,25 @@ const FeedbackPopup = ({ onSubmitSuccess, onClose }) => {
       {showPopup && (
         <div className="feedback-overlay">
           <div className="feedback-popup-box">
-            <h2 className="feedback-title">Give Feedback</h2>
+            <h2 className="feedback-title">{i18n.t("giveFeedback")}</h2>
             <div className="feedback-star-container">
               {[1, 2, 3, 4, 5].map(renderStar)}
             </div>
             <textarea
               className="feedback-box"
-              placeholder="Describe the issue or share your thoughts..."
+              placeholder={i18n.t("feedbackPlaceholder")}
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
             />
             <div className="feedback-btn-group">
               <button onClick={handleSubmit} className="feedback-submit-btn">
-                Submit
+                {i18n.t("submit")}
               </button>
               <button
                 onClick={onClose}
                 className="feedback-cancel-btn"
               >
-                Cancel
+                {i18n.t("cancel")}
               </button>
             </div>
           </div>

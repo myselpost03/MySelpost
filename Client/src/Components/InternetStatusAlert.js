@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import i18n from "../i18n";
 import "../Styles/InternetStatusAlert.css";
 
 const InternetStatusAlert = () => {
@@ -20,7 +21,7 @@ const InternetStatusAlert = () => {
   return (
     !isOnline && (
       <div className="sketchy-internet-alert">
-        ⚠️ You are offline! Check your internet connection.
+        ⚠️ {i18n.t("offline")}
       </div>
     )
   );

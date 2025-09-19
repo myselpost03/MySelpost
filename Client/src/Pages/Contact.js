@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SketchyHeader from "../Components/SketchyHeader";
 import "../Styles/Contact.css";
+import i18n from "../i18n";
 import { supabase } from "../Utils/supabaseClient";
 
 const Contact = () => {
@@ -45,13 +46,13 @@ const Contact = () => {
 
   return (
     <div className="contact-page">
-      <SketchyHeader title="Contact" onBack={handleBack} />
+      <SketchyHeader title={i18n.t("contact")} onBack={handleBack} />
       <div className="contact-wrapper">
         <div className="contact-box">
           {!submitted ? (
             <form className="contact-form" onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Name</label>
+                <label>{i18n.t("name")}</label>
                 <input
                   type="text"
                   name="name"
@@ -62,7 +63,7 @@ const Contact = () => {
               </div>
 
               <div className="form-group">
-                <label>Email</label>
+                <label>{i18n.t("email")}</label>
                 <input
                   type="email"
                   name="email"
@@ -73,12 +74,12 @@ const Contact = () => {
               </div>
 
               <div className="form-group">
-                <label>Message</label>
+                <label>{i18n.t("message")}</label>
                 <textarea
                   name="message"
                   rows="5"
                   required
-                  placeholder="Have an idea, suggestion, or need help? Let’s talk!"
+                  placeholder={i18n.t("haveIdea")}
                   value={formData.message}
                   onChange={handleChange}
                 ></textarea>
@@ -89,13 +90,13 @@ const Contact = () => {
                 className="submit-btn"
                 disabled={!isFormValid || loading}
               >
-                {loading ? "Sending..." : "Send Message ✉️"}
+                {loading ? i18n.t("sending") : `${i18n.t("sendMessage")} ✉️`}
               </button>
             </form>
           ) : (
             <div className="thank-you">
-              <h2>Thanks for reaching out!</h2>
-              <p>We'll get back to you within 24–48 hours.</p>
+              <h2>{i18n.t("thanksFeedback")}</h2>
+              <p>{i18n.t("responseTime")}</p>
             </div>
           )}
         </div>

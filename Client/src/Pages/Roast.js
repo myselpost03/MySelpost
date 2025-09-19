@@ -22,6 +22,8 @@ import {
   toBlob,
   getRoastLastSync,
 } from "../Utils/db";
+import i18n from "../i18n";
+
 
 const timeAgo = (date) => {
   const inputDate = new Date(date + "Z"); // 👈 Ensures it's treated as UTC
@@ -38,10 +40,10 @@ const timeAgo = (date) => {
 
   for (let key in intervals) {
     const value = Math.floor(seconds / intervals[key]);
-    if (value >= 1) return `${value}${key[0]} ago`;
+    if (value >= 1) return `${value}${key[0]} ${i18n.t("ago")}`;
   }
 
-  return `Just now`;
+  return i18n.t("justNow");
 };
 
 function Roast() {
@@ -69,7 +71,7 @@ function Roast() {
       setFabOpen((prev) => !prev);
     } else {
       setAlertMessage({
-        text: "You have to log in to access this feature.",
+        text: i18n.t("loginRequired"),
         withButton: true,
       });
     }
@@ -217,7 +219,7 @@ function Roast() {
     const userId = currentUser?.id;
     if (!currentUser) {
       setAlertMessage({
-        text: "You have to log in to upvote the roast.",
+        text: i18n.t("loginRequiredUpdate"),
         withButton: true,
       });
     }
@@ -287,19 +289,19 @@ function Roast() {
       trimmed.toLowerCase().includes(word.toLowerCase())
     );
     if (containsBanned) {
-      toast.error("Your roast contains abusive words and cannot be submitted.");
+      toast.error(i18n.t("roastAbusive"));
       return;
     }
     const isGeneric = genericTexts.includes(trimmed.toLowerCase());
     if (trimmed.length < 3 || isGeneric) {
-      toast.error("⚠ Please write a roast, not a simple greeting.");
+      toast.error(`⚠ ${i18n.t("roastGreeting")}`);
       return;
     }
 
     const currentUser = JSON.parse(localStorage.getItem("user"));
     if (!currentUser) {
       setAlertMessage({
-        text: "You have to log in to add roast.",
+        text: i18n.t("loginRequiredRoast"),
         withButton: true,
       });
     }
@@ -324,7 +326,7 @@ function Roast() {
 
     if (existingRoast) {
       setAlertMessage({
-        text: "You’ve already roasted this image!",
+        text: i18n.t("roastAlready"),
         withButton: true,
       });
       return;
@@ -384,7 +386,6 @@ function Roast() {
     const currentUser = JSON.parse(localStorage.getItem("user"));
     const userId = currentUser?.id;
     if (!userId) {
-      alert("Please log in to upload.");
       return;
     }
 
@@ -436,7 +437,7 @@ function Roast() {
       const imageUrl = cloudinaryData.secure_url;
 
       if (!imageUrl) {
-        setAlertMessage({ text: "Upload failed.", withButton: true });
+        setAlertMessage({ text: i18n.t("uploadFailed"), withButton: true });
         setUploading(false);
         return;
       }
@@ -468,7 +469,7 @@ function Roast() {
       await setRoastLastSync(new Date().toISOString());
 
       localStorage.setItem("hasUploadedImage", "true");
-      toast.success("Image Uploaded Successfully!");
+      toast.success(i18n.t("uploadSuccess"));
 
       // Optionally, append this new image to current cards state
       const updatedCards = [
@@ -485,7 +486,7 @@ function Roast() {
       setCurrentIndex(0);
     } catch (err) {
       console.error("Upload error:", err);
-      toast.error("Upload failed.");
+      toast.error(i18n.t("uploadFailed"));
     } finally {
       setUploading(false);
     }
@@ -510,7 +511,7 @@ function Roast() {
   if (!cards.length || loading || uploading)
     return (
       <div>
-        <SketchyHeader title="Roast" onBack={handleBack} />
+        <SketchyHeader title={i18n.t("roast")} onBack={handleBack} />
 
         <LoadingSpinner />
       </div>
@@ -518,14 +519,14 @@ function Roast() {
 
   return (
     <>
-      <SketchyHeader title="Roast" onBack={handleBack} />
+      <SketchyHeader title={i18n.t("roast")} onBack={handleBack} />
 
       <div className="roast-page" {...swipeHandlers}>
         <div className="roast-card-container">
           {showSwipeGuide && (
             <div className="swipe-guide-animation">
               <div className="swipe-arrow swipe-left">⬅️</div>
-              <div className="swipe-text">Swipe to see next roast</div>
+              <div className="swipe-text">{i18n.t("roastSwipe")}</div>
               <div className="swipe-arrow swipe-right">➡️</div>
             </div>
           )}
@@ -551,7 +552,7 @@ function Roast() {
             <div className="sketchy-share-buttons">
               <FacebookShareButton
                 url={window.location.href}
-                quote="🔥 Check this roast on myselpost!"
+                quote={`🔥 ${i18n.t("roastShare")}`}
                 onClick={handleShare}
               >
                 <button className="sketchy-share">
@@ -608,7 +609,7 @@ function Roast() {
             <div className="input-row">
               <input
                 type="text"
-                placeholder="Your roast..."
+                placeholder={i18n.t("roastYour")}
                 value={cards[currentIndex].newRoast}
                 maxLength={150}
                 onChange={(e) => handleInputChange(e, currentIndex)}
@@ -626,7 +627,7 @@ function Roast() {
                 className="roast-button"
                 disabled={!currentUser || roastingIndex === currentIndex}
               >
-                {roastingIndex === currentIndex ? "Roasting..." : "Roast!"}
+                {roastingIndex === currentIndex ? i18n.t("roasting") : i18n.t("roast")}
               </button>
             </div>
           </div>
@@ -682,7 +683,7 @@ function Roast() {
             >
               ✖
             </button>
-            <h3>🔥 Roast of the Day</h3>
+            <h3>🔥 {i18n.t("roastOfDay")} </h3>
             <img
               src={topRoastData.image}
               alt="Top Roast"

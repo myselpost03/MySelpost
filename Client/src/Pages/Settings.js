@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SketchyHeader from "../Components/SketchyHeader";
-import OneSignal from 'react-onesignal';
+import OneSignal from "react-onesignal";
 import { supabase } from "../Utils/supabaseClient";
-import { trackEvent } from "../Utils/analytics";
+import i18n from "../i18n";
 import "../Styles/Settings.css";
 
 const Settings = () => {
@@ -49,19 +49,6 @@ const Settings = () => {
     }
   };
 
-  const handleNotificationsChange = (e) => {
-    const isEnabled = e.target.checked;
-
-    if (isEnabled) {
-      setNotificationsEnabled(true);
-      localStorage.setItem("notificationsEnabled", "true");
-      handleSubscribe();
-    } else {
-      // ❌ Prevent disabling manually
-      e.preventDefault();
-    }
-  };
-
   const handleBack = () => navigate(-1);
   const handleContact = () => navigate("/contact-us");
   const handlePrivacy = () => navigate("/privacy-policy");
@@ -71,7 +58,7 @@ const Settings = () => {
 
   return (
     <>
-      <SketchyHeader title="Settings" onBack={handleBack} />
+      <SketchyHeader title={i18n.t("settings")} onBack={handleBack} />
       <div className="settings-container">
         <div className="settings-card">
           {/*<div className="settings-item">
@@ -87,28 +74,28 @@ const Settings = () => {
           </div>*/}
 
           <div className="settings-item" onClick={handleContact}>
-            <span>Contact Us</span>
-            <button className="settings-btn">Go</button>
+            <span>{i18n.t("contactUs")}</span>
+            <button className="settings-btn"> {i18n.t("go")} </button>
           </div>
 
           <div className="settings-item" onClick={handlePrivacy}>
-            <span>Privacy Policy</span>
-            <button className="settings-btn">View</button>
+            <span>{i18n.t("privacy_title")}</span>
+            <button className="settings-btn">{i18n.t("view")}</button>
           </div>
 
           <div className="settings-item" onClick={handleUpdates}>
-            <span>Recent Updates Made</span>
-            <button className="settings-btn">View</button>
+            <span>{i18n.t("recentUpdates")}</span>
+            <button className="settings-btn">{i18n.t("view")}</button>
           </div>
 
           <div className="settings-item" onClick={handleTerms}>
-            <span>Terms of Service</span>
-            <button className="settings-btn">View</button>
+            <span>{i18n.t("terms_title")}</span>
+            <button className="settings-btn">{i18n.t("view")}</button>
           </div>
 
           <div className="settings-item" onClick={handleAbout}>
-            <span>About</span>
-            <button className="settings-btn">More</button>
+            <span>{i18n.t("about")}</span>
+            <button className="settings-btn"> {i18n.t("more")} </button>
           </div>
         </div>
       </div>

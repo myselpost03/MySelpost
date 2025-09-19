@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import Header from "../Components/Header";
+import i18n from "../i18n";
 import "../Styles/NotFound.css";
 
 const NotFound = () => {
@@ -9,12 +10,10 @@ const NotFound = () => {
       <Header />
       <div className="notfound-container">
         <h1 className="notfound-404">404</h1>
-        <h2 className="notfound-title">Page Not Found</h2>
-        <p className="notfound-text">
-          The page you are looking for doesn’t exist or has been moved.
-        </p>
+        <h2 className="notfound-title">{i18n.t("pageNotFound")}</h2>
+        <p className="notfound-text">{i18n.t("pageMoved")}</p>
         <Link to="/" className="notfound-link">
-          Back to Home
+          {i18n.t("backHome")}
         </Link>
       </div>
     </>

@@ -45,6 +45,7 @@ import InternetStatusAlert from "./Components/InternetStatusAlert";
 import FeedbackPopup from "./Components/FeedbackPopup";
 import { isRunningAsPWA } from "./CheckPWA";
 import { trackEvent } from "./Utils/analytics";
+import i18n from "./i18n";
 
 const protectedRoutes = [
   { path: "/prompt", component: Prompt },
@@ -239,7 +240,7 @@ function AppContent() {
         });
         if (!error) {
           setAlertMessage({
-            text: "✅ You got 3 coins for spending an hour.",
+            text: `✅ ${i18n.t("coinsReward")}`,
             withButton: true,
           });
         }
@@ -276,7 +277,7 @@ function AppContent() {
           } else {
             localStorage.setItem(rewardKey, "true");
             setAlertMessage({
-              text: "🎉 App Installed! You got +30 coins.",
+              text: `🎉 ${i18n.t("appInstalled")}`,
               withButton: true,
             });
           }

@@ -1,0 +1,2936 @@
+[
+  {
+    "fact": "Welcome to FactPins.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/04/15/21/31/welcome-sign-724689_640.jpg"
+  },
+  {
+    "fact": "Venus is the hottest planet in the solar system, despite not being closest to the Sun.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/09/08/23/58/venus-5556107_640.jpg"
+  },
+  {
+    "fact": "Hippos can’t swim. Hippos really do have big bones, so big and dense, in fact, that they’re barely buoyant at all.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/11/03/11/06/hippo-515027_640.jpg"
+  },
+  {
+    "fact": "Apple paid a couple $1.7 million dollars for their plot of land, which was only worth $181,700.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/03/15/17/54/away-4934456_1280.jpg"
+  },
+  {
+    "fact": "The largest Japanese population outside of Japan stands at 1.6 million people who live in Brazil.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/12/06/11/03/brazil-3001462_640.png"
+  },
+  {
+    "fact": "The first roller coaster was used to transport coal down a hill.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/07/29/14/25/roller-coaster-1553336_640.jpg"
+  },
+  {
+    "fact": "Sea otters hold hands while they sleep to keep from drifting apart.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/03/02/22/33/sea-otter-3194453_640.jpg"
+  },
+  {
+    "fact": "The first oranges weren’t orange; they were green.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/10/07/13/36/tangerines-1721590_640.jpg"
+  },
+  {
+    "fact": "Bananas are naturally radioactive due to their potassium content.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/09/24/20/12/bananas-3700718_640.jpg"
+  },
+  {
+    "fact": "If you know you'are going to vomit, eat some vanilla first. It won't stop the vomiting, but it will stop the burning sensation.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/10/06/15/24/ice-cream-476361_640.jpg"
+  },
+  {
+    "fact": "A bolt of lightning contains enough energy to toast 100,000 slices of bread.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/08/28/08/48/lightning-1625550_640.jpg"
+  },
+  {
+    "fact": "Cats have a third eyelid called a 'haw' that helps protect their eyes.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/11/02/18/13/cat-3790706_1280.jpg"
+  },
+  {
+    "fact": "The first email was sent by Ray Tomlinson in 1971 to himself.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/03/22/02/37/email-3249062_1280.png"
+  },
+  {
+    "fact": "Pineapples take about two years to grow and mature.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/07/30/11/05/pineapple-867245_640.jpg"
+  },
+  {
+    "fact": "A day on Saturn lasts only about 10.7 hours.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/09/15/23/40/saturn-5574937_640.jpg"
+  },
+
+  {
+    "fact": "Ants can lift objects 50 times their own body weight.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/03/04/17/23/ant-4902223_640.jpg"
+  },
+  {
+    "fact": "The fingerprints of a koala are so similar to humans that they can confuse crime scene investigators.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/09/25/09/50/biometrics-4503187_640.jpg"
+  },
+  {
+    "fact": "Your stomach gets a new lining every 3 to 4 days to prevent it from digesting itself.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/10/20/19/13/stomach-5671356_640.jpg"
+  },
+
+  {
+    "fact": "Ravens can imitate human speech better than parrots.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/03/21/18/46/raven-2162966_640.jpg"
+  },
+  {
+    "fact": "Hot water freezes faster than cold water in some conditions, a phenomenon called the Mpemba effect.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/11/18/13/39/hardest-3823168_640.jpg"
+  },
+  {
+    "fact": "The Amazon rainforest produces 20% of the world’s oxygen.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/09/16/23/09/tropical-7459824_640.jpg"
+  },
+
+  {
+    "fact": "Horses and cows can sleep while standing up.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/12/14/09/22/animal-6870147_640.jpg"
+  },
+  {
+    "fact": "The dot over the letter 'i' and 'j' is called a tittle.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/04/23/11/56/reflection-3344018_1280.jpg"
+  },
+  {
+    "fact": "Peanuts aren’t nuts; they’re legumes.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/12/04/23/10/beans-557268_640.jpg"
+  },
+  {
+    "fact": "A shrimp’s heart is located in its head.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/04/17/13/10/shrimp-727214_640.jpg"
+  },
+  {
+    "fact": "Some frogs can freeze without dying, entering a hibernation-like state.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/05/25/12/02/frog-3428988_640.jpg"
+  },
+  {
+    "fact": "Apples float in water because they are 25% air.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/10/25/17/58/apple-1769553_640.jpg"
+  },
+  {
+    "fact": "The human brain generates more electrical impulses in a day than all the telephones in the world combined.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/24/11/04/brain-2676370_1280.jpg"
+  },
+  {
+    "fact": "The first pencil was invented in 1565 in England.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2010/12/13/10/05/pencil-2269_640.jpg"
+  },
+  {
+    "fact": "Earthquakes can cause days to become shorter by redistributing the planet’s mass.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/09/12/21/57/earthquake-1665870_1280.jpg"
+  },
+  {
+    "fact": "Hummingbirds are the only birds that can fly backward.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/05/19/13/28/bird-8004544_640.jpg"
+  },
+  {
+    "fact": "The coldest temperature ever recorded on Earth was -128.6°F (-89.2°C) in Antarctica.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/05/15/09/18/iceberg-7994536_640.jpg"
+  },
+  {
+    "fact": "Alaska has more coastline than all other U.S. states combined.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/08/23/18/39/beach-4426246_640.jpg"
+  },
+  {
+    "fact": "The shortest living insect is the mayfly, which lives for just 24 hours.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/01/27/19/28/mayfly-6972931_640.jpg"
+  },
+  {
+    "fact": "Giraffes only need 5-30 minutes of sleep per day.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/06/03/17/11/giraffe-8038107_640.jpg"
+  },
+  {
+    "fact": "Polar bear fur is not white; it’s transparent and reflects visible light.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2024/04/18/10/03/polar-bear-8703952_640.jpg"
+  },
+
+  {
+    "fact": "Wombats are the only animals with cube-shaped poop.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/05/16/10/39/wombat-7200056_640.jpg"
+  },
+  {
+    "fact": "Astronauts’ height increases in space due to the lack of gravity compressing their spine.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/03/17/21/31/measure-289399_640.jpg"
+  },
+
+  {
+    "fact": "A jellyfish’s body is 95% water.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/09/24/02/54/jellyfish-6651202_640.jpg"
+  },
+  {
+    "fact": "Dragonflies can fly in all six directions: forward, backward, sideways, up, down, and hover.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/06/05/20/23/dragonfly-3456317_640.jpg"
+  },
+  {
+    "fact": "A cheetah can accelerate from 0 to 60 mph in just 3 seconds.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/10/17/05/31/cheetah-2859581_640.jpg"
+  },
+  {
+    "fact": "Sharks have been around longer than dinosaurs, over 400 million years.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/09/18/11/26/jungle-7462781_640.jpg"
+  },
+  {
+    "fact": "Carrots were originally purple before being bred orange in the 17th century.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/07/11/00/18/carrots-1508847_640.jpg"
+  },
+  {
+    "fact": "The inventor of the Pringles can, Fred Baur, was buried in one.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/07/13/23/27/chips-843993_640.jpg"
+  },
+  {
+    "fact": "Some plants can recognize their siblings and grow accordingly to avoid competition.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/05/01/21/20/earth-1365995_640.jpg"
+  },
+  {
+    "fact": "A full NASA spacesuit costs around $12 million.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/01/07/15/58/space-74161_640.jpg"
+  },
+  {
+    "fact": "The word 'robot' comes from the Czech word 'robota,' meaning forced labor.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/12/10/17/00/robot-3010309_640.jpg"
+  },
+  {
+    "fact": "The tongue of a chameleon can be twice the length of its body.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/10/17/11/41/chameleon-7527416_1280.jpg"
+  },
+  {
+    "fact": "Rabbits can see behind them without moving their heads.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/04/07/02/56/cottontail-rabbit-7116707_640.jpg"
+  },
+  {
+    "fact": "Mosquitoes are attracted to people who have recently eaten bananas.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/10/12/10/50/nature-5648450_640.jpg"
+  },
+  {
+    "fact": "There is a species of fish called the blobfish that resembles a gelatinous blob at sea level.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/01/23/20/09/blowfish-609381_640.jpg"
+  },
+  {
+    "fact": "The fingerprints of a tiger are as unique as human fingerprints.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/01/12/21/42/tiger-1975790_1280.jpg"
+  },
+  {
+    "fact": "The original London Bridge is now in Arizona.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/11/20/16/10/tower-bridge-5762070_640.jpg"
+  },
+  {
+    "fact": "Elephants are the only mammals that can’t jump.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/05/28/08/32/elephant-1421167_640.jpg"
+  },
+  {
+    "fact": "Shakespeare invented over 1,700 words that we use today.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/07/30/13/19/shakespeare-7353767_640.jpg"
+  },
+
+  {
+    "fact": "A day on Mercury is longer than a year on Mercury.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/11/11/14/39/mercury-526918_640.jpg"
+  },
+  {
+    "fact": "Humans are the only animals that blush.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/09/15/11/20/portrait-4478008_640.jpg"
+  },
+  {
+    "fact": "The Guinness World Records book holds the record for being the most stolen book from public libraries.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/11/06/12/35/control-1027103_640.jpg"
+  },
+
+  {
+    "fact": "The surface area of a human lung is roughly the size of a tennis court.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/09/05/02/35/stadium-436081_640.jpg"
+  },
+
+  {
+    "fact": "The inventor of the Matchstick, John Walker, accidentally created it while stirring chemicals.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/08/27/21/44/burning-match-911167_640.jpg"
+  },
+
+  {
+    "fact": "The Sahara Desert can experience snowfall on rare occasions.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/18/13/09/desert-1834373_640.jpg"
+  },
+  {
+    "fact": "There are more possible iterations of a game of chess than there are atoms in the observable universe.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/09/08/20/29/chess-2730034_640.jpg"
+  },
+  {
+    "fact": "Avocados are technically classified as berries.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/03/17/14/17/avocado-6102446_640.jpg"
+  },
+  {
+    "fact": "The mantis shrimp has one of the fastest punches in the animal kingdom.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/10/27/11/49/boxer-2894025_640.jpg"
+  },
+  {
+    "fact": "Coca-Cola was the first soft drink consumed in space.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/04/04/11/42/soda-4102593_640.jpg"
+  },
+  {
+    "fact": "The term 'Bluetooth' comes from a Viking king, Harald 'Bluetooth' Gormsson.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/10/09/20/27/bluetooth-1726772_640.jpg"
+  },
+  {
+    "fact": "The moon is moving about 1.5 inches away from Earth every year.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/25/23/15/moon-1859616_640.jpg"
+  },
+
+  {
+    "fact": "The speed of a sneeze can reach up to 100 miles per hour.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/12/07/16/07/cold-3861935_640.jpg"
+  },
+  {
+    "fact": "Earth’s magnetic field is slowly weakening over time.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/19/06/38/abstract-1838151_640.jpg"
+  },
+
+  {
+    "fact": "The tiny pocket in your jeans was originally designed to hold a pocket watch.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/08/05/09/30/jeans-8170757_1280.jpg"
+  },
+
+  {
+    "fact": "The national animal of Scotland is the unicorn.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/08/23/03/03/unicorn-5509763_640.jpg"
+  },
+
+  {
+    "fact": "Starfish have no brains but can sense light and dark with their eye spots.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/22/23/53/starfish-1851289_640.jpg"
+  },
+
+  {
+    "fact": "A 'jiffy' is an actual unit of time, approximately 1/100th of a second.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/05/29/17/37/indoor-5235953_640.jpg"
+  },
+
+  {
+    "fact": "Almonds are seeds, not nuts.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/07/08/09/34/almond-3523569_640.jpg"
+  },
+  {
+    "fact": "The average human blinks about 20 times per minute.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/11/09/18/38/eye-3805227_640.jpg"
+  },
+  {
+    "fact": "Crocodiles can go through 3,000 teeth in their lifetime.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/22/23/58/crocodile-1851313_640.jpg"
+  },
+
+  {
+    "fact": "A lion’s roar can be heard from 5 miles away.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/04/13/21/24/lion-3317670_640.jpg"
+  },
+  {
+    "fact": "Dolphins have names for each other and recognize them.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/11/01/11/13/dolphin-203875_640.jpg"
+  },
+  {
+    "fact": "Rats can laugh when they are tickled.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/12/12/22/46/animal-4691724_1280.jpg"
+  },
+
+  {
+    "fact": "The average human produces enough saliva in a lifetime to fill two swimming pools.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/12/17/13/10/tongue-5839252_640.jpg"
+  },
+  {
+    "fact": "The first webcam was invented to monitor a coffee pot.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/06/24/01/15/coffee-819362_640.jpg"
+  },
+
+  {
+    "fact": "There are more bacteria in your mouth than there are people in the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/09/06/18/49/bacteria-3658992_1280.jpg"
+  },
+
+  {
+    "fact": "The Great Pyramid of Giza was the tallest man-made structure for over 3,800 years.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/03/10/23/00/egypt-2133951_640.jpg"
+  },
+
+  {
+    "fact": "The first artificial satellite, Sputnik 1, was launched in 1957.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/11/28/11/25/satellite-67718_1280.jpg"
+  },
+  {
+    "fact": "The Internet was originally called ARPANET, created in the 1960s.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/06/24/15/45/hands-820272_640.jpg"
+  },
+  {
+    "fact": "The first computer virus, 'Elk Cloner,' was created in 1982.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/10/24/07/12/hacker-2883632_640.jpg"
+  },
+
+  {
+    "fact": "The first video game, 'Tennis for Two,' was created in 1958.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/09/07/07/11/game-console-6603120_1280.jpg"
+  },
+  {
+    "fact": "Sumerian cuneiform is the earliest known written language.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/09/15/21/53/asia-2753733_640.jpg"
+  },
+  {
+    "fact": "The Hubble Space Telescope has been operational since 1990.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/01/05/20/40/telescopic-mirror-74034_640.jpg"
+  },
+  {
+    "fact": "Light travels at 299,792 km per second in a vacuum.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/07/14/22/06/highway-393492_640.jpg"
+  },
+  {
+    "fact": "The human brain contains around 100 billion neurons.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/03/19/21/01/neurons-7079536_640.jpg"
+  },
+  {
+    "fact": "The first steam engine was built in 1698 by Thomas Savery.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/04/03/21/29/locomotive-7109886_640.jpg"
+  },
+
+  {
+    "fact": "The first atomic bomb was tested in 1945 in New Mexico.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/03/12/01/15/nuclear-2136244_640.jpg"
+  },
+  {
+    "fact": "The first laser was invented in 1960 by Theodore Maiman.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/09/16/12/44/haunebu-4480898_640.jpg"
+  },
+
+  {
+    "fact": "Voyager 1, launched in 1977, is the first spacecraft to leave our solar system.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/11/28/11/25/satellite-67718_640.jpg"
+  },
+  {
+    "fact": "The first electric car was built in the 1830s by Robert Anderson.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/06/15/12/14/electric-car-1458836_640.jpg"
+  },
+  {
+    "fact": "The first-ever video uploaded to YouTube was titled 'Me at the zoo.'",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/02/21/06/39/tablet-7025897_640.jpg"
+  },
+  {
+    "fact": "Mount Everest grows by about 4 millimeters each year.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/02/28/14/00/tibet-4025999_1280.jpg"
+  },
+  {
+    "fact": "Birds don’t urinate; they excrete uric acid instead of urine.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/10/12/08/24/bird-8310183_640.png"
+  },
+  {
+    "fact": "The loudest sound ever recorded was the Krakatoa volcanic eruption in 1883.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/11/28/09/46/lava-67574_640.jpg"
+  },
+  {
+    "fact": "The world’s oldest piece of chewing gum is over 9,000 years old.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/03/18/12/54/chewing-gum-2153918_640.jpg"
+  },
+  {
+    "fact": "The first text message sent was 'Merry Christmas' in 1992.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/12/10/20/53/santa-clause-3010837_640.jpg"
+  },
+  {
+    "fact": "Walt Disney was afraid of mice.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/10/12/01/08/mouse-1733265_640.jpg"
+  },
+
+  {
+    "fact": "The largest desert in the world is not the Sahara but Antarctica.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/07/06/07/40/antarctica-8109879_640.jpg"
+  },
+  {
+    "fact": "The first email was sent by Ray Tomlinson to himself in 1971.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/05/10/13/28/contact-us-4193523_640.jpg"
+  },
+  {
+    "fact": "The human body has enough iron to make a small nail.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/04/28/22/52/nail-1359911_640.jpg"
+  },
+
+  {
+    "fact": "The microwave oven was invented accidentally by a radar engineer named Percy Spencer.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/01/04/05/29/kitchen-6914223_1280.jpg"
+  },
+  {
+    "fact": "There are over 200 cor*ses of climbers on Mount Everest, some of which are used as landmarks.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/12/02/14/51/man-3851339_1280.jpg"
+  },
+  {
+    "fact": "A cockroach can live for several weeks without its head.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/10/11/17/28/cockroach-8309126_640.jpg"
+  },
+  {
+    "fact": "There are more public libraries in the U.S. than there are Starbucks coffee shops.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/03/26/22/21/books-1281581_640.jpg"
+  },
+  {
+    "fact": "The longest recorded time someone has slept is 11 days.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/04/03/10/42/woman-2197947_640.jpg"
+  },
+  {
+    "fact": "The longest wedding veil was longer than 63 football fields.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/06/10/16/18/bride-4264696_640.jpg"
+  },
+  {
+    "fact": "The longest tennis match ever played was 11 hours and 5 minutes long.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/04/08/19/04/tennis-5018589_1280.jpg"
+  },
+  {
+    "fact": "The first modern Olympic Games in 1896 only had 13 countries participating.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/02/00/34/portland-1790136_640.jpg"
+  },
+  {
+    "fact": "In 2010, a team of researchers developed a drone capable of performing acrobatics.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/12/07/14/18/drone-1080844_1280.jpg"
+  },
+  {
+    "fact": "Ping Pong was invented in England as a parlor game in the 1880s.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/10/01/21/14/table-tennis-1708418_640.jpg"
+  },
+  {
+    "fact": "The longest football game lasted 72 hours.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/10/14/20/24/football-488714_640.jpg"
+  },
+  {
+    "fact": "Soccer is the world’s most-watched sport, with over 4 billion fans.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/29/02/05/audience-1866738_1280.jpg"
+  },
+  {
+    "fact": "A baseball bat can travel up to 100 mph when swung by a professional player.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/05/11/03/34/baseball-7985433_1280.jpg"
+  },
+  {
+    "fact": "A Formula 1 car can reach speeds of up to 230 mph on a straight track.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/05/20/10/13/racing-3415413_640.jpg"
+  },
+  {
+    "fact": "More people own a smartphone than a toothbrush.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/06/06/28/toothbrush-2589480_640.jpg"
+  },
+  {
+    "fact": "In cricket, the fastest recorded ball bowled was at 161.3 km/h.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/04/15/21/06/cricket-724618_640.jpg"
+  },
+  {
+    "fact": "The Mona Lisa has no visible eyebrows or eyelashes.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/06/17/18/35/sculpture-2413080_640.jpg"
+  },
+  {
+    "fact": "Origami, the art of paper folding, originated in Japan.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/07/28/03/36/origami-3567230_640.jpg"
+  },
+  {
+    "fact": "Pablo Picasso could draw before he could walk.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/09/24/06/37/picasso-1691133_640.jpg"
+  },
+  {
+    "fact": "The Colosseum in Rome could hold up to 50,000 spectators.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/10/04/14/40/rome-2816426_640.jpg"
+  },
+  {
+    "fact": "The Taj Mahal changes color depending on the time of day.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/16/12/18/taj-mahal-2647606_640.jpg"
+  },
+  {
+    "fact": "The first movie ever made was only 2.11 seconds long.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/05/19/10/40/cinema-4213751_640.jpg"
+  },
+  {
+    "fact": "The longest-running animated TV show is 'The Simpsons.'",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/03/01/20/08/spray-can-7041935_640.jpg"
+  },
+  {
+    "fact": "Marvel's 'Avengers: Endgame' is one of the highest-grossing films of all time.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/06/05/10/58/action-figures-7243778_640.jpg"
+  },
+  {
+    "fact": "Video games generate more revenue globally than movies and music combined.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/08/27/08/21/video-game-6578106_640.jpg"
+  },
+  {
+    "fact": "Bollywood produces more films annually than Hollywood.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/12/29/12/13/nature-3047449_640.jpg"
+  },
+  {
+    "fact": "The most-watched TV event ever was the 1996 Olympics opening ceremony.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/02/09/01/42/fireworks-79575_640.jpg"
+  },
+  {
+    "fact": "J.K. Rowling wrote much of 'Harry Potter' in a café.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/29/12/54/cafe-1869656_640.jpg"
+  },
+
+  {
+    "fact": "Walking 30 minutes a day can lower your risk of heart disease.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/02/12/17/22/woman-7009477_640.jpg"
+  },
+  {
+    "fact": "Meditation reduces stress and improves focus.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/03/26/21/54/yoga-2176668_640.jpg"
+  },
+  {
+    "fact": "Earth's core is as hot as the surface of the Sun, about 6,000°C.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/01/09/10/17/mars-11603_640.jpg"
+  },
+
+  {
+    "fact": "Mountains cover 27% of the Earth's land area.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/06/21/14/17/mountain-8079469_640.jpg"
+  },
+  {
+    "fact": "Laughter can strengthen your immune system.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/07/15/18/boy-2604853_640.jpg"
+  },
+  {
+    "fact": "The Amazon River is the second-longest river in the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/03/15/16/30/body-of-water-3228741_640.jpg"
+  },
+  {
+    "fact": "Iceland is the only country without mosquitoes.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/09/04/18/28/husavik-3654390_640.jpg"
+  },
+  {
+    "fact": "Dark chocolate contains antioxidants that are good for the heart.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/09/18/18/24/chocolate-183543_640.jpg"
+  },
+  {
+    "fact": "Greenland is the largest island in the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/08/17/13/46/tasiilaq-892503_640.jpg"
+  },
+  {
+    "fact": "Spinach is high in iron, essential for red blood cells.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/06/08/22/16/spinach-3463248_640.jpg"
+  },
+
+  {
+    "fact": "Watermelon is 92% water, making it great for hydration.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/19/10/41/watermelon-1838547_1280.jpg"
+  },
+  {
+    "fact": "Fingernails grow faster than toenails, and the middle finger's nail grows fastest.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2024/12/21/22/35/hand-9283145_1280.jpg"
+  },
+
+  {
+    "fact": "Most maps of the world are wrong",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/06/18/23/03/europe-3483539_1280.jpg"
+  },
+  {
+    "fact": "Comets smell like rotten eggs",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/06/05/07/59/space-1436951_1280.jpg"
+  },
+  {
+    "fact": "Wind turbines kill between 10,000 and 100,000 birds each year in the UK.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/10/15/06/03/windmill-4550711_1280.jpg"
+  },
+
+  {
+    "fact": "There’s a planet mostly made from diamond. Called 55 Cancri e, it's around twice the size of Earth.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/02/25/07/22/diamond-7033691_640.jpg"
+  },
+  {
+    "fact": "Football players spit so much because exercise increases the amount of protein in saliva.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/01/10/18/05/man-1132215_1280.jpg"
+  },
+  {
+    "fact": "Plants came before seeds. Early plants resembled moss and reproduced with single-celled spores.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/05/15/19/53/plant-7995882_640.jpg"
+  },
+  {
+    "fact": "You can’t fold a piece of A4 paper more than eight times.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/02/05/18/05/paper-5985445_1280.jpg"
+  },
+  {
+    "fact": "Australia is wider than the moon. The moon is 3400km in diameter, while Australia’s diameter is almost 4000km.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2024/01/22/22/09/map-8526430_1280.jpg"
+  },
+  {
+    "fact": "Human teeth are the only part of the body that cannot heal themselves.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/06/26/08/28/woman-3498849_640.jpg"
+  },
+  {
+    "fact": "It's illegal to own just one guinea pig in Switzerland.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/06/07/07/07/sea-pig-5269324_640.jpg"
+  },
+  {
+    "fact": "People are more creative in the shower.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/08/16/21/21/water-jet-3611518_640.jpg"
+  },
+  {
+    "fact": "Queen Elizabeth II was a trained mechanic. When she was 16, the Queen joined the British employment agency.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/02/16/15/39/queen-1203465_640.jpg"
+  },
+  {
+    "fact": "The actors who voiced Mickey and Minnie mouse got married in real life",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/10/27/22/29/mickey-mouse-1776700_640.jpg"
+  },
+
+  {
+    "fact": "Vatican City is the smallest country in the world. It's 120 times smaller than the island of Manhattan.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/02/06/02/14/architecture-3133764_640.jpg"
+  },
+  {
+    "fact": "Japan has over 200 flavours of Kit Kats. They're exclusively created for different regions, cities, and seasons.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/05/11/04/20/kitkat-3389489_640.jpg"
+  },
+  {
+    "fact": "Pigs can't look up into the sky. The anatomy of their spine and neck muscles limits their movement.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/03/01/16/07/animals-4028140_640.jpg"
+  },
+  {
+    "fact": "Queen Elizabeth II had a stand-in to make sure the sun wouldn't get in her eyes.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/08/06/22/55/sun-3588618_640.jpg"
+  },
+  {
+    "fact": "Vietnam is the world's second biggest coffee producer.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/09/07/10/11/coffee-beans-6603499_640.jpg"
+  },
+  {
+    "fact": "The office chair is believed to have been invented by Charles Darwin.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/04/20/06/46/office-730681_640.jpg"
+  },
+  {
+    "fact": "There are about 5,000 species of sea sponges.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/10/18/20/18/sponges-3757293_1280.jpg"
+  },
+  {
+    "fact": "The Pope can't be an organ donor. All popes' bodies belong to the Vatican when they die.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/06/06/18/06/pope-2377985_1280.jpg"
+  },
+  {
+    "fact": "The continent of Africa is in all four hemispheres.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/10/10/10/28/africa-60570_640.jpg"
+  },
+  {
+    "fact": "After water, tea is the drink most consumed around the world. ",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/05/30/12/21/tea-2356770_640.jpg"
+  },
+
+  {
+    "fact": "Nepal has the most public holidays. The nation have 39 each year.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/11/30/07/16/temple-5790082_640.jpg"
+  },
+  {
+    "fact": "The largest wave ever recorded was in Lituya Bay in Alaska. It reached 1,720 feet in 1958.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/04/01/15/05/big-waves-2193828_640.jpg"
+  },
+  {
+    "fact": "Coconuts are actually a fruit, not a nut.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/01/05/04/44/food-3062139_640.jpg"
+  },
+  {
+    "fact": "The number four (4) is the only number with the same number of letters as its value. ",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/09/07/15/33/number-437923_640.jpg"
+  },
+  {
+    "fact": "Human teeth are the hardest part of the body, even more so than human bone.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/05/09/16/13/tooth-replacement-759929_640.jpg"
+  },
+  {
+    "fact": "Green is the rarest eye colour of the main four eye colour groups - blue, brown, hazel and green.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/25/22/54/eye-2681783_640.jpg"
+  },
+  {
+    "fact": "Labrador is thought to be the most common dog breed in the UK, with 44,311 Labrador Retrievers.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/07/15/08/43/labrador-8128379_1280.jpg"
+  },
+  {
+    "fact": "Panda bears spend the majority of their waking hours eating.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/08/21/16/03/panda-4421395_640.jpg"
+  },
+  {
+    "fact": "Donald Duck has appeared in the most Disney movies from 1934 to 1999 - all 197 of them!",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/02/05/17/58/image-2040785_640.jpg"
+  },
+  {
+    "fact": "The oldest living land animal on earth is a 192-year-old tortoise named Jonathan.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/08/20/09/30/giant-tortoise-6559920_640.jpg"
+  },
+  {
+    "fact": "A silverback gorilla can lift over 1,763 pounds.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/05/04/12/13/gorilla-3373856_640.jpg"
+  },
+  {
+    "fact": "The Caesar salad was invented in 1924.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/06/07/20/58/salad-7249259_640.jpg"
+  },
+  {
+    "fact": "The average golf ball has 336 dimples.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/03/11/09/11/golf-3216250_640.jpg"
+  },
+  {
+    "fact": "Over sixty percent of the world’s lakes are located in Canada.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/02/29/23/17/canadian-flag-1229484_640.jpg"
+  },
+  {
+    "fact": "Somewhere between 50% and 80% of earth's living organisms are in the ocean.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/03/30/12/37/jellyfish-698521_640.jpg"
+  },
+  {
+    "fact": "“The Terminator” script was sold for $1.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/11/06/14/34/figure-2923801_640.png"
+  },
+  {
+    "fact": "Sudan has more pyramids than any country in the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/11/16/23/45/pyramid-66361_640.jpg"
+  },
+  {
+    "fact": "Tug of war was in the Olympics from 1900 to 1920.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/21/12/07/tug-of-war-2665148_640.jpg"
+  },
+  {
+    "fact": "The world’s longest concert lasted 453 hours.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/23/15/48/audience-1853662_1280.jpg"
+  },
+  {
+    "fact": "All mammals get goosebumps.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/08/12/06/40/goosebumps-885563_1280.jpg"
+  },
+  {
+    "fact": "Japan has one vending machine for every 40 people.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/03/20/10/15/japan-682010_640.jpg"
+  },
+  {
+    "fact": "Finland has more saunas than cars.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/12/06/08/12/pool-3001209_640.jpg"
+  },
+  {
+    "fact": "The longest time someone has spent holding their breath underwater is 24 minutes and 37 seconds. ",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/01/22/10/people-2568247_640.jpg"
+  },
+  {
+    "fact": "All clown fish are born male and can become female later in life.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/04/19/09/32/fish-2241634_640.jpg"
+  },
+  {
+    "fact": "Your heart beats an average of 100,000 times each day.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/21/15/45/man-1846050_640.jpg"
+  },
+  {
+    "fact": "The first animals to travel to outer space were fruit flies.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/09/30/08/49/fly-7489001_640.jpg"
+  },
+  {
+    "fact": "The plastic or metal tip of your shoelace is called an aglet.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/03/06/21/46/already-281210_640.jpg"
+  },
+  {
+    "fact": "Snakes smell with their tongue.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/10/28/10/49/red-bellied-black-snake-6749361_640.jpg"
+  },
+  {
+    "fact": "A sheep was the first animal to be cloned. ",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/12/04/23/34/sheep-4673941_640.jpg"
+  },
+  {
+    "fact": "Only male toads make loud croaking sounds.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/12/21/08/08/nature-8461405_1280.jpg"
+  },
+  {
+    "fact": "Platypuses sweat milk.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/06/29/03/01/duck-3505186_1280.jpg"
+  },
+  {
+    "fact": "A woman in the UK once called the police when her ice cream didn’t have enough sprinkles.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/04/22/20/05/ice-cream-106553_640.jpg"
+  },
+  {
+    "fact": "Russia has 11 time zones.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/10/22/11/33/the-flagpole-2877540_640.jpg"
+  },
+  {
+    "fact": "New Zealand has more sheep than humans.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/08/17/12/05/herd-of-sheep-7392366_640.jpg"
+  },
+  {
+    "fact": "President Theodore Roosevelt had a pet hyena.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/05/25/07/23/animal-7219905_640.jpg"
+  },
+  {
+    "fact": "The Burj Khalifa in Dubai is the world’s tallest building.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/03/13/01/01/burj-khalifa-4926554_640.jpg"
+  },
+  {
+    "fact": "Dogs sweat through their paws.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/01/27/13/26/dog-6972111_640.jpg"
+  },
+  {
+    "fact": "Male deer shed their antlers every year.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/03/11/16/38/hirsch-3217239_640.jpg"
+  },
+  {
+    "fact": "Lions can sleep up to 21 hours in a day.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/04/17/17/21/lion-7138526_640.jpg"
+  },
+  {
+    "fact": "You burn more calories sleeping than you do watching TV.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/03/04/01/01/father-22194_1280.jpg"
+  },
+  {
+    "fact": "Cats can hear ultrasound.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/10/02/18/49/monitor-470511_640.jpg"
+  },
+  {
+    "fact": "7.5 million toothpicks can be created from a cord of wood.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/12/22/19/22/toothpick-1104626_640.jpg"
+  },
+  {
+    "fact": "The national flag with the most colors in it is Belize (1981), with 12.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/28/18/56/international-2690870_640.jpg"
+  },
+  {
+    "fact": "The most-visited country on the planet is France, with 90M visitors.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/07/23/21/34/arc-de-triomphe-5432392_640.jpg"
+  },
+  {
+    "fact": "92% of the world’s currency is digital.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/04/23/19/30/earth-2254769_640.jpg"
+  },
+  {
+    "fact": "Russia is the most forested country in the world, with 815 million hectares.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/07/09/18/14/forest-7311484_640.jpg"
+  },
+  {
+    "fact": "We actually produce enough food to feed everyone on the planet; the problem is distribution.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/02/28/21/02/dumplings-7040097_1280.jpg"
+  },
+  {
+    "fact": "Owls don’t have eyeballs.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/10/08/14/46/bird-3732867_640.jpg"
+  },
+  {
+    "fact": "A single strand of Spaghetti is called a “Spaghetto.”",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/02/15/20/38/noodles-4851996_640.jpg"
+  },
+  {
+    "fact": "If you point your car keys to your head, it increases the remote’s signal range.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/05/31/12/00/key-791390_640.jpg"
+  },
+  {
+    "fact": "Iceland does not have a railway system.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/10/08/17/32/train-5638568_640.jpg"
+  },
+  {
+    "fact": "Standing around burns calories. A 150-pound person burns 114 calories per hour while standing",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/29/13/38/alone-1869914_640.jpg"
+  },
+  {
+    "fact": "The color red doesn’t really make bulls angry; they are color-blind.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/03/05/12/28/bison-european-2118538_640.jpg"
+  },
+  {
+    "fact": "Saint Lucia is the only country in the world named after a woman.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/04/21/13/28/st-lucia-106119_1280.jpg"
+  },
+  {
+    "fact": "The unique smell of rain actually comes from plant oils, bacteria, and ozone.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/06/19/20/14/water-815271_640.jpg"
+  },
+  {
+    "fact": "More tornadoes occur in the UK per square mile than in any other country in the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/12/11/14/35/storm-8443707_640.jpg"
+  },
+  {
+    "fact": "Times Square was originally called Longacre Square until it was renamed in 1904.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/12/15/17/49/time-square-8451204_640.jpg"
+  },
+  {
+    "fact": "Tic Tacs got their name from the sound they make when they are tossed around in their container.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/10/13/20/25/tic-tac-986745_640.jpg"
+  },
+  {
+    "fact": "The majority of blind people in the U.S. and the U.K. cannot read braille.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/08/18/17/12/braille-5498805_1280.jpg"
+  },
+  {
+    "fact": "There are only two countries in the world that have the color purple in their flags: Nicaragua & Dominica.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/03/11/19/19/violet-669046_640.jpg"
+  },
+  {
+    "fact": "In Japan, Domino’s started testing pizza delivery via reindeer in 2016.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/10/07/18/10/reindeer-5635891_640.jpg"
+  },
+  {
+    "fact": "The average household income of the top 1% in the United States is $1,260,508 per year.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/06/08/05/38/money-4259578_640.jpg"
+  },
+  {
+    "fact": "Nepal has the most mathematical flag in the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/07/22/15/22/flag-2528941_640.jpg"
+  },
+  {
+    "fact": "Samsung means “three stars” in Korean.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/06/14/17/41/galaxy-s8-2402805_640.jpg"
+  },
+  {
+    "fact": "Videogames have been found to be more effective at battling depression than therapy.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/03/18/16/23/nintendo-switch-2154437_640.jpg"
+  },
+  {
+    "fact": "The British Pound is the world’s oldest currency still in use at 1,200 years old.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2010/12/13/09/51/money-1760_1280.jpg"
+  },
+  {
+    "fact": "While dinosaurs roamed the earth, they lived on every continent, including Antarctica.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/04/05/23/00/dinosaur-1310676_640.jpg"
+  },
+  {
+    "fact": "By applying even pressure to an egg, it is nearly impossible to break the shell by squeezing it.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/12/29/17/29/egg-white-3048118_640.jpg"
+  },
+  {
+    "fact": "There are over 6,000 known species of grass.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/02/27/16/09/grass-275986_640.jpg"
+  },
+  {
+    "fact": "Eight of the ten largest statues in the world are of Buddha’s.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/07/16/09/26/buddha-5410319_640.jpg"
+  },
+  {
+    "fact": "The logo on the Red Bull cans are not cattle, but a type of bovine called a “gaur.”",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/04/04/14/57/portrait-4103010_640.jpg"
+  },
+  {
+    "fact": "Captive tigers in the U.S. alone outnumber the amount of wild tigers worldwide.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/04/25/20/52/amur-tiger-4155922_640.jpg"
+  },
+  {
+    "fact": "Bubble wrap was originally invented to be wallpaper.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/02/09/21/21/bubble-wrap-1190472_640.jpg"
+  },
+  {
+    "fact": "The longest Cricket Test match lasted over 12 days between England and South Africa.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/02/16/04/15/cricketer-7015983_1280.jpg"
+  },
+  {
+    "fact": "Albert Einstein had mastered calculus by the tender age of 15.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/04/03/01/53/einstein-2197302_1280.jpg"
+  },
+  {
+    "fact": "One of the smartest bird species is the magpie. They can even recognize themselves in mirrors.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/02/28/09/54/bird-6056753_640.jpg"
+  },
+  {
+    "fact": "The tall chef’s hat is called a toque.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/09/19/22/07/cooking-947776_640.jpg"
+  },
+  {
+    "fact": "Zebras have only one toe on each foot.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/10/13/10/20/zebra-5651454_640.jpg"
+  },
+  {
+    "fact": "Humans have been performing dentistry since 7000BC.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/07/23/10/44/dentist-2530990_1280.jpg"
+  },
+  {
+    "fact": "Canada eats more macaroni and cheese than any other nation in the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/03/09/17/11/macaroni-4916444_640.jpg"
+  },
+  {
+    "fact": "In 1866, The United States purchased Alaska from Russia for $7.2 million by writing a check.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/03/24/23/54/checkbook-688352_640.jpg"
+  },
+  {
+    "fact": "Animals yawn based on how large their brain is. The bigger the brain, the longer they will yawn.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/05/07/06/44/cat-339400_640.jpg"
+  },
+  {
+    "fact": "Eating grapefruit can restrict the effects of 43 different kinds of medications.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/09/05/20/52/grapefruit-1647688_640.jpg"
+  },
+  {
+    "fact": "The only window that opens on the presidential car is the driver’s window to pay tolls.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/09/07/13/28/france-179971_640.jpg"
+  },
+  {
+    "fact": "Animal Planet aired two fake documentaries that “proved” mermaids exist.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/11/04/16/52/fantasy-5712939_640.jpg"
+  },
+
+  {
+    "fact": "In the U.S., around ¾ of all houses possess at least 1 jar of peanut butter.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/03/04/12/17/rose-ringed-parakeet-4033916_640.jpg"
+  },
+  {
+    "fact": "About 25% of all blood from the heart goes into the kidneys.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/02/14/20/35/nephron-7013806_1280.jpg"
+  },
+  {
+    "fact": "Comets only reflect 4% of the light that falls on them, the rest is absorbed.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/10/03/11/44/moon-5623295_640.jpg"
+  },
+  {
+    "fact": "Red pandas have no living relatives – they aren’t even related to giant pandas.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/11/07/15/31/red-panda-8372704_1280.jpg"
+  },
+  {
+    "fact": "After Christianity, the largest religious affiliation in the U.S. is Judaism.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/12/18/11/09/star-of-david-4703731_640.jpg"
+  },
+  {
+    "fact": "Cranes are built using cranes.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/09/04/08/13/harbour-crane-1643476_640.jpg"
+  },
+  {
+    "fact": "Sweden has the most islands in the world, with 221,800 islands.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/03/27/15/21/beach-2179361_640.jpg"
+  },
+  {
+    "fact": "The total spend on adult Halloween costumes each year in America is $1.5 billion.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/10/16/21/30/halloween-1746354_640.jpg"
+  },
+  {
+    "fact": "Russia has the most man-made satellites in orbit, with 1,324.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/09/21/08/28/satellite-2771128_640.jpg"
+  },
+  {
+    "fact": "In Switzerland, it is illegal to flush the toilet after 10 pm.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/11/04/16/17/pull-4601491_640.jpg"
+  },
+  {
+    "fact": "Valentine’s Day in South Korea is a little different. Only women give gifts, not men.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/08/22/18/50/woman-1612644_640.jpg"
+  },
+  {
+    "fact": "The Poodle is one of the cleanest breeds of dogs.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/02/06/15/18/puppy-3979350_640.jpg"
+  },
+  {
+    "fact": "The total population of insects is estimated to be a billion times greater than that of the human population.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/12/26/02/14/caterpillar-8469363_640.jpg"
+  },
+
+  {
+    "fact": "There are 30 times more trees on Earth than there are stars in the Milky Way.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/05/14/23/13/meadow-7196549_640.jpg"
+  },
+  {
+    "fact": "15% of iPhone users use an iPhone with a broken screen.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/04/11/15/59/broken-display-2222010_640.jpg"
+  },
+  {
+    "fact": "The Danish flag is the oldest current flag of a sovereign state. ",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/04/28/21/32/flag-3358376_1280.jpg"
+  },
+  {
+    "fact": "Sunflowers can help clean radioactive soil. Japan is using this to rehabilitate Fukashima.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/08/28/23/24/sunflower-1627193_640.jpg"
+  },
+  {
+    "fact": "America consumes almost 50% of the world’s chocolate.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/09/18/18/24/chocolate-183543_1280.jpg"
+  },
+  {
+    "fact": "27,000 trees are cut down every day to supply the world’s toilet paper.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/08/11/04/52/tissue-6537455_640.jpg"
+  },
+  {
+    "fact": "Egg yolks are one of the few foods that naturally contain Vitamin D.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/08/23/00/09/fried-3624925_640.jpg"
+  },
+  {
+    "fact": "Volkswagen owns Bentley, Bugatti, Lamborghini, Audi, Ducati, and Porsche.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/09/12/16/39/vw-1665127_640.jpg"
+  },
+  {
+    "fact": "When Nike first started, it was called Blue Ribbon Sports. The name was changed in 1971.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/07/15/18/26/footwear-5408643_1280.jpg"
+  },
+  {
+    "fact": "There are more people in the U.K. than in Canada, Australia, Norway, and Iceland combined.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/06/30/02/58/crowd-of-people-1488213_640.jpg"
+  },
+  {
+    "fact": "One in every four cranes in the entire world is in Dubai.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/01/26/20/54/crane-3109757_640.jpg"
+  },
+  {
+    "fact": "In a human foot, there are 26 bones.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/04/28/13/13/foot-2268333_640.jpg"
+  },
+  {
+    "fact": "Sprite was manufactured as Coca-Cola’s response to the popularity of 7 Up.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/10/13/21/12/soft-drink-986803_1280.jpg"
+  },
+  {
+    "fact": "If your throat tickles, scratching your ear can make it go away.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/07/27/15/48/ears-2545756_640.jpg"
+  },
+  {
+    "fact": "Even though smoking has been banned on airplanes, ashtrays are mandatory on every plane.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/07/28/02/37/cigarettes-5443853_640.jpg"
+  },
+  {
+    "fact": "79% of pet owners sleep with their pets.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/21/16/43/bulldog-1846380_640.jpg"
+  },
+  {
+    "fact": "The mongoose is one of those rare animals that are immune to a snake’s venom.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/04/21/16/23/mongoose-7942222_640.jpg"
+  },
+  {
+    "fact": "Puma, cougar, and mountain lion are names for the exact same animal.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/05/09/07/21/puma-4190562_640.jpg"
+  },
+  {
+    "fact": "Pope Francis used to be a nightclub bouncer.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/11/06/18/52/dancing-206740_640.jpg"
+  },
+  {
+    "fact": "King Kong was the first movie to ever have a sequel.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/03/30/15/34/risk-4984577_640.jpg"
+  },
+  {
+    "fact": "Bill Gates’s house was designed using a Macintosh Computer.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/12/03/18/55/macintosh-7633258_640.jpg"
+  },
+  {
+    "fact": "The swan has over 25,000 feathers on its body.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/07/31/10/11/swan-7355432_640.jpg"
+  },
+  {
+    "fact": "Makeup has been used by women since before Cleopatra’s time.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/11/22/18/21/cosmetics-4645407_1280.jpg"
+  },
+  {
+    "fact": "85% of people have experienced a dream so real that they were not sure if it happened in real life or not.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/02/07/14/22/dream-4827288_640.jpg"
+  },
+  {
+    "fact": "Tutankhamun’s parents were brother and sister.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/06/22/08/38/siblings-817369_640.jpg"
+  },
+  {
+    "fact": "Donald Trump owns and operates around 18 golf courses around the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/08/21/17/45/golf-3621754_640.jpg"
+  },
+  {
+    "fact": "The “Pinky Promise” originally indicated that the person who breaks the promise must cut off their pinky finger.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/04/21/20/09/pinky-swear-329329_1280.jpg"
+  },
+  {
+    "fact": "The television was invented only two years after the invention of sliced bread.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/12/05/11/04/bread-1077984_640.jpg"
+  },
+  {
+    "fact": "The patterns on a giraffe are totally unique – no two giraffes are ever the same.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/06/03/17/11/giraffe-8038107_640.jpg"
+  },
+  {
+    "fact": "Putting your phone in airplane mode will stop ads while playing games.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/09/30/18/11/flight-4516478_640.jpg"
+  },
+  {
+    "fact": "Bumblebees have hair on their eyes.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/04/07/19/55/bumblebee-711677_640.jpg"
+  },
+  {
+    "fact": "Kiss means “pee” in Swedish.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/11/06/10/06/toilet-5717374_640.jpg"
+  },
+  {
+    "fact": "In a survey, 33% of dog owners admitted to chatting over the telephone with their dogs.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/10/23/16/58/phone-499991_640.jpg"
+  },
+  {
+    "fact": "The most expensive domain name ever sold was cars.com for an astonishing $872.3 million.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/10/23/10/13/dollar-499493_640.jpg"
+  },
+  {
+    "fact": "The letter Z is the least frequently used letter in written English.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/01/21/13/28/letter-249082_640.jpg"
+  },
+  {
+    "fact": "The largest pumpkin pie ever baked was in 2005 and weighed 2,020 pounds or just over 916kg.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/02/13/13/50/tart-6011609_640.jpg"
+  },
+  {
+    "fact": "7% of American adults believe that chocolate milk comes from brown cows.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/10/22/10/28/cow-5675684_1280.jpg"
+  },
+  {
+    "fact": "Bananas are curved because they grow towards the sun.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/09/28/17/38/food-5610596_640.jpg"
+  },
+  {
+    "fact": "Car manufacturer Volkswagen makes sausages.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/08/26/15/24/sausage-428067_640.jpg"
+  },
+  {
+    "fact": "On average, men get bored of a shopping trip after 26 minutes.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/23/14/56/bazaar-1853361_640.jpg"
+  },
+  {
+    "fact": "Recycling just one tin can saves enough energy to watch television for 3 hours.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/09/18/20/51/cans-1679022_640.jpg"
+  },
+  {
+    "fact": "Squirrels cause approximately 10-20% of US power outages.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/03/02/21/11/candlelight-3194287_640.jpg"
+  },
+  {
+    "fact": "China has banned popular social media platforms like Facebook, Instagram, and Twitter.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/05/07/08/46/paper-109277_640.jpg"
+  },
+  {
+    "fact": "95% of people text things they could never say in person.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/09/07/09/25/smartphone-5551318_640.jpg"
+  },
+  {
+    "fact": "HP’s name was determined by a coin toss in 1939.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/09/09/21/43/football-1658110_1280.jpg"
+  },
+  {
+    "fact": "Pirates wore earrings because they believed they improved their eyesight.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/03/22/16/09/sailboat-1273168_640.jpg"
+  },
+  {
+    "fact": "Mike Tyson once offered a zoo attendant $10,000 to let him fight a gorilla.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/05/04/19/48/gorilla-752875_640.jpg"
+  },
+  {
+    "fact": "Some insects and small birds see the world in slow motion.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/09/03/14/14/sea-1641779_640.jpg"
+  },
+  {
+    "fact": "There is an official Wizard of New Zealand.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/09/24/18/00/man-5599377_640.jpg"
+  },
+  {
+    "fact": "A company in Poland makes dinnerware out of wheat so you can eat your plate!",
+    "imageUrl": "https://cdn.pixabay.com/photo/2024/01/15/20/51/plate-8510868_640.jpg"
+  },
+  {
+    "fact": "Nutella was invented shortly after WWII ended because chocolate was so expensive.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/01/16/09/58/chocolate-spread-6941622_1280.jpg"
+  },
+  {
+    "fact": "North Korea has its own space program.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/07/22/15/27/flag-2528969_640.jpg"
+  },
+  {
+    "fact": "Ants leave maps for other ants when they walk.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/10/02/14/50/ants-2809019_640.jpg"
+  },
+  {
+    "fact": "Tears contain a natural painkiller, which reduces pain and improves your mood.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/02/10/20/20/girl-1192479_640.jpg"
+  },
+  {
+    "fact": "George W. Bush was once a cheerleader.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/24/09/12/parade-2675903_640.jpg"
+  },
+  {
+    "fact": "Walt Disney World is the second-largest buyer of fireworks in the US.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/07/07/21/45/rocket-2482856_640.jpg"
+  },
+  {
+    "fact": "The giant stone heads on Easter Island have hidden bodies!",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/09/11/15/39/easter-island-1661655_640.jpg"
+  },
+  {
+    "fact": "Broccoli is a “man-made” food.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/01/25/18/46/broccoli-7744338_1280.jpg"
+  },
+  {
+    "fact": "High heels were originally men’s shoes.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/07/24/14/57/womens-shoes-4360452_640.jpg"
+  },
+  {
+    "fact": "Bowler Hats were originally invented as safety hats.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/07/01/21/19/hat-6380330_640.jpg"
+  },
+  {
+    "fact": "Armadillos have shells so hard they can deflect a bullet.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/06/01/23/19/armadillo-360123_640.jpg"
+  },
+  {
+    "fact": "Until 2015, it was illegal to dance in Japan after midnight.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/05/06/17/06/ballerinas-1376250_640.jpg"
+  },
+  {
+    "fact": "In Tokyo, Japan, there is a hedgehog cafe.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/02/22/10/06/hedgehog-1215140_1280.jpg"
+  },
+  {
+    "fact": "In China, the police use geese as sentries.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/18/16/21/birds-2655516_640.jpg"
+  },
+  {
+    "fact": "All astronauts going to the International Space Station have to learn how to speak Russian.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/04/03/18/56/font-705667_1280.jpg"
+  },
+  {
+    "fact": "An ant can’t die from falling.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/01/09/16/29/ant-1130497_640.jpg"
+  },
+  {
+    "fact": "Before trees existed, Earth was covered with giant white mushrooms.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/09/02/19/55/crystal-7428278_640.jpg"
+  },
+  {
+    "fact": "On statues, a horse’s legs tell you how the statue figure died.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/04/22/15/53/statue-7943963_640.jpg"
+  },
+
+  {
+    "fact": "NASA’s internet speed is 91 GB per second!",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/09/02/22/58/nasa-1640510_640.jpg"
+  },
+  {
+    "fact": "For their first month of living, babies only see in black & white.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/08/05/15/16/columns-8171283_640.jpg"
+  },
+  {
+    "fact": "The US has more millionaires than Sweden has people.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/07/29/23/19/ferrari-1556134_640.jpg"
+  },
+  {
+    "fact": "Camels don’t actually store water in their humps.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/10/15/21/16/dromedary-490420_640.jpg"
+  },
+  {
+    "fact": "In South Korea, there is an emergency number (113) to report spies.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/12/11/04/16/spy-5821903_640.jpg"
+  },
+  {
+    "fact": "Bullfrogs do not sleep.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/10/01/13/29/frog-3716240_640.jpg"
+  },
+  {
+    "fact": "It took the creator of the Rubik’s Cube, Erno Rubik, one month to solve the cube after creating it",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/11/18/15/26/toy-6806613_640.jpg"
+  },
+  {
+    "fact": "Boeing uses potatoes to test their in-flight Wi-Fi, as they reflect and absorb the signals similarly to people.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/09/06/16/00/potatoes-179471_640.jpg"
+  },
+  {
+    "fact": "In 2014, Sony made a cassette tape that can store 185TB of data!",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/11/25/19/50/tape-6824489_640.jpg"
+  },
+  {
+    "fact": "Your nose is always visible to you. Your mind ignores it.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/09/09/21/31/eyes-933492_640.jpg"
+  },
+
+  {
+    "fact": "Australia has over 10,000 beaches. You could visit a new beach every day for over 27 years!",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/05/29/03/00/beach-6292382_640.jpg"
+  },
+  {
+    "fact": "Hares are born with fur and can see whilst rabbits are born “naked” and blind.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/03/26/12/21/mammal-7092839_640.jpg"
+  },
+  {
+    "fact": "Nokia was originally founded in 1865 as a paper printing company.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/05/27/20/50/printing-787192_640.jpg"
+  },
+  {
+    "fact": "Crackers have holes in them for a reason. It prevents air bubbles from ruining the product.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/10/03/02/01/cookie-969295_640.jpg"
+  },
+  {
+    "fact": "Cheese is the most stolen food in the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/01/11/19/56/cheese-1972744_640.jpg"
+  },
+  {
+    "fact": "McDonald’s sells 2.5 billion hamburgers every year.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/05/12/17/06/hamburger-7191901_640.jpg"
+  },
+  {
+    "fact": "Expiration dates on bottled water have nothing to do with the water.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/08/19/17/48/water-5501652_640.jpg"
+  },
+  {
+    "fact": "Honey is bee vomit.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/05/23/18/15/honey-352205_640.jpg"
+  },
+  {
+    "fact": "Froot Loops are all the same flavor.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/04/04/17/33/food-2202361_1280.jpg"
+  },
+  {
+    "fact": "French fries originated in Belgium, not France!",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/19/12/36/fast-food-1839052_640.jpg"
+  },
+  {
+    "fact": "Coffee beans can help eliminate bad breath.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/08/07/16/28/coffee-1576552_1280.jpg"
+  },
+  {
+    "fact": "Potatoes are 80% water.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/17/19/40/ukrainian-dill-potatoes-2652561_640.jpg"
+  },
+  {
+    "fact": "India produces, consumes, and exports the most chili peppers in the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/12/09/21/03/chilli-pepper-8440176_640.jpg"
+  },
+  {
+    "fact": "Nutritious food is more expensive than junk food.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/01/10/04/37/salad-5904093_1280.jpg"
+  },
+  {
+    "fact": "There are more Indian restaurants in London than in Mumbai or Delhi.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/12/04/16/49/indian-food-3856050_640.jpg"
+  },
+  {
+    "fact": "Ostriches can run faster than horses, and the males can roar like lions.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/09/06/11/36/south-africa-927268_640.jpg"
+  },
+  {
+    "fact": "Alligators cannot move backwards.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2024/05/25/13/46/alligator-8787105_640.jpg"
+  },
+  {
+    "fact": "Moose have very poor vision. Some have even tried to mate with cars.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/01/18/00/00/moose-602659_640.jpg"
+  },
+  {
+    "fact": "The slowest fish is the sea horse, which moves along at about 0.01 mph (0.016 km/h).",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/01/15/18/19/seahorse-4768599_640.jpg"
+  },
+  {
+    "fact": "A full-grown bear can run as fast as a horse.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/08/20/17/21/bear-422682_640.jpg"
+  },
+  {
+    "fact": "There is no visual difference between male and female herons.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/09/22/08/25/great-egret-5592300_640.jpg"
+  },
+  {
+    "fact": "The Firefox logo isn’t a fox.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/02/16/18/10/fox-7017260_640.jpg"
+  },
+  {
+    "fact": "Google rents goats to eat the grass at their Mountain View headquarters.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/08/17/20/16/goat-3613728_640.jpg"
+  },
+  {
+    "fact": "The Radio took 38 years to reach an audience of 50 million.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/02/22/23/59/vintage-1216720_640.jpg"
+  },
+  {
+    "fact": "Yahoo’s original name was a mouthful.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/09/15/12/59/yahoo-446971_1280.jpg"
+  },
+  {
+    "fact": "There are more likes than photos on Facebook.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/03/04/13/03/facebook-3197969_640.jpg"
+  },
+  {
+    "fact": "More people have cell phones than toilets.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/08/30/11/10/frog-914131_640.jpg"
+  },
+  {
+    "fact": "40% of American couples meet online.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/09/23/19/07/heart-3698156_1280.jpg"
+  },
+  {
+    "fact": "Nearly one-third of divorces are because of Facebook.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/12/02/23/21/divorce-5798968_640.jpg"
+  },
+  {
+    "fact": "The QWERTY keyboard was originally designed to slow you down.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/04/10/10/30/keyboard-7913431_640.jpg"
+  },
+  {
+    "fact": "Technical degrees are almost useless by the time you graduate.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/05/22/06/30/man-6272667_640.jpg"
+  },
+  {
+    "fact": "There are fake Apple stores in China.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/10/30/00/28/apple-inc-508812_1280.jpg"
+  },
+  {
+    "fact": "Until 2010, carrier pigeons were faster than the internet.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/07/01/16/58/pigeon-7295901_1280.jpg"
+  },
+  {
+    "fact": "Most of today’s successful companies started in garages.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/10/05/22/39/real-estate-475875_640.jpg"
+  },
+  {
+    "fact": "Digital music sales surpassed physical sales in 2014.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/01/20/13/13/samsung-605439_640.jpg"
+  },
+  {
+    "fact": "Amazon’s robot workers skyrocketed in less than five years.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/06/01/45/robot-2587571_640.jpg"
+  },
+  {
+    "fact": "There are only 21 million Bitcoins that can be mined in total.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/01/25/12/31/bitcoin-2007769_1280.jpg"
+  },
+  {
+    "fact": "If a star passes too close to a black hole, it can be torn apart.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/02/13/14/50/space-7011298_640.jpg"
+  },
+  {
+    "fact": "The Whirlpool Galaxy (M51) was the first celestial object identified as being spiral.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/06/25/15/20/galaxy-8087632_640.jpg"
+  },
+  {
+    "fact": "The Milky Way galaxy is 105,700 light-years wide.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/18/22/58/stars-1837306_640.jpg"
+  },
+  {
+    "fact": "The Sun weighs about 330,000 times more than Earth.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/04/27/22/25/sunset-742744_640.jpg"
+  },
+  {
+    "fact": "Footprints left on the Moon won’t disappear as there is no wind.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/10/10/11/04/footprint-60614_640.jpg"
+  },
+  {
+    "fact": "Because of lower gravity, a person who weighs 220 lbs on Earth would weigh 84 lbs on Mars.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/03/27/15/54/weight-plates-299528_1280.jpg"
+  },
+  {
+    "fact": "Due to the Sun and Moon’s gravitational pull, we have tides.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/11/19/16/47/turbulent-sea-7602546_640.jpg"
+  },
+  {
+    "fact": "Pluto is smaller than the United States.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/01/13/03/02/united-states-map-1137085_1280.jpg"
+  },
+  {
+    "fact": "There are more stars in space than there are grains of sand in the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/11/02/09/43/sand-7564466_1280.jpg"
+  },
+  {
+    "fact": "The International Space Station is the largest manned object ever sent into space.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/10/26/02/39/international-space-station-63128_640.jpg"
+  },
+  {
+    "fact": "We know more about Mars and our Moon than we do about our oceans.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/01/22/18/29/water-4785991_640.jpg"
+  },
+  {
+    "fact": "Light travels from the Sun to the Earth in less than 10 minutes.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/10/23/23/03/sunrise-1765027_640.jpg"
+  },
+  {
+    "fact": "We always see the same side of the Moon, no matter where we stand on Earth.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/06/26/06/52/moon-6365467_1280.jpg"
+  },
+  {
+    "fact": "In 2016, scientists detected a radio signal from a source 5 billion light-years away.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/10/28/16/36/raisting-satellite-1010862_640.jpg"
+  },
+  {
+    "fact": "Space is completely silent.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/09/08/20/52/starry-sky-1655503_640.jpg"
+  },
+  {
+    "fact": "Asteroids are the byproducts of formations in the solar system, more than 4 billion years ago.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/03/21/20/19/meteorite-4955128_640.jpg"
+  },
+  {
+    "fact": "Astronauts can’t burp in space.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/09/28/03/56/hiccup-2794251_640.jpg"
+  },
+  {
+    "fact": "“NASA” stands for National Aeronautics and Space Administration.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/02/02/19/31/nasa-621411_640.jpg"
+  },
+  {
+    "fact": "As space has no gravity, pens won’t work.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/02/10/17/14/pen-631321_640.jpg"
+  },
+  {
+    "fact": "Only one out of every two billion people will live to be 116 years old.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/10/31/20/56/hand-2906456_640.jpg"
+  },
+  {
+    "fact": "During the average lifetime, your heart will pump a grand total of 182 million liters of blood.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/06/06/19/22/red-blood-cells-4256710_1280.jpg"
+  },
+  {
+    "fact": "If you thought steel was strong and durable, your bones are five times stronger!",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/05/21/23/25/skull-778073_1280.jpg"
+  },
+  {
+    "fact": "In your mouth alone, there are more bacteria than there are people in the entire world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/07/07/11/50/virus-5380234_640.jpg"
+  },
+  {
+    "fact": "We have hair in various places around our bodies, but the fastest-growing is facial hair.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/21/12/42/beard-1845166_640.jpg"
+  },
+  {
+    "fact": "Natural blondes usually have more hair than people with other hair colors.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/07/07/23/40/fashion-835219_640.jpg"
+  },
+  {
+    "fact": "Sunburn can permanently damage your blood vessels.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/04/12/15/00/sun-3313646_640.jpg"
+  },
+  {
+    "fact": "Walking uses a total of 200 muscles with every step you take.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/09/24/03/55/monk-458491_640.jpg"
+  },
+  {
+    "fact": "Your brain is at its peak when you’re in your late 40s.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/12/03/23/00/cyber-brain-7633487_640.jpg"
+  },
+  {
+    "fact": "People blink a lot less while telling a lie and then speed up afterwards.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2010/12/13/10/07/woman-2315_640.jpg"
+  },
+  {
+    "fact": "Due to the cellulose found in grass, humans are unable to digest it properly.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/10/12/14/11/meadow-5648849_640.jpg"
+  },
+  {
+    "fact": "If a woman had short hair a hundred years ago, people thought she was being unfaithful to her husband.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/02/13/14/40/woman-635269_1280.jpg"
+  },
+  {
+    "fact": "Up until the 17th Century, men didn’t wear underwear at all.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/04/30/18/48/boxer-shorts-335120_640.jpg"
+  },
+  {
+    "fact": "Using just one bale of cotton, around 200 pairs of jeans can be made.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/08/20/21/37/jaffa-1608610_640.jpg"
+  },
+  {
+    "fact": "Blue is the color of loyalty, which explains why U.S. police officers wear blue uniforms.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/10/31/17/32/cop-1015986_640.jpg"
+  },
+  {
+    "fact": "Each year, 7 million tons of materials and textiles are trashed.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/03/03/08/19/trash-4897847_640.jpg"
+  },
+  {
+    "fact": "The handbag was first designed and used to help women attract a husband.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/20/11/39/handbag-2661412_640.jpg"
+  },
+  {
+    "fact": "Augustus Caesar was the wealthiest man to ever live in history.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/09/22/12/39/paris-2775427_1280.jpg"
+  },
+  {
+    "fact": "The Vikings were the first Europeans to discover America.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/05/04/16/29/viking-4178401_640.jpg"
+  },
+  {
+    "fact": "In Ancient Greece, wearing skirts was manly.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/07/31/20/41/people-2560869_640.jpg"
+  },
+  {
+    "fact": "During World War I, the French built a “fake Paris.”",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/11/17/15/07/paris-6803796_640.jpg"
+  },
+  {
+    "fact": "A Japanese fighter pilot once dropped wreaths over the ocean to commemorate the de*d from both sides.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/06/12/23/13/flower-6331866_640.jpg"
+  },
+  {
+    "fact": "Turkeys were once worshiped as Gods.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2024/10/30/22/15/turkey-9162593_640.jpg"
+  },
+  {
+    "fact": "Thomas Edison didn’t invent most of the stuff he patented.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/09/21/18/35/light-bulb-7470979_640.jpg"
+  },
+  {
+    "fact": "Albert Einstein once turned down the presidency of Israel.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/25/20/47/international-2681369_640.jpg"
+  },
+  {
+    "fact": "Iceland has the world’s oldest parliament in history.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/01/24/09/34/parliament-6962982_1280.jpg"
+  },
+  {
+    "fact": "Spartans were so rich that nobody had to work.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/09/22/20/17/spartan-3696073_1280.jpg"
+  },
+  {
+    "fact": "The University of Oxford is older than the Aztec Empire.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/11/17/16/39/oxford-534808_640.jpg"
+  },
+  {
+    "fact": "Russia ran out of v*dka when celebrating the end of World War II.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/06/16/05/55/vodka-3478224_640.jpg"
+  },
+  {
+    "fact": "In 1710, Native American leaders traveled to Britain to visit the Queen.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/06/09/09/39/antique-4261721_640.jpg"
+  },
+  {
+    "fact": "Abraham Lincoln was a wrestling champion.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/02/16/03/10/men-82140_640.jpg"
+  },
+  {
+    "fact": "Russia is so close to Alaska that you can actually swim there.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/12/04/18/09/icebergs-8430043_640.jpg"
+  },
+  {
+    "fact": "There’s a restaurant in New York that employs grandmas instead of chefs.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/03/16/34/woman-1795054_640.jpg"
+  },
+  {
+    "fact": "It cost $265 million to make Grand Theft Auto V.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/08/27/08/21/computer-games-6578101_1280.jpg"
+  },
+  {
+    "fact": "The man who invented pop-up advertisements deeply regrets it and says he’s very sorry.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/02/19/16/17/pop-up-ads-4007115_1280.jpg"
+  },
+  {
+    "fact": "More than $700 million worth of aluminum cans are thrown out by Americans every year.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/03/06/20/54/beverages-6074749_1280.jpg"
+  },
+  {
+    "fact": "Roosters have built-in earplugs, so they don’t deafen themselves when they crow.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/10/09/03/24/chicken-3734005_640.jpg"
+  },
+  {
+    "fact": "Elephants can swim up to six hours at a time.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/03/01/21/31/thailand-4028725_640.jpg"
+  },
+  {
+    "fact": "Samsung’s various business activities account for more than 15% of Korea’s entire economy.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/11/19/15/06/machang-bridge-3825439_1280.jpg"
+  },
+  {
+    "fact": "In Japan, when a train leaves the station at the wrong time, the rail company apologizes.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/05/30/01/03/shinkansen-5237269_640.jpg"
+  },
+  {
+    "fact": "A chimpanzee was once ranked as the 22nd most successful money manager in the US.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/10/21/12/55/monkey-1757972_640.jpg"
+  },
+  {
+    "fact": "When London taxi drivers tried to protest against Uber, they drove more customers towards their competitor.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/04/23/08/43/new-york-2253292_640.jpg"
+  },
+  {
+    "fact": "The Pentagon has twice the number of bathrooms it needs.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/02/10/23/32/pentagon-80394_640.jpg"
+  },
+  {
+    "fact": "https://cdn.pixabay.com/photo/2016/11/14/04/41/boy-1822624_640.jpg",
+    "imageUrl": "Research has found that people who swear tend to be more honest."
+  },
+  {
+    "fact": "Government vehicles in Cuba are legally required to pick up hitchhikers.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/08/22/10/04/traveler-1611614_640.jpg"
+  },
+  {
+    "fact": "The more money people spend on their weddings, the more likely they are to get divorced.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/04/26/08/00/wedding-1353829_640.jpg"
+  },
+  {
+    "fact": "Zebras are actually black with white stripes.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/05/17/17/55/zebra-7203335_640.jpg"
+  },
+  {
+    "fact": "The longest train journey in the world is in Russia.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/07/25/09/38/train-4362166_1280.jpg"
+  },
+  {
+    "fact": "The world’s first Guinness world record for push-ups was 6,006.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/07/26/22/13/crossfit-3564719_640.jpg"
+  },
+  {
+    "fact": "Panama hats aren’t originally from Panama but Ecuador!",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/11/25/13/35/hat-1062061_640.jpg"
+  },
+  {
+    "fact": "The US army has its own private herd of bison.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/11/10/04/07/bison-on-hillside-3805909_640.jpg"
+  },
+  {
+    "fact": "The longest place name in the world is Taumatawhakatangihangakoauauotamateaturipukakapikimaungahoronukupokaiwhenuakitanatahu, a hill in New Zealand.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/12/28/14/00/hill-4724723_640.jpg"
+  },
+  {
+    "fact": "The human body contains about 0.2 milligrams of gold, mostly in the blood.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/07/18/10/56/gold-163519_640.jpg"
+  },
+  {
+    "fact": "Like human fingerprints, every dog’s nose print is unique and can be used to identify them.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/08/21/08/33/nose-4420535_1280.jpg"
+  },
+  {
+    "fact": "Unlike lions and tigers, cheetahs purr instead of roaring, similar to domestic cats.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/06/17/15/54/cheetah-2412554_640.jpg"
+  },
+  {
+    "fact": "Studies show cows are more productive when listening to soothing music.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/01/16/10/18/headphones-3085681_640.jpg"
+  },
+  {
+    "fact": "Many migratory birds use the stars and Earth’s magnetic field to navigate over long distances.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/08/12/16/51/shooting-star-3601173_640.jpg"
+  },
+  {
+    "fact": "A Bolt of Lightning Is Hotter Than the Sun.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/01/22/38/flash-2568381_640.jpg"
+  },
+  {
+    "fact": "Caterpillars Have More Muscles Than Humans. ",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/09/05/18/53/caterpillar-7434958_1280.jpg"
+  },
+  {
+    "fact": "D*ath Valley, California is hottest place on earth with temperature 56.7°C.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/12/18/23/40/death-valley-3883283_640.jpg"
+  },
+  {
+    "fact": "A chameleon’s tongue can accelerate faster than a fighter jet.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/01/21/18/48/chameleon-1154457_640.jpg"
+  },
+  {
+    "fact": "Sea Stars Have No Brain: Starfish rely on a decentralized nerve system to sense their environment and move.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/06/07/16/05/sea-star-2380742_640.jpg"
+  },
+  {
+    "fact": "A message in a bottle found in 2018 was 132 years old, dating back to 1886.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/08/08/20/44/message-in-a-bottle-413680_640.jpg"
+  },
+  {
+    "fact": "A Komodo Dragon’s Bite Can Cause Paralysis. This allows them to hunt effectively.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/01/20/18/04/reptile-6952982_1280.jpg"
+  },
+  {
+    "fact": "It Rains Fish in Honduras.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/08/24/08/36/fish-8210152_640.jpg"
+  },
+  {
+    "fact": "The Fastest Animal on Earth Is the Peregrine Falcon with speed 386 km/h.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/10/10/14/14/bird-7511903_640.jpg"
+  },
+  {
+    "fact": "Black rose, an extremely rare flower is grown only in village Halfeti in Turkey.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/06/16/07/29/rose-1460773_640.jpg"
+  },
+
+  {
+    "fact": "Pschology says the person who loves 'Black Color' have the most colorful minds.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/23/15/31/man-1853545_640.jpg"
+  },
+  {
+    "fact": "Humans are born with two fears: falling & loud noises. Every other fear is learned.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/04/22/14/39/books-5078457_640.jpg"
+  },
+  {
+    "fact": "Real diamonds do not show up on X-Ray.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/09/30/09/51/x-ray-1704854_640.jpg"
+  },
+  {
+    "fact": "Fire has no shadow.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/04/05/07/41/fire-2204171_640.jpg"
+  },
+  {
+    "fact": "The ice-cream you see in ice-cream ads is actually mashed potatoes because they will not melt during production. ",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/09/09/20/06/bowl-932980_640.jpg"
+  },
+
+  {
+    "fact": "Under extreme pressure, peanut butter can be turned into diamonds.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/07/03/15/45/diamond-5366797_640.jpg"
+  },
+  {
+    "fact": "Cotton Candy was invented by a dentist.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/07/16/11/14/portrait-4341558_640.jpg"
+  },
+  {
+    "fact": "If you make ice cubes with tap water, they will be white and if you use boiled water, it will be transparent.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/04/28/23/58/ice-6215207_1280.jpg"
+  },
+  {
+    "fact": "Issac Newton predicted that the world would end in the year 2060.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/02/10/52/world-war-2570885_640.jpg"
+  },
+  {
+    "fact": "The probability of you being born is about 1 in 400 trillion, Now think how lucky you are!",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/10/30/06/12/ai-generated-8351899_640.jpg"
+  },
+  {
+    "fact": "Headaches come from too much carbon dioxide and not enough oxygen.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/12/24/13/34/headache-6891133_640.jpg"
+  },
+
+  {
+    "fact": "An egg contains every Vitamin except Vitamin-C.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/02/26/16/30/eggs-3183410_640.jpg"
+  },
+  {
+    "fact": "Capsicum with 3 bums are male. Capsicum with 4 bums are female.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/11/09/10/06/capsicum-2932916_640.jpg"
+  },
+  {
+    "fact": "Our fingers get wrinkly in water because wrinkled fingers would give us stronger grip, on slippery objects.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/04/02/22/46/children-704449_640.jpg"
+  },
+
+  {
+    "fact": "The Eiffel Tower can be 15 cm taller during the summer due to the expansion of the metal.",
+    "imageUrl": "https://freerangestock.com/thumbnail/175109/eiffel-tower-by-the-river-under-cloudy-skies.jpg"
+  },
+  {
+    "fact": "Honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old.",
+    "imageUrl": "https://freerangestock.com/thumbnail/187628/bees-on-honeycomb-producing-fresh-natural-honey.jpg"
+  },
+  {
+    "fact": "Octopuses have three hearts and blue blood.",
+    "imageUrl": "https://freerangestock.com/thumbnail/103415/octopus-washed-up-on-beach.jpg"
+  },
+  {
+    "fact": "The Earth orbits the Sun at an average distance of about 93 million miles",
+    "imageUrl": "https://images.pexels.com/photos/12491759/pexels-photo-12491759.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+  },
+  {
+    "fact": "The shortest war in history was between Britain and Zanzibar on August 27, 1896. Zanzibar surrendered after 38 minutes.",
+    "imageUrl": "https://freerangestock.com/thumbnail/152732/a-man-in-camouflage-holding-a-gun.jpg"
+  },
+  {
+    "fact": "Sharks have been around longer than trees.",
+    "imageUrl": "https://freerangestock.com/thumbnail/27608/swimming-with-the-sharks.jpg"
+  },
+  {
+    "fact": "Koalas sleep for up to 22 hours a day.",
+    "imageUrl": "https://freerangestock.com/thumbnail/99821/koala-sleeping-on-tree-branch-in-cage.jpg"
+  },
+  {
+    "fact": "The human nose can detect over 1 trillion different scents.",
+    "imageUrl": "https://freerangestock.com/thumbnail/174507/elegant-perfume-bottle-on-a-pink-surface.jpg"
+  },
+  {
+    "fact": "An adult human body contains about 37.2 trillion cells.",
+    "imageUrl": "https://freerangestock.com/thumbnail/157302/3d-rendering-of-blue-bacteria-cells-close-up.jpg"
+  },
+  {
+    "fact": "Cleopatra lived closer in time to the first moon landing than to the construction of the Great Pyramid of Giza.",
+    "imageUrl": "https://freerangestock.com/thumbnail/111472/statue-of-an-egyptian-pharaoh-in-black-and-white.jpg"
+  },
+  {
+    "fact": "Cows have best friends and can become stressed when they are separated.",
+    "imageUrl": "https://freerangestock.com/thumbnail/123548/cow-in-village-.jpg"
+  },
+
+  {
+    "fact": "The heart of a blue whale is so large that a human can swim through its arteries.",
+    "imageUrl": "https://freerangestock.com/thumbnail/125081/whale-jumping.jpg"
+  },
+  {
+    "fact": "The world's oldest known living tree is over 9,500 years old.",
+    "imageUrl": "https://freerangestock.com/thumbnail/140669/baobab-tree-at-sunset--african-landscape--calm--relaxing--tr.jpg"
+  },
+  {
+    "fact": "Sloths can hold their breath for up to 40 minutes underwater.",
+    "imageUrl": "https://freerangestock.com/thumbnail/46556/baby-sloth-lying-on-back-on-gravel-road.jpg"
+  },
+  {
+    "fact": "Bamboo can grow up to 35 inches in a single day.",
+    "imageUrl": "https://freerangestock.com/thumbnail/163667/close-up-of-bamboo-stems-in-natural-light.jpg"
+  },
+  {
+    "fact": "The Great Wall of China is not visible from space with the naked eye.",
+    "imageUrl": "https://freerangestock.com/thumbnail/68359/a-view-of-the-great-wall-of-china-from-the-top-of-a-mountain.jpg"
+  },
+  {
+    "fact": "A group of flamingos is called a 'flamboyance.'",
+    "imageUrl": "https://freerangestock.com/thumbnail/67008/group-of-flamingos-standing-together.jpg"
+  },
+  {
+    "fact": "Sharks can live up to 500 years, depending on the species.",
+    "imageUrl": "https://freerangestock.com/thumbnail/99470/shark-swimming-in-pool-of-water.jpg"
+  },
+  {
+    "fact": "A single strand of spider silk is stronger than steel of the same width.",
+    "imageUrl": "https://freerangestock.com/thumbnail/95400/intricate-spider-web-on-black-background.jpg"
+  },
+  {
+    "fact": "There are more stars in the universe than grains of sand on all the Earth's beaches.",
+    "imageUrl": "https://freerangestock.com/thumbnail/96542/black-sky-with-few-stars.jpg"
+  },
+  {
+    "fact": "A baby kangaroo is called a 'joey' and is born the size of a lima bean.",
+    "imageUrl": "https://freerangestock.com/thumbnail/163726/up-close-with-a-curious-kangaroo.jpg"
+  },
+  {
+    "fact": "The shortest commercial flight in the world lasts just 57 seconds.",
+    "imageUrl": "https://freerangestock.com/thumbnail/186769/commercial-airplane-flying-high-above-fluffy-clouds..jpg"
+  },
+  {
+    "fact": "Penguins propose to their mates with a pebble.",
+    "imageUrl": "https://freerangestock.com/thumbnail/129678/two-african-penguins.jpg"
+  },
+  {
+    "fact": "Turtles can breathe through their butts.",
+    "imageUrl": "https://freerangestock.com/thumbnail/86775/turtle-swimming-in-the-ocean.jpg"
+  },
+  {
+    "fact": "The longest word in the English language is 189,819 letters long.",
+    "imageUrl": "https://freerangestock.com/thumbnail/124843/alphabet-letters-design--texture-.jpg"
+  },
+  {
+    "fact": "Walt Disney holds the record for the most Academy Awards, with 22 wins.",
+    "imageUrl": "https://freerangestock.com/thumbnail/96087/statue-of-walt-and-mickey-mouse-in-front-of-a-castle.jpg"
+  },
+  {
+    "fact": "A day on Mars is only 40 minutes longer than a day on Earth.",
+    "imageUrl": "https://freerangestock.com/thumbnail/179139/a-vibrant-aerial-view-of-a-martian-landscape-with-large-crater..jpg"
+  },
+  {
+    "fact": "The first human to journey into space was Yuri Gagarin from the Soviet Union in 1961.",
+    "imageUrl": "https://media.istockphoto.com/id/496586419/photo/yuri-gagarin-monument-in-moscow.jpg?b=1&s=612x612&w=0&k=20&c=Jq7RqzqqQgmk5ODmLrAdd8JvwcWjGIGGQyUzaiGTgz0="
+  },
+  {
+    "fact": "The world's largest snowflake on record measured 15 inches across.",
+    "imageUrl": "https://freerangestock.com/thumbnail/133787/christmas-snowflakes-and-hands-in-snow-.jpg"
+  },
+  {
+    "fact": "An ostrich’s eye is bigger than its brain.",
+    "imageUrl": "https://freerangestock.com/thumbnail/145347/close-up-of-ostrich.jpg"
+  },
+  {
+    "fact": "Butterflies taste with their feet.",
+    "imageUrl": "https://freerangestock.com/thumbnail/115847/two-tailed-swallowtail-butterfly.jpg"
+  },
+  {
+    "fact": "The longest recorded flight of a chicken is 13 seconds.",
+    "imageUrl": "https://freerangestock.com/thumbnail/93662/man-sitting-on-bench-with-bird-flying-over.jpg"
+  },
+  {
+    "fact": "Crows are known to hold funerals for their de*d.",
+    "imageUrl": "https://freerangestock.com/thumbnail/188354/a-crow-perched-on-a-rock-with-scenic-background..jpg"
+  },
+  {
+    "fact": "You can’t snore and dream at the same time.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/12/16/12/01/sleep-5836454_640.png"
+  },
+  {
+    "fact": "Honeybees can recognize human faces.",
+    "imageUrl": "https://freerangestock.com/thumbnail/156675/a-bee-on-a-flower.jpg"
+  },
+  {
+    "fact": "A snail can sleep for up to three years.",
+    "imageUrl": "https://freerangestock.com/thumbnail/93897/close-up-of-a-snail-on-the-ground.jpg"
+  },
+  {
+    "fact": "There’s a species of jellyfish that is biologically immortal.",
+    "imageUrl": "https://freerangestock.com/thumbnail/186089/silhouette-of-jellyfish-swimming-gracefully-underwater.jpg"
+  },
+  {
+    "fact": "The moon has moonquakes, similar to earthquakes on Earth.",
+    "imageUrl": "https://freerangestock.com/thumbnail/184826/full-moon-against-a-dark-night-sky-in-clear-contrast..jpg"
+  },
+  {
+    "fact": "The longest recorded time someone has gone without sleep is 11 days.",
+    "imageUrl": "https://freerangestock.com/thumbnail/48988/human-eye-with-clock--time-concept.jpg"
+  },
+  {
+    "fact": "A single cloud can weigh more than a million pounds.",
+    "imageUrl": "https://freerangestock.com/thumbnail/120657/dark-clouds--fluffy-forms-and-dramatic-sky.jpg"
+  },
+  {
+    "fact": "In space, astronauts can’t cry because there’s no gravity to make tears flow.",
+    "imageUrl": "https://freerangestock.com/thumbnail/89546/close-up-of-an-astronauts-space-suit.jpg"
+  },
+  {
+    "fact": "The eye muscles are the most active muscle in the body, moving over 100,000 times a day.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/03/05/19/53/girl-2119595_640.jpg"
+  },
+
+  {
+    "fact": "The brain is much more active at night than during the day.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/04/30/20/14/sky-5114501_640.jpg"
+  },
+  {
+    "fact": "Those who sleep late and wake up late, are more intelligent.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/09/25/23/12/girl-958417_1280.jpg"
+  },
+  {
+    "fact": "Dimples are in fact genetic defects, as muscle grow incorrectly and leave a gap between them.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/07/23/08/35/headset-4356933_640.jpg"
+  },
+  {
+    "fact": "Studies show that people who feel lonely are more likely to take longer showers and baths.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/02/23/17/28/water-3176092_640.jpg"
+  },
+  {
+    "fact": "Bulletproof vests, fire escapes, windshield wipers and laser printers were invented by women.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/10/18/21/36/portrait-2865605_640.jpg"
+  },
+  {
+    "fact": "The toothbrush was invented in 1498 in China.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/09/08/16/24/blue-2729261_640.jpg"
+  },
+  {
+    "fact": "We change our voices while we talk to to the people we like.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/19/12/25/art-1839006_1280.jpg"
+  },
+  {
+    "fact": "A leech has 10 stomachs, 32 brains, 9 pair of testicles and several hundred teeth.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/06/13/14/30/leech-368345_1280.jpg"
+  },
+  {
+    "fact": "Someone who becomes angry easily, over silly things, desires to be loved.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/03/06/06/27/emoji-3202669_640.jpg"
+  },
+  {
+    "fact": "Your thumb is the same length of your nose.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/10/23/10/00/thumb-5678283_640.jpg"
+  },
+  {
+    "fact": "In japan, people use stamps instead of signatures.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/03/29/17/48/envelopes-6134807_640.jpg"
+  },
+  {
+    "fact": "Psychology says, Girls who don't know cooking will definitely get a successful life.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/02/23/09/46/woman-7030387_640.jpg"
+  },
+  {
+    "fact": "Chinese students can get 7 years of jail for cheating in an exam.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/09/04/10/06/man-3653346_640.jpg"
+  },
+  {
+    "fact": "Japan passport is world's most powerful passport. It grants visa-free to 190 countries.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/02/03/16/12/passport-3127934_640.jpg"
+  },
+  {
+    "fact": "If you are nominated for an oscar and lose, you get $50,000 consolation prize.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/09/15/15/06/oscar-3679610_640.jpg"
+  },
+  {
+    "fact": "In the Olympic flag, Blue stands for Europe, Black for Africa, Red for America, Yellow for Asia, Green for Oceania.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/05/31/17/48/flags-359046_1280.jpg"
+  },
+  {
+    "fact": "Harpy Eagle is so big that people think it's a person in costume.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/06/01/08/00/harpy-6300928_1280.jpg"
+  },
+  {
+    "fact": "Earlier, Chinese people called India 'TIANZHU' which means heaven.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/29/12/43/international-2693204_640.jpg"
+  },
+  {
+    "fact": "Bhutan, the world's most eco-friendly country, planted 108,000 trees to celebrate the birth of their new prince.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/08/10/22/55/temple-171377_1280.jpg"
+  },
+  {
+    "fact": "There is a forest in Poland with 400 crooked trees. No one knows why.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/07/29/17/03/trees-866294_640.jpg"
+  },
+  {
+    "fact": "Dwayne Johnson holds world record for most selfies taken in 3 minutes.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/03/24/00/58/selfie-4076719_640.jpg"
+  },
+  {
+    "fact": "The world's oceans contain nearly 20 million tons of gold.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/05/03/16/15/gold-1369453_640.jpg"
+  },
+  {
+    "fact": "On April fool's day in 2005, NASA pranked the world by claiming that they had found water on mars.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/05/13/11/46/fool-4199719_640.jpg"
+  },
+  {
+    "fact": "In Japan, 90% of mobile phone's are waterproof because youngsters use them even in the shower.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/05/02/16/41/wet-smartphone-3369007_1280.jpg"
+  },
+  {
+    "fact": "A textrovert is a person who is expressive and funny in texts but shy when you meet in person.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/07/01/09/26/new-year-1490691_640.jpg"
+  },
+  {
+    "fact": "World's strongest fruit is Kiwi, Eating Kiwi reduces eye problems and increase eyesight.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/10/17/16/44/kiwi-6718889_640.jpg"
+  },
+  {
+    "fact": "Sweet Potato ranks number 1 in nutrition in all vegetables.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/09/13/08/51/sweet-potato-1666707_640.jpg"
+  },
+  {
+    "fact": "The mole can create the digging of 300 feet of holes in the night.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/04/23/15/49/animal-1347755_1280.jpg"
+  },
+  {
+    "fact": "Employees of Ferrari are not allowed to buy Ferrari cars.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/01/16/17/36/ferrari-5922873_1280.jpg"
+  },
+  {
+    "fact": "Cucumbers are 90% water.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/07/03/11/41/cucumber-4314342_1280.jpg"
+  },
+  {
+    "fact": "Wearing headphones for just an hour will increase the bacteria in your ear by 700 times.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/01/00/18/people-2562222_640.jpg"
+  },
+  {
+    "fact": "Chocolate milk is more efficient at giving energy that most energy drinks.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/03/10/18/32/book-6085235_640.jpg"
+  },
+  {
+    "fact": "It costs $38 trillion to create oxygen for 6 months for all human beings and trees do it for free.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/12/19/03/51/tree-6880117_640.jpg"
+  },
+  {
+    "fact": "Soya chunks known for high protein content, its exceeds than eggs, milk.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/01/28/02/36/bean-3959492_640.jpg"
+  },
+  {
+    "fact": "India has more people using the internet that the entire population of United States.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/06/24/15/45/hands-820272_640.jpg"
+  },
+  {
+    "fact": "India's mars mission is cheaper than a hollywood movie gravity.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/03/26/18/35/rocket-launch-693198_640.jpg"
+  },
+  {
+    "fact": "The sun may be older than the earth, but the water we drink is older than the sun.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/02/02/15/15/bottle-2032980_640.jpg"
+  },
+  {
+    "fact": "In ancient times, doctors used spiderwebs to make bandages.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/07/12/07/43/spiderweb-841610_640.jpg"
+  },
+  {
+    "fact": "English has only one word for 'Love', Sanskrit has 96.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/04/18/09/41/book-3329944_640.jpg"
+  },
+  {
+    "fact": "When offered a new pen to write with, 97% of all people will write their own name.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/10/14/07/12/muslim-7520627_640.jpg"
+  },
+  {
+    "fact": "Motorola the first company to produce a handheld mobile phone on April 3, 1973.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/06/18/16/mobile-2594848_640.jpg"
+  },
+  {
+    "fact": "Millions of trees are accidentally planted by squirrels who bury nuts & then forget where they hide them.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/11/05/12/57/squirrel-8367079_1280.jpg"
+  },
+  {
+    "fact": "Kashmiri Saffron is the most expensive spice in the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/04/08/22/55/saffron-3302749_640.jpg"
+  },
+  {
+    "fact": "Buggati Chiron engine is so powerful that if used at full capacity, it so could be used to launch rockets.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/05/13/19/08/bugatti-4200700_640.jpg"
+  },
+  {
+    "fact": "The 'Flame Lily' is the national flower of Zimbabwe.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/11/24/04/03/flame-lily-5771502_640.jpg"
+  },
+  {
+    "fact": "An Albatross can fly all day without flapping it's wings.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/02/05/12/05/black-browed-albatros-4821022_640.jpg"
+  },
+  {
+    "fact": "There are only about 20,000 African lions left. In 1998, there were as many as 300,000.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/07/31/22/08/lion-3576045_1280.jpg"
+  },
+  {
+    "fact": "Australi is moving 7cm north every year. It is the fastest moving continent land mass in the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/10/25/23/05/australia-62823_640.jpg"
+  },
+  {
+    "fact": "Snapchat was earlier named 'Picaboo'",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/07/31/21/11/iphone-3575940_1280.jpg"
+  },
+  {
+    "fact": "Indian housewives hold 11% of world's gold. That is more than reserves of U.S., IMF, Switzerland and Germany together.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/12/19/11/16/indian-bride-8457513_640.jpg"
+  },
+  {
+    "fact": "The longest tunnel in the world is 57km long and goes from Switzerland to Italy underneath alps. It took 17 years to build.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/03/28/15/20/tunnel-4977439_1280.jpg"
+  },
+  {
+    "fact": "75% of the world's food is generated from only 12 plants and 5 animal species.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/05/31/11/15/fish-8031138_640.jpg"
+  },
+  {
+    "fact": "Blowing out birthday candles can increase bacteria in cake by 1,400%",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/02/20/15/12/happy-birthday-1212168_640.jpg"
+  },
+  {
+    "fact": "The Stethoscope was invented because a french doctor felt uncomfortable placing his hand on woman's chest.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/05/26/19/48/stethoscope-5224535_640.jpg"
+  },
+  {
+    "fact": "Rolex watch company is run by non-profitable charity trust and they donate 90% profit because the founder was an orphan.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/12/15/23/46/watch-city-4698181_640.jpg"
+  },
+  {
+    "fact": "Tony Stark's original $325,000 Iron Man suit is stolen from a hollywood warehouse.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/05/27/13/59/iron-man-6288206_1280.jpg"
+  },
+  {
+    "fact": "Charlie Chaplin body was stolen after 3 months of his d*ath.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/07/06/19/48/charles-chaplin-3521070_1280.jpg"
+  },
+  {
+    "fact": "World's smallest monkey is 'Pygmy Marmoset', weight around 124 grams.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/07/16/16/23/mono-1522267_1280.jpg"
+  },
+  {
+    "fact": "It took 4 years to design the iconic Oreo design.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/09/05/22/00/oreos-925659_640.jpg"
+  },
+  {
+    "fact": "There is a website 'spend-elon-fortune.com' that allow you to spend Elon Musk money.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/10/27/19/51/gift-505550_640.jpg"
+  },
+  {
+    "fact": "School buses are yellow because human notice the yellow color 1.24 times faster than another eye-catching color.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/08/15/18/42/school-bus-2645085_1280.jpg"
+  },
+  {
+    "fact": "In Russia, there are 9 million women more than men.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/09/21/10/32/girl-4493545_640.jpg"
+  },
+  {
+    "fact": "Saudi Arabia is the only country in the world where there is no river.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/11/22/08/19/mecca-66970_1280.jpg"
+  },
+  {
+    "fact": "Only the males are called Peacocks, Females are called Peahens.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/06/01/15/23/peafowl-2363750_640.jpg"
+  },
+  {
+    "fact": "The founder of Shaolin Kung fu in China was a Pallava prince named 'Bodhidharma' from India.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/07/27/09/54/martial-arts-2544677_640.jpg"
+  },
+  {
+    "fact": "The word Police stands for 'Public Officer for Legal Investigations and Crimin*l Emergencies'.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/12/05/12/07/police-6847526_640.jpg"
+  },
+  {
+    "fact": "Lamborghini doesn't advertise. They believe that people who can afford it, aren't sitting in front of the television.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/03/12/19/12/lamborghini-2137815_640.jpg"
+  },
+  {
+    "fact": "The 100 folds in a chef's hat represent 100 ways to cook an egg.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/10/02/00/41/frog-1708728_640.jpg"
+  },
+  {
+    "fact": "The Barcode Scanner doesn't scan the black lines but the gaps in between them.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2010/12/16/14/52/barcode-3616_1280.jpg"
+  },
+  {
+    "fact": "Full form of JCB is 'Joseph Cyril Bamford'.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/06/20/06/59/tractor-7273161_1280.jpg"
+  },
+  {
+    "fact": "History has proven that whenever a lion and tiger get into a fight, The tiger almost wins.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/10/30/23/54/tiger-3784924_640.jpg"
+  },
+  {
+    "fact": "Only female mosquitoes drink blood, Male mosquitoes are vegetarians.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/06/24/17/40/insects-820484_640.jpg"
+  },
+  {
+    "fact": "Railways in Japan are are so organized that the average train delay is about 18 seconds.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/04/21/07/32/jay-earl-tokai-1342719_640.jpg"
+  },
+  {
+    "fact": "If humans had eagle's eyes, we could see an ant on the ground from the roof of a 10 storey building.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/03/08/18/40/bald-eagle-3209427_640.jpg"
+  },
+  {
+    "fact": "In Dubai, you can uber a helicopter instead of taxi.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/06/16/13/30/md500-8068034_640.jpg"
+  },
+  {
+    "fact": "World's largest building Burj Khalifa is built by Samsung.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/04/08/10/42/burj-khalifa-2212978_640.jpg"
+  },
+  {
+    "fact": "Banana trees are not actually trees. There's no wood in them, They are giant herbs and banana is actually its berry.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/06/20/19/08/bananas-2424320_1280.jpg"
+  },
+  {
+    "fact": "It takes 6 months to build a rolls royce and the average life of rolls royce is car is 100 years.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/05/05/03/09/rolls-royce-753315_640.jpg"
+  },
+  {
+    "fact": "Almost 14% of Google employees have never attended college.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/03/21/34/google-on-your-smartphone-1796337_640.jpg"
+  },
+  {
+    "fact": "A bird's feathers weigh more than its entire skeleton.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/01/19/23/15/swan-4779178_640.jpg"
+  },
+  {
+    "fact": "The Olympic Gold Medal is actually only 1.34% gold. The rest is 92.5% silver and 6.16% copper.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/07/10/21/53/tournament-3529744_1280.jpg"
+  },
+  {
+    "fact": "The T-Shirt was invented in the early 1900s for bachelors who couldn't sew or replace buttons.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/05/25/22/33/mockup-5220695_640.jpg"
+  },
+  {
+    "fact": "It is possible to win a chess game in just two moves, known as 'Fool's Mate'.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/07/12/11/39/checkmate-1511866_640.jpg"
+  },
+  {
+    "fact": "Mammoths still walked the earth when greate pyramids were built.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/01/08/16/38/mammoth-240677_1280.jpg"
+  },
+  {
+    "fact": "A 'moment' technically means 90 seconds.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/12/01/18/15/hourglass-1875812_640.jpg"
+  },
+  {
+    "fact": "The right ear is better at hearing speech and the left ear is better at listening music.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/04/01/19/55/headphones-1301527_640.jpg"
+  },
+  {
+    "fact": "Your eyebrows renew themselves every 64 days.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/08/22/18/45/eye-5509198_640.jpg"
+  },
+  {
+    "fact": "It took 200,000 years for the human population to reach 1 billion. Then it only took 200 years for it to reach 7 billion.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/06/14/08/02/figures-4273081_1280.jpg"
+  },
+  {
+    "fact": "Mushrooms are more closely related in DNA to humans than to plants.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/10/05/18/34/toadstool-8296596_640.jpg"
+  },
+  {
+    "fact": "While reading this fact, you will not recognize that the the brain doesn't recognize the second 'the'.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/11/16/23/16/upset-534103_640.jpg"
+  },
+  {
+    "fact": "Outer space is only an hour's drive away, if you somehow drove your car straight upwards.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/05/01/21/20/earth-1365995_640.jpg"
+  },
+  {
+    "fact": "Chalk is made up from trillions of microscopic Plankton fossils.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/06/24/20/37/heart-4296857_640.jpg"
+  },
+  {
+    "fact": "Some of us are actually afraid of being too happy because of the fear that something tragic might happen next.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/08/15/12/13/robot-7387740_640.jpg"
+  },
+  {
+    "fact": "Before 1850's, Aluminium was more costlier than gold.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/04/13/15/42/iron-3316844_1280.jpg"
+  },
+  {
+    "fact": "India has largest number of post offices in the world.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/05/27/13/04/mailbox-1419789_1280.jpg"
+  },
+  {
+    "fact": "Taiwan is the first country in the world to offer free wifi connectivity to its citizens and all its foreign tourists.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/09/04/08/02/cityscape-5543224_640.jpg"
+  },
+  {
+    "fact": "Sweden has run out of trash, so it's importing garbage from other countries such as Norway.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/01/11/02/39/coffeetogo-3926395_640.jpg"
+  },
+  {
+    "fact": "In the United States, nearly one out of every $5 spent on cookies is spent on Oreo.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/04/01/20/05/cookies-702931_640.jpg"
+  },
+  {
+    "fact": "https://cdn.pixabay.com/photo/2018/08/06/22/55/sun-3588618_640.jpg",
+    "imageUrl": "Leonardo Da Vinci was the first one to explain why sky is blue."
+  },
+  {
+    "fact": "Car manufacturers hire sound engineers to make sure car door make that satisfying 'thunk' when they are closed.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/10/03/16/24/volkswagen-up-7496406_640.jpg"
+  },
+  {
+    "fact": "The Sun and Moon appears to be the same size because; the moon is 400 times smaller but 400 times closer.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/06/26/06/52/moon-6365467_640.jpg"
+  },
+  {
+    "fact": "Each spike on the Statue of Liberty's crown represents one of the seven continents.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/02/17/10/20/statue-of-liberty-267948_1280.jpg"
+  },
+  {
+    "fact": "There are more statues of lions in the world than there are actual lions.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/03/13/05/04/lion-671193_1280.jpg"
+  },
+  {
+    "fact": "The symbol of infinity is called the 'Lemniscate'.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/10/13/12/24/infinity-1737624_640.jpg"
+  },
+  {
+    "fact": "It took Leonardo Da Vinci 10 years to paint Mona Lisa painting.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/06/17/18/35/sculpture-2413080_1280.jpg"
+  },
+  {
+    "fact": "90% of an iceberg sits under water.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/01/25/16/55/iceberg-6966784_1280.jpg"
+  },
+  {
+    "fact": "The average person has 3,000 thoughts a day.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/10/30/16/40/thought-1014406_640.jpg"
+  },
+  {
+    "fact": "The real color of a mirror is green.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/07/05/18/26/frog-1499162_1280.jpg"
+  },
+  {
+    "fact": "Norway is the only country in the world where there is no sunset for straight 76 days.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/10/21/11/46/sunset-8331285_640.jpg"
+  },
+  {
+    "fact": "English is the universal language of the skies. All pilots must learn and speak english, regardless of their origin.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/04/13/22/20/aircraft-1327820_640.jpg"
+  },
+  {
+    "fact": "Helium was discovered in space 27 years before it was found to exist on earth.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/08/17/18/23/balloons-892806_640.jpg"
+  },
+  {
+    "fact": "More than 2 billion people still cannot read.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/18/16/56/book-1835799_640.jpg"
+  },
+  {
+    "fact": "Pearls melt in vinegar.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/12/20/17/26/ring-3030338_640.jpg"
+  },
+  {
+    "fact": "When a bald eagle loses a feather, it will automatically shed the same feather on it's other side to maintain balance.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/03/03/13/28/bird-7827680_1280.jpg"
+  },
+  {
+    "fact": "August has highest percentage of births.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/06/20/08/05/august-3485999_1280.jpg"
+  },
+  {
+    "fact": "The most sensitive finger is the forefinger.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/12/18/15/23/finger-3026348_1280.jpg"
+  },
+  {
+    "fact": "The only thing that can destroy diamond is intense heat.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/11/17/00/22/brilliant-4631346_640.jpg"
+  },
+  {
+    "fact": "The oldest known vegetable is the pea.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/02/10/21/35/pea-6003632_640.jpg"
+  },
+  {
+    "fact": "Rats multiple so quickly that in 18 months, two rats could have over a million descendants.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/04/02/17/04/cute-3284412_640.jpg"
+  },
+  {
+    "fact": "The white part of your fingernail is called the lunula.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/02/19/10/49/butterfly-14870_640.jpg"
+  },
+  {
+    "fact": "Peru has more pyramids than egypt.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/29/08/52/fog-1868536_640.jpg"
+  },
+  {
+    "fact": "Singapore is the only country with one train station.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/12/09/14/11/railway-6858240_1280.jpg"
+  },
+  {
+    "fact": "Hot water is heavier than cold.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/02/04/20/04/tea-5982485_640.jpg"
+  },
+  {
+    "fact": "A hippopotamus can run faster than a man.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/09/01/22/03/hippo-3647749_640.jpg"
+  },
+  {
+    "fact": "A pumpkin really is a fruit.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/09/05/18/20/harvest-4454745_1280.jpg"
+  },
+  {
+    "fact": "Grasshoppers have white blood.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/02/09/10/48/grasshopper-262616_640.jpg"
+  },
+  {
+    "fact": "Crickets hear through their knees.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/04/17/11/58/lobster-5054788_640.jpg"
+  },
+  {
+    "fact": "Godzilla was shown for only 11 minutes in the movie 'Godzilla'.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/10/20/11/25/godzilla-6725766_640.jpg"
+  },
+  {
+    "fact": "Sweden pays students $187 per month to attend school.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2024/01/04/14/27/write-8487618_640.jpg"
+  },
+  {
+    "fact": "The CIA once spent $20 million on a cat equipped with gear to spy on the soviets, but it was hit by a taxi.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/03/16/13/09/taxi-7856666_640.jpg"
+  },
+  {
+    "fact": "If friendship lasts longer than 7 years, psychologists say it will last a lifetime.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/10/06/10/03/team-4529717_640.jpg"
+  },
+  {
+    "fact": "Every night after closing, Dinseyland releases 200 cats into the park to help keep the rodent population under control.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/04/17/18/44/disneyland-105271_1280.jpg"
+  },
+  {
+    "fact": "There are only 2 countries in the entire world that do not sell coca-cola, North Korea and Cuba.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/11/26/17/29/coca-cola-5779718_640.jpg"
+  },
+  {
+    "fact": "Male puppies purposely let female puppies win while playing.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/05/28/05/47/puppy-4234435_640.jpg"
+  },
+  {
+    "fact": "People who are easily embarrassed are more trustworthy and generous!",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/05/27/00/58/trust-1418901_640.jpg"
+  },
+  {
+    "fact": "The ring finger is the weakest of all fingers. You can't lift your ring finger without lifting up at least one other finger.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/03/13/14/42/ring-671785_640.jpg"
+  },
+  {
+    "fact": "There is a wild animal in East Asia called the 'Raccoon Dog' which looks like a raccoon but it is actually a dog.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/11/30/16/44/raccoon-dog-5791402_640.jpg"
+  },
+  {
+    "fact": "There is a fish called 'Climbing Gourami' that can exit water, breathe oxygen, climb and even walk.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/12/22/14/59/gourami-4712714_640.jpg"
+  },
+  {
+    "fact": "Money isn't made out of paper, it's made out of cotton.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/05/22/04/20/cotton-4220654_640.jpg"
+  },
+  {
+    "fact": "Michael Jackson tried to buy Marvel in the 1990s because he wanted to play Spider-Man in a movie.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/08/01/01/35/spiderman-1560314_640.jpg"
+  },
+  {
+    "fact": "The seal of Tutankhamun's tomb before it was opened in 1923, it was unbroken for over 3000 years.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/01/11/03/11/mummy-241965_640.jpg"
+  },
+  {
+    "fact": "'Typewriter' is the longest word you can type using only the letters on one row of the keyboard.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/09/17/00/52/keyboard-943739_1280.jpg"
+  },
+  {
+    "fact": "The world record for most T-shirts worn at once is 260",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/07/27/21/42/t-shirt-4367577_640.jpg"
+  },
+  {
+    "fact": "Rubber bands last longer when refrigerated.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/08/15/21/26/rubber-band-890165_640.jpg"
+  },
+  {
+    "fact": "The King of Hearts is the only king in a deck of cards without a mustache.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/06/14/19/11/heart-king-809349_640.jpg"
+  },
+  {
+    "fact": "Salt was once used as a currency.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/10/21/10/31/salt-6728600_1280.jpg"
+  },
+  {
+    "fact": "The largest scrambled eggs ever made weighed 6,860.8 pounds.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2011/04/06/09/24/scrambled-eggs-6128_640.jpg"
+  },
+  {
+    "fact": "Basenji dogs are the only breed that doesn't bark (they 'yodel').",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/03/02/18/06/basenji-7043700_640.jpg"
+  },
+  {
+    "fact": "Most pandas around the world are on loan from China.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/03/15/15/30/panda-7854772_1280.jpg"
+  },
+  {
+    "fact": "Close to 70% of the world's freshwater is held in glaciers and ice sheets.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/11/20/01/10/glacier-5760277_640.jpg"
+  },
+  {
+    "fact": "New Jersey is the top producer of the world's eggplants.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/01/15/00/49/eggplant-7719297_640.jpg"
+  },
+  {
+    "fact": "Goats have accents. If you take 2 goats from different part of world, they won't be able to understand each other.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/06/19/15/06/goat-50290_1280.jpg"
+  },
+  {
+    "fact": "Sunglasses were originally designed for chinese judges to hide their facial expressions in court.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/07/20/21/08/sunglasses-2523803_640.jpg"
+  },
+  {
+    "fact": "The largest seed in the world is the Lodoicea Maldivica, the seed of a Palm tree.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2013/10/26/04/12/palm-200965_640.jpg"
+  },
+  {
+    "fact": "A computer error is called a 'Bug' because one of the first computer error caused by a real bug.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/06/09/18/50/ladybug-6324263_640.jpg"
+  },
+  {
+    "fact": "Mount Everest (8,848.86 meters) is the highest mountain, but Mauna Kea (Hawaii) is the tallest from base to peak.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/03/16/14/51/mauna-kea-4937201_640.jpg"
+  },
+  {
+    "fact": "Ancient Rome had a population of over 1 million people, making it the first city to reach that milestone.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/04/12/16/44/luna-2224974_640.jpg"
+  },
+  {
+    "fact": "The driest place on Earth is the Atacama Desert (Chile), where some areas haven't seen rain for centuries.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/08/15/14/34/catarpe-valley-6548013_1280.jpg"
+  },
+  {
+    "fact": "The Leaning Tower of Pisa was never straight! It began leaning during construction in the 12th century.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/11/22/16/45/pisa-1056568_640.jpg"
+  },
+  {
+    "fact": "The world’s first website is still online. It was created by Tim Berners-Lee in 1991 and can be visited at info.cern.ch", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/07/25/18/36/ecommerce-3562005_640.jpg"
+  },
+  {
+    "fact": "A single Google search uses more computing power than the entire Apollo 11 mission that landed humans on the Moon.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/10/12/12/38/google-485611_640.jpg"
+  },
+  {
+    "fact": "One teaspoon of honey represents the life work of around 12 bees.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/10/26/11/10/merry-christmas-1006972_1280.jpg"
+  },
+  {
+    "fact": "The first 1GB hard drive weighed over 500 pounds.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/12/16/17/29/hard-drive-4699797_1280.jpg"
+  },
+  {
+    "fact": "Bitcoin was created in 2008 by an anonymous person named Satoshi Nakamoto.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/04/19/18/40/finance-3333928_640.jpg"
+  },
+  {
+    "fact": "YouTube was bought by Google in 2006 for $1.65 billion.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/09/13/15/59/youtube-6621791_640.jpg"
+  },
+  {
+    "fact": "Amazon started as a bookstore before expanding into other products.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/07/05/06/51/library-4317851_640.jpg"
+  },
+  {
+    "fact": "Facebook was initially limited to Harvard students before expanding to other universities and the general public.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/11/10/21/27/frogs-1037853_640.jpg"
+  },
+  {
+    "fact": "Android was originally designed for digital cameras, not smartphones.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/12/27/15/31/camera-581126_640.jpg"
+  },
+  {
+    "fact": "The first iPhone didn’t have an App Store, it was added later with iOS 2.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/02/01/21/23/app-store-1174440_1280.jpg"
+  },
+  {
+    "fact": "The first email attachment was sent in 1992, it was a photo.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/06/28/04/53/email-6370595_640.jpg"
+  },
+  {
+    "fact": "The first iPod was released in 2001, and it could hold 1,000 songs.", 
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/06/01/01/32/ipod-1428164_640.jpg"
+  },
+  {
+    "fact": "Seeing or even thinking about yawning can make you yawn.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/08/27/20/41/man-5522892_1280.jpg"
+  },
+  {
+    "fact": "On average, smartphones carry more bacteria than toilet seats.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/02/19/19/13/wc-1210963_640.jpg"
+  },
+  {
+    "fact": "Acid from food softens enamel, so brushing immediately can cause damage.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/02/04/16/37/teeth-4818711_1280.jpg"
+  },
+  {
+    "fact": "Most dreams are forgotten within minutes, About 95% of dreams vanish shortly after waking up.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/02/07/14/22/dream-4827288_640.jpg"
+  },
+  {
+    "fact": "Your brain uses about 20% of your body’s energy, Even though it’s only about 2% of your body weight.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/03/23/17/04/brain-4961452_640.jpg"
+  },
+  {
+    "fact": "Physically writing something helps your brain retain information better than typing.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/09/05/07/28/writing-923882_640.jpg"
+  },
+  {
+    "fact": "Drinking through a straw can cause wrinkles, The repeated puckering motion contributes to fine lines around the mouth.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/29/04/42/drink-1867372_640.jpg"
+  },
+  {
+    "fact": "A messy room can increase stress, Clutter can overwhelm your brain and raise stress levels.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/11/19/12/19/brush-1838983_640.jpg"
+  },
+  {
+    "fact": "People who wake up earlier tend to be happier, Studies show early risers often have better mental health.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/02/11/09/01/alarm-clock-1193291_640.jpg"
+  },
+  {
+    "fact": "Trenches in WWI stretched over 25,000 miles",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/08/03/14/26/trench-1566795_640.jpg"
+  },
+  {
+    "fact": "The U.S. military is the world's largest employer – With over 1.3 million active personnel, it employs more people than any other organization.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/11/24/05/38/jet-2974131_640.jpg"
+  },
+  {
+    "fact": "The Vietnam War was heavily protested, It was one of the most controversial wars, leading to widespread protests in the U.S. and worldwide.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2014/10/02/06/34/war-469503_640.jpg"
+  },
+  {
+    "fact": "The longest war in U.S. history lasted 20 years, The War in Afghanistan (2001-2021) became America's longest-running war.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/10/10/05/05/marines-60540_640.jpg"
+  },
+  {
+    "fact": "Napoleon fought over 60 battles, He was one of history’s greatest military leaders but was ultimately defeated at the Battle of Waterloo in 1815.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2019/04/09/12/56/napoleon-4114403_640.jpg"
+  },
+  {
+    "fact": "Ancient Romans invented concrete, Their version, made with volcanic ash, was so strong that many of their buildings still stand today.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2023/07/16/20/10/concrete-8131376_640.jpg"
+  },
+  {
+    "fact": "China's Great Wall isn’t a single wall – It’s a network of walls built by different dynasties over centuries, stretching over 13,000 miles.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/02/23/06/46/china-2091360_640.jpg"
+  },
+  {
+    "fact": "The Taj Mahal changes color, Depending on the time of day, its white marble appears pinkish at dawn, bright white in the afternoon, and golden at sunset.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/01/08/07/53/architecture-4749511_640.jpg"
+  },
+  {
+    "fact": "Glass buildings cause bird d*aths, Millions of birds d*e each year from flying into reflective glass windows, mistaking them for open skies.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/11/17/18/59/architecture-1048092_640.jpg"
+  },
+  {
+    "fact": "Pens can write over 2 miles of ink, A standard ballpoint pen has enough ink to draw a line about 2-3 kilometers long.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2021/01/19/08/59/ball-pen-5930536_640.jpg"
+  },
+  {
+    "fact": "A plastic water bottle can take up to 450 years to decompose.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/08/19/17/48/water-5501652_640.jpg"
+  },
+  {
+    "fact": "Refrigerators were originally invented to make ice.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2016/10/10/14/19/refrigerator-1728503_640.jpg"
+  },
+  {
+    "fact": "Jeans were originally workwear for miners, Levi Strauss created denim jeans in the 1870s to withstand tough working conditions.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2012/08/24/17/59/statue-54838_640.jpg"
+  },
+  {
+    "fact": "The average person spends 6 months of their life waiting at red lights.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/04/04/22/28/footbridge-3291320_640.jpg"
+  },
+  {
+    "fact": "Your pillow doubles in weight over time, This is due to the accumulation of dust mites, skin cells, and moisture.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2017/02/16/10/51/pillow-2071096_640.jpg"
+  },
+  {
+    "fact": "The microwave door won’t open while running, This is a safety feature to prevent exposure to microwave radiation.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2022/01/04/05/29/kitchen-6914223_1280.jpg"
+  },
+  {
+    "fact": "Banana peels can polish leather shoes, The natural oils help clean and shine them.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2018/05/15/22/03/banana-peel-3404376_640.jpg"
+  },
+  {
+    "fact": "A standard coffee mug handle is designed for two fingers. But most people only use one to hold it.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2020/04/19/11/52/drink-5063295_1280.jpg"
+  },
+  {
+    "fact": "The holes in Crocs shoes aren’t just for ventilation, They help drain water quickly, making them ideal for wet environments.",
+    "imageUrl": "https://cdn.pixabay.com/photo/2015/06/29/12/34/beach-825535_640.jpg"
+  }
+]

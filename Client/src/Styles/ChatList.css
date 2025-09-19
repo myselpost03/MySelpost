@@ -765,7 +765,6 @@ body {
   color: white;
   border-radius: 50%;
   background: linear-gradient(135deg, #000, #4b4a4a);
-
   font-size: 1.4rem;
   z-index: 1000;
   box-shadow: 0 6px 15px rgba(255, 255, 255, 0.15);

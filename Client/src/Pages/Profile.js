@@ -13,6 +13,7 @@ import LoadingSpinner from "../Components/LoadingSpinner";
 import { openDB } from "idb";
 import axios from "axios";
 import OneSignal from "react-onesignal";
+import i18n from "../i18n";
 
 const giftList = [
   "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png",
@@ -377,16 +378,16 @@ const Profile = () => {
 
         setStatus({ ...status, editing: false, uploading: false });
         setForm((f) => ({ ...f, imageFile: null }));
-        toast.success("Profile Updated!");
+        toast.success(i18n.t("profileUpdated"));
 
         console.log("✅ User updated in Supabase + IndexedDB");
       } else {
-        toast.error("Failed to update.");
+        toast.error(i18n.t("failedUpdate"));
         console.error("❌ Update failed:", error?.message);
         setStatus((s) => ({ ...s, uploading: false }));
       }
     } catch (err) {
-      toast.error("Something went wrong while uploading image.");
+      toast.error(i18n.t("somethingWrongUploading"));
       console.error("⚠️ Update error:", err);
       setStatus((s) => ({ ...s, uploading: false }));
     }
@@ -429,7 +430,9 @@ const Profile = () => {
       return setStatus({
         ...status,
         alertMessage: {
-          text: `❌ You need ${requiredCoins} coins to send this gift.`,
+          text: `❌ ${i18n.t("youNeed")} ${requiredCoins} ${i18n.t(
+            "coinsToSend"
+          )}`,
           withButton: true,
         },
       });
@@ -456,7 +459,7 @@ const Profile = () => {
     if (!giftError) {
       setStatus({
         ...status,
-        alertMessage: "🎁 Gift sent successfully!",
+        alertMessage: `🎁 ${i18n.t("giftSuccess")}`,
         sendingGift: false,
       });
       await fetchGifts();
@@ -547,7 +550,7 @@ const Profile = () => {
   if (!userData) {
     return (
       <>
-        <SketchyHeader title="Profile" onBack={handleBack} />
+        <SketchyHeader title={i18n.t("profile")} onBack={handleBack} />
         <div>
           <LoadingSpinner /> {/* <-- show loading spinner */}
         </div>
@@ -557,7 +560,7 @@ const Profile = () => {
 
   return (
     <>
-      <SketchyHeader title="Profile" onBack={handleBack} />
+      <SketchyHeader title={i18n.t("profile")} onBack={handleBack} />
       <div className="sketchy-profile-wrapper">
         <div className="sketchy-profile-tab">Sketchy Profile</div>
         <div className="sketchy-profile-card">
@@ -584,7 +587,9 @@ const Profile = () => {
                       document.getElementById("sketchy-file-input").click()
                     }
                   >
-                    {form.imageFile ? form.imageFile.name : "Change Profile"}
+                    {form.imageFile
+                      ? form.imageFile.name
+                      : i18n.t("changeProfile")}
                   </button>
                   <input
                     id="sketchy-file-input"
@@ -599,20 +604,20 @@ const Profile = () => {
               <>
                 <h2 className="sketchy-profile-name">{userData.name}</h2>
                 <p className="sketchy-profile-bio">
-                  {userData.bio || "No bio yet."}
+                  {userData.bio || i18n.t("noBio")}
                 </p>
               </>
             )}
 
             <div className="sketchy-profile-stats-row">
               <p>
-                Conversations:
+                {i18n.t("conversations")}
                 <span className="sketchy-stat-value">
                   {userData.talked_to_count || 0}
                 </span>
               </p>
               <p>
-                Coins:
+                {i18n.t("coinsLabel")}
                 <span className="sketchy-stat-value">
                   {userData.reward_coins || 0}
                 </span>
@@ -620,9 +625,15 @@ const Profile = () => {
             </div>
             {isCurrentUser && status.editing ? (
               <div className="sketchy-orientation-section">
-                <h4 style={{ marginBottom: "6px" }}>Orientation</h4>
+                <h4 style={{ marginBottom: "6px" }}>{i18n.t("orientation")}</h4>
                 <div className="sketchy-orientation-options">
-                  {["gay", "lesbian", "trans", "hetero", "bi"].map((o) => (
+                  {[
+                    i18n.t("gay"),
+                    i18n.t("lesbian"),
+                    i18n.t("transgender"),
+                    i18n.t("heterosexual"),
+                    i18n.t("bisexual"),
+                  ].map((o) => (
                     <label key={o} className="orientation-label">
                       <input
                         type="radio"
@@ -670,16 +681,16 @@ const Profile = () => {
                   >
                     {status.editing
                       ? status.uploading
-                        ? "Saving..."
-                        : "Save Profile"
-                      : "Update Profile"}
+                        ? i18n.t("saving")
+                        : i18n.t("saveProfile")
+                      : i18n.t("updateProfile")}
                   </button>
                   <button
                     className="sketchy-coin-btn-new"
                     onClick={handleCoins}
                     style={{ marginTop: 10 }}
                   >
-                    Get Coins
+                    {i18n.t("getCoins")}
                   </button>
                   <button
                     className="sketchy-install-btn"
@@ -687,7 +698,7 @@ const Profile = () => {
                     disabled={!deferredPrompt}
                     style={{ marginTop: 10 }}
                   >
-                    Install App
+                    {i18n.t("installApp")}
                   </button>
                   <button
                     className="sketchy-logout-btn"
@@ -695,13 +706,13 @@ const Profile = () => {
                     disabled={loggingOut}
                     style={{ marginTop: 10 }}
                   >
-                    {loggingOut ? "Logging out..." : "Logout"}
+                    {loggingOut ? i18n.t("loggingOut") : i18n.t("logOut")}
                   </button>
                 </div>
                 <button className="settings-btn" onClick={handleSettings}>
                   <span className="gear">&#9881;</span>{" "}
                   {/* Unicode gear icon */}
-                  <span className="text">Settings</span>
+                  <span className="text">{i18n.t("settings")}</span>
                 </button>
               </>
             )}
@@ -714,15 +725,15 @@ const Profile = () => {
               currentUserId={currentUserId}
             />
             <span className={`blurred-note ${!showNote ? "hidden" : ""}`}>
-              Each tap clears the blur… <br />
-              reach 1000 likes to see it all!
+              {i18n.t("eachTap")} <br />
+              {i18n.t("reachLikes")}
             </span>
           </div>
         </div>
 
         {receivedGifts.length > 0 && (
           <div className="sketchy-gift-section">
-            <h3>🎁 Gifts Received</h3>
+            <h3>🎁 {i18n.t("install")}</h3>
             <div className="sketchy-gift-list">
               {receivedGifts.map((gift) => (
                 <img
@@ -742,7 +753,7 @@ const Profile = () => {
               className="sketchy-send-gift-btn"
               onClick={() => setShowGiftList((prev) => !prev)}
             >
-              🎁 Send Gift
+              🎁 {i18n.t("sendGift")}
             </button>
 
             {showGiftList && (
@@ -754,7 +765,9 @@ const Profile = () => {
                     onClick={() => handleSendGift(giftUrl, index)}
                   >
                     <img src={giftUrl} alt={`gift-${index}`} />
-                    <span>{giftCoinRequirements[index]} coins</span>
+                    <span>
+                      {giftCoinRequirements[index]} {i18n.t("coins")}
+                    </span>
                   </div>
                 ))}
               </div>

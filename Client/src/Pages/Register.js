@@ -10,6 +10,7 @@ import confetti from "canvas-confetti"; // ✅ Import confettiimport { Toaster }
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode"; // ✅ Correct import
+import i18n from "../i18n";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -112,7 +113,7 @@ const Register = () => {
     }
 
     if (formData.password.length < 8) {
-      setPasswordError("Password must be at least 8 characters long.");
+      setPasswordError(i18n.t("passwordMinLength"));
     } else {
       setPasswordError("");
     }
@@ -132,7 +133,7 @@ const Register = () => {
         .single();
 
       if (error || !inviteData) {
-        setInviteError("❌ Invalid invite code.");
+        setInviteError(`❌ ${i18n.t("invalidInvite")}`);
       } else {
         setInviteError(""); // valid code
       }
@@ -189,7 +190,7 @@ const Register = () => {
         })
       );
 
-      toast.success("Logged in with Google!");
+      toast.success(i18n.t("googleLoginSuccess"));
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
       setTimeout(() => {
@@ -202,7 +203,7 @@ const Register = () => {
       }, 1500);
     } catch (err) {
       console.error(err);
-      toast.error("Google login failed");
+      toast.error(i18n.t("googleLoginFailed"));
       setLoading(false);
     }
   };
@@ -348,9 +349,7 @@ const Register = () => {
         }));
         setError(""); // clear error if valid
       } else {
-        setError(
-          "Name can only contain letters, numbers, underscores, and dots (max 20 characters)."
-        );
+        setError(i18n.t("nameInvalid"));
       }
       return;
     }
@@ -422,14 +421,14 @@ const Register = () => {
         !formData.password ||
         !formData.profilePic
       ) {
-        setError("All fields are required.");
+        setError(i18n.t("allFieldsRequired"));
         setLoading(false);
         return;
       }
 
       // Password length check
       if (formData.password.length < 8) {
-        setError("Password must be at least 8 characters long.");
+        setError(i18n.t("passwordMinLength"));
         setLoading(false);
         return;
       }
@@ -441,7 +440,7 @@ const Register = () => {
         .single();
 
       if (existingEmail) {
-        setError("Email is already registered.");
+        setError(i18n.t("emailRegistered"));
         setLoading(false);
         return;
       }
@@ -450,13 +449,13 @@ const Register = () => {
       const validTypes = ["image/jpeg", "image/png", "image/webp"];
 
       if (!formData.profilePic.type.startsWith("image/")) {
-        setError("Invalid image file.");
+        setError(i18n.t("invalidImageFile"));
         setLoading(false);
         return;
       }
 
       if (!validTypes.includes(formData.profilePic.type)) {
-        setError("Invalid image format. Only JPEG, PNG, JPG allowed.");
+        setError(i18n.t("invalidImageFormat"));
         setLoading(false);
         return;
       }
@@ -470,7 +469,7 @@ const Register = () => {
           .single();
 
         if (inviteError || !inviteData) {
-          setInviteError("❌ Invalid invite code.");
+          setInviteError(`❌ ${i18n.t("invalidInvite")}`);
           setLoading(false);
           return;
         }
@@ -537,7 +536,7 @@ const Register = () => {
         .single();
 
       if (loginError || !userData) {
-        setError("Failed to log in after registration.");
+        setError(i18n.t("loginAfterRegFailed"));
         return;
       }
 
@@ -546,7 +545,7 @@ const Register = () => {
         userData.password
       );
       if (!passwordMatch) {
-        setError("Password mismatch.");
+        setError(i18n.t("passwordMismatch"));
         return;
       }
 
@@ -563,7 +562,7 @@ const Register = () => {
       );
 
       setShowAlert(true);
-      toast.success("Registered Successfully!");
+      toast.success(i18n.t("registeredSuccess"));
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
       setTimeout(() => {
@@ -576,13 +575,13 @@ const Register = () => {
         setLoading(false);
       }, 2000);
     } catch (err) {
-      setError(err.message || "Something went wrong");
+      setError(err.message || i18n.t("somethingWentWrong"));
     } finally {
       setLoading(false);
     }
   };
   const handleGoogleLoginError = () => {
-    toast.error("Google login failed");
+    toast.error(i18n.t("googleLoginFailed"));
   };
   return (
     <div>
@@ -595,7 +594,7 @@ const Register = () => {
             await handleSubmit(e);
           }}
         >
-          <h2 className="acct-text">Create an Account</h2>
+          <h2 className="acct-text">{i18n.t("createAccount")}</h2>
 
           {step === 1 && (
             <>
@@ -607,35 +606,31 @@ const Register = () => {
               <input
                 type="text"
                 name="name"
-                placeholder="Name"
+                placeholder={i18n.t("name")}
                 value={formData.name}
                 onChange={handleChange}
                 required
                 className={nameTaken ? "invalid" : ""}
               />
-              {nameTaken && (
-                <p className="error-msg">
-                  Name already taken. Please choose another.
-                </p>
-              )}
+              {nameTaken && <p className="error-msg">{i18n.t("nameTaken")}</p>}
               {error.includes("Name") && <p className="error-msg">{error}</p>}
 
               <input
                 type="email"
                 name="email"
-                placeholder="Email"
+                placeholder={i18n.t("email")}
                 value={formData.email}
                 onChange={handleChange}
                 required
                 className={!emailValid ? "invalid" : ""}
               />
               {!emailValid && (
-                <p className="error-msg">Please enter a valid email address.</p>
+                <p className="error-msg">{i18n.t("enterValidEmail")}</p>
               )}
               {emailTaken && (
-                <p className="error-msg">Email is already registered.</p>
+                <p className="error-msg">{i18n.t("emailRegistered")}</p>
               )}
-              <p className="step-indicator">Step 1 of 2</p>
+              <p className="step-indicator">{i18n.t("step1")}</p>
             </>
           )}
           {step === 2 && (
@@ -643,7 +638,7 @@ const Register = () => {
               <input
                 type="password"
                 name="password"
-                placeholder="Password"
+                placeholder={i18n.t("password")}
                 value={formData.password}
                 onChange={handleChange}
                 required
@@ -654,7 +649,7 @@ const Register = () => {
               <input
                 type="text"
                 name="inviteCode"
-                placeholder="Invite Code (optional)"
+                placeholder={`${i18n.t("inviteCode")} (${i18n.t("optional")})`}
                 value={formData.inviteCode}
                 onChange={(e) =>
                   setFormData({ ...formData, inviteCode: e.target.value })
@@ -667,8 +662,8 @@ const Register = () => {
                 <label className="profile-pic-card">
                   <span className="profile-pic-text">
                     {formData.profilePic
-                      ? "File Selected"
-                      : "Click here to choose a profile picture"}
+                      ? i18n.t("fileSelected")
+                      : i18n.t("selectProfile")}
                   </span>
                   <input
                     type="file"
@@ -689,17 +684,18 @@ const Register = () => {
                 className="register-btn"
               >
                 {compressing
-                  ? `Compressing... (${elapsedTime}s)`
+                  ? `${i18n.t("compressing")} (${elapsedTime}s)`
                   : loading
-                  ? "Registering..."
-                  : "Register"}
+                  ? i18n.t("registering")
+                  : i18n.t("register")}
               </button>
 
               <p className="link-to-login">
-                Already have an account? <Link to="/login">Login</Link>
+                {i18n.t("alreadyAccount")}{" "}
+                <Link to="/login">{i18n.t("login")}</Link>
               </p>
 
-              <p className="step-indicator">Step 2 of 2</p>
+              <p className="step-indicator">{i18n.t("step2")}</p>
             </>
           )}
         </form>

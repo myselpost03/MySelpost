@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Header from "../Components/Header";
 import { supabase } from "../Utils/supabaseClient";
+import i18n from "../i18n";
 import "../Styles/Secret.css";
 
 const Secret = () => {
@@ -47,46 +48,46 @@ const Secret = () => {
   // Function to get human-readable time
   const timeAgo = (date) => {
     const seconds = Math.floor((now - new Date(date)) / 1000);
-    if (seconds < 5) return "just now";
-    if (seconds < 60) return `${seconds} sec ago`;
+    if (seconds < 5) return i18n.t("justNow");
+    if (seconds < 60) return `${seconds} ${i18n.t("sec")} ${i18n.t("ago")}`;
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes} min ago`;
+    if (minutes < 60) return `${minutes} ${i18n.t("min")} ${i18n.t("ago")}`;
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    if (hours < 24) return `${hours} ${i18n.t("hour")}${hours > 1 ? "s" : ""} ${i18n.t("ago")}`;
     const days = Math.floor(hours / 24);
-    return `${days} day${days > 1 ? "s" : ""} ago`;
+    return `${days} ${i18n.t("day")}${days > 1 ? "s" : ""} ${i18n.t("ago")}`;
   };
 
   return (
     <>
-    <Header />
-    <div className="secret-container">
-      
-      <h1 className="secret-title">Write Your Secret</h1>
+      <Header />
+      <div className="secret-container">
+        <h1 className="secret-title">{i18n.t("writeSecret")}</h1>
 
-      <form onSubmit={handleSubmit} className="secret-form">
-        <textarea
-          placeholder="Type your secret here..."
-          value={secret}
-          onChange={(e) => setSecret(e.target.value)}
-          className="secret-textarea"
-        />
-        <button type="submit" className="secret-btn">
-          Submit Secret
-        </button>
-      </form>
+        <form onSubmit={handleSubmit} className="secret-form">
+          <textarea
+            placeholder={i18n.t("secretPlaceholder")}
+            value={secret}
+            onChange={(e) => setSecret(e.target.value)}
+            className="secret-textarea"
+          />
+          <button type="submit" className="secret-btn">
+            {i18n.t("submitSecret")}
+          </button>
+        </form>
 
-      <p className="secret-hint">Your secret will remain anonymous 🤫</p>
+        <p className="secret-hint">{i18n.t("secretNote")} 🤫</p>
 
-      <div className="secret-list">
-        {submittedSecrets.map((s) => (
-          <div key={s.id} className="secret-item">
-            <span className="secret-text">{s.text}</span>
-            <span className="secret-time">{timeAgo(s.created_at)}</span>
-          </div>
-        ))}
+        <div className="secret-list">
+          {submittedSecrets.map((s) => (
+            <div key={s.id} className="secret-item">
+              <span className="secret-text">{s.text}</span>
+              <span className="secret-time">{timeAgo(s.created_at)}</span>
+            </div>
+          ))}
+        </div>
       </div>
-    </div></>
+    </>
   );
 };
 

@@ -6,6 +6,7 @@ import "../Styles/ResetPassword.css";
 import toast, { Toaster } from "react-hot-toast";
 import confetti from "canvas-confetti"; // ✅ Import confettiimport { Toaster } from 'react-hot-toast';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import i18n from "../i18n";
 
 export default function ResetPassword() {
   const [email, setEmail] = useState("");
@@ -18,15 +19,15 @@ export default function ResetPassword() {
 
   const handleReset = async () => {
     if (!email) {
-      setMessage("❌ Please enter your email.");
+      setMessage(`❌ ${i18n.t("enterEmail")}`);
       return;
     }
     if (password !== confirmPassword) {
-      setMessage("❌ Passwords do not match.");
+      setMessage(`❌ ${i18n.t("resetPassMismatch")}`);
       return;
     }
     if (password.length < 6) {
-      setMessage("⚠️ Password must be at least 6 characters.");
+      setMessage(`⚠️ ${i18n.t("passwordMinLength")}`);
       return;
     }
 
@@ -42,7 +43,7 @@ export default function ResetPassword() {
         .single();
 
       if (error || !user) {
-        setMessage("❌ User not found.");
+        setMessage(`❌ ${i18n.t("noUser")}`);
         setLoading(false);
         return;
       }
@@ -58,7 +59,7 @@ export default function ResetPassword() {
 
       if (updateError) throw updateError;
 
-      toast.success("Password reset successful. Please log in.");
+      toast.success(i18n.t("passwordResetSuccess"));
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
     } catch (err) {
       setMessage("❌ " + err.message);
@@ -74,15 +75,13 @@ export default function ResetPassword() {
       <Header />
       <div className="reset-wrapper">
         <div className="reset-card">
-          <h2 className="reset-title">🔑 Reset Your Password</h2>
-          <p className="reset-subtext">
-            Enter your account email and new password to reset.
-          </p>
+          <h2 className="reset-title">🔑 {i18n.t("resetPassword")}</h2>
+          <p className="reset-subtext">{i18n.t("resetInstruction")}</p>
 
           <input
             type="email"
             className="reset-input"
-            placeholder="Your Email"
+            placeholder={i18n.t("yourEmail")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -91,7 +90,7 @@ export default function ResetPassword() {
             <input
               type={showPassword ? "text" : "password"}
               className="reset-input"
-              placeholder="New Password"
+              placeholder={i18n.t("newPassword")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -107,7 +106,7 @@ export default function ResetPassword() {
             <input
               type={showConfirmPassword ? "text" : "password"}
               className="reset-input"
-              placeholder="Confirm Password"
+              placeholder={i18n.t("confirmPassword")}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
@@ -124,7 +123,7 @@ export default function ResetPassword() {
             onClick={handleReset}
             disabled={isButtonDisabled}
           >
-            {loading ? "⏳ Resetting..." : "Reset Password"}
+            {loading ? `⏳ ${i18n.t("reseting")}` : i18n.t("resetPassBtn")}
           </button>
 
           {message && <div className="reset-message">{message}</div>}

@@ -3,6 +3,7 @@ import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import cors from "cors";
 import axios from "axios";
+import i18n from "./i18n";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -72,7 +73,7 @@ app.post("/schedule-push", async (req, res) => {
         {
           app_id: ONE_SIGNAL_APP_ID,
           include_player_ids: playerIds,
-          headings: { en: title || "New Message" },
+          headings: { en: title || i18n.t("newMessage") },
           contents: { en: message || "This came 30s later!" },
           url: url || "https://yourwebsite.com",
         },
@@ -247,8 +248,8 @@ app.post("/send-message-push", async (req, res) => {
         const payload = {
           app_id: ONE_SIGNAL_APP_ID,
           include_player_ids: playerIds,
-          headings: { en: "New Message!" },
-          contents: { en: "You have unread messages." },
+          headings: { en: i18n.t("searchGifExample")},
+          contents: { en:  i18n.t("unreadMessages") },
           url: "https://www.myselpost.com/chat-list",
           collapse_id: `chat_${userId}`,
           chrome_web_icon: "https://www.myselpost.com/inbox.png",
