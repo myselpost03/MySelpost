@@ -20,6 +20,7 @@ import {
   Prompt,
   Pricing,
   Secret,
+  MissScratch,
   Settings,
   Roast,
   About,
@@ -67,7 +68,8 @@ const publicRoutes = [
   { path: "/about", component: About },
   { path: "/terms", component: Terms },
   { path: "/roast", component: Roast },
-   { path: "/share-secret", component: Secret },
+  { path: "/share-secret", component: Secret },
+  { path: "/miss-scratch", component: MissScratch },
   { path: "/reset-password", component: ResetPassword },
   { path: "/chat-entrance", component: ChatEntrance },
   { path: "/guest-user", component: GuestUser },
@@ -188,8 +190,8 @@ function AppContent() {
 
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const location = useLocation(); 
-  const [ready, setReady] = useState(false); 
+  const location = useLocation();
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let isDeveloper = false;
@@ -350,11 +352,7 @@ function AppContent() {
       return;
     }
 
-    const protectedRoutes = [
-      "/chat-list",
-      "/chat/:id",
-      "/profile/:id",
-    ];
+    const protectedRoutes = ["/chat-list", "/chat/:id", "/profile/:id"];
     if (!storedUser?.id && protectedRoutes.includes(location.pathname)) {
       navigate("/guest-user", { replace: true });
       return;

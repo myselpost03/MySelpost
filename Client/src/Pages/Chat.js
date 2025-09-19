@@ -12,6 +12,8 @@ import imageCompression from "browser-image-compression";
 import i18n from "../i18n";
 import "../Styles/Chat.css";
 
+
+
 const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -58,6 +60,20 @@ const Chat = () => {
   const targetUser = state?.targetUser;
 
   const navigate = useNavigate();
+const [bgStyle, setBgStyle] = useState("");
+
+  useEffect(() => {
+    // Load background from localStorage on component mount
+    const savedBg = localStorage.getItem("chatBackground") || `repeating-linear-gradient(
+      45deg,
+      #fffef9,
+      #fffef9 10px,
+      #f9f7ed 10px,
+      #f9f7ed 20px
+    ),
+    radial-gradient(circle at top left, #fffef9 0%, #f1efdb 100%)`;
+    setBgStyle(savedBg);
+  }, []);
 
   // Reset notification unread count
   useEffect(() => {
@@ -317,6 +333,22 @@ const Chat = () => {
     });
   }, [messages]);
 
+  // Auto delete message that is 1 day old
+  useEffect(() => {
+    const now = Date.now();
+
+    messages.forEach(async (msg) => {
+      const createdAt = new Date(msg.created_at).getTime();
+      if (now - createdAt >= 24 * 60 * 60 * 1000) {
+        // Delete from DB
+        await supabase.from("chats").delete().eq("id", msg.id);
+
+        // Delete from local state
+        setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+      }
+    });
+  }, [messages]);
+
   // Recording Audio for Desktops
   useEffect(() => {
     if (!mediaRecorder) return;
@@ -390,6 +422,7 @@ const Chat = () => {
         `and(sender_id.eq.${currentUser.id},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${currentUser.id})`
       )
       .order("created_at", { ascending: true });
+      
 
     if (error) {
       console.error("Initial message load failed:", error.message);
@@ -551,31 +584,9 @@ const Chat = () => {
       return;
     }
 
-    const now = Date.now();
-    const recent = recentMessages.current;
-
-    // Remove messages older than 15 seconds
-    recentMessages.current = recent.filter((msg) => now - msg.time < 15000);
-
-    // Prevent sending same message repeatedly
-    if (recentMessages.current.some((msg) => msg.text === messageText)) {
-      setAlertMessage({
-        text: `⚠️ ${i18n.t("spamMessage")}`,
-        buttons: ["close"],
-      });
-
-      const { error } = await supabase.rpc("decrement_decency", {
-        user_id_input: currentUser.id,
-      });
-
-      if (error) console.error("❌ RPC error:", error.message);
-      setIsSending(false);
-      return;
-    }
-
-    recentMessages.current.push({ text: messageText, time: now });
     setInput("");
     inputRef.current?.focus();
+
     const isAbusive = bannedData.abusiveWords.some((w) =>
       input.toLowerCase().includes(w.toLowerCase())
     );
@@ -1291,7 +1302,15 @@ const Chat = () => {
   }, []);
 
   return (
-    <div className="Chat-UI">
+    <div className="Chat-UI" style={{
+        background: bgStyle,
+        backgroundBlendMode: "multiply",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        fontFamily: '"Comic Sans MS", "Caveat", cursive',
+      }}>
       <ChatHeader
         title={targetUser?.name || "Chat"}
         onBack={handleBack}
@@ -1354,20 +1373,14 @@ const Chat = () => {
             </div>
           </div>
           {showNotice && (
-            <div className="auto-delete-notice">
-              🕒 {i18n.t("autoDelete")}
-            </div>
+            <div className="auto-delete-notice">🕒 {i18n.t("autoDelete")}</div>
           )}
           {/* Show user/chat blocked UI */}
           {blockedByOtherUser || iBlockedOtherUser ? (
             <div className="blocked-ui">
               <h2>🚫 {i18n.t("chatBlocked")}</h2>
               {iBlockedOtherUser && <p>{i18n.t("youBlocked")}</p>}
-              {blockedByOtherUser && (
-                <p>
-                  {i18n.t("blockedByUser")}
-                </p>
-              )}
+              {blockedByOtherUser && <p>{i18n.t("blockedByUser")}</p>}
             </div>
           ) : (
             <>
@@ -1626,9 +1639,7 @@ const Chat = () => {
 
           <div className="gif-results">
             {gifLoading && (
-              <div style={{ marginLeft: "15%" }}>
-                {i18n.t("loadingGifs")}
-              </div>
+              <div style={{ marginLeft: "15%" }}>{i18n.t("loadingGifs")}</div>
             )}
             {gifs.map((gif) => (
               <div
@@ -1675,7 +1686,7 @@ const Chat = () => {
                       fontSize: "12px",
                     }}
                   >
-                  {i18n.t("sending")}
+                    {i18n.t("sending")}
                   </div>
                 )}
                 <div

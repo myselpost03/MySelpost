@@ -51,7 +51,7 @@ const SketchyAlert = ({ message, buttons = ["close"], onClose, onNews, onPay }) 
   };
 
   const handleGuest = () => {
-    navigate("/share-secret");
+    navigate("/miss-scratch");
   };
 
   const handleNews = () => {

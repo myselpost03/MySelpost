@@ -733,7 +733,7 @@ const Profile = () => {
 
         {receivedGifts.length > 0 && (
           <div className="sketchy-gift-section">
-            <h3>🎁 {i18n.t("install")}</h3>
+            <h3>🎁 {i18n.t("giftsReceived")}</h3>
             <div className="sketchy-gift-list">
               {receivedGifts.map((gift) => (
                 <img

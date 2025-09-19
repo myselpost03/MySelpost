@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "src": "/Images/post1.jpg",
+    "caption": "Sunset vibes",
+    "question": "What color is dominant?",
+    "options": ["Red", "Blue", "Green", "Yellow"],
+    "answerIndex": 0,
+    "selection": { "x": 50, "y": 100, "width": 200, "height": 150 },
+    "createdAt": "2025-09-19T10:00:00.000Z",
+    "locked": true,
+    "wrongAttempt": false,
+    "correctCount": 10,
+    "showFinger": false
+  },
+  {
+    "id": 2,
+    "src": "/Images/post2.jpg",
+    "caption": "Mountain view",
+    "question": "Which peak is this?",
+    "options": ["Everest", "K2", "Kangchenjunga", "Lhotse"],
+    "answerIndex": 1,
+    "selection": { "x": 30, "y": 50, "width": 250, "height": 180 },
+    "createdAt": "2025-09-19T11:00:00.000Z",
+    "locked": true,
+    "wrongAttempt": false,
+    "correctCount": 0,
+    "showFinger": false
+  }
+]

@@ -10,11 +10,11 @@ import i18n from "../i18n";
 import { supabase } from "../Utils/supabaseClient";
 import OneSignal from "react-onesignal";
 import scratchPosts from "../JSON/scratchPosts.json";
-import "../Styles/Demo.css";
+import "../Styles/MissScratch.css";
 
-const Demo = () => {
+const MissScratch = () => {
   const [activeTab, setActiveTab] = useState("all");
-  const [posts, setPosts] = useState(scratchPosts); // <-- use JSON here
+  const [posts, setPosts] = useState(scratchPosts);
   const [openScratchPostId, setOpenScratchPostId] = useState(null);
   const [openQuestionPostId, setOpenQuestionPostId] = useState(null);
   const [wrongPopupPostId, setWrongPopupPostId] = useState(null);
@@ -78,9 +78,8 @@ const Demo = () => {
   useEffect(() => {
     const hasSeenToast = localStorage.getItem("seenAllToast");
     if (activeTab === "all" && !hasSeenToast) {
-      toast("Swipe left or right to see more posts", {
+      toast(i18n.t("scratchSwipeGuide"), {
         id: "swipe-hint",
-        icon: "👈👉",
         duration: 6000,
       });
       localStorage.setItem("seenAllToast", "true");
@@ -90,7 +89,7 @@ const Demo = () => {
   const handlers = useSwipeable({
     onSwipedLeft: () => {
       if (scratches <= 0) {
-        toast.error("No scratches left! Swiping is disabled.", {
+        toast.error(i18n.t("noScratchesLeft"), {
           duration: 5000,
         });
         return;
@@ -122,16 +121,19 @@ const Demo = () => {
     }
     return i18n.t("justNow");
   };
+
   const [overlayImg, setOverlayImg] = useState(null);
+
   useEffect(() => {
     const img = new Image();
     img.src = overlay;
-    img.onload = () => setOverlayImg(img); // 👈 use state, not ref
+    img.onload = () => setOverlayImg(img); 
   }, []);
 
   useEffect(() => {
     localStorage.setItem("scratches", scratches);
   }, [scratches]);
+
   useEffect(() => {
     if (!baseImage) return;
     const ctx = baseCanvasRef.current.getContext("2d");
@@ -209,10 +211,10 @@ const Demo = () => {
 
   const postForUsers = () => {
     if (!selection || !baseImage)
-      return toast.error("Select an area first!", { duration: 5000 });
-    if (!caption) return toast.error("Enter a caption!");
+      return toast.error(i18n.t("selectAreaFirst"), { duration: 5000 });
+    if (!caption) return toast.error(i18n.t("enterCaption"));
     if (!question || options.some((o) => o === "")) {
-      return toast.error("Set your question and all 4 options!", {
+      return toast.error(i18n.t("setQuestionOptions"), {
         duration: 5000,
       });
     }
@@ -233,10 +235,16 @@ const Demo = () => {
   };
 
   const navigate = useNavigate();
+
   const handleMessageAlert = () => {
-    toast.error(
+    const user = localStorage.getItem("user");
+
+    if(user){
+      toast.error(i18n.t(""))
+    } else{
+       toast.error(
       <div style={{ cursor: "default" }}>
-        You have to{" "}
+        {i18n.t("premiumMessageRequired")}{" "}
         <span
           style={{
             color: "#F75270",
@@ -245,27 +253,37 @@ const Demo = () => {
           }}
           onClick={() => navigate("/login")}
         >
-          log in
+          {i18n.t("logIn")}
         </span>{" "}
-        to message her.
+       {i18n.t("toMessageHer")}
       </div>,
       { duration: 5000 }
     );
+    }
+   
   };
 
   const scratchFABClick = () => {
-    //setActiveTab("edit")
-    toast("You can't post as a guest user", {
-      icon: "ℹ️",
-      duration: 6000,
-    });
+    const user = localStorage.getItem("user");
+
+    if (user) {
+      toast(i18n.t("uploadPostWeek"), {
+        icon: "⏳",
+        duration: 6000,
+      });
+    } else {
+      toast(i18n.t("guestCannotPost"), {
+        icon: "ℹ️",
+        duration: 6000,
+      });
+    }
   };
 
   return (
     <div className="demo-outer">
       <div className="demo-container">
         <div className="scratch-title-cont">
-          <strong className="scratch-title">MISS SCRATCH</strong>
+          <strong className="scratch-title">{i18n.t("missScratch")}</strong>
         </div>
 
         {/* Floating Action Button */}
@@ -295,7 +313,7 @@ const Demo = () => {
             {baseImage && !selectionDone && (
               <div className="portion-select-instruction-cont">
                 <p className="portion-select-instruction">
-                  👉 Select portion of your image by dragging.
+                  👉 {i18n.t("selectImagePortion")}
                 </p>
               </div>
             )}
@@ -305,7 +323,7 @@ const Demo = () => {
                 style={{ marginTop: "10px" }}
                 onClick={() => setSelectionDone(true)}
               >
-                Done Selecting
+                {i18n.t("doneSelecting")}
               </button>
             )}
 
@@ -342,7 +360,7 @@ const Demo = () => {
                 >
                   {options.map((_, idx) => (
                     <option key={idx} value={idx}>
-                      Correct Answer: Option {idx + 1}
+                      {i18n.t("correctAnswerOption")} {idx + 1}
                     </option>
                   ))}
                 </select>
@@ -351,7 +369,7 @@ const Demo = () => {
 
             {selectionDone && (
               <button onClick={postForUsers} style={{ marginTop: "10px" }}>
-                Post for All
+                {i18n.t("postForAll")}
               </button>
             )}
           </div>
@@ -436,7 +454,7 @@ const Demo = () => {
                 post.correctCount = (post.correctCount || 0) + 1; // increment
                 post.showFinger = true; // trigger finger animation
                 setScratches((prev) => prev - 1);
-                toast.success("Correct! You can scratch the image now.");
+                toast.success(i18n.t("correctScratchNow"));
               } else {
                 post.wrongAttempt = true;
               }
@@ -577,7 +595,7 @@ const PostView = ({
               }
             }}
           >
-            Answer Question
+            {i18n.t("answerQuestion")}
           </button>
         )}
       </div>
@@ -598,22 +616,22 @@ const PostView = ({
           onClick={handleSubscribe}
           disabled={subscribed}
         >
-          Notify Me
+          {i18n.t("notifyMe")}
         </button>
         <button className="share-scratch-btn" onClick={handleMessageAlert}>
-          Message
+          {i18n.t("scratchMessage")}
         </button>
         <button
           className="scratches-used"
           onClick={() => {
             if (scratches <= 0) {
-              toast.error("All scratches used! Come back in 24h.", {
+              toast.error(i18n.t("allScratchesUsed"), {
                 duration: 5000,
               });
               return;
             }
             if (post.locked) {
-              toast("Answer the question correctly to scratch this post.", {
+              toast(i18n.t("answerCorrectToScratch"), {
                 icon: "❌",
               });
               return;
@@ -621,15 +639,15 @@ const PostView = ({
             onOpenScratch();
           }}
         >
-          {scratches}/30 Scratches
+          {scratches}{i18n.t("scratchCount")}
         </button>
       </div>
 
       <button className="meter-btn">
-        ✅ {post.correctCount || 0} Correct Guesses
+        ✅ {post.correctCount || 0} {i18n.t("correctGuesses")}
       </button>
     </div>
   );
 };
 
-export default Demo;
+export default MissScratch;

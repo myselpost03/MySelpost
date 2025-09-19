@@ -552,7 +552,10 @@ const GuestUser = () => {
       {alertMessage && (
         <SketchyAlert
           message={alertMessage.text}
-          buttons={["guest", "news"]}
+          buttons={["guest", "close"]}
+           onClose={() => {
+            setAlertMessage(null);
+          }}
         />
       )}
       <Link to="/roast" className="fab-roast-button" title="Notification">

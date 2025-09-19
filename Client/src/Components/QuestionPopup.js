@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import i18n from "../i18n";
 import "../Styles/ScratchPopup.css"; // merged CSS for both
 
 const QuestionPopup = ({ question, options, onClose, onAnswer }) => {
@@ -15,7 +16,7 @@ const QuestionPopup = ({ question, options, onClose, onAnswer }) => {
         <button className="scratch-popup-close-circle" onClick={onClose}>
           ✖
         </button>
-        <h2 className="scratch-popup-title">🤔 Question Time!</h2>
+        <h2 className="scratch-popup-title">🤔 {i18n.t("questionTime")}</h2>
         <p className="scratch-popup-question">{question}</p>
         <div className="scratch-popup-options">
           {options.map((opt, idx) => (

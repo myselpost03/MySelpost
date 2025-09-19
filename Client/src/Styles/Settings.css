@@ -99,3 +99,205 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(26px);
 }
+/* Container styling */
+.settings-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  background: #f8f8f8;
+}
+
+/* Card styling */
+.settings-card {
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+  padding: 25px;
+  transition: all 0.3s ease;
+}
+
+.settings-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(0,0,0,0.15);
+}
+
+/* Each setting item */
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #eee;
+  transition: background 0.3s;
+}
+
+.settings-item:hover {
+  background-color: #f5f5f5;
+}
+
+.settings-item:last-child {
+  border-bottom: none;
+}
+
+/* Buttons */
+.settings-btn {
+  background-color: #4b4bff;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  font-weight: 600;
+}
+
+
+/* Theme selection buttons container */
+.theme-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+/* Theme buttons */
+.theme-btn {
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+  min-width: 100px;
+  text-align: center;
+  background-clip: padding-box;
+  font-family: 'darumadrop one', serif;
+}
+
+.theme-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  border-color: #4b4bff;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Optional: add background preview inside button */
+.theme-btn::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 60px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Overlay */
+.theme-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 10px;
+}
+
+/* Popup container */
+.theme-popup {
+  background: #111;
+  color: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  width: 100%;
+  max-width: 400px;  /* smaller popup */
+  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+  text-align: center;
+  animation: popupAppear 0.3s ease;
+}
+
+@keyframes popupAppear {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.theme-popup h3 {
+  font-size: 1.4rem;
+  margin-bottom: 15px;
+  color: #fff;
+}
+
+/* Horizontal scroll for themes */
+.theme-selector-horizontal {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.theme-selector-horizontal::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+/* Theme buttons */
+.theme-btn {
+  flex: 0 0 auto; /* do not shrink */
+  padding: 10px;
+  min-width: 100px;
+  border-radius: 12px;
+  border: 2px solid #fff;
+  cursor: pointer;
+  background-clip: padding-box;
+  font-weight: 500;
+  color: #fff;
+  transition: all 0.3s;
+  text-align: center;
+}
+
+.theme-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  border-color: #4b4bff;
+  box-shadow: 0 5px 15px rgba(255,255,255,0.2);
+}
+
+/* Close button */
+.close-popup {
+  margin-top: 15px;
+  padding: 8px 18px;
+  background: #fff;
+  color: #111;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.close-popup:hover {
+  background: #eee;
+}
+
+/* Responsive tweaks */
+@media (max-width: 480px) {
+  .theme-popup {
+    max-width: 90%;
+    padding: 15px;
+  }
+
+  .theme-popup h3 {
+    font-size: 1.2rem;
+  }
+
+  .theme-btn {
+    min-width: 80px;
+    font-size: 0.9rem;
+  }
+}

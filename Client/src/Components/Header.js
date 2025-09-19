@@ -228,6 +228,7 @@ const Header = () => {
             {/*<span className="new-badge">New</span>*/}
           </div>
 
+         
           <button
             style={{ textDecoration: "none" }}
             onClick={() => navigate(`/profile/${user.id}`)}

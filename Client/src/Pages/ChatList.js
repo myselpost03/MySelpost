@@ -18,6 +18,7 @@ import {
   FaEnvelopeOpenText,
   FaCheck,
   FaTimes,
+  FaMagic,
 } from "react-icons/fa";
 import empty from "../Assets/empty.png";
 import { supabase } from "../Utils/supabaseClient";
@@ -1122,10 +1123,8 @@ const ChatList = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const RoastMe = () => {
-    setAlertMessage({
-      text: "Roast Me Feature ",
-    });
+  const handleScratch = () => {
+    navigate("/miss-scratch");
   };
   const handleFilterClick = () => {
     // Check notification permission
@@ -1134,7 +1133,7 @@ const ChatList = () => {
     } else {
       // Show alert if permission not granted
       setAlertMessage({
-        text: i18n.t("notificationPermission")
+        text: i18n.t("notificationPermission"),
       });
     }
   };
@@ -1378,14 +1377,14 @@ const ChatList = () => {
 
             {activeTab === "all" && (
               <>
-                {/*           <button
-                className="fab-camera-button"
-                onClick={RoastMe}
-                title="Open camera"
-              >
-                <FaCamera />
-              </button>
-*/}
+                <button
+                  className="fab-camera-button"
+                  onClick={handleScratch}
+                  title="Open camera"
+                >
+                  <FaMagic />
+                </button>
+
                 {/* Filter FAB */}
                 <button
                   className="fab-heart-button"
@@ -1589,9 +1588,7 @@ const ChatList = () => {
                   <>
                     <FaComments size={40} className="no-icon" />
                     <p className="no-title">{i18n.t("noChats")}</p>
-                    <p className="no-sub">
-                      {i18n.t("inoxHistory")}
-                    </p>
+                    <p className="no-sub">{i18n.t("inoxHistory")}</p>
                   </>
                 )}
 
@@ -1599,9 +1596,7 @@ const ChatList = () => {
                   <>
                     <FaEnvelopeOpenText size={40} className="no-icon" />
                     <p className="no-title">{i18n.t("inboxEmpty")}</p>
-                    <p className="no-sub">
-                      {i18n.t("newMessages")}
-                    </p>
+                    <p className="no-sub">{i18n.t("newMessages")}</p>
                   </>
                 )}
 
@@ -1752,9 +1747,7 @@ const ChatList = () => {
           <div className="popup-wrapper">
             <div className="popup-card">
               <h3 className="popup-title">{i18n.t("hey")}</h3>
-              <p className="popup-text">
-                {i18n.t("askAgeGender")}
-              </p>
+              <p className="popup-text">{i18n.t("askAgeGender")}</p>
 
               <div className="option-row">
                 <label className="option-box">
