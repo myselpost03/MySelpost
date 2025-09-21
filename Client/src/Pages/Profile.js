@@ -24,7 +24,11 @@ const giftList = [
   "https://images.icon-icons.com/327/PNG/256/Clown_Impish_35102.png",
 ];
 
-const giftCoinRequirements = [50, 300, 150, 10, 400, 100];
+const giftCoinRequirements = [1000, 1000000, 300000, 10, 10000, 100];
+const formatCoins = (coins) => {
+  if (coins >= 1000) return `${coins / 1000}k`; // 10k → 10k
+  return coins.toString(); // <1000 → plain number
+};
 
 const Profile = () => {
   const [showImageModal, setShowImageModal] = useState(false);
@@ -766,7 +770,8 @@ const Profile = () => {
                   >
                     <img src={giftUrl} alt={`gift-${index}`} />
                     <span>
-                      {giftCoinRequirements[index]} {i18n.t("coins")}
+                      {formatCoins(giftCoinRequirements[index])}{" "}
+                      {i18n.t("coins")}
                     </span>
                   </div>
                 ))}

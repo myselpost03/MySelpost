@@ -9,6 +9,7 @@ import {
   FaVenus,
   FaEnvelope,
   FaThumbtack,
+  FaMagic,
   FaSearch,
   FaMapMarkerAlt,
   FaFilter,
@@ -18,6 +19,7 @@ import { supabase } from "../Utils/supabaseClient";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import ReactCountryFlag from "react-country-flag";
 import SketchyAlert from "../Components/SketchyAlert";
+import MissScratch from "./MissScratch";
 import i18n from "../i18n";
 
 const countryNameToCode = {
@@ -558,7 +560,10 @@ const GuestUser = () => {
           }}
         />
       )}
-      <Link to="/roast" className="fab-roast-button" title="Notification">
+      <Link to="/miss-scratch" className="fab-camera-button" title="Scratch">
+        <FaMagic />
+      </Link>
+      <Link to="/roast" className="fab-roast-button" title="Roast">
         <FaFire />
       </Link>
     </div>

@@ -7,39 +7,92 @@ import "../Styles/ChatHeader.css";
 const ChatHeader = ({ title, onBack, onBlockToggle, isBlocked }) => {
   const [subscribed, setSubscribed] = useState(false);
 
+  // Check if already subscribed on mount
   useEffect(() => {
     const isSubscribed =
       localStorage.getItem("notificationsEnabled") === "true";
     setSubscribed(isSubscribed);
+
+    // If guest already granted permission and user logs in, save playerId
+    if (isSubscribed) {
+      savePlayerForUser();
+    }
   }, []);
 
-  const handleSubscribe = async () => {
+  const savePlayerForUser = async () => {
     try {
-      await OneSignal.Notifications.requestPermission();
+      // Check if permission already granted
+      if (Notification.permission !== "granted") {
+        // Request permission only if not granted
+        const permission = await OneSignal.Notifications.requestPermission();
+        if (permission !== "granted") return; // stop if user denies
+      }
 
-      if (Notification.permission === "granted") {
-        await OneSignal.User.PushSubscription.optIn();
-        const playerId = OneSignal.User.PushSubscription.id;
-        console.log("✅ Player ID:", playerId);
+      // Opt-in the push subscription
+      await OneSignal.User.PushSubscription.optIn();
+      const playerId = OneSignal.User.PushSubscription.id;
+      console.log("✅ Player ID:", playerId);
 
-        const user = JSON.parse(localStorage.getItem("user"));
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user?.id) {
+        // Save playerId with user_id in players table
         const { data, error } = await supabase
           .from("players")
           .upsert(
-            { player_id: playerId, user_id: user?.id },
+            { player_id: playerId, user_id: user.id },
             { onConflict: "player_id" }
           );
 
-        if (error) {
-          console.error("❌ Error saving player to Supabase:", error.message);
-        } else {
-          console.log("✅ Player saved to Supabase:", data);
-        }
-        localStorage.setItem("notificationsEnabled", "true");
-        setSubscribed(true);
-      } else {
-        console.log("⚠️ Notification permission not granted");
+        if (error) console.error("❌ Error saving player:", error.message);
+        else console.log("✅ Player saved in players table:", data);
+
+        // Remove from guestPlayers if exists
+        await supabase.from("guestPlayers").delete().eq("player_id", playerId);
       }
+    } catch (err) {
+      console.error("❌ Error saving player for user:", err);
+    }
+  };
+
+  const handleSubscribe = async () => {
+    // Only execute if notificationsEnabled not set
+    if (localStorage.getItem("notificationsEnabled") === "true") return;
+
+    try {
+      // Request permission only if not granted
+      if (Notification.permission !== "granted") {
+        const permission = await OneSignal.Notifications.requestPermission();
+        if (permission !== "granted") return;
+      }
+
+      await OneSignal.User.PushSubscription.optIn();
+      const playerId = OneSignal.User.PushSubscription.id;
+      console.log("✅ Player ID:", playerId);
+
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      if (user?.id) {
+        const { data, error } = await supabase
+          .from("players")
+          .upsert(
+            { player_id: playerId, user_id: user.id },
+            { onConflict: "player_id" }
+          );
+        if (error) console.error("❌ Error saving player:", error.message);
+        else console.log("✅ Player saved in players table:", data);
+
+        await supabase.from("guestPlayers").delete().eq("player_id", playerId);
+      } else {
+        const { error } = await supabase
+          .from("guestPlayers")
+          .upsert({ player_id: playerId }, { onConflict: "player_id" });
+        if (error)
+          console.error("❌ Error saving guest player:", error.message);
+        else console.log("✅ Player saved in guestPlayers table");
+      }
+
+      localStorage.setItem("notificationsEnabled", "true");
+      setSubscribed(true);
     } catch (err) {
       console.error("❌ Error subscribing for push:", err);
     }

@@ -1127,15 +1127,7 @@ const ChatList = () => {
     navigate("/miss-scratch");
   };
   const handleFilterClick = () => {
-    // Check notification permission
-    if (Notification.permission === "granted") {
-      setShowAllTabs(true);
-    } else {
-      // Show alert if permission not granted
-      setAlertMessage({
-        text: i18n.t("notificationPermission"),
-      });
-    }
+    setShowAllTabs(true);
   };
 
   const handleNotification = async () => {

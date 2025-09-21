@@ -146,10 +146,20 @@ const Settings = () => {
           {/*<button onClick={toggleRestrict}>
   {restrictLowDecency ? "Disable Decency Filter" : "Enable Decency Filter"}
 </button>  */}
+         
 
           <div className="settings-item" onClick={handleContact}>
             <span>{i18n.t("contactUs")}</span>
             <button className="settings-btn"> {i18n.t("go")} </button>
+          </div>
+           <div className="settings-item">
+            <span style={{fontSize: '15px'}}>{i18n.t("restrictMessages")}</span>
+            <button
+              className="settings-btn"
+              
+            >
+              {i18n.t("soon")}
+            </button>
           </div>
           <div className="settings-item">
             <span>{i18n.t("selectChatTheme")}</span>

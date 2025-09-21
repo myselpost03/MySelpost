@@ -6,6 +6,11 @@ import "../Styles/Updates.css";
 
 const updatesData = [
   {
+    date: i18n.t("date_8"),
+    title: i18n.t("title_8"),
+    description: i18n.t("description_8"),
+  },
+  {
     date: i18n.t("date_1"),
     title: i18n.t("title_1"),
     description: i18n.t("description_1"),

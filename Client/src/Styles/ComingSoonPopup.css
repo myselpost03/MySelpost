@@ -1,0 +1,74 @@
+/* ComingSoonPopup.css */
+
+.coming-soon-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85); /* dark semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px); /* subtle blur behind popup */
+  animation: fadeInOverlay 0.3s ease forwards;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.coming-soon-popup-content {
+  background: #111; /* dark black popup */
+  color: #fff; /* white text */
+  padding: 2rem 3rem;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
+  position: relative;
+  border: 2px solid #fff; /* white border for cool contrast */
+  animation: popupScale 0.4s ease forwards;
+}
+
+@keyframes popupScale {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.coming-soon-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.coming-soon-close-btn:hover {
+  color: #ccc;
+  transform: rotate(90deg);
+}
+
+.coming-soon-popup-content h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.coming-soon-popup-content p {
+  font-size: 1rem;
+  margin: 0.3rem 0;
+}
+
+.coming-soon-subtitle {
+  font-size: 0.9rem;
+  color: #bbb; /* slightly grey subtitle */
+  margin-top: 1rem;
+  font-style: italic;
+}

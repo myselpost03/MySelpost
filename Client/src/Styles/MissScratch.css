@@ -3,6 +3,10 @@
 @import url(https://fonts.googleapis.com/css?family=Darumadrop+One:regular);
 @import url(https://fonts.googleapis.com/css?family=Lacquer:regular);
 @import url(https://fonts.googleapis.com/css?family=Itim:regular);
+@import url(https://fonts.googleapis.com/css?family=Poppins:100,100italic,200,200italic,300,300italic,regular,italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic);
+@import url(https://fonts.googleapis.com/css?family=Sigmar+One:regular);
+
+
 
 .bottom-canvas {
   position: absolute;
@@ -27,11 +31,29 @@
 .demo-outer {
   width: 100%;
   height: 100vh;
-  overflow: auto; /* allow scroll if needed */
+  overflow-y: scroll; /* allow vertical scrolling */
+  overflow-x: hidden; /* prevent horizontal scroll */
   display: flex;
   justify-content: center;
   align-items: flex-start;
   background: linear-gradient(to right, #797a7a, #d7d2cc);
+
+  padding-top: 60px; /* space for header */
+  box-sizing: border-box;
+
+  /* Hide scrollbar cross-browser */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.demo-outer::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+@media (max-width: 600px) {
+  .demo-outer {
+    padding-top: 70px; /* 👈 slightly larger for small screens */
+  }
 }
 
 .demo-container {
@@ -172,6 +194,19 @@
   white-space: nowrap;
 }
 
+.scratches-get {
+  border: 2px solid #111;
+  outline: none;
+  font-family: "concert one", serif;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  background-color: #111;
+  color: #fff;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+
 .share-scratch-btn {
   border: 2px solid #111;
   outline: none;
@@ -249,14 +284,14 @@
 
 .scratch-fab {
   position: fixed;
-  bottom: 1px;
-  right: 20px;
+  bottom: 60px; /* 👈 Lift it higher from the bottom */
+  right: 16px;
   z-index: 2;
   background: linear-gradient(135deg, #000, #4b4a4a);
   color: #fff;
   border: none;
-  width: 50px;
-  height: 50px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   font-size: 28px;
   cursor: pointer;
@@ -266,6 +301,25 @@
 
 .scratch-fab:hover {
   transform: scale(1.1);
+}
+
+/* Small screens */
+@media (max-width: 480px) {
+  .scratch-fab {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    bottom: 50px; /* slightly higher for smaller phones */
+    right: 12px;
+  }
+}
+
+/* Larger screens */
+@media (min-width: 768px) {
+  .scratch-fab {
+    bottom: 80px; /* give even more room */
+    right: 24px;
+  }
 }
 
 .full-reveal canvas {
@@ -413,3 +467,65 @@
   color: #eee;
   z-index: 20;
 }
+
+.scratch-upload-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-family: "darumadrop one", serif;
+  background: #111;
+  padding: 4px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #eee;
+  z-index: 20;
+}
+
+.scratch-upload-guide {
+  text-decoration: underline;
+  cursor: pointer;
+  color: #111;
+  font-family: 'poppins', serif;
+}
+
+.scratch-upload-guide-send{
+  font-family: 'poppins', serif;
+}
+
+/* GenderButtons.css */
+.scratch-gender-button-container {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 5px;
+}
+
+.scratch-gender-button {
+  padding: 12px 35px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+  background: #000;
+  border: none; /* no border */
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  font-family: 'sigmar one', serif;
+}
+
+.scratch-gender-button.scratch-male:hover {
+  background: linear-gradient(45deg, #000, #444);
+  transform: scale(1.1);
+}
+
+.scratch-gender-button.scratch-female {
+  background: #fff;
+  color: #000;
+}
+
+.scratch-gender-button.scratch-female:hover {
+  background: linear-gradient(45deg, #fff, #ccc);
+  color: #000;
+  transform: scale(1.1);
+}
+
