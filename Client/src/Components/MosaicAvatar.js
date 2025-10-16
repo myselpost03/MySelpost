@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import axios from "axios";
-import { supabase } from "../Utils/supabaseClient";
-import "../Styles/Profile.css";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import axios from 'axios';
+import { supabase } from '../Utils/supabaseClient';
+import { isWebView } from '../Utils/isWebView';
+import '../Styles/Profile.css';
 
 export default function MosaicAvatar({
   src,
@@ -10,9 +11,9 @@ export default function MosaicAvatar({
   totalLikes = 1000,
   rows = 32,
   cols = 32,
-  aspectRatio = "1/1",
+  aspectRatio = '1/1',
   borderRadius = 16,
-  className = "",
+  className = '',
 }) {
   const [likes, setLikes] = useState(0);
   const [userLiked, setUserLiked] = useState(false);
@@ -26,24 +27,24 @@ export default function MosaicAvatar({
     try {
       // Get total likes count
       const { count, error: countError } = await supabase
-        .from("likes")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", userId);
+        .from('likes')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId);
       if (countError) throw countError;
       setLikes(count || 0);
 
       // Check if current user liked
       const { data: likedData, error: likedError } = await supabase
-        .from("likes")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("liked_by", currentUserId)
+        .from('likes')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('liked_by', currentUserId)
         .single();
 
-      if (likedError && likedError.code !== "PGRST116") throw likedError; // ignore not found
+      if (likedError && likedError.code !== 'PGRST116') throw likedError; // ignore not found
       setUserLiked(!!likedData);
     } catch (err) {
-      console.error("Error fetching likes:", err);
+      console.error('Error fetching likes:', err);
     }
   };
 
@@ -54,7 +55,7 @@ export default function MosaicAvatar({
   const handleLike = async () => {
     if (userId === currentUserId || userLiked) return;
 
-    const { error } = await supabase.from("likes").insert({
+    const { error } = await supabase.from('likes').insert({
       user_id: userId,
       liked_by: currentUserId,
     });
@@ -64,16 +65,23 @@ export default function MosaicAvatar({
       setLikes((l) => l + 1);
       setUserLiked(true);
     }
-    // 🔔 Send push notification to the owner
-    try {
 
-      await axios.post("https://myselpost.onrender.com/send-like-push", {
+    // 🔔 Send push notification to the owner
+
+    try {
+      await axios.post('https://myselpost.onrender.com/send-like-push', {
         userId,
       });
-      console.log("✅ Push notification sent!");
+      console.log('✅ Push notification sent!');
     } catch (err) {
-      console.error("❌ Error sending push notification:", err);
+      console.error('❌ Error sending push notification:', err);
     }
+// ✅ Send real userId to React Native WebView
+  if (isWebView() && window.ReactNativeWebView && userId) {
+    window.ReactNativeWebView.postMessage(JSON.stringify({ userId }));
+    console.log('📤 Real userId sent to WebView:', userId);
+  }
+
   };
 
   // Snake order
@@ -100,7 +108,7 @@ export default function MosaicAvatar({
     const img = imgRef.current;
     if (!canvas || !container || !img || !imgLoaded) return;
 
-    const ctx = canvas.getContext("2d", { alpha: true });
+    const ctx = canvas.getContext('2d', { alpha: true });
     const rect = container.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
@@ -130,7 +138,7 @@ export default function MosaicAvatar({
       sy = (img.naturalHeight - sHeight) / 2;
     }
 
-    ctx.filter = "blur(24px)";
+    ctx.filter = 'blur(24px)';
     ctx.drawImage(
       img,
       sx,
@@ -142,10 +150,10 @@ export default function MosaicAvatar({
       canvas.width,
       canvas.height
     );
-    ctx.filter = "none";
+    ctx.filter = 'none';
 
     ctx.save();
-    ctx.globalCompositeOperation = "destination-out";
+    ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
     for (let i = 0; i < revealedCount; i++) {
       const [r, c] = snakeOrder[i];

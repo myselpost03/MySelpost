@@ -728,7 +728,7 @@ if (user) {
             <WrongGuessPopup
               onClose={() => setWrongPopupPostId(null)}
               onAd={() => {
-                toast.success("💰 Payment flow goes here"); // replace with real flow
+                //toast.success("💰 Payment flow goes here"); // replace with real flow
                 setWrongPopupPostId(null);
               }}
             />

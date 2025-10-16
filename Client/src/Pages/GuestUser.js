@@ -559,11 +559,12 @@ const GuestUser = () => {
             setAlertMessage(null);
           }}
         />
-      )}
+      )} {/*
       <Link to="/miss-scratch" className="fab-camera-button" title="Scratch">
         <FaMagic />
-      </Link>
-      <Link to="/roast" className="fab-roast-button" title="Roast">
+      </Link> */}
+     
+    <Link to="/roast" className="fab-roast-button" title="Roast">
         <FaFire />
       </Link>
     </div>

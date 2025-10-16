@@ -627,7 +627,7 @@ const Profile = () => {
                 </span>
               </p>
             </div>
-            {isCurrentUser && status.editing ? (
+            {/**{isCurrentUser && status.editing ? (
               <div className="sketchy-orientation-section">
                 <h4 style={{ marginBottom: "6px" }}>{i18n.t("orientation")}</h4>
                 <div className="sketchy-orientation-options">
@@ -668,7 +668,7 @@ const Profile = () => {
                   {orientationColors[orientation].split(" ")[0]}
                 </div>
               )
-            )}
+            )}  */}
 
             {isCurrentUser && (
               <>

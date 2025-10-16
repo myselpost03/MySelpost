@@ -31,6 +31,7 @@ import { dbPromise } from "../Utils/db";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import Maps from "../Components/Maps";
 import i18n from "../i18n";
+import InstallBanner from "../Components/InstallBanner";
 
 const countryNameToCode = {
   AF: "AF",
@@ -1168,6 +1169,7 @@ const ChatList = () => {
   return (
     <>
       <Header />
+      <InstallBanner />
       <div className="chatlist-container">
         <h2 className="chatlist-title">🖋️ Your Circles</h2>
 
@@ -1369,14 +1371,14 @@ const ChatList = () => {
 
             {activeTab === "all" && (
               <>
-                <button
+              {/*  <button
                   className="fab-camera-button"
                   onClick={handleScratch}
                   title="Open camera"
                 >
                   <FaMagic />
                 </button>
-
+*/}
                 {/* Filter FAB */}
                 <button
                   className="fab-heart-button"

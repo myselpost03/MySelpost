@@ -71,6 +71,17 @@ const Settings = () => {
     toast.success(i18n.t("chatThemeChanged"));
     setShowThemePopup(false); // close popup after selecting theme
   };
+
+   useEffect(() => {
+    // Check if running inside React Native WebView
+    if (window.ReactNativeWebView) {
+      const btn = document.getElementById("target-ad");
+      if (btn) {
+        btn.innerText = "coming"; // Show "coming" inside WebView
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const savedState = localStorage.getItem("notificationsEnabled");
     if (savedState === "true") {
@@ -156,7 +167,7 @@ const Settings = () => {
             <span style={{fontSize: '15px'}}>{i18n.t("restrictMessages")}</span>
             <button
               className="settings-btn"
-              
+              id="target-ad"
             >
               {i18n.t("soon")}
             </button>

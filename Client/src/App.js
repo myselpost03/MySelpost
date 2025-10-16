@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
   useNavigate,
   Routes,
   Route,
   useLocation,
-} from "react-router-dom";
-import ProtectedRoute from "./Utils/ProtectedRoute";
+} from 'react-router-dom';
+import ProtectedRoute from './Utils/ProtectedRoute';
 import {
   Home,
   Register,
@@ -38,49 +38,51 @@ import {
   Coins,
   PaymentPage,
   Demo,
-} from "./Pages/index";
-import LoadingSpinner from "./Components/LoadingSpinner";
-import { supabase } from "./Utils/supabaseClient";
-import SketchyAlert from "./Components/SketchyAlert";
-import InternetStatusAlert from "./Components/InternetStatusAlert";
-import FeedbackPopup from "./Components/FeedbackPopup";
-import { isRunningAsPWA } from "./CheckPWA";
-import { trackEvent } from "./Utils/analytics";
-import i18n from "./i18n";
+} from './Pages/index';
+import LoadingSpinner from './Components/LoadingSpinner';
+import { supabase } from './Utils/supabaseClient';
+import SketchyAlert from './Components/SketchyAlert';
+import InternetStatusAlert from './Components/InternetStatusAlert';
+import FeedbackPopup from './Components/FeedbackPopup';
+import { isRunningAsPWA } from './CheckPWA';
+import { trackEvent } from './Utils/analytics';
+import i18n from './i18n';
+import InstallBanner from './Components/InstallBanner';
+import { isWebView } from './Utils/isWebView';
 
 const protectedRoutes = [
-  { path: "/prompt", component: Prompt },
-  { path: "/app-doodle", component: AppDoodle },
-  { path: "/web-doodle", component: WebDoodle },
-  { path: "/notifications", component: Notifications },
-  { path: "/chat/:id", component: Chat },
-  { path: "/profile/:id", component: Profile },
-  { path: "/coins/:id", component: Coins },
-  { path: "/settings", component: Settings },
-  { path: "/payments/:id", component: PaymentPage },
+  { path: '/prompt', component: Prompt },
+  { path: '/app-doodle', component: AppDoodle },
+  { path: '/web-doodle', component: WebDoodle },
+  { path: '/notifications', component: Notifications },
+  { path: '/chat/:id', component: Chat },
+  { path: '/profile/:id', component: Profile },
+  { path: '/coins/:id', component: Coins },
+  { path: '/settings', component: Settings },
+  { path: '/payments/:id', component: PaymentPage },
 ];
 
 const publicRoutes = [
-  { path: "/", component: Home },
-  { path: "/register", component: Register },
-  { path: "/login", component: Login },
-  { path: "/sketch", component: Sketch },
-  { path: "/about", component: About },
-  { path: "/terms", component: Terms },
-  { path: "/roast", component: Roast },
-  { path: "/share-secret", component: Secret },
-  { path: "/miss-scratch", component: MissScratch },
-  { path: "/reset-password", component: ResetPassword },
-  { path: "/chat-entrance", component: ChatEntrance },
-  { path: "/guest-user", component: GuestUser },
-  { path: "/privacy-policy", component: Privacy },
-  { path: "/updates", component: Updates },
-  { path: "/contact-us", component: Contact },
-  { path: "/pricing", component: Pricing },
-  { path: "/chat-list", component: ChatList },
-  { path: "/app-sketch", component: AppSketch },
-  { path: "/web-sketch", component: WebSketch },
-  { path: "/demo", component: Demo },
+  { path: '/', component: Home },
+  { path: '/register', component: Register },
+  { path: '/login', component: Login },
+  { path: '/sketch', component: Sketch },
+  { path: '/about', component: About },
+  { path: '/terms', component: Terms },
+  { path: '/roast', component: Roast },
+  { path: '/share-secret', component: Secret },
+  { path: '/miss-scratch', component: MissScratch },
+  { path: '/reset-password', component: ResetPassword },
+  { path: '/chat-entrance', component: ChatEntrance },
+  { path: '/guest-user', component: GuestUser },
+  { path: '/privacy-policy', component: Privacy },
+  { path: '/updates', component: Updates },
+  { path: '/contact-us', component: Contact },
+  { path: '/pricing', component: Pricing },
+  { path: '/chat-list', component: ChatList },
+  { path: '/app-sketch', component: AppSketch },
+  { path: '/web-sketch', component: WebSketch },
+  { path: '/demo', component: Demo },
 ];
 
 // Detect mobile
@@ -89,7 +91,7 @@ const isMobileDevice = () =>
 
 const useUserStatusSync = () => {
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const storedUser = JSON.parse(localStorage.getItem('user'));
     if (!storedUser?.id) return;
 
     let isUserActive = true;
@@ -98,9 +100,9 @@ const useUserStatusSync = () => {
 
     const updateStatus = async (status) => {
       try {
-        await supabase.from("users").update({ status }).eq("id", storedUser.id);
+        await supabase.from('users').update({ status }).eq('id', storedUser.id);
       } catch (err) {
-        console.error("Status update failed:", err);
+        console.error('Status update failed:', err);
       }
     };
 
@@ -109,55 +111,55 @@ const useUserStatusSync = () => {
       clearTimeout(activityTimeout);
       activityTimeout = setTimeout(() => {
         isUserActive = false;
-        updateStatus("offline");
+        updateStatus('offline');
       }, 60000);
-      updateStatus("online");
+      updateStatus('online');
     };
 
     const interactionEvents = [
-      "mousemove",
-      "keydown",
-      "scroll",
-      "click",
-      "touchstart",
-      "touchmove",
+      'mousemove',
+      'keydown',
+      'scroll',
+      'click',
+      'touchstart',
+      'touchmove',
     ];
     interactionEvents.forEach((event) =>
       window.addEventListener(event, setActive)
     );
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        updateStatus("offline");
+      if (document.visibilityState === 'hidden') {
+        updateStatus('offline');
       } else {
         setActive();
       }
     };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    const handlePageHide = () => updateStatus("offline");
+    const handlePageHide = () => updateStatus('offline');
     const handlePageShow = () => setActive();
-    window.addEventListener("pagehide", handlePageHide);
-    window.addEventListener("pageshow", handlePageShow);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('pageshow', handlePageShow);
 
     heartbeatInterval = setInterval(() => {
-      if (isUserActive && document.visibilityState === "visible") {
-        updateStatus("online");
+      if (isUserActive && document.visibilityState === 'visible') {
+        updateStatus('online');
       }
     }, 30000);
 
-    const handleUnload = () => updateStatus("offline");
-    window.addEventListener("beforeunload", handleUnload);
+    const handleUnload = () => updateStatus('offline');
+    window.addEventListener('beforeunload', handleUnload);
 
     const handleStorage = (event) => {
-      if (event.key === "user-activity") {
+      if (event.key === 'user-activity') {
         setActive();
       }
     };
-    window.addEventListener("storage", handleStorage);
+    window.addEventListener('storage', handleStorage);
 
     const localHeartbeat = setInterval(() => {
-      localStorage.setItem("user-activity", Date.now());
+      localStorage.setItem('user-activity', Date.now());
     }, 5000);
 
     setActive();
@@ -166,15 +168,15 @@ const useUserStatusSync = () => {
       interactionEvents.forEach((event) =>
         window.removeEventListener(event, setActive)
       );
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("pagehide", handlePageHide);
-      window.removeEventListener("pageshow", handlePageShow);
-      window.removeEventListener("beforeunload", handleUnload);
-      window.removeEventListener("storage", handleStorage);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('beforeunload', handleUnload);
+      window.removeEventListener('storage', handleStorage);
       clearTimeout(activityTimeout);
       clearInterval(heartbeatInterval);
       clearInterval(localHeartbeat);
-      updateStatus("offline");
+      updateStatus('offline');
     };
   }, []);
 };
@@ -192,13 +194,14 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const [ready, setReady] = useState(false);
+  const showInstallBanner = !isWebView();
 
   useEffect(() => {
     let isDeveloper = false;
 
     try {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      if (storedUser?.name === "Shivani") {
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+      if (storedUser?.name === 'Shivani' || 'Madison') {
         isDeveloper = true;
       }
     } catch (e) {
@@ -212,37 +215,37 @@ function AppContent() {
       console.info = () => {};
       console.debug = () => {};
     } else {
-      console.log("👩‍💻 Developer mode enabled for Developer — logs active");
+      console.log('👩‍💻 Developer mode enabled for Developer — logs active');
     }
   }, []);
 
   useEffect(() => {
-    const visibilityChannel = new BroadcastChannel("chat_app_visibility");
+    const visibilityChannel = new BroadcastChannel('chat_app_visibility');
     const sendVisibility = () => {
-      const isVisible = document.visibilityState === "visible";
+      const isVisible = document.visibilityState === 'visible';
       visibilityChannel.postMessage({ visible: isVisible });
     };
-    document.addEventListener("visibilitychange", sendVisibility);
+    document.addEventListener('visibilitychange', sendVisibility);
     sendVisibility();
     return () => {
-      document.removeEventListener("visibilitychange", sendVisibility);
+      document.removeEventListener('visibilitychange', sendVisibility);
       visibilityChannel.close();
     };
   }, []);
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const storedUser = JSON.parse(localStorage.getItem('user'));
     if (!storedUser || !storedUser.id) return;
 
     const interval = setInterval(async () => {
       try {
-        const { error } = await supabase.rpc("increment_reward_coins", {
+        const { error } = await supabase.rpc('increment_reward_coins', {
           user_id_input: storedUser.id,
           increment_by: 3,
         });
         if (!error) {
           setAlertMessage({
-            text: `✅ ${i18n.t("coinsReward")}`,
+            text: `✅ ${i18n.t('coinsReward')}`,
             withButton: true,
           });
         }
@@ -252,7 +255,7 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const storedUser = JSON.parse(localStorage.getItem('user'));
     if (!storedUser || !storedUser.id) return;
 
     if (storedUser && storedUser.id) {
@@ -269,7 +272,7 @@ function AppContent() {
 
       (async () => {
         try {
-          const { error } = await supabase.rpc("increment_reward_coins", {
+          const { error } = await supabase.rpc('increment_reward_coins', {
             user_id_input: storedUser.id,
             increment_by: 30,
           });
@@ -277,9 +280,9 @@ function AppContent() {
           if (error) {
             // console.error("❌ PWA reward error:", error.message);
           } else {
-            localStorage.setItem(rewardKey, "true");
+            localStorage.setItem(rewardKey, 'true');
             setAlertMessage({
-              text: `🎉 ${i18n.t("appInstalled")}`,
+              text: `🎉 ${i18n.t('appInstalled')}`,
               withButton: true,
             });
           }
@@ -291,10 +294,10 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    const hasSubmitted = localStorage.getItem("feedback_submitted");
-    if (hasSubmitted === "true") return;
+    const hasSubmitted = localStorage.getItem('feedback_submitted');
+    if (hasSubmitted === 'true') return;
 
-    const lastShown = localStorage.getItem("last_feedback_shown");
+    const lastShown = localStorage.getItem('last_feedback_shown');
     const now = new Date();
 
     if (lastShown) {
@@ -306,7 +309,7 @@ function AppContent() {
 
     const timeout = setTimeout(() => {
       setShowFeedback(true);
-      localStorage.setItem("last_feedback_shown", now.toISOString());
+      localStorage.setItem('last_feedback_shown', now.toISOString());
     }, delayMs);
 
     return () => clearTimeout(timeout);
@@ -314,11 +317,11 @@ function AppContent() {
 
   const handleSubmitSuccess = () => {
     trackEvent({
-      action: "button_click",
-      category: "Chat List Page",
-      label: "Feedback Submission Button",
+      action: 'button_click',
+      category: 'Chat List Page',
+      label: 'Feedback Submission Button',
     });
-    localStorage.setItem("feedback_submitted", "true");
+    localStorage.setItem('feedback_submitted', 'true');
     setShowFeedback(false);
   };
 
@@ -328,40 +331,40 @@ function AppContent() {
       return;
     }
 
-    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const storedUser = JSON.parse(localStorage.getItem('user'));
 
     // If mobile and user exists, prevent /guest-user access
-    if (storedUser?.id && location.pathname === "/guest-user") {
-      navigate("/chat-list", { replace: true });
+    if (storedUser?.id && location.pathname === '/guest-user') {
+      navigate('/chat-list', { replace: true });
       return;
     }
 
     // Mobile root "/" redirection
-    if (location.pathname === "/") {
+    if (location.pathname === '/') {
       if (!storedUser?.id) {
-        navigate("/guest-user", { replace: true });
+        navigate('/guest-user', { replace: true });
         return;
       } else {
-        navigate("/chat-list", { replace: true });
+        navigate('/chat-list', { replace: true });
         return;
       }
     }
 
-    if (storedUser?.id && location.pathname === "/guest-user") {
-      navigate("/chat-list", { replace: true });
+    if (storedUser?.id && location.pathname === '/guest-user') {
+      navigate('/chat-list', { replace: true });
       return;
     }
 
-    const protectedRoutes = ["/chat-list", "/chat/:id", "/profile/:id"];
+    const protectedRoutes = ['/chat-list', '/chat/:id', '/profile/:id'];
     if (!storedUser?.id && protectedRoutes.includes(location.pathname)) {
-      navigate("/guest-user", { replace: true });
+      navigate('/guest-user', { replace: true });
       return;
     }
 
     setReady(true); // safe to render routes
   }, [navigate, location.pathname]);
 
-  if (!ready && isMobileDevice() && location.pathname === "/") {
+  if (!ready && isMobileDevice() && location.pathname === '/') {
     // Prevent flicker — show nothing or a loader until redirect happens
     return <LoadingSpinner />; // could be <LoadingSpinner /> if you want
   }
@@ -387,6 +390,7 @@ function AppContent() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <InternetStatusAlert />
+      {showInstallBanner && <InstallBanner />}
       {alertMessage && (
         <SketchyAlert
           message={alertMessage.text}

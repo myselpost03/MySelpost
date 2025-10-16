@@ -304,6 +304,10 @@ const Coins = () => {
             ⏳ {i18n.t("earnCoins")}
           </button>
 
+           <button className="sketchy-coin-btn">
+            ▶️ {i18n.t("watchAd")}
+          </button>
+
           {/*  <button className="sketchy-coin-btn" onClick={installApp}>
             🎁 Install App & Get +30 Coins
           </button>
@@ -312,17 +316,17 @@ const Coins = () => {
             📲 {i18n.t("inviteEarn")}
           </button>
 
-          <button
+         {/* <button
             className="sketchy-coin-btn"
             onClick={() => setShowPayPal(true)}
 
-            /*  onClick={() => {
+              onClick={() => {
               const paymentLink = `https://checkout.dodopayments.com/buy/pdt_F75qrtOLCHlR8RlJ18JS0?quantity=1&redirect_url=https://www.myselpost.com/coins/${id}?payment=success`;
               window.location.href = paymentLink;
-            }}*/
+            }
           >
             🛒 {i18n.t("buyCoins")} - {user?.country === "IN" ? "₹86" : "$1"}
-          </button>
+          </button>*/}  
         </div>
 
         {showPayPal && (

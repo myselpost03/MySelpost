@@ -7,7 +7,7 @@
       name="google-site-verification"
       content="6ZGoNO7jz6Jgfytq8oop04rxDs7Tlosnm8hdE1me66o"
     />
-    
+
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="viewport"
@@ -15,6 +15,8 @@
     />
 
     <meta name="theme-color" content="#000" />
+    <meta name="monetag" content="f34426b35b35e872f6c0084257d70182" />
+    <meta name="admaven-placement" content="Bqja9pjaF" />
     <style>
       #install-popup {
         position: fixed;
@@ -38,7 +40,7 @@
 
       #install-popup-text {
         flex-grow: 1;
-        font-family: "IM Fell English", sans-serif;
+        font-family: 'IM Fell English', sans-serif;
       }
 
       #install-button {
@@ -49,7 +51,7 @@
         font-size: 16px;
         border-radius: 4px;
         cursor: pointer;
-        font-family: "IM Fell English", sans-serif;
+        font-family: 'IM Fell English', sans-serif;
       }
 
       #cancel-button {
@@ -60,7 +62,7 @@
         font-size: 16px;
         border-radius: 4px;
         cursor: pointer;
-        font-family: "IM Fell English", sans-serif;
+        font-family: 'IM Fell English', sans-serif;
       }
     </style>
     <title>MySelpost: Global Chat & Fun Photo Roasting Platform</title>
@@ -127,6 +129,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="MySelpost" />
     <link rel="manifest" href="/manifest.json" />
+
     <script
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-9B4XGR3X7Z"
@@ -141,9 +144,9 @@
       function gtag() {
         dataLayer.push(arguments);
       }
-      gtag("js", new Date());
+      gtag('js', new Date());
 
-      gtag("config", "G-9B4XGR3X7Z");
+      gtag('config', 'G-9B4XGR3X7Z');
     </script>
     <script
       defer
@@ -152,56 +155,56 @@
     ></script>
 
     <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", async () => {
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
           try {
             // 1️⃣ Register your custom service worker
             const customSW = await navigator.serviceWorker.register(
-              "./service-worker.js",
+              './service-worker.js',
               {
-                scope: "/",
+                scope: '/',
               }
             );
             //console.log("✅ Custom Service Worker Registered:", customSW);
 
             // 2️⃣ Register OneSignal service worker
             const oneSignalSW = await navigator.serviceWorker.register(
-              "./OneSignalSDKWorker.js",
+              './OneSignalSDKWorker.js',
               {
-                scope: "/",
+                scope: '/',
               }
             );
             //console.log("✅ OneSignal Service Worker Registered:", oneSignalSW);
           } catch (error) {
-            console.error("❌ Service Worker Registration Failed:", error);
+            console.error('❌ Service Worker Registration Failed:', error);
           }
         });
       }
-
-      window.addEventListener("DOMContentLoaded", () => {
-        window.addEventListener("beforeinstallprompt", (event) => {
+/*
+      window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('beforeinstallprompt', (event) => {
           event.preventDefault();
           // console.log("👍 beforeinstallprompt fired");
           window.deferredPrompt = event;
-          document.getElementById("install-popup").style.display = "block";
+          document.getElementById('install-popup').style.display = 'block';
         });
       });
 
-      window.addEventListener("appinstalled", function (event) {
-        console.log("App installed successfully");
-        document.getElementById("install-popup").style.display = "none";
+      window.addEventListener('appinstalled', function (event) {
+        console.log('App installed successfully');
+        document.getElementById('install-popup').style.display = 'none';
       });
 
       function installApp() {
-        const installPopup = document.getElementById("install-popup");
-        installPopup.style.display = "none";
+        const installPopup = document.getElementById('install-popup');
+        installPopup.style.display = 'none';
         if (window.deferredPrompt) {
           window.deferredPrompt.prompt();
           window.deferredPrompt.userChoice.then(function (choiceResult) {
-            if (choiceResult.outcome === "accepted") {
-              console.log("User accepted the install prompt");
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted the install prompt');
             } else {
-              console.log("User dismissed the install prompt");
+              console.log('User dismissed the install prompt');
             }
             window.deferredPrompt = null;
           });
@@ -209,11 +212,12 @@
       }
 
       function cancelInstall() {
-        const installPopup = document.getElementById("install-popup");
-        installPopup.style.display = "none";
+        const installPopup = document.getElementById('install-popup');
+        installPopup.style.display = 'none';
         window.deferredPrompt = null;
       }
-    </script>
+*/    </script>
+
     <!-- PayPal SDK -->
     <script src="https://www.paypal.com/sdk/js?client-id=AVgtohR20go8ZTiaW4UnDMKUg44T7fgrGoa8emnIgN71wamVtcfaYLKodXfo_puCWu4yL58cFd_or-LA&currency=USD"></script>
   </head>
@@ -236,18 +240,18 @@
     <script>
       // Track Install button click event
       function trackInstallClick() {
-        gtag("event", "click", {
-          event_category: "Install Popup",
-          event_label: "Install Button",
+        gtag('event', 'click', {
+          event_category: 'Install Popup',
+          event_label: 'Install Button',
           value: 1,
         });
       }
 
       // Track Cancel button click event
       function trackCancelClick() {
-        gtag("event", "click", {
-          event_category: "Install Popup",
-          event_label: "Cancel Button",
+        gtag('event', 'click', {
+          event_category: 'Install Popup',
+          event_label: 'Cancel Button',
           value: 1,
         });
       }

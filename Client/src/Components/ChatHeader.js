@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import OneSignal from "react-onesignal";
 import { FaRegBell, FaRegBellSlash, FaBan } from "react-icons/fa";
 import { supabase } from "../Utils/supabaseClient";
+import { isWebView } from "../Utils/isWebView";
 import "../Styles/ChatHeader.css";
 
 const ChatHeader = ({ title, onBack, onBlockToggle, isBlocked }) => {
   const [subscribed, setSubscribed] = useState(false);
+const showButton = !isWebView();
 
   // Check if already subscribed on mount
   useEffect(() => {
@@ -124,18 +126,20 @@ const ChatHeader = ({ title, onBack, onBlockToggle, isBlocked }) => {
         </button>
 
         {/* Notification bell */}
-        <button
-          className="chat-bell-icon"
-          onClick={handleSubscribe}
-          disabled={subscribed}
-          title={subscribed ? "Notifications enabled" : "Enable notifications"}
-        >
-          {subscribed ? (
-            <FaRegBell style={{ marginRight: "6px" }} />
-          ) : (
-            <FaRegBellSlash style={{ marginRight: "6px" }} />
-          )}
-        </button>
+       {showButton && (
+      <button
+        className="chat-bell-icon"
+        onClick={handleSubscribe}
+        disabled={subscribed}
+        title={subscribed ? "Notifications enabled" : "Enable notifications"}
+      >
+        {subscribed ? (
+          <FaRegBell style={{ marginRight: "6px" }} />
+        ) : (
+          <FaRegBellSlash style={{ marginRight: "6px" }} />
+        )}
+      </button>
+    )}
       </div>
     </div>
   );
