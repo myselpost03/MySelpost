@@ -1115,6 +1115,7 @@ if (user) {
             {i18n.t('answerQuestion')}
           </button>
         )}
+        
       </div>
 
       {post.caption && (
