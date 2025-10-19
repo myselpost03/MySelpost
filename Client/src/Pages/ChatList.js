@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import Header from "../Components/Header";
-import "../Styles/ChatList.css";
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Header from '../Components/Header';
+import '../Styles/ChatList.css';
 import {
   FaCircle,
   FaMars,
@@ -19,232 +19,231 @@ import {
   FaCheck,
   FaTimes,
   FaMagic,
-} from "react-icons/fa";
-import empty from "../Assets/empty.png";
-import { supabase } from "../Utils/supabaseClient";
-import useDebounce from "../Utils/useDebounce";
-import ReactCountryFlag from "react-country-flag";
-import MiniSpinner from "../Components/MiniSpinner";
-import SketchyAlert from "../Components/SketchyAlert";
-import { trackEvent } from "../Utils/analytics";
-import { dbPromise } from "../Utils/db";
-import LoadingSpinner from "../Components/LoadingSpinner";
-import Maps from "../Components/Maps";
-import i18n from "../i18n";
-import InstallBanner from "../Components/InstallBanner";
+} from 'react-icons/fa';
+import empty from '../Assets/empty.png';
+import { supabase } from '../Utils/supabaseClient';
+import useDebounce from '../Utils/useDebounce';
+import ReactCountryFlag from 'react-country-flag';
+import MiniSpinner from '../Components/MiniSpinner';
+import SketchyAlert from '../Components/SketchyAlert';
+import { trackEvent } from '../Utils/analytics';
+import { dbPromise } from '../Utils/db';
+import LoadingSpinner from '../Components/LoadingSpinner';
+import Maps from '../Components/Maps';
+import toast, { Toaster } from 'react-hot-toast';
+import i18n from '../i18n';
 
 const countryNameToCode = {
-  AF: "AF",
-  AL: "AL",
-  DZ: "DZ",
-  AD: "AD",
-  AO: "AO",
-  AG: "AG",
-  AR: "AR",
-  AM: "AM",
-  AU: "AU",
-  AT: "AT",
-  AZ: "AZ",
-  BS: "BS",
-  BH: "BH",
-  BD: "BD",
-  BB: "BB",
-  BY: "BY",
-  BE: "BE",
-  BZ: "BZ",
-  BJ: "BJ",
-  BT: "BT",
-  BO: "BO",
-  BA: "BA",
-  BW: "BW",
-  BR: "BR",
-  BN: "BN",
-  BG: "BG",
-  BF: "BF",
-  BI: "BI",
-  CV: "CV",
-  KH: "KH",
-  CM: "CM",
-  CA: "CA",
-  CF: "CF",
-  TD: "TD",
-  CL: "CL",
-  CN: "CN",
-  CO: "CO",
-  KM: "KM",
-  CD: "CD",
-  CG: "CG",
-  CR: "CR",
-  CI: "CI",
-  HR: "HR",
-  CU: "CU",
-  CY: "CY",
-  CZ: "CZ",
-  DK: "DK",
-  DJ: "DJ",
-  DM: "DM",
-  DO: "DO",
-  EC: "EC",
-  EG: "EG",
-  SV: "SV",
-  GQ: "GQ",
-  ER: "ER",
-  EE: "EE",
-  SZ: "SZ",
-  ET: "ET",
-  FJ: "FJ",
-  FI: "FI",
-  FR: "FR",
-  GA: "GA",
-  GM: "GM",
-  GE: "GE",
-  DE: "DE",
-  GH: "GH",
-  GR: "GR",
-  GD: "GD",
-  GT: "GT",
-  GN: "GN",
-  GW: "GW",
-  GY: "GY",
-  HT: "HT",
-  HN: "HN",
-  HU: "HU",
-  IS: "IS",
-  IN: "IN",
-  ID: "ID",
-  IR: "IR",
-  IQ: "IQ",
-  IE: "IE",
-  IL: "IL",
-  IT: "IT",
-  JM: "JM",
-  JP: "JP",
-  JO: "JO",
-  KZ: "KZ",
-  KE: "KE",
-  KI: "KI",
-  KP: "KP",
-  KR: "KR",
-  KW: "KW",
-  KG: "KG",
-  LA: "LA",
-  LV: "LV",
-  LB: "LB",
-  LS: "LS",
-  LR: "LR",
-  LY: "LY",
-  LI: "LI",
-  LT: "LT",
-  LU: "LU",
-  MG: "MG",
-  MW: "MW",
-  MY: "MY",
-  MV: "MV",
-  ML: "ML",
-  MT: "MT",
-  MH: "MH",
-  MR: "MR",
-  MU: "MU",
-  MX: "MX",
-  FM: "FM",
-  MD: "MD",
-  MC: "MC",
-  MN: "MN",
-  ME: "ME",
-  MA: "MA",
-  MZ: "MZ",
-  MM: "MM",
-  NA: "NA",
-  NR: "NR",
-  NP: "NP",
-  NL: "NL",
-  NZ: "NZ",
-  NI: "NI",
-  NE: "NE",
-  NG: "NG",
-  MK: "MK",
-  NO: "NO",
-  OM: "OM",
-  PK: "PK",
-  PW: "PW",
-  PS: "PS",
-  PA: "PA",
-  PG: "PG",
-  PY: "PY",
-  PE: "PE",
-  PH: "PH",
-  PL: "PL",
-  PT: "PT",
-  QA: "QA",
-  RO: "RO",
-  RU: "RU",
-  RW: "RW",
-  KN: "KN",
-  LC: "LC",
-  VC: "VC",
-  WS: "WS",
-  SM: "SM",
-  ST: "ST",
-  SA: "SA",
-  SN: "SN",
-  RS: "RS",
-  SC: "SC",
-  SL: "SL",
-  SG: "SG",
-  SK: "SK",
-  SI: "SI",
-  SB: "SB",
-  SO: "SO",
-  ZA: "ZA",
-  SS: "SS",
-  ES: "ES",
-  LK: "LK",
-  SD: "SD",
-  SR: "SR",
-  SE: "SE",
-  CH: "CH",
-  SY: "SY",
-  TJ: "TJ",
-  TZ: "TZ",
-  TH: "TH",
-  TL: "TL",
-  TG: "TG",
-  TO: "TO",
-  TT: "TT",
-  TN: "TN",
-  TR: "TR",
-  TM: "TM",
-  TV: "TV",
-  UG: "UG",
-  UA: "UA",
-  AE: "AE",
-  GB: "GB",
-  US: "US",
-  UY: "UY",
-  UZ: "UZ",
-  VU: "VU",
-  VA: "VA",
-  VE: "VE",
-  VN: "VN",
-  YE: "YE",
-  ZM: "ZM",
-  ZW: "ZW",
+  AF: 'AF',
+  AL: 'AL',
+  DZ: 'DZ',
+  AD: 'AD',
+  AO: 'AO',
+  AG: 'AG',
+  AR: 'AR',
+  AM: 'AM',
+  AU: 'AU',
+  AT: 'AT',
+  AZ: 'AZ',
+  BS: 'BS',
+  BH: 'BH',
+  BD: 'BD',
+  BB: 'BB',
+  BY: 'BY',
+  BE: 'BE',
+  BZ: 'BZ',
+  BJ: 'BJ',
+  BT: 'BT',
+  BO: 'BO',
+  BA: 'BA',
+  BW: 'BW',
+  BR: 'BR',
+  BN: 'BN',
+  BG: 'BG',
+  BF: 'BF',
+  BI: 'BI',
+  CV: 'CV',
+  KH: 'KH',
+  CM: 'CM',
+  CA: 'CA',
+  CF: 'CF',
+  TD: 'TD',
+  CL: 'CL',
+  CN: 'CN',
+  CO: 'CO',
+  KM: 'KM',
+  CD: 'CD',
+  CG: 'CG',
+  CR: 'CR',
+  CI: 'CI',
+  HR: 'HR',
+  CU: 'CU',
+  CY: 'CY',
+  CZ: 'CZ',
+  DK: 'DK',
+  DJ: 'DJ',
+  DM: 'DM',
+  DO: 'DO',
+  EC: 'EC',
+  EG: 'EG',
+  SV: 'SV',
+  GQ: 'GQ',
+  ER: 'ER',
+  EE: 'EE',
+  SZ: 'SZ',
+  ET: 'ET',
+  FJ: 'FJ',
+  FI: 'FI',
+  FR: 'FR',
+  GA: 'GA',
+  GM: 'GM',
+  GE: 'GE',
+  DE: 'DE',
+  GH: 'GH',
+  GR: 'GR',
+  GD: 'GD',
+  GT: 'GT',
+  GN: 'GN',
+  GW: 'GW',
+  GY: 'GY',
+  HT: 'HT',
+  HN: 'HN',
+  HU: 'HU',
+  IS: 'IS',
+  IN: 'IN',
+  ID: 'ID',
+  IR: 'IR',
+  IQ: 'IQ',
+  IE: 'IE',
+  IL: 'IL',
+  IT: 'IT',
+  JM: 'JM',
+  JP: 'JP',
+  JO: 'JO',
+  KZ: 'KZ',
+  KE: 'KE',
+  KI: 'KI',
+  KP: 'KP',
+  KR: 'KR',
+  KW: 'KW',
+  KG: 'KG',
+  LA: 'LA',
+  LV: 'LV',
+  LB: 'LB',
+  LS: 'LS',
+  LR: 'LR',
+  LY: 'LY',
+  LI: 'LI',
+  LT: 'LT',
+  LU: 'LU',
+  MG: 'MG',
+  MW: 'MW',
+  MY: 'MY',
+  MV: 'MV',
+  ML: 'ML',
+  MT: 'MT',
+  MH: 'MH',
+  MR: 'MR',
+  MU: 'MU',
+  MX: 'MX',
+  FM: 'FM',
+  MD: 'MD',
+  MC: 'MC',
+  MN: 'MN',
+  ME: 'ME',
+  MA: 'MA',
+  MZ: 'MZ',
+  MM: 'MM',
+  NA: 'NA',
+  NR: 'NR',
+  NP: 'NP',
+  NL: 'NL',
+  NZ: 'NZ',
+  NI: 'NI',
+  NE: 'NE',
+  NG: 'NG',
+  MK: 'MK',
+  NO: 'NO',
+  OM: 'OM',
+  PK: 'PK',
+  PW: 'PW',
+  PS: 'PS',
+  PA: 'PA',
+  PG: 'PG',
+  PY: 'PY',
+  PE: 'PE',
+  PH: 'PH',
+  PL: 'PL',
+  PT: 'PT',
+  QA: 'QA',
+  RO: 'RO',
+  RU: 'RU',
+  RW: 'RW',
+  KN: 'KN',
+  LC: 'LC',
+  VC: 'VC',
+  WS: 'WS',
+  SM: 'SM',
+  ST: 'ST',
+  SA: 'SA',
+  SN: 'SN',
+  RS: 'RS',
+  SC: 'SC',
+  SL: 'SL',
+  SG: 'SG',
+  SK: 'SK',
+  SI: 'SI',
+  SB: 'SB',
+  SO: 'SO',
+  ZA: 'ZA',
+  SS: 'SS',
+  ES: 'ES',
+  LK: 'LK',
+  SD: 'SD',
+  SR: 'SR',
+  SE: 'SE',
+  CH: 'CH',
+  SY: 'SY',
+  TJ: 'TJ',
+  TZ: 'TZ',
+  TH: 'TH',
+  TL: 'TL',
+  TG: 'TG',
+  TO: 'TO',
+  TT: 'TT',
+  TN: 'TN',
+  TR: 'TR',
+  TM: 'TM',
+  TV: 'TV',
+  UG: 'UG',
+  UA: 'UA',
+  AE: 'AE',
+  GB: 'GB',
+  US: 'US',
+  UY: 'UY',
+  UZ: 'UZ',
+  VU: 'VU',
+  VA: 'VA',
+  VE: 'VE',
+  VN: 'VN',
+  YE: 'YE',
+  ZM: 'ZM',
+  ZW: 'ZW',
 };
 
 const ChatList = () => {
   const [users, setUsers] = useState([]);
-  const [genderFilter, setGenderFilter] = useState("all");
-  const [countryFilter, setCountryFilter] = useState("all");
+  const [genderFilter, setGenderFilter] = useState('all');
+  const [countryFilter, setCountryFilter] = useState('all');
   const [shuffledUsers, setShuffledUsers] = useState([]);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [profileForm, setProfileForm] = useState({ gender: "", age: "" });
+  const [profileForm, setProfileForm] = useState({ gender: '', age: '' });
   const [newUser, setNewUser] = useState(null);
   const [activeTab, setActiveTab] = useState(() => {
-    return localStorage.getItem("activeTab") || "all";
+    return localStorage.getItem('activeTab') || 'all';
   });
   const [clickedUserId, setClickedUserId] = useState(null);
   const [firstLoad, setFirstLoad] = useState(true);
-  const [enabled, setEnabled] = useState(false);
   const [loading, setLoading] = useState(true); // tab/filter loading
   const [hasFetched, setHasFetched] = useState(false); // 👈 new flag
 
@@ -256,25 +255,48 @@ const ChatList = () => {
   const [page, setPage] = useState(0); // pagination page
   const [hasMore, setHasMore] = useState(true); // track if more users exist
   const [loadingMore, setLoadingMore] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [showAllTabs, setShowAllTabs] = useState(false);
-  const [allFilter, setAllFilter] = useState("all"); // 'all' or 'online'
+  const [allFilter, setAllFilter] = useState('all'); // 'all' or 'online'
   const [alertMessage, setAlertMessage] = useState(null);
   const [unreadCounts, setUnreadCounts] = useState({});
-  const [badgeSeen, setBadgeSeen] = useState("true"); // assume no badge unless told otherwise
+  const [badgeSeen, setBadgeSeen] = useState('true'); // assume no badge unless told otherwise
   const [inboxUserIds, setInboxUserIds] = useState(new Set());
   const [notificationCount, setNotificationCount] = useState(0);
 
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem('user'));
 
   const listRef = useRef(null);
 
   const observerRef = useRef();
+  const [adLoaded, setAdLoaded] = useState(false); // track ad load
+
+  const [adVisible, setAdVisible] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null); // store path & targetUser
+const [closeAdCountdown, setCloseAdCountdown] = useState(5); // 5 seconds countdown
+
+useEffect(() => {
+  if (adVisible) {
+    setCloseAdCountdown(5); // reset countdown every time ad opens
+
+    const timer = setInterval(() => {
+      setCloseAdCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }
+}, [adVisible]);
 
   useEffect(() => {
     const fetchAndSetUser = async () => {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
+      const storedUser = JSON.parse(localStorage.getItem('user'));
 
       if (!storedUser?.id) {
         setNewUser(null);
@@ -283,18 +305,18 @@ const ChatList = () => {
 
       // Fetch fresh user data from Supabase
       const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", storedUser.id)
+        .from('users')
+        .select('*')
+        .eq('id', storedUser.id)
         .single();
 
       if (error) {
-        console.error("Failed to fetch user from DB:", error.message);
+        console.error('Failed to fetch user from DB:', error.message);
         setNewUser(null);
         return;
       }
 
-      localStorage.setItem("user", JSON.stringify(data));
+      localStorage.setItem('user', JSON.stringify(data));
       setNewUser(data);
       const isMobile = window.innerWidth < 768;
       if ((!data.gender || !data.age) && isMobile) {
@@ -312,16 +334,16 @@ const ChatList = () => {
       try {
         // --- Likes (unseen only) ---
         const { data: likes, error: likesErr } = await supabase
-          .from("likes")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("seen", false);
+          .from('likes')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('seen', false);
 
         if (likesErr) throw likesErr;
         // --- Total unseen count ---
         setNotificationCount(likes?.length || 0);
       } catch (err) {
-        console.error("Error fetching notification count:", err);
+        console.error('Error fetching notification count:', err);
       }
     };
 
@@ -331,7 +353,7 @@ const ChatList = () => {
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "age") {
+    if (name === 'age') {
       // allow only numbers
       if (!/^\d*$/.test(value)) return;
 
@@ -355,28 +377,28 @@ const ChatList = () => {
   const handleProfileSubmit = async () => {
     setSubmitting(true);
     trackEvent({
-      action: "button_click",
-      category: "Home Page",
-      label: "Submit Gender & Age Button",
+      action: 'button_click',
+      category: 'Home Page',
+      label: 'Submit Gender & Age Button',
     });
     if (!profileForm.gender || !profileForm.age) return;
 
     const { error } = await supabase
-      .from("users")
+      .from('users')
       .update({
         gender: profileForm.gender,
         age: parseInt(profileForm.age),
       })
-      .eq("id", user.id);
+      .eq('id', user.id);
 
     if (!error) {
       const updatedUser = { ...user, ...profileForm };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      localStorage.setItem('user', JSON.stringify(updatedUser));
       setNewUser(updatedUser);
       setShowProfileModal(false);
       setDataChanged(true); // ✅ Trigger refetch
     } else {
-      console.error("Update failed:", error.message);
+      console.error('Update failed:', error.message);
     }
     setSubmitting(false); // ✅ Stop "Submitting..."
   };
@@ -386,7 +408,7 @@ const ChatList = () => {
   };
 
   useEffect(() => {
-    if (activeTab === "all") {
+    if (activeTab === 'all') {
       setShuffledUsers((prev) => {
         // Shuffle the current `users` array
         const shuffled = [...users]
@@ -401,9 +423,9 @@ const ChatList = () => {
   useEffect(() => {
     const fetchUnreadCounts = async () => {
       const { data, error } = await supabase
-        .from("unread_counts")
-        .select("sender_id, receiver_id, count")
-        .eq("receiver_id", user.id);
+        .from('unread_counts')
+        .select('sender_id, receiver_id, count')
+        .eq('receiver_id', user.id);
 
       if (!error && data) {
         const countMap = {};
@@ -423,17 +445,17 @@ const ChatList = () => {
 
         if (missingUserIds.length > 0) {
           const { data: newUsers, error: userErr } = await supabase
-            .from("users")
+            .from('users')
             .select(
-              "id, name, profile_pic, country, gender, status, age, decency_rating"
+              'id, name, profile_pic, country, gender, status, age, decency_rating'
             )
-            .in("id", missingUserIds);
+            .in('id', missingUserIds);
 
           if (!userErr && newUsers) {
             const { data: pinnedData } = await supabase
-              .from("pinned_users")
-              .select("pinned_user_id")
-              .eq("user_id", user.id);
+              .from('pinned_users')
+              .select('pinned_user_id')
+              .eq('user_id', user.id);
 
             const pinnedIds =
               pinnedData?.map((row) => row.pinned_user_id) || [];
@@ -443,7 +465,7 @@ const ChatList = () => {
               avatar: user.profile_pic || empty,
               notifications: countMap[user.id] || 0,
               pinned: pinnedIds.includes(user.id),
-              status: user.status || "offline",
+              status: user.status || 'offline',
             }));
 
             // merge and remove duplicates
@@ -468,14 +490,14 @@ const ChatList = () => {
     };
     const fetchInboxUserIds = async () => {
       const { data: sentMsgs, error: sentErr } = await supabase
-        .from("messages")
-        .select("receiver_id")
-        .eq("sender_id", user.id);
+        .from('messages')
+        .select('receiver_id')
+        .eq('sender_id', user.id);
 
       const { data: receivedMsgs, error: recvErr } = await supabase
-        .from("messages")
-        .select("sender_id")
-        .eq("receiver_id", user.id);
+        .from('messages')
+        .select('sender_id')
+        .eq('receiver_id', user.id);
 
       const ids = new Set();
 
@@ -500,16 +522,16 @@ const ChatList = () => {
     );
 
     await supabase
-      .from("users")
-      .update({ active_route: "/chat/" })
-      .eq("id", user.id);
+      .from('users')
+      .update({ active_route: '/chat/' })
+      .eq('id', user.id);
   };
 
   const handleRouteUpdate = async () => {
     await supabase
-      .from("users")
-      .update({ active_route: "/chat/" })
-      .eq("id", user.id);
+      .from('users')
+      .update({ active_route: '/chat/' })
+      .eq('id', user.id);
   };
 
   useEffect(() => {
@@ -529,16 +551,16 @@ const ChatList = () => {
   useEffect(() => {
     const refreshUsers = async () => {
       const { data: allUsers, error } = await supabase
-        .from("users")
+        .from('users')
         .select(
-          "id, name, profile_pic, country, gender, status, age, decency_rating"
+          'id, name, profile_pic, country, gender, status, age, decency_rating'
         );
 
       if (!error && allUsers) {
         const pinnedIdsResp = await supabase
-          .from("pinned_users")
-          .select("pinned_user_id")
-          .eq("user_id", user.id);
+          .from('pinned_users')
+          .select('pinned_user_id')
+          .eq('user_id', user.id);
 
         const pinnedIds =
           pinnedIdsResp.data?.map((row) => row.pinned_user_id) || [];
@@ -550,7 +572,7 @@ const ChatList = () => {
             avatar: user.profile_pic || empty,
             notifications: user.notifications || 0,
             pinned: pinnedIds.includes(user.id),
-            status: user.status || "offline",
+            status: user.status || 'offline',
           }));
 
         setUsers((prev) => {
@@ -566,7 +588,7 @@ const ChatList = () => {
   }, []);
 
   const getAutoPinnedIds = () => {
-    return JSON.parse(localStorage.getItem("autoPinnedUsers") || "[]");
+    return JSON.parse(localStorage.getItem('autoPinnedUsers') || '[]');
   };
 
   // Add a user to auto-pinned list with max limit of 10
@@ -579,13 +601,46 @@ const ChatList = () => {
         // Replace last one with new user
         current[current.length - 1] = userId;
       }
-      localStorage.setItem("autoPinnedUsers", JSON.stringify(current));
+      localStorage.setItem('autoPinnedUsers', JSON.stringify(current));
     }
   };
+  const loadAd = () => {
+    const adContainer = document.getElementById('ad-container');
+    if (!adContainer) return; // wait until container exists
 
+    // Remove old script if any
+    const existingScript = document.getElementById('adsterra-script');
+    if (existingScript) existingScript.remove();
+
+    adContainer.innerHTML = '';
+
+    const innerContainer = document.createElement('div');
+    innerContainer.id = 'container-61abb6ea6099c52057a640165e20675a';
+    adContainer.appendChild(innerContainer);
+
+    const script = document.createElement('script');
+    script.id = 'adsterra-script';
+    script.async = true;
+    script.setAttribute('data-cfasync', 'false');
+    script.src =
+      '//pl27196664.effectivegatecpm.com/61abb6ea6099c52057a640165e20675a/invoke.js';
+
+    script.onload = () => console.log('Ad script loaded.');
+    script.onerror = () => console.error('Failed to load ad script.');
+
+    adContainer.appendChild(script);
+  };
+
+  // Run loadAd when popup becomes visible
+  useEffect(() => {
+    if (adVisible) {
+      setAdLoaded(false);
+      loadAd();
+    }
+  }, [adVisible]);
   const handleProtectedNavigation = (e, path, targetUser = null) => {
     e.preventDefault();
-    const isLoggedIn = localStorage.getItem("user");
+    const isLoggedIn = localStorage.getItem('user');
 
     if (isLoggedIn) {
       // Auto-pin this user
@@ -609,7 +664,7 @@ const ChatList = () => {
       // --- Manage auto-pinned users ---
       const maxPinned = 10;
       const autoPinnedIds = JSON.parse(
-        localStorage.getItem("autoPinnedUsers") || "[]"
+        localStorage.getItem('autoPinnedUsers') || '[]'
       );
 
       // If user is not already pinned
@@ -619,7 +674,7 @@ const ChatList = () => {
           autoPinnedIds.shift();
         }
         autoPinnedIds.push(targetUser.id);
-        localStorage.setItem("autoPinnedUsers", JSON.stringify(autoPinnedIds));
+        localStorage.setItem('autoPinnedUsers', JSON.stringify(autoPinnedIds));
       }
 
       // Update local state so UI shows the pin immediately
@@ -628,19 +683,52 @@ const ChatList = () => {
           u.id === targetUser.id ? { ...u, pinned: true } : u
         )
       );
-
-      navigate(path, { state: { targetUser } });
     } else {
-      navigate("/register");
+      navigate('/register');
+      return;
     }
+    // Show ad before navigation
+    setPendingNavigation({ path, targetUser });
+    setAdVisible(true);
+  };
+
+  const handleCloseAd = () => {
+    setAdVisible(false);
+
+    if (!pendingNavigation) return;
+
+    const { path, targetUser } = pendingNavigation;
+
+    // Auto-pin logic
+    addAutoPinnedId(targetUser.id);
+    const maxPinned = 10;
+    const autoPinnedIds = JSON.parse(
+      localStorage.getItem('autoPinnedUsers') || '[]'
+    );
+    if (!autoPinnedIds.includes(targetUser.id)) {
+      if (autoPinnedIds.length >= maxPinned) autoPinnedIds.shift();
+      autoPinnedIds.push(targetUser.id);
+      localStorage.setItem('autoPinnedUsers', JSON.stringify(autoPinnedIds));
+    }
+
+    setUsers((prevUsers) =>
+      prevUsers.map((u) =>
+        u.id === targetUser.id ? { ...u, pinned: true } : u
+      )
+    );
+
+    // Navigate **only now**, after manual close
+    navigate(path, { state: { targetUser } });
+
+    setPendingNavigation(null); // clear
   };
 
   useEffect(() => {
     const fetchUserPremiumStatus = async () => {
       const { data, error } = await supabase
-        .from("users")
-        .select("premium_pricing")
-        .eq("id", user?.id)
+        .from('users')
+        .select('premium_pricing')
+        .eq('id', user?.id)
         .single();
 
       if (!error && data?.premium_pricing === true) {
@@ -664,7 +752,7 @@ const ChatList = () => {
 
   useEffect(() => {
     // Only trigger for tabs/filters, not search
-    if (searchTerm.trim() === "") {
+    if (searchTerm.trim() === '') {
       setUsers([]);
       setPage(0);
       setHasMore(true);
@@ -687,7 +775,7 @@ const ChatList = () => {
         setLoadingMore(false);
         return;
       }
-      if (searchTerm.trim() !== "") {
+      if (searchTerm.trim() !== '') {
         setSearchLoading(true);
       }
 
@@ -696,37 +784,37 @@ const ChatList = () => {
 
         // Supabase query (same as your code)
         let query = supabase
-          .from("users")
+          .from('users')
           .select(
-            "id, name, profile_pic, country, gender, status, age, decency_rating, created_at"
+            'id, name, profile_pic, country, gender, status, age, decency_rating, created_at'
           );
 
-        if (activeTab === "all")
+        if (activeTab === 'all')
           query = query
-            .neq("country", "IN")
-            .order("created_at", { ascending: false });
-        if (genderFilter !== "all") query = query.eq("gender", genderFilter);
-        if (countryFilter !== "all") query = query.eq("country", countryFilter);
-        if (activeTab === "online")
+            .neq('country', 'IN')
+            .order('created_at', { ascending: false });
+        if (genderFilter !== 'all') query = query.eq('gender', genderFilter);
+        if (countryFilter !== 'all') query = query.eq('country', countryFilter);
+        if (activeTab === 'online')
           query = query
-            .eq("status", "online")
-            .order("created_at", { ascending: false });
-        if (searchTerm.trim() !== "")
-          query = query.ilike("name", `%${searchTerm}%`);
+            .eq('status', 'online')
+            .order('created_at', { ascending: false });
+        if (searchTerm.trim() !== '')
+          query = query.ilike('name', `%${searchTerm}%`);
 
         const { data: fetchedUsers, error } = await query;
         if (error) throw error;
 
         // Pinned users
         const { data: pinnedData } = await supabase
-          .from("pinned_users")
-          .select("pinned_user_id")
-          .eq("user_id", user.id);
+          .from('pinned_users')
+          .select('pinned_user_id')
+          .eq('user_id', user.id);
 
         const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
 
         // Load cached blobs
-        const cachedPics = await db.getAll("profile_pics");
+        const cachedPics = await db.getAll('profile_pics');
         let cachedMap = new Map(cachedPics.map((item) => [item.id, item.blob]));
 
         // Detect missing blobs
@@ -744,14 +832,14 @@ const ChatList = () => {
             missing.map(async (u) => {
               const res = await fetch(u.profile_pic);
               const blob = await res.blob();
-              await db.put("profile_pics", { id: u.id, blob });
+              await db.put('profile_pics', { id: u.id, blob });
               return { id: u.id, blob };
             })
           );
 
           // Merge new blobs into cachedMap
           downloads.forEach((d) => {
-            if (d.status === "fulfilled") {
+            if (d.status === 'fulfilled') {
               cachedMap.set(d.value.id, d.value.blob);
             }
           });
@@ -768,7 +856,7 @@ const ChatList = () => {
             notifications: unreadCounts[u.id] || 0,
             pinned: pinnedIds.includes(u.id) || autoPinnedIds.includes(u.id), // ✅ include auto-pins
 
-            status: u.status || "offline",
+            status: u.status || 'offline',
           };
         });
 
@@ -777,10 +865,10 @@ const ChatList = () => {
 
         console.log(`✅ Processed ${processed.length} users`);
       } catch (err) {
-        console.error("⚠️ fetchUsers error:", err);
+        console.error('⚠️ fetchUsers error:', err);
         setHasFetched(true); // mark as finished, even on error
       } finally {
-        if (searchTerm.trim() !== "") setSearchLoading(false);
+        if (searchTerm.trim() !== '') setSearchLoading(false);
         else setLoading(false);
         setLoadingMore(false);
         setFirstLoad(false);
@@ -794,19 +882,19 @@ const ChatList = () => {
   const filteredUsers = useMemo(() => {
     let filtered = users.filter((user) => {
       const genderMatch =
-        genderFilter === "all" || user.gender === genderFilter;
+        genderFilter === 'all' || user.gender === genderFilter;
       const countryMatch =
-        countryFilter === "all" || user.country === countryFilter;
+        countryFilter === 'all' || user.country === countryFilter;
       const searchMatch =
         user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
       const pinMatch =
-        activeTab === "pinned"
+        activeTab === 'pinned'
           ? user.pinned
-          : activeTab === "inbox"
+          : activeTab === 'inbox'
           ? unreadCounts[user.id] > 0
           : !(unreadCounts[user.id] > 0);
       const onlineMatch =
-        activeTab === "online" ? user.status === "online" : true;
+        activeTab === 'online' ? user.status === 'online' : true;
 
       return (
         genderMatch && countryMatch && searchMatch && pinMatch && onlineMatch
@@ -833,7 +921,7 @@ const ChatList = () => {
     });
 
     // All tab → round-robin per country, newest first
-    if (activeTab === "all") {
+    if (activeTab === 'all') {
       const countryGroups = filtered.reduce((acc, user) => {
         if (!acc[user.country]) acc[user.country] = [];
         acc[user.country].push(user);
@@ -863,11 +951,11 @@ const ChatList = () => {
     }
 
     // Online tab → alternate genders
-    if (activeTab === "online") {
-      const females = filtered.filter((u) => u.gender === "female");
-      const males = filtered.filter((u) => u.gender === "male");
+    if (activeTab === 'online') {
+      const females = filtered.filter((u) => u.gender === 'female');
+      const males = filtered.filter((u) => u.gender === 'male');
       const others = filtered.filter(
-        (u) => u.gender !== "female" && u.gender !== "male"
+        (u) => u.gender !== 'female' && u.gender !== 'male'
       );
 
       const alternated = [];
@@ -907,7 +995,7 @@ const ChatList = () => {
   };
 
   const togglePin = async (targetUserId) => {
-    const user = JSON.parse(localStorage.getItem("user"));
+    const user = JSON.parse(localStorage.getItem('user'));
     if (!user) return;
 
     const alreadyPinned = users.find((u) => u.id === targetUserId && u.pinned);
@@ -915,7 +1003,7 @@ const ChatList = () => {
     if (alreadyPinned) {
       // Unpin
       const { error } = await supabase
-        .from("pinned_users")
+        .from('pinned_users')
         .delete()
         .match({ user_id: user.id, pinned_user_id: targetUserId });
 
@@ -928,25 +1016,25 @@ const ChatList = () => {
 
         // Also update localStorage
         const autoPinned =
-          JSON.parse(localStorage.getItem("autoPinnedUsers")) || [];
+          JSON.parse(localStorage.getItem('autoPinnedUsers')) || [];
         localStorage.setItem(
-          "autoPinnedUsers",
+          'autoPinnedUsers',
           JSON.stringify(autoPinned.filter((id) => id !== targetUserId))
         );
       } else {
-        console.error("Error unpinning:", error.message);
+        console.error('Error unpinning:', error.message);
       }
     } else {
       // Pin
       // 1. Get current pinned users count from Supabase
       const { data: currentPinned, error: fetchError } = await supabase
-        .from("pinned_users")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: true }); // oldest first
+        .from('pinned_users')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true }); // oldest first
 
       if (fetchError) {
-        console.error("Error fetching pinned users:", fetchError.message);
+        console.error('Error fetching pinned users:', fetchError.message);
         return;
       }
 
@@ -954,13 +1042,13 @@ const ChatList = () => {
       if (currentPinned.length >= 10) {
         const oldest = currentPinned[0];
         const { error: deleteError } = await supabase
-          .from("pinned_users")
+          .from('pinned_users')
           .delete()
           .match({ user_id: user.id, pinned_user_id: oldest.pinned_user_id });
 
         if (deleteError) {
           console.error(
-            "Error removing oldest pinned user:",
+            'Error removing oldest pinned user:',
             deleteError.message
           );
           return;
@@ -969,7 +1057,7 @@ const ChatList = () => {
 
       // 3. Insert new pinned user
       const { error: insertError } = await supabase
-        .from("pinned_users")
+        .from('pinned_users')
         .insert([{ user_id: user.id, pinned_user_id: targetUserId }]);
 
       if (!insertError) {
@@ -981,12 +1069,12 @@ const ChatList = () => {
 
         // Update localStorage
         const autoPinned =
-          JSON.parse(localStorage.getItem("autoPinnedUsers")) || [];
+          JSON.parse(localStorage.getItem('autoPinnedUsers')) || [];
         autoPinned.push(targetUserId);
         if (autoPinned.length > 10) autoPinned.shift();
-        localStorage.setItem("autoPinnedUsers", JSON.stringify(autoPinned));
+        localStorage.setItem('autoPinnedUsers', JSON.stringify(autoPinned));
       } else {
-        console.error("Error pinning:", insertError.message);
+        console.error('Error pinning:', insertError.message);
       }
     }
   };
@@ -997,11 +1085,11 @@ const ChatList = () => {
 
   const handleSearchSubmit = async () => {
     trackEvent({
-      action: "button_click",
-      category: "Chat List Page",
-      label: "Search Bar",
+      action: 'button_click',
+      category: 'Chat List Page',
+      label: 'Search Bar',
     });
-    if (searchTerm.trim() === "") {
+    if (searchTerm.trim() === '') {
       setPage(0);
       setUsers([]);
       setHasMore(true);
@@ -1011,18 +1099,18 @@ const ChatList = () => {
 
     try {
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .select(
-          "id, name, profile_pic, country, gender, status, age, decency_rating"
+          'id, name, profile_pic, country, gender, status, age, decency_rating'
         )
-        .ilike("name", `%${searchTerm}%`);
+        .ilike('name', `%${searchTerm}%`);
 
       if (error) throw error;
 
       const { data: pinnedData } = await supabase
-        .from("pinned_users")
-        .select("pinned_user_id")
-        .eq("user_id", user.id);
+        .from('pinned_users')
+        .select('pinned_user_id')
+        .eq('user_id', user.id);
 
       const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
 
@@ -1033,13 +1121,13 @@ const ChatList = () => {
           avatar: user.profile_pic || empty,
           notifications: unreadCounts[user.id] || 0,
           pinned: pinnedIds.includes(user.id),
-          status: user.status || "offline",
+          status: user.status || 'offline',
         }));
 
       setUsers(processed);
       setHasMore(false); // No infinite scroll during search
     } catch (err) {
-      console.error("Search error:", err.message);
+      console.error('Search error:', err.message);
     } finally {
       setLoading(false);
       setSearchLoading(false); // ✅ Hide spinner after search
@@ -1047,7 +1135,7 @@ const ChatList = () => {
   };
 
   useEffect(() => {
-    if (!hasMore || loadingMore || loading || searchTerm.trim() !== "") return;
+    if (!hasMore || loadingMore || loading || searchTerm.trim() !== '') return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -1057,7 +1145,7 @@ const ChatList = () => {
       },
       {
         root: null, // viewport
-        rootMargin: "100px", // start loading a bit earlier
+        rootMargin: '100px', // start loading a bit earlier
         threshold: 0.1, // trigger when 10% visible
       }
     );
@@ -1089,9 +1177,9 @@ const ChatList = () => {
     setUnreadCounts(updated);
     //updateBadgeSeenStatus(updated);
     await supabase
-      .from("unread_counts")
+      .from('unread_counts')
       .update({ count: 0 })
-      .eq("receiver_id", user.id);
+      .eq('receiver_id', user.id);
 
     setUsers((prevUsers) =>
       prevUsers.map((u) => ({
@@ -1107,10 +1195,10 @@ const ChatList = () => {
 
   const formatCount = (num) => {
     if (num >= 1_000_000) {
-      return (num / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+      return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
     }
     if (num >= 1_000) {
-      return (num / 1_000).toFixed(1).replace(/\.0$/, "") + "k";
+      return (num / 1_000).toFixed(1).replace(/\.0$/, '') + 'k';
     }
     return num.toString();
   };
@@ -1120,40 +1208,47 @@ const ChatList = () => {
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768); // Mobile breakpoint
     handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleScratch = () => {
-    navigate("/miss-scratch");
+    navigate('/miss-scratch');
   };
   const handleFilterClick = () => {
     setShowAllTabs(true);
   };
 
+  const handleFilterToast = () => {
+    toast.error('Reach 100 likes on your profile to unlock this feature', {
+      duration: 4000,
+      position: 'bottom-center',
+    });
+  }
+
   const handleNotification = async () => {
     setNotificationCount(0); // reset UI immediately
-    navigate("/notifications");
+    navigate('/notifications');
     // Mark all likes as seen
     await supabase
-      .from("likes")
+      .from('likes')
       .update({ seen: true })
-      .eq("user_id", user.id)
-      .eq("seen", false);
+      .eq('user_id', user.id)
+      .eq('seen', false);
 
     // Mark all roasts as seen
     const { data: myImages } = await supabase
-      .from("images")
-      .select("id")
-      .eq("user_id", user.id);
+      .from('images')
+      .select('id')
+      .eq('user_id', user.id);
 
     if (myImages?.length > 0) {
       const imageIds = myImages.map((img) => img.id);
       await supabase
-        .from("roasts")
+        .from('roasts')
         .update({ seen: true })
-        .in("image_id", imageIds)
-        .eq("seen", false);
+        .in('image_id', imageIds)
+        .eq('seen', false);
     }
   };
 
@@ -1169,7 +1264,6 @@ const ChatList = () => {
   return (
     <>
       <Header />
-      <InstallBanner />
       <div className="chatlist-container">
         <h2 className="chatlist-title">🖋️ Your Circles</h2>
 
@@ -1179,47 +1273,47 @@ const ChatList = () => {
               <input
                 type="text"
                 className="sketchy-search"
-                placeholder={`🔍 ${i18n.t("searchUsers")}`}
+                placeholder={`🔍 ${i18n.t('searchUsers')}`}
                 value={searchTerm}
                 onChange={(e) => {
                   const value = e.target.value;
                   setSearchTerm(value);
 
-                  if (value.trim() === "") {
+                  if (value.trim() === '') {
                     setPage(0);
                     setUsers([]);
                     setHasMore(true);
-                    setActiveTab("all");
-                    localStorage.setItem("activeTab", "all");
+                    setActiveTab('all');
+                    localStorage.setItem('activeTab', 'all');
                   }
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.key === 'Enter') {
                     handleSearchSubmit();
                   }
                 }}
               />
 
               {/* Show cross icon inside input when there is text */}
-              {searchTerm.trim() !== "" && (
+              {searchTerm.trim() !== '' && (
                 <button
                   className="clear-search-button"
                   onClick={async () => {
-                    setSearchTerm(""); // clear input
+                    setSearchTerm(''); // clear input
                     setPage(0);
                     setHasMore(true);
-                    setActiveTab("all");
-                    localStorage.setItem("activeTab", "all");
+                    setActiveTab('all');
+                    localStorage.setItem('activeTab', 'all');
 
                     setLoading(true); // ✅ show spinner while loading "All" tab
 
                     try {
                       const { data, error } = await supabase
-                        .from("users")
+                        .from('users')
                         .select(
-                          "id, name, profile_pic, country, gender, status, age, decency_rating, created_at"
+                          'id, name, profile_pic, country, gender, status, age, decency_rating, created_at'
                         )
-                        .order("created_at", { ascending: false });
+                        .order('created_at', { ascending: false });
 
                       if (error) throw error;
 
@@ -1229,12 +1323,12 @@ const ChatList = () => {
                         avatar: u.profile_pic || empty,
                         notifications: unreadCounts[u.id] || 0,
                         pinned: false, // reset pinned if needed
-                        status: u.status || "offline",
+                        status: u.status || 'offline',
                       }));
 
                       setUsers(processed);
                     } catch (err) {
-                      console.error("Error loading all users:", err);
+                      console.error('Error loading all users:', err);
                     } finally {
                       setLoading(false); // ✅ hide spinner
                     }
@@ -1254,85 +1348,85 @@ const ChatList = () => {
 
           <div className="tab-bar">
             <button
-              className={`sketchy-tab ${activeTab === "all" ? "active" : ""}`}
+              className={`sketchy-tab ${activeTab === 'all' ? 'active' : ''}`}
               onClick={() => {
-                setActiveTab("all");
-                localStorage.setItem("activeTab", "all");
+                setActiveTab('all');
+                localStorage.setItem('activeTab', 'all');
               }}
             >
-              {i18n.t("all")}
+              {i18n.t('all')}
             </button>
             <button
               className={`sketchy-tab ${
-                activeTab === "pinned" ? "active" : ""
+                activeTab === 'pinned' ? 'active' : ''
               }`}
               onClick={() => {
-                setActiveTab("pinned");
-                localStorage.setItem("activeTab", "pinned");
+                setActiveTab('pinned');
+                localStorage.setItem('activeTab', 'pinned');
                 handleRouteUpdate();
               }}
-              style={{ position: "relative" }}
+              style={{ position: 'relative' }}
             >
-              {i18n.t("chats")}
+              {i18n.t('chats')}
               {hasPinnedNotification && (
                 <span
                   className="sketchy-badge pinned-tab-badge"
                   style={{
-                    position: "absolute",
-                    top: "-6px",
-                    right: "-6px",
-                    fontSize: "0.7rem",
-                    backgroundColor: "#e53935",
-                    padding: "0.4rem",
-                    borderRadius: "50px",
+                    position: 'absolute',
+                    top: '-6px',
+                    right: '-6px',
+                    fontSize: '0.7rem',
+                    backgroundColor: '#e53935',
+                    padding: '0.4rem',
+                    borderRadius: '50px',
                   }}
                 ></span>
               )}
             </button>
             <button
-              className={`sketchy-tab ${activeTab === "inbox" ? "active" : ""}`}
+              className={`sketchy-tab ${activeTab === 'inbox' ? 'active' : ''}`}
               onClick={() => {
-                setActiveTab("inbox");
-                localStorage.setItem("activeTab", "inbox");
+                setActiveTab('inbox');
+                localStorage.setItem('activeTab', 'inbox');
                 handleRouteUpdate();
               }}
-              style={{ position: "relative" }}
+              style={{ position: 'relative' }}
             >
-              {i18n.t("inbox")}
+              {i18n.t('inbox')}
               {Object.values(unreadCounts).some((count) => count > 0) && (
                 <span
                   className="sketchy-badge pinned-tab-badge"
                   style={{
-                    position: "absolute",
-                    top: "-6px",
-                    right: "-6px",
-                    fontSize: "0.7rem",
-                    backgroundColor: "#e53935",
-                    padding: "0.4rem",
-                    borderRadius: "50px",
+                    position: 'absolute',
+                    top: '-6px',
+                    right: '-6px',
+                    fontSize: '0.7rem',
+                    backgroundColor: '#e53935',
+                    padding: '0.4rem',
+                    borderRadius: '50px',
                   }}
                 ></span>
               )}
             </button>
-            {activeTab === "inbox" &&
+            {activeTab === 'inbox' &&
               Object.values(unreadCounts).some((c) => c > 0) && (
                 <button
                   onClick={handleMarkAllAsSeen}
                   className="mark-all-seen-btn"
                   style={{
-                    position: "fixed",
-                    bottom: "50px",
-                    right: "20px",
+                    position: 'fixed',
+                    bottom: '50px',
+                    right: '20px',
                     zIndex: 999,
-                    padding: "0.8rem 1.2rem",
-                    backgroundColor: "#222",
-                    color: "white",
-                    borderRadius: "30px",
-                    border: "none",
-                    cursor: "pointer",
-                    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
-                    fontWeight: "bold",
-                    fontSize: "0.95rem",
+                    padding: '0.8rem 1.2rem',
+                    backgroundColor: '#222',
+                    color: 'white',
+                    borderRadius: '30px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.3)',
+                    fontWeight: 'bold',
+                    fontSize: '0.95rem',
                   }}
                 >
                   <FaCheck size={20} color="white" />
@@ -1341,37 +1435,37 @@ const ChatList = () => {
 
             <button
               className={`sketchy-tab ${
-                activeTab === "online" ? "active" : ""
+                activeTab === 'online' ? 'active' : ''
               }`}
               onClick={() => {
-                const newTab = activeTab === "online" ? "all" : "online";
+                const newTab = activeTab === 'online' ? 'all' : 'online';
                 setActiveTab(newTab);
-                setAllFilter(newTab === "online" ? "online" : "all");
-                localStorage.setItem("activeTab", newTab);
+                setAllFilter(newTab === 'online' ? 'online' : 'all');
+                localStorage.setItem('activeTab', newTab);
               }}
             >
-              {i18n.t("online")}
+              {i18n.t('online')}
             </button>
 
             <button
-              className={`sketchy-tab ${activeTab === "maps" ? "active" : ""}`}
+              className={`sketchy-tab ${activeTab === 'maps' ? 'active' : ''}`}
               onClick={() => {
-                const newTab = activeTab === "maps" ? "all" : "maps";
+                const newTab = activeTab === 'maps' ? 'all' : 'maps';
                 setActiveTab(newTab);
-                setAllFilter(newTab === "maps" ? "maps" : "all");
-                localStorage.setItem("activeTab", newTab);
+                setAllFilter(newTab === 'maps' ? 'maps' : 'all');
+                localStorage.setItem('activeTab', newTab);
               }}
             >
-              <FaMapMarkerAlt style={{ marginRight: "6px" }} />
+              <FaMapMarkerAlt style={{ marginRight: '6px' }} />
             </button>
 
-            <button className="sketchy-tab" onClick={handleFilterClick}>
-              <FaFilter style={{ marginRight: "6px" }} />
+            <button className="sketchy-tab" onClick={handleFilterToast}> {/* handleFilterClick */}
+              <FaFilter style={{ marginRight: '6px' }} />
             </button>
 
-            {activeTab === "all" && (
+            {activeTab === 'all' && (
               <>
-              {/*  <button
+                {/*  <button
                   className="fab-camera-button"
                   onClick={handleScratch}
                   title="Open camera"
@@ -1399,12 +1493,12 @@ const ChatList = () => {
           <div
             ref={listRef}
             onScroll={handleScroll}
-            style={{ overflowY: "auto", height: "100vh" }}
+            style={{ overflowY: 'auto', height: '100vh' }}
             className={`${
-              activeTab === "maps" ? "maps-active" : "sketchy-list-scrollable "
+              activeTab === 'maps' ? 'maps-active' : 'sketchy-list-scrollable '
             }`}
           >
-            {activeTab === "maps" ? (
+            {activeTab === 'maps' ? (
               <Maps />
             ) : searchLoading || loading ? ( // ✅ show spinner if either search or tab is loading
               <LoadingSpinner />
@@ -1417,7 +1511,7 @@ const ChatList = () => {
                       to="#"
                       key={user.id}
                       className={`user-card ${
-                        user.notifications > 0 ? "has-notification" : ""
+                        user.notifications > 0 ? 'has-notification' : ''
                       }`}
                       onClick={(e) => {
                         handleUserClick(user.id);
@@ -1458,10 +1552,10 @@ const ChatList = () => {
                                 <span
                                   className={` ${
                                     user.decency_rating >= 8
-                                      ? "star"
+                                      ? 'star'
                                       : user.decency_rating >= 5
-                                      ? "medium-rating"
-                                      : "low-rating"
+                                      ? 'medium-rating'
+                                      : 'low-rating'
                                   }`}
                                 >
                                   ★
@@ -1469,10 +1563,10 @@ const ChatList = () => {
                                 <span
                                   className={` ${
                                     user.decency_rating >= 8
-                                      ? "star-rating"
+                                      ? 'star-rating'
                                       : user.decency_rating >= 5
-                                      ? "medium-number-rating"
-                                      : "low-number-rating"
+                                      ? 'medium-number-rating'
+                                      : 'low-number-rating'
                                   }`}
                                 >
                                   {user.decency_rating}
@@ -1485,9 +1579,9 @@ const ChatList = () => {
                           <span
                             className="country"
                             style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
                             }}
                           >
                             {user.country &&
@@ -1496,38 +1590,38 @@ const ChatList = () => {
                                   countryCode={countryNameToCode[user.country]}
                                   svg
                                   style={{
-                                    width: "1.5em",
-                                    height: "1.5em",
-                                    borderRadius: "3px",
+                                    width: '1.5em',
+                                    height: '1.5em',
+                                    borderRadius: '3px',
                                   }}
                                   title={user.country}
                                 />
                               )}
-                            {user.country || "Hidden"}
+                            {user.country || 'Hidden'}
                           </span>
                           {user.age && (
                             <span
                               className="user-age"
                               style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "4px",
-                                marginLeft: "8px",
-                                fontSize: "0.95em",
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                marginLeft: '8px',
+                                fontSize: '0.95em',
                               }}
                             >
                               {user.age}
                             </span>
                           )}
 
-                          {user.gender === "male" ? (
+                          {user.gender === 'male' ? (
                             <FaMars className="gender-icon male" />
                           ) : (
                             <FaVenus className="gender-icon female" />
                           )}
                           <span
                             className={`status-dot ${
-                              user.status === "online" ? "online" : "offline"
+                              user.status === 'online' ? 'online' : 'offline'
                             }`}
                           >
                             <FaCircle />
@@ -1559,42 +1653,42 @@ const ChatList = () => {
                   <div
                     ref={observerRef}
                     style={{
-                      textAlign: "center",
-                      margin: "20px 0",
-                      paddingBottom: "1rem",
+                      textAlign: 'center',
+                      margin: '20px 0',
+                      paddingBottom: '1rem',
                     }}
                   >
-                    {loadingMore && <MiniSpinner />}{" "}
+                    {loadingMore && <MiniSpinner />}{' '}
                     {/* Use your custom spinner */}
                   </div>
                 )}
               </>
             ) : hasFetched ? (
               <div className="no-results-card">
-                {activeTab === "all" && (
+                {activeTab === 'all' && (
                   <>
                     <FaUsers size={40} className="no-icon" />
-                    <p className="no-title">{i18n.t("noUsers")}</p>
+                    <p className="no-title">{i18n.t('noUsers')}</p>
                   </>
                 )}
 
-                {activeTab === "pinned" && (
+                {activeTab === 'pinned' && (
                   <>
                     <FaComments size={40} className="no-icon" />
-                    <p className="no-title">{i18n.t("noChats")}</p>
-                    <p className="no-sub">{i18n.t("inoxHistory")}</p>
+                    <p className="no-title">{i18n.t('noChats')}</p>
+                    <p className="no-sub">{i18n.t('inoxHistory')}</p>
                   </>
                 )}
 
-                {activeTab === "inbox" && (
+                {activeTab === 'inbox' && (
                   <>
                     <FaEnvelopeOpenText size={40} className="no-icon" />
-                    <p className="no-title">{i18n.t("inboxEmpty")}</p>
-                    <p className="no-sub">{i18n.t("newMessages")}</p>
+                    <p className="no-title">{i18n.t('inboxEmpty')}</p>
+                    <p className="no-sub">{i18n.t('newMessages')}</p>
                   </>
                 )}
 
-                {activeTab === "online" && (
+                {activeTab === 'online' && (
                   <>
                     <FaBolt size={40} className="no-icon" />
                     <p className="no-title">No one’s online</p>
@@ -1602,7 +1696,7 @@ const ChatList = () => {
                       Check back later or explore all users.
                     </p>
                     <button
-                      onClick={() => setActiveTab("all")}
+                      onClick={() => setActiveTab('all')}
                       className="retry-btn"
                     >
                       🌍 View All Users
@@ -1610,11 +1704,74 @@ const ChatList = () => {
                   </>
                 )}
 
-                {activeTab === "maps" && <Maps />}
+                {activeTab === 'maps' && <Maps />}
               </div>
             ) : null}
           </div>
 
+          {adVisible && (
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0,0,0,0.7)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 9999,
+              }}
+            >
+              <div
+                style={{
+                  background: '#fff',
+                  padding: '20px',
+                  borderRadius: '10px',
+                  textAlign: 'center',
+                  width: '90%',
+                  maxWidth: '400px',
+                }}
+              >
+                <div className="ad-header">
+                  <span className="ad-label">Ad</span>
+                  <span className="ad-by">Powered by Adsterra</span>
+                </div>
+                <div
+                  id="ad-container"
+                  style={{
+                    marginTop: '20px',
+                    minHeight: '100px',
+                    border: '2px dashed #007bff',
+                    borderRadius: '10px',
+                    background: '#f9f9f9',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  {!adLoaded && <span>Loading Ad...</span>}
+                </div>
+                <button
+                  onClick={handleCloseAd}
+                  disabled={closeAdCountdown > 0} // disabled until countdown ends
+                  style={{
+                    marginTop: '20px',
+                    padding: '10px 20px',
+                    background: closeAdCountdown > 0 ? '#555' : '#111', // different style while disabled
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: closeAdCountdown > 0 ? 'not-allowed' : 'pointer',
+                    position: 'relative',
+                  }}
+                >
+                  Close Ad {closeAdCountdown > 0 && `(${closeAdCountdown})`}
+                </button>
+              </div>
+            </div>
+          )}
           {showAllTabs && (
             <div
               className="modal-backdrop"
@@ -1624,51 +1781,51 @@ const ChatList = () => {
                 className="modal-content"
                 onClick={(e) => e.stopPropagation()}
               >
-                <h3 className="modal-title">🎛️ {i18n.t("filters")}</h3>
+                <h3 className="modal-title">🎛️ {i18n.t('filters')}</h3>
 
                 <div className="modal-section">
                   <h4>Gender</h4>
                   <div className="btn-group">
-                    {["all", "male", "female"].map((g) => (
+                    {['all', 'male', 'female'].map((g) => (
                       <button
                         key={g}
                         className={`modal-btn ${
-                          genderFilter === g ? "active" : ""
+                          genderFilter === g ? 'active' : ''
                         }`}
                         onClick={() => {
                           setGenderFilter(g);
                           setShowAllTabs(false);
                         }}
                       >
-                        {g === "all"
-                          ? `🌐 ${i18n.t("allGenders")}`
-                          : g === "male"
-                          ? `♂️ ${i18n.t("male")}`
-                          : `♀️ ${i18n.t("female")}`}
+                        {g === 'all'
+                          ? `🌐 ${i18n.t('allGenders')}`
+                          : g === 'male'
+                          ? `♂️ ${i18n.t('male')}`
+                          : `♀️ ${i18n.t('female')}`}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="modal-section">
-                  <h4>{i18n.t("country")}</h4>
+                  <h4>{i18n.t('country')}</h4>
                   <div className="btn-group">
                     <button
                       className={`modal-btn ${
-                        countryFilter === "all" ? "active" : ""
+                        countryFilter === 'all' ? 'active' : ''
                       }`}
                       onClick={() => {
-                        setCountryFilter("all");
+                        setCountryFilter('all');
                         setShowAllTabs(false);
                       }}
                     >
-                      🌍 {i18n.t("allCountries")}
+                      🌍 {i18n.t('allCountries')}
                     </button>
                     {countries.map((c) => (
                       <button
                         key={c}
                         className={`modal-btn ${
-                          countryFilter === c ? "active" : ""
+                          countryFilter === c ? 'active' : ''
                         }`}
                         onClick={() => {
                           setCountryFilter(c);
@@ -1680,9 +1837,9 @@ const ChatList = () => {
                             countryCode={countryNameToCode[c]}
                             svg
                             style={{
-                              width: "1.2em",
-                              height: "1.2em",
-                              marginRight: "8px",
+                              width: '1.2em',
+                              height: '1.2em',
+                              marginRight: '8px',
                             }}
                           />
                         )}
@@ -1733,15 +1890,15 @@ const ChatList = () => {
         {alertMessage && (
           <SketchyAlert
             message={alertMessage.text}
-            buttons={["allow", "close"]}
+            buttons={['allow', 'close']}
             onClose={() => setAlertMessage(null)}
           />
         )}
         {showProfileModal && (
           <div className="popup-wrapper">
             <div className="popup-card">
-              <h3 className="popup-title">{i18n.t("hey")}</h3>
-              <p className="popup-text">{i18n.t("askAgeGender")}</p>
+              <h3 className="popup-title">{i18n.t('hey')}</h3>
+              <p className="popup-text">{i18n.t('askAgeGender')}</p>
 
               <div className="option-row">
                 <label className="option-box">
@@ -1749,27 +1906,27 @@ const ChatList = () => {
                     type="radio"
                     name="gender"
                     value="male"
-                    checked={profileForm.gender === "male"}
+                    checked={profileForm.gender === 'male'}
                     onChange={handleProfileChange}
-                  />{" "}
-                  {i18n.t("male")}
+                  />{' '}
+                  {i18n.t('male')}
                 </label>
                 <label className="option-box">
                   <input
                     type="radio"
                     name="gender"
                     value="female"
-                    checked={profileForm.gender === "female"}
+                    checked={profileForm.gender === 'female'}
                     onChange={handleProfileChange}
-                  />{" "}
-                  {i18n.t("Female")}
+                  />{' '}
+                  {i18n.t('Female')}
                 </label>
               </div>
 
               <input
                 type="number"
                 className="input-field"
-                placeholder={i18n.t("enterAge")}
+                placeholder={i18n.t('enterAge')}
                 name="age"
                 value={profileForm.age}
                 onChange={handleProfileChange}
@@ -1781,8 +1938,8 @@ const ChatList = () => {
                   !profileForm.age ||
                   parseInt(profileForm.age, 10) < 13 ||
                   parseInt(profileForm.age, 10) > 99
-                    ? "disabled"
-                    : ""
+                    ? 'disabled'
+                    : ''
                 }`}
                 onClick={handleClick}
                 disabled={
@@ -1792,12 +1949,13 @@ const ChatList = () => {
                   parseInt(profileForm.age, 10) > 99
                 }
               >
-                {i18n.t("submit")}
+                {i18n.t('submit')}
               </button>
             </div>
           </div>
         )}
       </div>
+      <Toaster />
     </>
   );
 };

@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import { trackEvent } from "../Utils/analytics";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
+import BannerAd from "../Components/BannerAd";
 import i18n from "../i18n";
 
 const Login = () => {
@@ -202,6 +203,7 @@ const Login = () => {
           </p>
         </form>
       </div>
+      <BannerAd />
     </div>
   );
 };

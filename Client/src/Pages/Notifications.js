@@ -5,6 +5,7 @@ import SketchyHeader from "../Components/SketchyHeader";
 import LoadingSpinner from "../Components/LoadingSpinner";
 import heart from "../Assets/heart.png";
 import i18n from "../i18n";
+import BannerAd from "../Components/BannerAd";
 import "../Styles/Notifications.css";
 
 export default function Notifications() {
@@ -163,6 +164,7 @@ export default function Notifications() {
           </div>
         )}
       </div>
+      <BannerAd />
     </>
   );
 }

@@ -66,6 +66,66 @@ const Settings = () => {
 
   const navigate = useNavigate();
   const currentUser = JSON.parse(localStorage.getItem("user"));
+   const [adLoaded, setAdLoaded] = useState(false); // track ad load
+  
+    const [adVisible, setAdVisible] = useState(false);
+    const [closeAdCountdown, setCloseAdCountdown] = useState(5); // 5 seconds countdown
+    
+    useEffect(() => {
+      if (adVisible) {
+        setCloseAdCountdown(5); // reset countdown every time ad opens
+    
+        const timer = setInterval(() => {
+          setCloseAdCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+    
+        return () => clearInterval(timer);
+      }
+    }, [adVisible]);
+    
+const loadAd = () => {
+    const adContainer = document.getElementById('ad-container');
+    if (!adContainer) return; // wait until container exists
+
+    // Remove old script if any
+    const existingScript = document.getElementById('adsterra-script');
+    if (existingScript) existingScript.remove();
+
+    adContainer.innerHTML = '';
+
+    const innerContainer = document.createElement('div');
+    innerContainer.id = 'container-61abb6ea6099c52057a640165e20675a';
+    adContainer.appendChild(innerContainer);
+
+    const script = document.createElement('script');
+    script.id = 'adsterra-script';
+    script.async = true;
+    script.setAttribute('data-cfasync', 'false');
+    script.src =
+      '//pl27196664.effectivegatecpm.com/61abb6ea6099c52057a640165e20675a/invoke.js';
+
+    script.onload = () => console.log('Ad script loaded.');
+    script.onerror = () => console.error('Failed to load ad script.');
+
+    adContainer.appendChild(script);
+  };
+
+  // Run loadAd when popup becomes visible
+  useEffect(() => {
+    if (adVisible) {
+      setAdLoaded(false);
+      loadAd();
+    }
+  }, [adVisible]);
+
+  
+
   const changeBackground = (style) => {
     localStorage.setItem("chatBackground", style);
     toast.success(i18n.t("chatThemeChanged"));
@@ -138,6 +198,15 @@ const Settings = () => {
   };
   const toggleThemePopup = () => setShowThemePopup(!showThemePopup);
 
+  const handleCloseAd = () => {
+    setAdVisible(false);
+    toggleThemePopup();
+  };
+
+  const handleToggleAd = () => {
+  setAdVisible(true);
+  }
+
   return (
     <>
       <SketchyHeader title={i18n.t("settings")} onBack={handleBack} />
@@ -174,7 +243,7 @@ const Settings = () => {
           </div>
           <div className="settings-item">
             <span>{i18n.t("selectChatTheme")}</span>
-            <button className="settings-btn" onClick={toggleThemePopup}>
+            <button className="settings-btn" onClick={handleToggleAd}>
               {i18n.t("choose")}
             </button>
           </div>
@@ -226,6 +295,70 @@ const Settings = () => {
           </div>
         </div>
       )}
+      {adVisible && (
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0,0,0,0.7)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 9999,
+              }}
+            >
+              <div
+                style={{
+                  background: '#fff',
+                  padding: '20px',
+                  borderRadius: '10px',
+                  textAlign: 'center',
+                  width: '90%',
+                  maxWidth: '400px',
+                }}
+              >
+                <div className="ad-header">
+                  <span className="ad-label">Ad</span>
+                  <span className="ad-by">Powered by Adsterra</span>
+                </div>
+                <div
+                  id="ad-container"
+                  style={{
+                    marginTop: '20px',
+                    minHeight: '100px',
+                    border: '2px dashed #007bff',
+                    borderRadius: '10px',
+                    background: '#f9f9f9',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  {!adLoaded && <span>Loading Ad...</span>}
+                </div>
+                <button
+                  onClick={handleCloseAd}
+                  disabled={closeAdCountdown > 0} // disabled until countdown ends
+                  style={{
+                    marginTop: '20px',
+                    padding: '10px 20px',
+                    background: closeAdCountdown > 0 ? '#555' : '#111', // different style while disabled
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: closeAdCountdown > 0 ? 'not-allowed' : 'pointer',
+                    position: 'relative',
+                  }}
+                >
+                  Close Ad {closeAdCountdown > 0 && `(${closeAdCountdown})`}
+                </button>
+              </div>
+            </div>
+          )}
+      
       <Toaster />
     </>
   );

@@ -1,27 +1,28 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import SketchyHeader from "../Components/SketchyHeader";
-import SketchyAlert from "../Components/SketchyAlert";
-import "../Styles/Profile.css";
-import empty from "../Assets/empty.png";
-import { supabase, supabaseStorage } from "../Utils/supabaseClient";
-import toast, { Toaster } from "react-hot-toast";
-import MosaicAvatar from "../Components/MosaicAvatar";
-import imageCompression from "browser-image-compression";
-import { trackEvent } from "../Utils/analytics";
-import LoadingSpinner from "../Components/LoadingSpinner";
-import { openDB } from "idb";
-import axios from "axios";
-import OneSignal from "react-onesignal";
-import i18n from "../i18n";
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import SketchyHeader from '../Components/SketchyHeader';
+import SketchyAlert from '../Components/SketchyAlert';
+import '../Styles/Profile.css';
+import empty from '../Assets/empty.png';
+import { supabase, supabaseStorage } from '../Utils/supabaseClient';
+import toast, { Toaster } from 'react-hot-toast';
+import MosaicAvatar from '../Components/MosaicAvatar';
+import imageCompression from 'browser-image-compression';
+import { trackEvent } from '../Utils/analytics';
+import LoadingSpinner from '../Components/LoadingSpinner';
+import { openDB } from 'idb';
+import axios from 'axios';
+import OneSignal from 'react-onesignal';
+import BannerAd from '../Components/BannerAd';
+import i18n from '../i18n';
 
 const giftList = [
-  "https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png",
-  "https://cdn1.iconfinder.com/data/icons/DarkGlass_Reworked/128x128/apps/beryl-manager.png",
-  "https://cdn1.iconfinder.com/data/icons/icons-for-a-site-1/64/advantage_deliver-64.png",
-  "https://cdn0.iconfinder.com/data/icons/icecandy-psd/256/icecandy-chocolate.png",
-  "https://cdn1.iconfinder.com/data/icons/icons-for-a-site-1/64/advantage_quality-64.png",
-  "https://images.icon-icons.com/327/PNG/256/Clown_Impish_35102.png",
+  'https://images.icon-icons.com/1478/PNG/96/bouquet_101953.png',
+  'https://cdn1.iconfinder.com/data/icons/DarkGlass_Reworked/128x128/apps/beryl-manager.png',
+  'https://cdn1.iconfinder.com/data/icons/icons-for-a-site-1/64/advantage_deliver-64.png',
+  'https://cdn0.iconfinder.com/data/icons/icecandy-psd/256/icecandy-chocolate.png',
+  'https://cdn1.iconfinder.com/data/icons/icons-for-a-site-1/64/advantage_quality-64.png',
+  'https://images.icon-icons.com/327/PNG/256/Clown_Impish_35102.png',
 ];
 
 const giftCoinRequirements = [1000, 1000000, 300000, 10, 10000, 100];
@@ -41,28 +42,28 @@ const Profile = () => {
 
   const { id } = useParams();
   const navigate = useNavigate();
-  const currentUser = JSON.parse(localStorage.getItem("user"));
+  const currentUser = JSON.parse(localStorage.getItem('user'));
   const isCurrentUser = currentUser?.id?.toString() === id;
   const currentUserId = currentUser?.id;
   const [userData, setUserData] = useState(null);
-  const [form, setForm] = useState({ name: "", bio: "", imageFile: null });
+  const [form, setForm] = useState({ name: '', bio: '', imageFile: null });
   const [status, setStatus] = useState({
     editing: false,
     uploading: false,
     sendingGift: false,
-    alertMessage: "",
+    alertMessage: '',
   });
   const [receivedGifts, setReceivedGifts] = useState([]);
   const orientationColors = {
-    gay: "🌈 #1d9bf0", // blue
-    lesbian: "🌸 #e75480", // pink
-    trans: "⚧ #9b59b6", // purple
-    hetero: "⚪ #2ecc71", // green
-    bi: "💜 #ff69b4", // magenta
+    gay: '🌈 #1d9bf0', // blue
+    lesbian: '🌸 #e75480', // pink
+    trans: '⚧ #9b59b6', // purple
+    hetero: '⚪ #2ecc71', // green
+    bi: '💜 #ff69b4', // magenta
   };
 
   // inside state
-  const [orientation, setOrientation] = useState("");
+  const [orientation, setOrientation] = useState('');
 
   const handleBack = () => navigate(-1);
 
@@ -112,7 +113,7 @@ const Profile = () => {
       };
       reader.readAsDataURL(compressedFile);
     } catch (err) {
-      console.error("Image compression failed:", err);
+      console.error('Image compression failed:', err);
       // fallback to original file if compression fails
       setForm((prev) => ({ ...prev, imageFile: file }));
       const reader = new FileReader();
@@ -137,15 +138,15 @@ const Profile = () => {
       setShowPopup(false);
     };
 
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    window.addEventListener("appinstalled", handleAppInstalled);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
       window.removeEventListener(
-        "beforeinstallprompt",
+        'beforeinstallprompt',
         handleBeforeInstallPrompt
       );
-      window.removeEventListener("appinstalled", handleAppInstalled);
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
@@ -155,29 +156,29 @@ const Profile = () => {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
 
-    if (outcome === "accepted") {
-      console.log("✅ User accepted the install");
+    if (outcome === 'accepted') {
+      console.log('✅ User accepted the install');
     } else {
-      console.log("❌ User dismissed the install");
+      console.log('❌ User dismissed the install');
     }
 
     setDeferredPrompt(null);
     setShowPopup(false);
     const { data, error } = await supabase
-      .from("users")
+      .from('users')
       .update({ installed_app: true })
-      .eq("id", currentUserId);
+      .eq('id', currentUserId);
 
     if (error) {
-      console.error("Error updating field:", error);
+      console.error('Error updating field:', error);
     } else {
-      console.log("Updated field:", data);
+      console.log('Updated field:', data);
     }
     // Track install click
     trackEvent({
-      action: "button_click",
-      category: "Install Popup",
-      label: "Install App",
+      action: 'button_click',
+      category: 'Install Popup',
+      label: 'Install App',
     });
   };
 
@@ -186,21 +187,21 @@ const Profile = () => {
     setDeferredPrompt(null);
 
     // Track cancel click
-    window.gtag?.("event", "click", {
-      event_category: "Install Popup",
-      event_label: "Cancel Button",
+    window.gtag?.('event', 'click', {
+      event_category: 'Install Popup',
+      event_label: 'Cancel Button',
       value: 1,
     });
   };
 
   // 🔹 IndexedDB setup
-  const dbPromise = openDB("UserDB", 1, {
+  const dbPromise = openDB('UserDB', 1, {
     upgrade(db) {
-      if (!db.objectStoreNames.contains("profile_pics")) {
-        db.createObjectStore("profile_pics", { keyPath: "id" });
+      if (!db.objectStoreNames.contains('profile_pics')) {
+        db.createObjectStore('profile_pics', { keyPath: 'id' });
       }
-      if (!db.objectStoreNames.contains("users")) {
-        db.createObjectStore("users", { keyPath: "id" });
+      if (!db.objectStoreNames.contains('users')) {
+        db.createObjectStore('users', { keyPath: 'id' });
       }
     },
   });
@@ -210,7 +211,7 @@ const Profile = () => {
     const db = await dbPromise;
 
     try {
-      const existing = await db.get("profile_pics", user.id);
+      const existing = await db.get('profile_pics', user.id);
 
       if (user.profile_pic) {
         let shouldUpdate = false;
@@ -232,7 +233,7 @@ const Profile = () => {
           try {
             const response = await fetch(user.profile_pic + `?t=${Date.now()}`); // bust CDN cache
             const blob = await response.blob();
-            await db.put("profile_pics", {
+            await db.put('profile_pics', {
               id: user.id,
               blob,
               url: user.profile_pic,
@@ -240,7 +241,7 @@ const Profile = () => {
             console.log(`💾 Profile pic cached/updated for user ${user.id}`);
           } catch (fetchErr) {
             console.warn(
-              "⚠️ Could not fetch profile_pic, skipped caching:",
+              '⚠️ Could not fetch profile_pic, skipped caching:',
               fetchErr
             );
           }
@@ -252,15 +253,15 @@ const Profile = () => {
       } else {
         // User removed profile pic → delete from IndexedDB
         if (existing) {
-          await db.delete("profile_pics", user.id);
+          await db.delete('profile_pics', user.id);
           console.log(`🗑️ Removed cached profile pic for user ${user.id}`);
         }
       }
 
       // Always update full user object (bio, name, etc.)
-      await db.put("users", user);
+      await db.put('users', user);
     } catch (err) {
-      console.error("⚠️ saveUserToIDB error:", err);
+      console.error('⚠️ saveUserToIDB error:', err);
     }
   };
 
@@ -268,23 +269,23 @@ const Profile = () => {
   const fetchUser = async () => {
     try {
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .select(
-          "id, name, talked_to_count, bio, profile_pic, reward_coins, decency_rating, orientation"
+          'id, name, talked_to_count, bio, profile_pic, reward_coins, decency_rating, orientation'
         )
-        .eq("id", id)
+        .eq('id', id)
         .single();
 
       if (error || !data) {
-        console.error("❌ Error fetching user:", error?.message);
-        setUserData({ avatar: empty, name: "", bio: "" });
+        console.error('❌ Error fetching user:', error?.message);
+        setUserData({ avatar: empty, name: '', bio: '' });
         return;
       }
 
       const db = await dbPromise;
 
       // Try to get cached avatar first
-      const cached = await db.get("profile_pics", data.id);
+      const cached = await db.get('profile_pics', data.id);
       let avatar;
       let loadedFromCache = false;
 
@@ -314,15 +315,15 @@ const Profile = () => {
       setUserData({ ...data, avatar });
       setForm((prev) => ({
         ...prev,
-        name: data.name || "",
-        bio: data.bio || "",
+        name: data.name || '',
+        bio: data.bio || '',
       }));
-      setOrientation(data.orientation || "");
+      setOrientation(data.orientation || '');
 
-      console.log("✅ User fetch complete");
+      console.log('✅ User fetch complete');
     } catch (err) {
-      console.error("⚠️ fetchUser error:", err);
-      setUserData({ avatar: empty, name: "", bio: "" });
+      console.error('⚠️ fetchUser error:', err);
+      setUserData({ avatar: empty, name: '', bio: '' });
     }
   };
 
@@ -334,18 +335,18 @@ const Profile = () => {
     try {
       // 1️⃣ Upload new image if selected
       if (form.imageFile) {
-        const fileExt = form.imageFile.name.split(".").pop();
+        const fileExt = form.imageFile.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
         const filePath = `avatars/${fileName}`;
 
         const { error: uploadError } = await supabaseStorage.storage
-          .from("profile-pics")
+          .from('profile-pics')
           .upload(filePath, form.imageFile);
 
         if (uploadError) throw uploadError;
 
         const { data: publicUrlData } = supabaseStorage.storage
-          .from("profile-pics")
+          .from('profile-pics')
           .getPublicUrl(filePath);
 
         if (publicUrlData?.publicUrl) {
@@ -355,20 +356,20 @@ const Profile = () => {
 
       // 2️⃣ Update user in Supabase
       const { data: updatedUser, error } = await supabase
-        .from("users")
+        .from('users')
         .update({
           name: form.name,
           bio: form.bio,
           profile_pic: profilePicUrl,
           orientation, // 🔹 new field
         })
-        .eq("id", id)
+        .eq('id', id)
         .select()
         .single();
 
       if (!error && updatedUser) {
         // 3️⃣ Save/Update IndexedDB (only for non-google OR google after update)
-        if (!currentUser?.google_login || profilePicUrl.includes("supabase")) {
+        if (!currentUser?.google_login || profilePicUrl.includes('supabase')) {
           await saveUserToIDB(updatedUser);
         }
 
@@ -382,17 +383,17 @@ const Profile = () => {
 
         setStatus({ ...status, editing: false, uploading: false });
         setForm((f) => ({ ...f, imageFile: null }));
-        toast.success(i18n.t("profileUpdated"));
+        toast.success(i18n.t('profileUpdated'));
 
-        console.log("✅ User updated in Supabase + IndexedDB");
+        console.log('✅ User updated in Supabase + IndexedDB');
       } else {
-        toast.error(i18n.t("failedUpdate"));
-        console.error("❌ Update failed:", error?.message);
+        toast.error(i18n.t('failedUpdate'));
+        console.error('❌ Update failed:', error?.message);
         setStatus((s) => ({ ...s, uploading: false }));
       }
     } catch (err) {
-      toast.error(i18n.t("somethingWrongUploading"));
-      console.error("⚠️ Update error:", err);
+      toast.error(i18n.t('somethingWrongUploading'));
+      console.error('⚠️ Update error:', err);
       setStatus((s) => ({ ...s, uploading: false }));
     }
   };
@@ -400,13 +401,13 @@ const Profile = () => {
   const fetchGifts = async () => {
     const receiverId = isCurrentUser ? currentUser.id : id;
     const { data, error } = await supabase
-      .from("gifts")
-      .select("id, sender_id, gift_type, created_at")
-      .eq("receiver_id", receiverId)
-      .order("created_at", { ascending: false });
+      .from('gifts')
+      .select('id, sender_id, gift_type, created_at')
+      .eq('receiver_id', receiverId)
+      .order('created_at', { ascending: false });
 
     if (data && !error) setReceivedGifts(data);
-    else console.error("Error fetching gifts:", error?.message);
+    else console.error('Error fetching gifts:', error?.message);
   };
 
   useEffect(() => {
@@ -420,9 +421,9 @@ const Profile = () => {
     if (status.sendingGift || !userData) return;
 
     const { data, error } = await supabase
-      .from("users")
-      .select("reward_coins")
-      .eq("id", currentUser.id)
+      .from('users')
+      .select('reward_coins')
+      .eq('id', currentUser.id)
       .single();
 
     if (error || !data) return;
@@ -434,8 +435,8 @@ const Profile = () => {
       return setStatus({
         ...status,
         alertMessage: {
-          text: `❌ ${i18n.t("youNeed")} ${requiredCoins} ${i18n.t(
-            "coinsToSend"
+          text: `❌ ${i18n.t('youNeed')} ${requiredCoins} ${i18n.t(
+            'coinsToSend'
           )}`,
           withButton: true,
         },
@@ -445,17 +446,17 @@ const Profile = () => {
     setStatus((s) => ({ ...s, sendingGift: true }));
 
     const { error: coinError } = await supabase
-      .from("users")
+      .from('users')
       .update({ reward_coins: currentCoins - requiredCoins })
-      .eq("id", currentUser.id);
+      .eq('id', currentUser.id);
 
     if (coinError) {
-      console.error("Coin deduction error:", coinError.message);
+      console.error('Coin deduction error:', coinError.message);
       return setStatus((s) => ({ ...s, sendingGift: false }));
     }
 
     const { error: giftError } = await supabase
-      .from("gifts")
+      .from('gifts')
       .insert([
         { sender_id: currentUser.id, receiver_id: id, gift_type: giftUrl },
       ]);
@@ -463,13 +464,13 @@ const Profile = () => {
     if (!giftError) {
       setStatus({
         ...status,
-        alertMessage: `🎁 ${i18n.t("giftSuccess")}`,
+        alertMessage: `🎁 ${i18n.t('giftSuccess')}`,
         sendingGift: false,
       });
       await fetchGifts();
       await fetchUser();
     } else {
-      console.error("Gift send error:", giftError.message);
+      console.error('Gift send error:', giftError.message);
       setStatus((s) => ({ ...s, sendingGift: false }));
     }
   };
@@ -480,25 +481,25 @@ const Profile = () => {
 
       // Fetch player_id from Supabase
       const { data, error } = await supabase
-        .from("players") // replace with your actual table
-        .select("player_id")
-        .eq("user_id", currentUser.id)
+        .from('players') // replace with your actual table
+        .select('player_id')
+        .eq('user_id', currentUser.id)
         .maybeSingle();
 
       if (error) {
-        console.error("Error fetching player_id from Supabase:", error.message);
+        console.error('Error fetching player_id from Supabase:', error.message);
         return;
       }
 
       const playerId = data?.player_id;
 
       if (!playerId) {
-        console.log("⚠️ No active push subscription found in Supabase");
+        console.log('⚠️ No active push subscription found in Supabase');
         return;
       }
 
       // Call backend to delete the player
-      await axios.delete("https://myselpost.onrender.com/delete-player", {
+      await axios.delete('https://myselpost.onrender.com/delete-player', {
         data: {
           userId: currentUser.id,
           playerId,
@@ -510,9 +511,9 @@ const Profile = () => {
         await OneSignal.User.PushSubscription.optOut();
       }
 
-      console.log("✅ Player unsubscribed successfully");
+      console.log('✅ Player unsubscribed successfully');
     } catch (error) {
-      console.error("Error deleting the player:", error);
+      console.error('Error deleting the player:', error);
     }
   };
 
@@ -523,9 +524,9 @@ const Profile = () => {
     try {
       //await handleUnsubscribe(); // Unsubscribe from push notifications or cleanup
       localStorage.clear(); // Clear localStorage
-      navigate("/"); // Redirect to homepage/login
+      navigate('/'); // Redirect to homepage/login
     } catch (err) {
-      console.error("Logout failed:", err);
+      console.error('Logout failed:', err);
       setLoggingOut(false); // Reset if something fails
     }
   };
@@ -533,18 +534,18 @@ const Profile = () => {
   const handleCoins = () => navigate(`/coins/${currentUser.id}`);
 
   const handleSettings = () => {
-    navigate("/settings");
+    navigate('/settings');
   };
 
   useEffect(() => {
-    const alreadyShown = localStorage.getItem("blurredNoteShown");
+    const alreadyShown = localStorage.getItem('blurredNoteShown');
     if (!alreadyShown) {
       setShowNote(true);
 
       // auto-hide after 3s
       const timer = setTimeout(() => {
         setShowNote(false);
-        localStorage.setItem("blurredNoteShown", "true");
+        localStorage.setItem('blurredNoteShown', 'true');
       }, 5000);
 
       return () => clearTimeout(timer);
@@ -554,7 +555,7 @@ const Profile = () => {
   if (!userData) {
     return (
       <>
-        <SketchyHeader title={i18n.t("profile")} onBack={handleBack} />
+        <SketchyHeader title={i18n.t('profile')} onBack={handleBack} />
         <div>
           <LoadingSpinner /> {/* <-- show loading spinner */}
         </div>
@@ -564,7 +565,7 @@ const Profile = () => {
 
   return (
     <>
-      <SketchyHeader title={i18n.t("profile")} onBack={handleBack} />
+      <SketchyHeader title={i18n.t('profile')} onBack={handleBack} />
       <div className="sketchy-profile-wrapper">
         <div className="sketchy-profile-tab">Sketchy Profile</div>
         <div className="sketchy-profile-card">
@@ -588,18 +589,18 @@ const Profile = () => {
                     type="button"
                     className="sketchy-file-upload-btn"
                     onClick={() =>
-                      document.getElementById("sketchy-file-input").click()
+                      document.getElementById('sketchy-file-input').click()
                     }
                   >
                     {form.imageFile
                       ? form.imageFile.name
-                      : i18n.t("changeProfile")}
+                      : i18n.t('changeProfile')}
                   </button>
                   <input
                     id="sketchy-file-input"
                     type="file"
                     accept="image/*"
-                    style={{ display: "none" }}
+                    style={{ display: 'none' }}
                     onChange={handleFileChange}
                   />
                 </div>
@@ -608,20 +609,20 @@ const Profile = () => {
               <>
                 <h2 className="sketchy-profile-name">{userData.name}</h2>
                 <p className="sketchy-profile-bio">
-                  {userData.bio || i18n.t("noBio")}
+                  {userData.bio || i18n.t('noBio')}
                 </p>
               </>
             )}
 
             <div className="sketchy-profile-stats-row">
               <p>
-                {i18n.t("conversations")}
+                {i18n.t('conversations')}
                 <span className="sketchy-stat-value">
                   {userData.talked_to_count || 0}
                 </span>
               </p>
               <p>
-                {i18n.t("coinsLabel")}
+                {i18n.t('coinsLabel')}
                 <span className="sketchy-stat-value">
                   {userData.reward_coins || 0}
                 </span>
@@ -685,16 +686,16 @@ const Profile = () => {
                   >
                     {status.editing
                       ? status.uploading
-                        ? i18n.t("saving")
-                        : i18n.t("saveProfile")
-                      : i18n.t("updateProfile")}
+                        ? i18n.t('saving')
+                        : i18n.t('saveProfile')
+                      : i18n.t('updateProfile')}
                   </button>
                   <button
                     className="sketchy-coin-btn-new"
                     onClick={handleCoins}
                     style={{ marginTop: 10 }}
                   >
-                    {i18n.t("getCoins")}
+                    {i18n.t('getCoins')}
                   </button>
                   <button
                     className="sketchy-install-btn"
@@ -702,7 +703,7 @@ const Profile = () => {
                     disabled={!deferredPrompt}
                     style={{ marginTop: 10 }}
                   >
-                    {i18n.t("installApp")}
+                    {i18n.t('installApp')}
                   </button>
                   <button
                     className="sketchy-logout-btn"
@@ -710,13 +711,13 @@ const Profile = () => {
                     disabled={loggingOut}
                     style={{ marginTop: 10 }}
                   >
-                    {loggingOut ? i18n.t("loggingOut") : i18n.t("logOut")}
+                    {loggingOut ? i18n.t('loggingOut') : i18n.t('logOut')}
                   </button>
                 </div>
                 <button className="settings-btn" onClick={handleSettings}>
-                  <span className="gear">&#9881;</span>{" "}
+                  <span className="gear">&#9881;</span>{' '}
                   {/* Unicode gear icon */}
-                  <span className="text">{i18n.t("settings")}</span>
+                  <span className="text">{i18n.t('settings')}</span>
                 </button>
               </>
             )}
@@ -728,16 +729,16 @@ const Profile = () => {
               userId={id}
               currentUserId={currentUserId}
             />
-            <span className={`blurred-note ${!showNote ? "hidden" : ""}`}>
-              {i18n.t("eachTap")} <br />
-              {i18n.t("reachLikes")}
+            <span className={`blurred-note ${!showNote ? 'hidden' : ''}`}>
+              {i18n.t('eachTap')} <br />
+              {i18n.t('reachLikes')}
             </span>
           </div>
         </div>
 
         {receivedGifts.length > 0 && (
           <div className="sketchy-gift-section">
-            <h3>🎁 {i18n.t("giftsReceived")}</h3>
+            <h3>🎁 {i18n.t('giftsReceived')}</h3>
             <div className="sketchy-gift-list">
               {receivedGifts.map((gift) => (
                 <img
@@ -757,7 +758,7 @@ const Profile = () => {
               className="sketchy-send-gift-btn"
               onClick={() => setShowGiftList((prev) => !prev)}
             >
-              🎁 {i18n.t("sendGift")}
+              🎁 {i18n.t('sendGift')}
             </button>
 
             {showGiftList && (
@@ -770,8 +771,8 @@ const Profile = () => {
                   >
                     <img src={giftUrl} alt={`gift-${index}`} />
                     <span>
-                      {formatCoins(giftCoinRequirements[index])}{" "}
-                      {i18n.t("coins")}
+                      {formatCoins(giftCoinRequirements[index])}{' '}
+                      {i18n.t('coins')}
                     </span>
                   </div>
                 ))}
@@ -783,11 +784,11 @@ const Profile = () => {
         {status.alertMessage && (
           <SketchyAlert
             message={
-              typeof status.alertMessage === "object"
+              typeof status.alertMessage === 'object'
                 ? status.alertMessage.text
                 : status.alertMessage
             }
-            onClose={() => setStatus((s) => ({ ...s, alertMessage: "" }))}
+            onClose={() => setStatus((s) => ({ ...s, alertMessage: '' }))}
           />
         )}
         {showImageModal && (
@@ -807,35 +808,35 @@ const Profile = () => {
       {showPopup && (
         <div
           style={{
-            position: "fixed",
+            position: 'fixed',
             bottom: 0,
             left: 0,
-            width: "100%",
-            backgroundColor: "#ffffff",
-            padding: "20px",
-            textAlign: "center",
-            boxShadow: "rgba(0,0,0,0.1) 0px 4px 12px",
+            width: '100%',
+            backgroundColor: '#ffffff',
+            padding: '20px',
+            textAlign: 'center',
+            boxShadow: 'rgba(0,0,0,0.1) 0px 4px 12px',
             zIndex: 9999,
           }}
         >
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "10px",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
             }}
           >
             <button
               onClick={handleInstall}
               style={{
-                backgroundColor: "#111",
-                color: "#fff",
-                border: "none",
-                padding: "10px 20px",
-                fontSize: "16px",
-                borderRadius: "4px",
-                cursor: "pointer",
+                backgroundColor: '#111',
+                color: '#fff',
+                border: 'none',
+                padding: '10px 20px',
+                fontSize: '16px',
+                borderRadius: '4px',
+                cursor: 'pointer',
               }}
             >
               Install
@@ -843,13 +844,13 @@ const Profile = () => {
             <button
               onClick={handleCancel}
               style={{
-                backgroundColor: "#f1f1f1",
-                color: "#111",
-                border: "none",
-                padding: "10px 20px",
-                fontSize: "16px",
-                borderRadius: "4px",
-                cursor: "pointer",
+                backgroundColor: '#f1f1f1',
+                color: '#111',
+                border: 'none',
+                padding: '10px 20px',
+                fontSize: '16px',
+                borderRadius: '4px',
+                cursor: 'pointer',
               }}
             >
               Cancel
@@ -864,7 +865,7 @@ const Profile = () => {
           onClose={() => setAlertMessage(null)}
         />
       )}
-
+      <BannerAd />
       <Toaster />
     </>
   );

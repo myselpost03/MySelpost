@@ -3,7 +3,7 @@ import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import cors from "cors";
 import axios from "axios";
-import i18n from "./i18n";
+import { DodoPayments } from 'dodopayments';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -11,10 +11,10 @@ const PORT = process.env.PORT || 5000;
 app.use(
   cors({
     origin: [
-      "https://myselpost.com",
-      "https://www.myselpost.com"
-    ],
+      "http://localhost:3000"    ],
     credentials: true,
+     methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
   })
 );
 app.use(express.json());
@@ -73,7 +73,7 @@ app.post("/schedule-push", async (req, res) => {
         {
           app_id: ONE_SIGNAL_APP_ID,
           include_player_ids: playerIds,
-          headings: { en: title || i18n.t("newMessage") },
+          headings: { en: title || "New Message" },
           contents: { en: message || "This came 30s later!" },
           url: url || "https://yourwebsite.com",
         },
@@ -248,8 +248,8 @@ app.post("/send-message-push", async (req, res) => {
         const payload = {
           app_id: ONE_SIGNAL_APP_ID,
           include_player_ids: playerIds,
-          headings: { en: i18n.t("searchGifExample")},
-          contents: { en:  i18n.t("unreadMessages") },
+          headings: "MySelpost",
+          contents: "You have unread messages",
           url: "https://www.myselpost.com/chat-list",
           collapse_id: `chat_${userId}`,
           chrome_web_icon: "https://www.myselpost.com/inbox.png",
@@ -311,6 +311,62 @@ app.delete("/delete-player", async (req, res) => {
     console.error("❌ Error deleting player:", err.message);
     res.status(500).json({ error: err.message });
   }
+});
+
+const client = new DodoPayments({
+  bearerToken: '5Or_EagdmyanaWRl.2RD2jj_1ska6VUlJvs48Y4sMsrl4bwHDhyJnsSEiIk-QbGR8',
+  environment: 'test_mode', // for test environment
+});
+
+// In-memory coins
+const userCoins = {}; // { userId: coins }
+
+app.post("/create-checkout-session", async (req, res) => {
+  try {
+    const { quantity, userId } = req.body;
+
+    if (!quantity) return res.status(400).json({ error: "Quantity is required" });
+
+    const sessionResponse = await client.checkoutSessions.create({
+      product_cart: [{ product_id: "pdt_hGntim2Yociijw5zJEWo2", quantity }],
+      metadata: { userId },
+    });
+
+    res.json({
+      sessionId: sessionResponse.session_id,
+      checkoutUrl: sessionResponse.checkout_url,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// New endpoint: confirm payment status and increment coins
+app.post("/confirm-payment", async (req, res) => {
+  try {
+    const { sessionId, userId } = req.body;
+    if (!sessionId || !userId) return res.status(400).json({ error: "Missing sessionId or userId" });
+
+    const session = await client.checkoutSessions.retrieve(sessionId);
+
+    console.log("Payment session status:", session.status);
+
+    if (session.status === "succeeded") {
+      // Increment coins
+      userCoins[userId] = (userCoins[userId] || 0) + 100;
+      res.json({ coins: userCoins[userId], message: "Coins added successfully" });
+    } else {
+      res.status(400).json({ message: "Payment not successful", status: session.status });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/coins/:userId", (req, res) => {
+  res.json({ userId: req.params.userId, coins: userCoins[req.params.userId] || 0 });
 });
 
 app._router.stack.forEach((r) => {

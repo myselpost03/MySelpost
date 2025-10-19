@@ -1,32 +1,31 @@
-import React, { useState, useEffect } from "react";
-import SketchyHeader from "../Components/SketchyHeader";
-import "../Styles/Roast.css";
-import { useNavigate } from "react-router-dom";
-import { useSwipeable } from "react-swipeable";
-import LoadingSpinner from "../Components/LoadingSpinner";
-import SketchyAlert from "../Components/SketchyAlert";
-import { supabase } from "../Utils/supabaseClient";
-import { FaFire } from "react-icons/fa";
+import React, { useState, useEffect } from 'react';
+import SketchyHeader from '../Components/SketchyHeader';
+import '../Styles/Roast.css';
+import { useNavigate } from 'react-router-dom';
+import { useSwipeable } from 'react-swipeable';
+import LoadingSpinner from '../Components/LoadingSpinner';
+import SketchyAlert from '../Components/SketchyAlert';
+import { supabase } from '../Utils/supabaseClient';
+import { FaFire } from 'react-icons/fa';
 import {
   FacebookShareButton,
   TwitterShareButton,
   WhatsappShareButton,
-} from "react-share";
-import imageCompression from "browser-image-compression";
-import bannedWords from "../JSON/bannedWords.json";
-import toast, { Toaster } from "react-hot-toast";
+} from 'react-share';
+import imageCompression from 'browser-image-compression';
+import bannedWords from '../JSON/bannedWords.json';
+import toast, { Toaster } from 'react-hot-toast';
 import {
   saveRoastImages,
   getRoastImages,
   setRoastLastSync,
   toBlob,
   getRoastLastSync,
-} from "../Utils/db";
-import i18n from "../i18n";
-
+} from '../Utils/db';
+import i18n from '../i18n';
 
 const timeAgo = (date) => {
-  const inputDate = new Date(date + "Z"); // 👈 Ensures it's treated as UTC
+  const inputDate = new Date(date + 'Z'); // 👈 Ensures it's treated as UTC
   const seconds = Math.floor((new Date() - inputDate) / 1000);
 
   const intervals = {
@@ -40,10 +39,10 @@ const timeAgo = (date) => {
 
   for (let key in intervals) {
     const value = Math.floor(seconds / intervals[key]);
-    if (value >= 1) return `${value}${key[0]} ${i18n.t("ago")}`;
+    if (value >= 1) return `${value}${key[0]} ${i18n.t('ago')}`;
   }
 
-  return i18n.t("justNow");
+  return i18n.t('justNow');
 };
 
 function Roast() {
@@ -52,7 +51,7 @@ function Roast() {
   const [uploading, setUploading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showSwipeGuide, setShowSwipeGuide] = useState(
-    localStorage.getItem("hasSeenSwipeGuide") !== "true"
+    localStorage.getItem('hasSeenSwipeGuide') !== 'true'
   );
   const [roastingIndex, setRoastingIndex] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -62,25 +61,97 @@ function Roast() {
   const [alertMessage, setAlertMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [hasSharedRoast, setHasSharedRoast] = useState(
-    localStorage.getItem("hasSharedRoast") === "true"
+    localStorage.getItem('hasSharedRoast') === 'true'
   );
-  const currentUser = JSON.parse(localStorage.getItem("user"));
+  const currentUser = JSON.parse(localStorage.getItem('user'));
+  const [adLoaded, setAdLoaded] = useState(false); // track ad load
+
+  const [adVisible, setAdVisible] = useState(false);
+  const [closeAdCountdown, setCloseAdCountdown] = useState(5); // 5 seconds countdown
+
+  useEffect(() => {
+    if (adVisible) {
+      setCloseAdCountdown(5); // reset countdown every time ad opens
+
+      const timer = setInterval(() => {
+        setCloseAdCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [adVisible]);
+
+  const loadAd = () => {
+    const adContainer = document.getElementById('ad-container');
+    if (!adContainer) return; // wait until container exists
+
+    // Remove old script if any
+    const existingScript = document.getElementById('adsterra-script');
+    if (existingScript) existingScript.remove();
+
+    adContainer.innerHTML = '';
+
+    const innerContainer = document.createElement('div');
+    innerContainer.id = 'container-61abb6ea6099c52057a640165e20675a';
+    adContainer.appendChild(innerContainer);
+
+    const script = document.createElement('script');
+    script.id = 'adsterra-script';
+    script.async = true;
+    script.setAttribute('data-cfasync', 'false');
+    script.src =
+      '//pl27196664.effectivegatecpm.com/61abb6ea6099c52057a640165e20675a/invoke.js';
+
+    script.onload = () => console.log('Ad script loaded.');
+    script.onerror = () => console.error('Failed to load ad script.');
+
+    adContainer.appendChild(script);
+  };
+
+  // Run loadAd when popup becomes visible
+  useEffect(() => {
+    if (adVisible) {
+      setAdLoaded(false);
+      loadAd();
+    }
+  }, [adVisible]);
+
+  const handleCloseAd = () => {
+    setAdVisible(false);
+    if (currentUser) setFabOpen((prev) => !prev);
+  };
+
+  const handleCloseGuestAd = () => {
+    setAdVisible(false);
+      setAlertMessage({
+        text: i18n.t('loginRequired'),
+        withButton: true,
+      });
+  };
 
   const toggleFAB = () => {
     if (currentUser) {
-      setFabOpen((prev) => !prev);
+      //setFabOpen((prev) => !prev);
+      setAdVisible(true);
     } else {
-      setAlertMessage({
-        text: i18n.t("loginRequired"),
+      setAdVisible(true);
+    {/*  setAlertMessage({
+        text: i18n.t('loginRequired'),
         withButton: true,
       });
-    }
+    }*/} } 
   };
 
   const handleShare = () => {
     if (!hasSharedRoast) {
       setHasSharedRoast(true);
-      localStorage.setItem("hasSharedRoast", "true");
+      localStorage.setItem('hasSharedRoast', 'true');
     }
   };
 
@@ -93,9 +164,9 @@ function Roast() {
       if (!lastSync) {
         // First-time fetch from Supabase
         const { data, error } = await supabase
-          .from("images")
-          .select("id, image_url, user_id, created_at")
-          .order("created_at", { ascending: false });
+          .from('images')
+          .select('id, image_url, user_id, created_at')
+          .order('created_at', { ascending: false });
 
         if (error) throw error;
 
@@ -112,7 +183,7 @@ function Roast() {
         );
 
         const validImages = imagesWithBlob
-          .filter((r) => r.status === "fulfilled")
+          .filter((r) => r.status === 'fulfilled')
           .map((r) => r.value);
 
         await saveRoastImages(validImages);
@@ -122,10 +193,10 @@ function Roast() {
       } else {
         // Fetch only new images since lastSync
         const { data: newImages, error } = await supabase
-          .from("images")
-          .select("id, image_url, user_id, created_at")
-          .gt("created_at", lastSync)
-          .order("created_at", { ascending: false });
+          .from('images')
+          .select('id, image_url, user_id, created_at')
+          .gt('created_at', lastSync)
+          .order('created_at', { ascending: false });
 
         if (error) throw error;
 
@@ -142,7 +213,7 @@ function Roast() {
           );
 
           const validNew = newImagesWithBlob
-            .filter((r) => r.status === "fulfilled")
+            .filter((r) => r.status === 'fulfilled')
             .map((r) => r.value);
 
           await saveRoastImages(validNew);
@@ -157,22 +228,22 @@ function Roast() {
 
       // ✅ Fetch all roasts in one query
       const { data: allRoasts } = await supabase
-        .from("roasts")
-        .select("id, text, user_id, image_id, created_at")
+        .from('roasts')
+        .select('id, text, user_id, image_id, created_at')
         .in(
-          "image_id",
+          'image_id',
           images.map((img) => img.id)
         );
 
       // ✅ Fetch all votes in one query
       const { data: allVotes } = await supabase
-        .from("votes")
-        .select("roast_id, vote_type")
-        .in("roast_id", allRoasts?.map((r) => r.id) || []);
+        .from('votes')
+        .select('roast_id, vote_type')
+        .in('roast_id', allRoasts?.map((r) => r.id) || []);
 
       const voteCountMap = {};
       (allVotes || []).forEach((v) => {
-        if (v.vote_type === "up") {
+        if (v.vote_type === 'up') {
           voteCountMap[v.roast_id] = (voteCountMap[v.roast_id] || 0) + 1;
         }
       });
@@ -191,7 +262,7 @@ function Roast() {
         return {
           image: imageUrl,
           roasts: relatedRoasts.sort((a, b) => b.votes - a.votes),
-          newRoast: "",
+          newRoast: '',
           image_id: img.id,
           created_at: img.created_at,
         };
@@ -200,7 +271,7 @@ function Roast() {
       setCards(cardsWithRoasts);
       setCurrentIndex(0);
     } catch (err) {
-      console.error("Error fetching cards:", err);
+      console.error('Error fetching cards:', err);
     } finally {
       setLoading(false);
     }
@@ -215,11 +286,11 @@ function Roast() {
   }, [currentIndex]);
 
   const upvote = async (cardIndex, roastIndex) => {
-    const currentUser = JSON.parse(localStorage.getItem("user"));
+    const currentUser = JSON.parse(localStorage.getItem('user'));
     const userId = currentUser?.id;
     if (!currentUser) {
       setAlertMessage({
-        text: i18n.t("loginRequiredUpdate"),
+        text: i18n.t('loginRequiredUpdate'),
         withButton: true,
       });
     }
@@ -229,33 +300,33 @@ function Roast() {
 
     // 1. Check if this user has already voted for this roast
     const { data: existingVote, error: checkError } = await supabase
-      .from("votes")
-      .select("id")
-      .eq("roast_id", roast.id)
-      .eq("user_id", userId)
+      .from('votes')
+      .select('id')
+      .eq('roast_id', roast.id)
+      .eq('user_id', userId)
       .limit(1)
       .maybeSingle();
 
     if (checkError) {
-      console.error("Error checking existing vote:", checkError);
+      console.error('Error checking existing vote:', checkError);
       return;
     }
 
     if (existingVote) {
       // User already voted for this roast
-      console.log("User has already voted.");
+      console.log('User has already voted.');
       return;
     }
 
     // 2. Insert vote if not voted before
-    const { error: voteError } = await supabase.from("votes").insert({
+    const { error: voteError } = await supabase.from('votes').insert({
       roast_id: roast.id,
       user_id: userId,
-      vote_type: "up",
+      vote_type: 'up',
     });
 
     if (voteError) {
-      console.error("Error voting:", voteError);
+      console.error('Error voting:', voteError);
       return;
     }
 
@@ -264,21 +335,21 @@ function Roast() {
     updatedCards[cardIndex].roasts[roastIndex].votes++;
     setCards(updatedCards);
 
-    const btn = document.querySelectorAll(".vote-button")[roastIndex];
-    btn.classList.add("fire-animate");
-    setTimeout(() => btn.classList.remove("fire-animate"), 400);
+    const btn = document.querySelectorAll('.vote-button')[roastIndex];
+    btn.classList.add('fire-animate');
+    setTimeout(() => btn.classList.remove('fire-animate'), 400);
   };
 
   const genericTexts = [
-    "hi",
-    "hello",
-    "hellow",
-    "wet",
-    "ok",
-    "okay",
-    "hii",
-    "hey",
-    "nice",
+    'hi',
+    'hello',
+    'hellow',
+    'wet',
+    'ok',
+    'okay',
+    'hii',
+    'hey',
+    'nice',
   ];
 
   const addRoast = async (cardIndex) => {
@@ -289,19 +360,19 @@ function Roast() {
       trimmed.toLowerCase().includes(word.toLowerCase())
     );
     if (containsBanned) {
-      toast.error(i18n.t("roastAbusive"));
+      toast.error(i18n.t('roastAbusive'));
       return;
     }
     const isGeneric = genericTexts.includes(trimmed.toLowerCase());
     if (trimmed.length < 3 || isGeneric) {
-      toast.error(`⚠ ${i18n.t("roastGreeting")}`);
+      toast.error(`⚠ ${i18n.t('roastGreeting')}`);
       return;
     }
 
-    const currentUser = JSON.parse(localStorage.getItem("user"));
+    const currentUser = JSON.parse(localStorage.getItem('user'));
     if (!currentUser) {
       setAlertMessage({
-        text: i18n.t("loginRequiredRoast"),
+        text: i18n.t('loginRequiredRoast'),
         withButton: true,
       });
     }
@@ -312,28 +383,28 @@ function Roast() {
 
     // ✅ Check if the user has already roasted this image
     const { data: existingRoast, error: checkError } = await supabase
-      .from("roasts")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("image_id", imageId)
+      .from('roasts')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('image_id', imageId)
       .limit(1)
       .maybeSingle();
 
     if (checkError) {
-      console.error("Error checking existing roast:", checkError);
+      console.error('Error checking existing roast:', checkError);
       return;
     }
 
     if (existingRoast) {
       setAlertMessage({
-        text: i18n.t("roastAlready"),
+        text: i18n.t('roastAlready'),
         withButton: true,
       });
       return;
     }
     setRoastingIndex(cardIndex);
     // ✅ Insert new roast
-    const { data, error } = await supabase.from("roasts").insert({
+    const { data, error } = await supabase.from('roasts').insert({
       image_id: imageId,
       user_id: userId,
       text: trimmed,
@@ -345,7 +416,7 @@ function Roast() {
 
     const updatedCards = [...cards];
     updatedCards[cardIndex].roasts.push({ text: trimmed, votes: 0 });
-    updatedCards[cardIndex].newRoast = "";
+    updatedCards[cardIndex].newRoast = '';
     setCards(updatedCards);
   };
 
@@ -362,19 +433,19 @@ function Roast() {
   const handleSwipe = (direction) => {
     if (showSwipeGuide) {
       setShowSwipeGuide(false);
-      localStorage.setItem("hasSeenSwipeGuide", "true");
+      localStorage.setItem('hasSeenSwipeGuide', 'true');
     }
 
-    if (direction === "Left" && currentIndex < cards.length - 1) {
+    if (direction === 'Left' && currentIndex < cards.length - 1) {
       setCurrentIndex(currentIndex + 1);
-    } else if (direction === "Right" && currentIndex > 0) {
+    } else if (direction === 'Right' && currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
   };
 
   const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => handleSwipe("Left"),
-    onSwipedRight: () => handleSwipe("Right"),
+    onSwipedLeft: () => handleSwipe('Left'),
+    onSwipedRight: () => handleSwipe('Right'),
     preventScrollOnSwipe: true,
     trackMouse: true,
   });
@@ -383,7 +454,7 @@ function Roast() {
     const file = event.target.files[0];
     if (!file) return;
 
-    const currentUser = JSON.parse(localStorage.getItem("user"));
+    const currentUser = JSON.parse(localStorage.getItem('user'));
     const userId = currentUser?.id;
     if (!userId) {
       return;
@@ -391,8 +462,8 @@ function Roast() {
 
     setUploading(true);
 
-    const CLOUDINARY_UPLOAD_PRESET = "ml_default";
-    const CLOUDINARY_CLOUD_NAME = "dqhajyve8";
+    const CLOUDINARY_UPLOAD_PRESET = 'ml_default';
+    const CLOUDINARY_CLOUD_NAME = 'dqhajyve8';
 
     // Compress image to ~80KB
     const compressAndResize = async (file, targetKB = 80) => {
@@ -422,14 +493,14 @@ function Roast() {
       const compressedFile = await compressAndResize(file, 80);
 
       const formData = new FormData();
-      formData.append("file", compressedFile);
-      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+      formData.append('file', compressedFile);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
       // Upload to Cloudinary
       const cloudinaryRes = await fetch(
         `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
         {
-          method: "POST",
+          method: 'POST',
           body: formData,
         }
       );
@@ -437,19 +508,19 @@ function Roast() {
       const imageUrl = cloudinaryData.secure_url;
 
       if (!imageUrl) {
-        setAlertMessage({ text: i18n.t("uploadFailed"), withButton: true });
+        setAlertMessage({ text: i18n.t('uploadFailed'), withButton: true });
         setUploading(false);
         return;
       }
 
       // Save URL to Supabase
       const { error: insertErr, data: insertedData } = await supabase
-        .from("images")
+        .from('images')
         .insert({ image_url: imageUrl, user_id: userId })
         .select();
 
       if (insertErr) {
-        console.error("Supabase insert error:", insertErr.message);
+        console.error('Supabase insert error:', insertErr.message);
         setUploading(false);
         return;
       }
@@ -468,15 +539,15 @@ function Roast() {
       // Update lastSync timestamp
       await setRoastLastSync(new Date().toISOString());
 
-      localStorage.setItem("hasUploadedImage", "true");
-      toast.success(i18n.t("uploadSuccess"));
+      localStorage.setItem('hasUploadedImage', 'true');
+      toast.success(i18n.t('uploadSuccess'));
 
       // Optionally, append this new image to current cards state
       const updatedCards = [
         {
           image: URL.createObjectURL(compressedFile),
           roasts: [],
-          newRoast: "",
+          newRoast: '',
           image_id: newImage.id,
           created_at: newImage.created_at,
         },
@@ -485,8 +556,8 @@ function Roast() {
       setCards(updatedCards);
       setCurrentIndex(0);
     } catch (err) {
-      console.error("Upload error:", err);
-      toast.error(i18n.t("uploadFailed"));
+      console.error('Upload error:', err);
+      toast.error(i18n.t('uploadFailed'));
     } finally {
       setUploading(false);
     }
@@ -511,7 +582,7 @@ function Roast() {
   if (!cards.length || loading || uploading)
     return (
       <div>
-        <SketchyHeader title={i18n.t("roast")} onBack={handleBack} />
+        <SketchyHeader title={i18n.t('roast')} onBack={handleBack} />
 
         <LoadingSpinner />
       </div>
@@ -519,14 +590,14 @@ function Roast() {
 
   return (
     <>
-      <SketchyHeader title={i18n.t("roast")} onBack={handleBack} />
+      <SketchyHeader title={i18n.t('roast')} onBack={handleBack} />
 
       <div className="roast-page" {...swipeHandlers}>
         <div className="roast-card-container">
           {showSwipeGuide && (
             <div className="swipe-guide-animation">
               <div className="swipe-arrow swipe-left">⬅️</div>
-              <div className="swipe-text">{i18n.t("roastSwipe")}</div>
+              <div className="swipe-text">{i18n.t('roastSwipe')}</div>
               <div className="swipe-arrow swipe-right">➡️</div>
             </div>
           )}
@@ -538,7 +609,7 @@ function Roast() {
               <img
                 src={cards[currentIndex].image}
                 alt="Roast Card"
-                className={`roast-image ${imageLoaded ? "visible" : "hidden"}`}
+                className={`roast-image ${imageLoaded ? 'visible' : 'hidden'}`}
                 onLoad={() => setImageLoaded(true)}
                 onClick={() => setFullImage(cards[currentIndex].image)}
               />
@@ -552,11 +623,11 @@ function Roast() {
             <div className="sketchy-share-buttons">
               <FacebookShareButton
                 url={window.location.href}
-                quote={`🔥 ${i18n.t("roastShare")}`}
+                quote={`🔥 ${i18n.t('roastShare')}`}
                 onClick={handleShare}
               >
                 <button className="sketchy-share">
-                  Facebook{" "}
+                  Facebook{' '}
                   {(count) => (
                     <span className="myShareCountWrapper">{count}</span>
                   )}
@@ -568,7 +639,7 @@ function Roast() {
                 onClick={handleShare}
               >
                 <button className="sketchy-share">
-                  Twitter{" "}
+                  Twitter{' '}
                   {(count) => (
                     <span className="myShareCountWrapper">{count}</span>
                   )}
@@ -593,7 +664,7 @@ function Roast() {
                 .sort((a, b) => b.votes - a.votes)
                 .map((r, i) => (
                   <li key={i} className="roast-item">
-                    <span className={r.text.length > 120 ? "long-roast" : ""}>
+                    <span className={r.text.length > 120 ? 'long-roast' : ''}>
                       {r.text}
                     </span>
                     <button
@@ -609,7 +680,7 @@ function Roast() {
             <div className="input-row">
               <input
                 type="text"
-                placeholder={i18n.t("roastYour")}
+                placeholder={i18n.t('roastYour')}
                 value={cards[currentIndex].newRoast}
                 maxLength={150}
                 onChange={(e) => handleInputChange(e, currentIndex)}
@@ -620,14 +691,16 @@ function Roast() {
               <button
                 onClick={() => addRoast(currentIndex)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.key === 'Enter') {
                     addRoast(currentIndex);
                   }
                 }}
                 className="roast-button"
                 disabled={!currentUser || roastingIndex === currentIndex}
               >
-                {roastingIndex === currentIndex ? i18n.t("roasting") : i18n.t("roast")}
+                {roastingIndex === currentIndex
+                  ? i18n.t('roasting')
+                  : i18n.t('roast')}
               </button>
             </div>
           </div>
@@ -637,7 +710,7 @@ function Roast() {
         type="file"
         accept="image/*"
         id="upload-input"
-        style={{ display: "none" }}
+        style={{ display: 'none' }}
         onChange={handleImageUpload}
       />
 
@@ -653,14 +726,14 @@ function Roast() {
             className="fab-option"
             onClick={() => {
               if (!uploading) {
-                document.getElementById("upload-input").click();
+                document.getElementById('upload-input').click();
                 setFabOpen(false);
               }
             }}
             disabled={uploading}
             title="Upload"
           >
-            {uploading ? "⏳" : "📤"}
+            {uploading ? '⏳' : '📤'}
           </button>
           <button
             className="fab-option"
@@ -683,7 +756,7 @@ function Roast() {
             >
               ✖
             </button>
-            <h3>🔥 {i18n.t("roastOfDay")} </h3>
+            <h3>🔥 {i18n.t('roastOfDay')} </h3>
             <img
               src={topRoastData.image}
               alt="Top Roast"
@@ -706,6 +779,70 @@ function Roast() {
           <img src={fullImage} alt="Full Roast" className="full-image-popup" />
         </div>
       )}
+      {adVisible && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: '#fff',
+              padding: '20px',
+              borderRadius: '10px',
+              textAlign: 'center',
+              width: '90%',
+              maxWidth: '400px',
+            }}
+          >
+            <div className="ad-header">
+              <span className="ad-label">Ad</span>
+              <span className="ad-by">Powered by Adsterra</span>
+            </div>
+            <div
+              id="ad-container"
+              style={{
+                marginTop: '20px',
+                minHeight: '100px',
+                border: '2px dashed #007bff',
+                borderRadius: '10px',
+                background: '#f9f9f9',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              {!adLoaded && <span>Loading Ad...</span>}
+            </div>
+            <button
+              onClick={currentUser ? handleCloseAd : handleCloseGuestAd}
+              disabled={closeAdCountdown > 0} // disabled until countdown ends
+              style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                background: closeAdCountdown > 0 ? '#555' : '#111', // different style while disabled
+                color: '#fff',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: closeAdCountdown > 0 ? 'not-allowed' : 'pointer',
+                position: 'relative',
+              }}
+            >
+              Close Ad {closeAdCountdown > 0 && `(${closeAdCountdown})`}
+            </button>
+          </div>
+        </div>
+      )}
+
       <Toaster />
     </>
   );

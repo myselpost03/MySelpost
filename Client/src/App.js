@@ -390,7 +390,7 @@ function AppContent() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <InternetStatusAlert />
-      {showInstallBanner && <InstallBanner />}
+      {/*showInstallBanner && <InstallBanner />*/}
       {alertMessage && (
         <SketchyAlert
           message={alertMessage.text}

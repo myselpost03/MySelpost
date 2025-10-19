@@ -4,38 +4,76 @@ const Demo = () => {
   const [adLoaded, setAdLoaded] = useState(false);
 
   const loadAd = () => {
-    if (adLoaded) return; // prevent loading twice
+    // Remove old script if any
+    const existingScript = document.getElementById("adsterra-script");
+    if (existingScript) existingScript.remove();
 
-    // Script to define atOptions
-    const scriptOptions = document.createElement("script");
-    scriptOptions.type = "text/javascript";
-    scriptOptions.innerHTML = `
-      atOptions = {
-        'key' : '4849511058af9f3ecf86ed5c6ab215a1',
-        'format' : 'iframe',
-        'height' : 90,
-        'width' : 728,
-        'params' : {}
-      };
-    `;
-    document.body.appendChild(scriptOptions);
+    // Clear ad container
+    const adContainer = document.getElementById("ad-container");
+    if (adContainer) adContainer.innerHTML = "";
 
-    // Script to load the ad
-    const scriptInvoke = document.createElement("script");
-    scriptInvoke.type = "text/javascript";
-    scriptInvoke.src = "//www.highperformanceformat.com/4849511058af9f3ecf86ed5c6ab215a1/invoke.js";
-    document.body.appendChild(scriptInvoke);
+    // Create the required Adsterra container div with the **same ID**
+    const innerContainer = document.createElement("div");
+    innerContainer.id = "container-61abb6ea6099c52057a640165e20675a";
+    adContainer.appendChild(innerContainer);
 
-    setAdLoaded(true);
+    // Append Adsterra script
+    const script = document.createElement("script");
+    script.id = "adsterra-script";
+    script.async = true;
+    script.setAttribute("data-cfasync", "false");
+    script.src =
+      "//pl27196664.effectivegatecpm.com/61abb6ea6099c52057a640165e20675a/invoke.js";
+
+    script.onload = () => {
+      console.log("Ad script loaded successfully.");
+      setAdLoaded(true);
+    };
+
+    script.onerror = () => {
+      console.error("Failed to load ad script.");
+      setAdLoaded(false);
+    };
+
+    adContainer.appendChild(script);
   };
 
   return (
-    <div>
-      <h1>Welcome to the Specific Page</h1>
-      <button onClick={loadAd}>Show Ad</button>
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
+      {adLoaded ? (
+        <p style={{ fontWeight: "bold", color: "green" }}>Sponsored Content 🌟</p>
+      ) : (
+        <p style={{ fontWeight: "bold", color: "#555" }}>Loading Ad...</p>
+      )}
 
-      {/* Optional placeholder if needed */}
-      <div id="ad-container" style={{ marginTop: "20px" }}></div>
+      {/* Ad display container */}
+      <div
+        id="ad-container"
+        style={{
+          marginTop: "20px",
+          padding: "15px",
+          minHeight: "100px",
+          border: "2px dashed #007bff",
+          borderRadius: "10px",
+          background: "#f9f9f9",
+        }}
+      ></div>
+
+      {/* Button to reload ad */}
+      <button
+        onClick={loadAd}
+        style={{
+          marginTop: "20px",
+          padding: "10px 20px",
+          background: "#007bff",
+          color: "#fff",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        Load New Ad
+      </button>
     </div>
   );
 };

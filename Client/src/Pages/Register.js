@@ -10,6 +10,7 @@ import confetti from "canvas-confetti"; // ✅ Import confettiimport { Toaster }
 import toast, { Toaster } from "react-hot-toast";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode"; // ✅ Correct import
+import BannerAd from "../Components/BannerAd";
 import i18n from "../i18n";
 
 const Register = () => {
@@ -705,7 +706,7 @@ const Register = () => {
           </p>
         )*/}
       </div>
-
+<BannerAd />
       <Toaster />
     </div>
   );
