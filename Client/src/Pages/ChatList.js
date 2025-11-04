@@ -1465,14 +1465,14 @@ useEffect(() => {
 
             {activeTab === 'all' && (
               <>
-                {/*  <button
+                {/* <button
                   className="fab-camera-button"
                   onClick={handleScratch}
                   title="Open camera"
                 >
                   <FaMagic />
                 </button>
-*/}
+ */}
                 {/* Filter FAB */}
                 <button
                   className="fab-heart-button"

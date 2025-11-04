@@ -624,14 +624,9 @@ const GuestUser = () => {
       )}
       {alertMessage && (
         <SketchyAlert
-          message={alertMessage.text}
-          buttons={['guest', 'close']}
-          onClose={() => {
-            setAlertMessage(null);
-          }}
-          onGuest={() => {
-            handleGuest();
-          }}
+         message="You have to log in to access this feature."
+          withButton={alertMessage.withButton}
+          onClose={() => setAlertMessage(null)}
         />
       )}{' '}
       {/*

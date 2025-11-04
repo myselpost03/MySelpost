@@ -13,6 +13,8 @@ import { supabase } from '../Utils/supabaseClient';
 import OneSignal from 'react-onesignal';
 import scratchPosts from '../JSON/scratchPosts.json';
 import SketchyHeader from '../Components/SketchyHeader';
+import RevealPopup from '../Components/RevealPopup';
+import SendGiftPopup from '../Components/SendGiftPopup';
 import '../Styles/MissScratch.css';
 
 const MissScratch = () => {
@@ -33,6 +35,9 @@ const MissScratch = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const userItem = localStorage.getItem('user');
   const userId = userItem ? JSON.parse(userItem).id : null;
+  const [showRevealPopup, setShowRevealPopup] = useState(false);
+  const [revealPost, setRevealPost] = useState(null);
+  const [showGiftPopup, setShowGiftPopup] = useState(false);
 
   const [scratches, setScratches] = useState(200);
   const [loaded, setLoaded] = useState(false); // ✅ prevents overwrite on mount
@@ -59,7 +64,7 @@ const MissScratch = () => {
   const [showClose, setShowClose] = useState(false);
   const [countdown, setCountdown] = useState(3);
   const adContainerRef = useRef(null);
-const [popupSource, setPopupSource] = useState(null);
+  const [popupSource, setPopupSource] = useState(null);
 
   useEffect(() => {
     if (!showPopup) return; // exit early if popup isn't shown
@@ -349,7 +354,7 @@ const [popupSource, setPopupSource] = useState(null);
         });
         return;
       }
-       handleDeductScratch();
+      handleDeductScratch();
       if (currentIndex < posts.length - 1) {
         saveViewedPost(posts[currentIndex].id); // Save current as viewed
         setCurrentIndex(currentIndex + 1);
@@ -568,19 +573,31 @@ if (user) {
   };
 
   const handlePopupClose = () => {
-  setShowPopup(false);
-  setAdLoaded(false);
-  if (adContainerRef.current) adContainerRef.current.innerHTML = '';
-  setShowClose(false);
-  setCountdown(3);
-  if (window.afterAdCallback) {
-    window.afterAdCallback();
-    window.afterAdCallback = null;
-  }
-  if (popupSource === 'scratchMessage') handleMessageAlert();
-  setPopupSource(null);
-};
+    setShowPopup(false);
+    setAdLoaded(false);
+    if (adContainerRef.current) adContainerRef.current.innerHTML = '';
+    setShowClose(false);
+    setCountdown(3);
 
+    // trigger after-ad logic if defined
+    if (typeof window.afterAdCallback === 'function') {
+      window.afterAdCallback();
+      window.afterAdCallback = null; // reset
+    }
+
+    // check what triggered the ad
+    if (popupSource === 'revealIdentity' && revealPost) {
+      setShowRevealPopup(true); // open reveal popup after ad
+    } else if (popupSource === 'answerQuestion' && revealPost) {
+      setOpenQuestionPostId(revealPost.id); // ✅ open question popup after ad
+    } else if (popupSource === 'scratchMessage') {
+      handleMessageAlert(); // open message popup after ad
+    } else if (popupSource === 'sendGift') {
+      setShowGiftPopup(true); // ✅ open gift popup after ad
+    }
+
+    setPopupSource(null); // reset
+  };
 
   return (
     <>
@@ -732,6 +749,7 @@ if (user) {
                         post={post}
                         overlayImg={overlayImg}
                         scratches={scratches}
+                        setShowGiftPopup={setShowGiftPopup}
                         setScratches={setScratches}
                         handleMessageAlert={handleMessageAlert}
                         onOpenScratch={() => setOpenScratchPostId(post.id)}
@@ -741,8 +759,9 @@ if (user) {
                         handleDeductScratch={handleDeductScratch} // ✅ pass it explicitly here
                         saveViewedPost={() => saveViewedPost(post.id)}
                         setShowPopup={setShowPopup}
-                       setPopupSource={setPopupSource} // ✅ pass it here
-
+                        setPopupSource={setPopupSource} // ✅ pass it here
+                        setShowRevealPopup={setShowRevealPopup}
+                        setRevealPost={setRevealPost}
                       />
                     </div>
                   ))}
@@ -825,22 +844,27 @@ if (user) {
             <WrongGuessPopup
               onClose={() => setWrongPopupPostId(null)}
               onAd={() => {
-                    setShowPopup(true);const postIndex = posts.findIndex(p => p.id === wrongPopupPostId);
-      if (postIndex === -1) return;
-      const updatedPosts = [...posts];
+                setShowPopup(true);
+                const postIndex = posts.findIndex(
+                  (p) => p.id === wrongPopupPostId
+                );
+                if (postIndex === -1) return;
+                const updatedPosts = [...posts];
 
-      // Mark showFinger true safely
-      updatedPosts[postIndex].showFinger = true;
-  window.afterAdCallback = () => {
-                      toast.success(i18n.t('correctScratchNow'));
+                // Mark showFinger true safely
+                updatedPosts[postIndex].showFinger = true;
+                window.afterAdCallback = () => {
+                  toast.success(i18n.t('correctScratchNow'));
+                  const postIndex = posts.findIndex(
+                    (p) => p.id === wrongPopupPostId
+                  );
+                  if (postIndex === -1) return;
+                  const updatedPosts = [...posts];
+                  updatedPosts[postIndex].locked = false; // ✅ unlock post
+                  updatedPosts[postIndex].wrongAttempt = false;
+                  setPosts(updatedPosts);
+                };
 
-        const postIndex = posts.findIndex(p => p.id === wrongPopupPostId);
-        if (postIndex === -1) return;
-        const updatedPosts = [...posts];
-        updatedPosts[postIndex].locked = false; // unlock scratching
-        updatedPosts[postIndex].wrongAttempt = false;
-        setPosts(updatedPosts);
-      };
                 //toast.success("💰 Payment flow goes here"); // replace with real flow
                 setWrongPopupPostId(null);
               }}
@@ -894,6 +918,15 @@ if (user) {
               </div>
             </div>
           )}
+          {showRevealPopup && revealPost && (
+            <RevealPopup
+              post={revealPost}
+              onClose={() => setShowRevealPopup(false)}
+            />
+          )}
+          {showGiftPopup && (
+            <SendGiftPopup onClose={() => setShowGiftPopup(false)} />
+          )}
 
           <Toaster />
         </div>
@@ -915,7 +948,10 @@ const PostView = ({
   timeAgo,
   setShowPopup,
   setPopupSource,
-  handleDeductScratch, 
+  setShowRevealPopup,
+  setShowGiftPopup,
+  setRevealPost,
+  handleDeductScratch,
   saveViewedPost,
 }) => {
   const baseRef = useRef(null);
@@ -1082,8 +1118,17 @@ if (user) {
         {/*{post.createdAt && (
           <div className="scratch-posted-time">{timeAgo(post.createdAt)}</div>
         )} */}
-        <div className="scratch-upload-btn" onClick={scratchFABClick}>
-          {i18n.t('scratchUpload')}
+        <div
+          className="scratch-upload-btn"
+          onClick={() => {
+            setRevealPost(post); // prepare post for reveal
+
+            // show ad first
+            setPopupSource('revealIdentity'); // mark the source
+            setShowPopup(true);
+          }}
+        >
+          Identity
         </div>
 
         <canvas ref={baseRef} className="scratch-canvas" />
@@ -1101,32 +1146,25 @@ if (user) {
           </div>
         )}
 
-        {post.locked && (
-          <button
-            className="answer-question"
-            onClick={() => {
-              if (post.wrongAttempt) {
-                setWrongPopupPostId(post.id);
-              } else {
-                onOpenQuestion();
-              }
-            }}
-          >
-            {i18n.t('answerQuestion')}
-          </button>
-        )}
-        
-      </div>
+       {post.locked && (
+         <button
+          className="answer-question"
+          onClick={() => {
+            // Directly unlock the post and show finger animation
+            post.locked = false;
+            post.showFinger = true;
 
-      {post.caption && (
-        <div className="scratch-first-bottom-cont">
-          <strong
-            className={`scratch-cap ${post.locked ? 'blurred' : 'shine'}`}
-          >
-            {post.caption}
-          </strong>
-        </div>
-      )}
+            // Force React to re-render by updating state
+            setRevealPost({ ...post });
+          }}
+          disabled={!post.locked}
+        >
+          Reveal✨
+        </button>
+
+       
+       )}
+      </div>
 
       <div className="scratch-second-bottom-cont">
         <button
@@ -1139,44 +1177,25 @@ if (user) {
         <button
           className="share-scratch-btn"
           onClick={() => {
-    setShowPopup(true);
-    setPopupSource('scratchMessage'); // mark the source
-  }}
+            setShowPopup(true);
+            setPopupSource('scratchMessage'); // mark the source
+          }}
         >
           {i18n.t('scratchMessage')}
         </button>
         <button
           className={scratches > 0 ? 'scratches-used' : 'scratches-get'}
-          onClick={() => {
-            if (scratches <= 0) {
-              toast.error(i18n.t('allScratchesUsed'), {
-                duration: 5000,
-              });
-              onOpenScratch();
-
-              return;
-            }
-            if (post.locked) {
-              toast(i18n.t('answerCorrectToScratch'), {
-                icon: '❌',
-              });
-
-              if (scratches === 0) {
-                onOpenScratch();
-              }
-
-              return;
-            }
-          }}
+          onClick={scratchFABClick}
         >
-          {scratches > 0
-            ? `${scratches}${i18n.t('scratchCount')}`
-            : i18n.t('getScratches')}
+          Upload Scratch
         </button>
       </div>
 
-      <button className="meter-btn">
-        ✅ {post.correctCount || 0} {i18n.t('correctGuesses')}
+      <button className="meter-btn"  onClick={() => {
+            setPopupSource('sendGift'); // mark source as gift
+            setShowPopup(true); // show ad first
+          }}>
+        🎁 Send Gift
       </button>
     </div>
   );
