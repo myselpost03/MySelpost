@@ -84,27 +84,39 @@ export default function TermsPopup({ onDone }) {
     });
   };
 
-  const nextSlide = async () => {
-    if (slide === 0 || slide === 1) {
-      setLoadingAd(true);
-      const zoneId = slide === 0 ? "10136263" : "9916729";
-
-      // 1. Load ad script first (no blocking)
-      loadAdScript(zoneId);
-
-      // 2. Wait for ad to visually appear
-      await waitForAdToRender();
-
-      // 3. Continue after ad is visible
-      setLoadingAd(false);
-    }
-
-    if (slide < termsSlides.length - 1) {
-      setSlide(slide + 1);
-    } else if (onDone) {
-      onDone();
-    }
+const nextSlide = async () => {
+  // Define which slides trigger which ads
+  const adZones = {
+    0: "10136263",   
+    1: "9916729",    
+    2: "10054592",   
+    3: "10148445",
+    4: "10148454",
+    5: "10148455",
+    6: "10148458",
+    7: "10148459",
+    8: "10148460",
+    9: "10148461",
   };
+
+  if (adZones[slide]) {
+    setLoadingAd(true);
+
+    // Load script for this slide's ad
+    loadAdScript(adZones[slide]);
+
+    // Wait for it to visually appear
+    await waitForAdToRender();
+
+    setLoadingAd(false);
+  }
+
+  if (slide < termsSlides.length - 1) {
+    setSlide(slide + 1);
+  } else if (onDone) {
+    onDone();
+  }
+};
 
   return (
     <div className="terms-overlay">

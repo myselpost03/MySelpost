@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../Components/Header';
+import TermsPopup from '../Components/TermsPopup';
 import '../Styles/ChatList.css';
 import {
   FaCircle,
@@ -273,26 +274,27 @@ const ChatList = () => {
   const [adLoaded, setAdLoaded] = useState(false); // track ad load
 
   const [adVisible, setAdVisible] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null); // store path & targetUser
-const [closeAdCountdown, setCloseAdCountdown] = useState(5); // 5 seconds countdown
+  const [closeAdCountdown, setCloseAdCountdown] = useState(5); // 5 seconds countdown
 
-useEffect(() => {
-  if (adVisible) {
-    setCloseAdCountdown(5); // reset countdown every time ad opens
+  useEffect(() => {
+    if (adVisible) {
+      setCloseAdCountdown(5); // reset countdown every time ad opens
 
-    const timer = setInterval(() => {
-      setCloseAdCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+      const timer = setInterval(() => {
+        setCloseAdCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
 
-    return () => clearInterval(timer);
-  }
-}, [adVisible]);
+      return () => clearInterval(timer);
+    }
+  }, [adVisible]);
 
   useEffect(() => {
     const fetchAndSetUser = async () => {
@@ -689,8 +691,15 @@ useEffect(() => {
     }
     // Show ad before navigation
     setPendingNavigation({ path, targetUser });
-    setAdVisible(true);
-  };
+      const hasAcceptedTerms = localStorage.getItem("hasAcceptedTerms");
+
+  if (hasAcceptedTerms) {
+  // Navigate immediately
+  navigate(path, { state: { targetUser } });
+} else {
+  // Show terms popup only the first time
+  setShowTerms(true);
+}};
 
   const handleCloseAd = () => {
     setAdVisible(false);
@@ -721,6 +730,38 @@ useEffect(() => {
     navigate(path, { state: { targetUser } });
 
     setPendingNavigation(null); // clear
+  };
+
+  const handleTermsDone = () => {
+      localStorage.setItem("hasAcceptedTerms", "true");
+
+    setShowTerms(false);
+
+    if (!pendingNavigation) return;
+
+    const { path, targetUser } = pendingNavigation;
+
+    // Auto-pin logic (same as before)
+    addAutoPinnedId(targetUser.id);
+    const maxPinned = 10;
+    const autoPinnedIds = JSON.parse(
+      localStorage.getItem('autoPinnedUsers') || '[]'
+    );
+    if (!autoPinnedIds.includes(targetUser.id)) {
+      if (autoPinnedIds.length >= maxPinned) autoPinnedIds.shift();
+      autoPinnedIds.push(targetUser.id);
+      localStorage.setItem('autoPinnedUsers', JSON.stringify(autoPinnedIds));
+    }
+
+    setUsers((prevUsers) =>
+      prevUsers.map((u) =>
+        u.id === targetUser.id ? { ...u, pinned: true } : u
+      )
+    );
+
+    navigate(path, { state: { targetUser } });
+
+    setPendingNavigation(null);
   };
 
   useEffect(() => {
@@ -1224,7 +1265,7 @@ useEffect(() => {
       duration: 4000,
       position: 'bottom-center',
     });
-  }
+  };
 
   const handleNotification = async () => {
     setNotificationCount(0); // reset UI immediately
@@ -1459,7 +1500,9 @@ useEffect(() => {
               <FaMapMarkerAlt style={{ marginRight: '6px' }} />
             </button>
 
-            <button className="sketchy-tab" onClick={handleFilterToast}> {/* handleFilterClick */}
+            <button className="sketchy-tab" onClick={handleFilterToast}>
+              {' '}
+              {/* handleFilterClick */}
               <FaFilter style={{ marginRight: '6px' }} />
             </button>
 
@@ -1954,6 +1997,7 @@ useEffect(() => {
             </div>
           </div>
         )}
+        {showTerms && <TermsPopup onDone={handleTermsDone} />}
       </div>
       <Toaster />
     </>
