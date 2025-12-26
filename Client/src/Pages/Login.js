@@ -203,7 +203,7 @@ const Login = () => {
           </p>
         </form>
       </div>
-      <BannerAd />
+      {/* <BannerAd /> */}
     </div>
   );
 };

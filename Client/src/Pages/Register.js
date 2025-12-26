@@ -509,7 +509,7 @@ const Register = () => {
           profile_pic: profilePicUrl,
           country: country,
           inviter_id: inviterId, // ✅ store inviter
-          invite_code_used: formData.inviteCode || null,
+          //invite_code_used: formData.inviteCode || null,
           // device_id: deviceId,
         },
       ]);
@@ -647,7 +647,7 @@ const Register = () => {
               />
               {passwordError && <p className="error-msg">{passwordError}</p>}
 
-              <input
+              {/*<input
                 type="text"
                 name="inviteCode"
                 placeholder={`${i18n.t("inviteCode")} (${i18n.t("optional")})`}
@@ -658,7 +658,7 @@ const Register = () => {
                 className={`input ${inviteError ? "input-error" : ""}`}
               />
               {inviteError && <p className="error-text">{inviteError}</p>}
-
+**/}
               <div className="profile-pic-selector">
                 <label className="profile-pic-card">
                   <span className="profile-pic-text">
@@ -706,7 +706,7 @@ const Register = () => {
           </p>
         )*/}
       </div>
-<BannerAd />
+            {/* <BannerAd /> */}
       <Toaster />
     </div>
   );

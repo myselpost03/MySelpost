@@ -192,8 +192,8 @@ const loadAd = () => {
       category: "Header",
       label: "Roast Button",
     });
-      setAdVisible(true);
-    //navigate("/roast");
+     // setAdVisible(true);
+    navigate("/roast");
   };
 
   const handleMobileRedirect = (path) => {

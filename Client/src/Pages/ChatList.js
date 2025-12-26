@@ -644,62 +644,30 @@ const ChatList = () => {
     e.preventDefault();
     const isLoggedIn = localStorage.getItem('user');
 
-    if (isLoggedIn) {
-      // Auto-pin this user
-      addAutoPinnedId(targetUser.id);
-
-      // console.log("Logged in user:", user);
-
-      // 🚫 Restrict if non-US user (except Akriti) tries to chat with US user
-      {
-        /*const isNotUS = user.country !== "US";
-      const isNotAkriti = user.name?.trim().toLowerCase() !== "akriti";
-      const isTargetUS = targetUser?.country === "US";
-
-      if (isNotUS && isNotAkriti && isTargetUS && !hasPaidPremium) {
-        setPremiumTargetUser(targetUser);
-        setShowPremiumNotice(true);
+    if (!isLoggedIn) {
+        navigate('/register');
         return;
-      }
-*/
-      }
-      // --- Manage auto-pinned users ---
-      const maxPinned = 10;
-      const autoPinnedIds = JSON.parse(
-        localStorage.getItem('autoPinnedUsers') || '[]'
-      );
+    }
 
-      // If user is not already pinned
-      if (!autoPinnedIds.includes(targetUser.id)) {
-        if (autoPinnedIds.length >= maxPinned) {
-          // Remove the oldest (first) pinned user
-          autoPinnedIds.shift();
-        }
+    // Auto-pin the target user
+    addAutoPinnedId(targetUser.id);
+    const maxPinned = 10;
+    const autoPinnedIds = JSON.parse(localStorage.getItem('autoPinnedUsers') || '[]');
+    if (!autoPinnedIds.includes(targetUser.id)) {
+        if (autoPinnedIds.length >= maxPinned) autoPinnedIds.shift();
         autoPinnedIds.push(targetUser.id);
         localStorage.setItem('autoPinnedUsers', JSON.stringify(autoPinnedIds));
-      }
-
-      // Update local state so UI shows the pin immediately
-      setUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          u.id === targetUser.id ? { ...u, pinned: true } : u
-        )
-      );
-    } else {
-      navigate('/register');
-      return;
     }
-    // Show ad before navigation
-    setPendingNavigation({ path, targetUser });
-      const hasAcceptedTerms = localStorage.getItem("hasAcceptedTerms");
 
-  if (hasAcceptedTerms) {
-  // Navigate immediately
-  navigate(path, { state: { targetUser } });
-} else {
-  // Show terms popup only the first time
-  setShowTerms(true);
-}};
+    // Update users state to reflect pinned immediately
+    setUsers((prevUsers) =>
+        prevUsers.map((u) => (u.id === targetUser.id ? { ...u, pinned: true } : u))
+    );
+
+    // Directly navigate to chat
+    navigate(path, { state: { targetUser } });
+};
+
 
   const handleCloseAd = () => {
     setAdVisible(false);
@@ -1478,12 +1446,15 @@ const ChatList = () => {
               className={`sketchy-tab ${
                 activeTab === 'online' ? 'active' : ''
               }`}
-              onClick={() => {
-                const newTab = activeTab === 'online' ? 'all' : 'online';
-                setActiveTab(newTab);
-                setAllFilter(newTab === 'online' ? 'online' : 'all');
-                localStorage.setItem('activeTab', newTab);
-              }}
+           /** 
+  onClick={() => {
+    const newTab = activeTab === 'online' ? 'all' : 'online';
+    setActiveTab(newTab);
+    setAllFilter(newTab === 'online' ? 'online' : 'all');
+    localStorage.setItem('activeTab', newTab);
+  }} 
+  */
+              onClick={handleFilterToast}
             >
               {i18n.t('online')}
             </button>
@@ -1997,7 +1968,6 @@ const ChatList = () => {
             </div>
           </div>
         )}
-        {showTerms && <TermsPopup onDone={handleTermsDone} />}
       </div>
       <Toaster />
     </>

@@ -19,9 +19,10 @@ import { supabase } from '../Utils/supabaseClient';
 import LoadingSpinner from '../Components/LoadingSpinner';
 import ReactCountryFlag from 'react-country-flag';
 import SketchyAlert from '../Components/SketchyAlert';
-import MissScratch from './MissScratch';
 import i18n from '../i18n';
-
+import TermsPopup from '../Components/TermsPopup';
+import AdVignette from '../Components/AdVignette';
+import { FaTimes } from 'react-icons/fa';
 const countryNameToCode = {
   AF: 'AF',
   AL: 'AL',
@@ -228,79 +229,21 @@ const GuestUser = () => {
   const [showGenderTabs, setShowGenderTabs] = useState(false);
   const [showCountryTabs, setShowCountryTabs] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem('activeTab') || 'all';
+  });
+  const [searchLoading, setSearchLoading] = useState(false); // dedicated search loader
+
   const [alertMessage, setAlertMessage] = useState(null);
+  const [showTerms, setShowTerms] = useState(false);
 
   const [page, setPage] = useState(0); // pagination page
   const [hasMore, setHasMore] = useState(true); // track if more users exist
   const [loadingMore, setLoadingMore] = useState(false);
-  const [adLoaded, setAdLoaded] = useState(false); // track ad load
-  const [popupSource, setPopupSource] = useState(null);
-
-  const [adVisible, setAdVisible] = useState(false);
-  const [closeAdCountdown, setCloseAdCountdown] = useState(5); // 5 seconds countdown
   const navigate = useNavigate();
-  useEffect(() => {
-    if (adVisible) {
-      setCloseAdCountdown(5); // reset countdown every time ad opens
-
-      const timer = setInterval(() => {
-        setCloseAdCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
-  }, [adVisible]);
-
-  const loadAd = () => {
-    const adContainer = document.getElementById('ad-container');
-    if (!adContainer) return; // wait until container exists
-
-    // Remove old script if any
-    const existingScript = document.getElementById('adsterra-script');
-    if (existingScript) existingScript.remove();
-
-    adContainer.innerHTML = '';
-
-    const innerContainer = document.createElement('div');
-    innerContainer.id = 'container-61abb6ea6099c52057a640165e20675a';
-    adContainer.appendChild(innerContainer);
-
-    const script = document.createElement('script');
-    script.id = 'adsterra-script';
-    script.async = true;
-    script.setAttribute('data-cfasync', 'false');
-    script.src =
-      '//pl27196664.effectivegatecpm.com/61abb6ea6099c52057a640165e20675a/invoke.js';
-
-    script.onload = () => console.log('Ad script loaded.');
-    script.onerror = () => console.error('Failed to load ad script.');
-
-    adContainer.appendChild(script);
-  };
-
-  // Run loadAd when popup becomes visible
-  useEffect(() => {
-    if (adVisible) {
-      setAdLoaded(false);
-      loadAd();
-    }
-  }, [adVisible]);
-
-  const handleCloseAd = () => {
-    setAdVisible(false);
-
-    if (popupSource === 'miss-scratch') navigate('/miss-scratch');
-    setPopupSource(null);
-  };
 
   const handleFire = () => {
-    setAdVisible(true);
+    navigate('/roast');
   };
   useEffect(() => {
     const fetchUsers = async () => {
@@ -310,7 +253,6 @@ const GuestUser = () => {
         .select(
           'id, name, gender, age, country, status, decency_rating, profile_pic, google_login, created_at'
         )
-        .neq('country', 'IN')
         .order('google_login', { ascending: true }) // false (0) comes first, true (1) comes later
         .order('created_at', { ascending: false }) // newest first within each group
         .range(page * 10, page * 10 + 9);
@@ -384,31 +326,133 @@ const GuestUser = () => {
 
     return roundRobin.slice(0, end);
   }, [users, genderFilter, countryFilter, searchTerm, page]);
-  const handleGuest = () => {
-    setAdVisible(true);
-    setPopupSource('miss-scratch');
+  const handleUserClick = () => {
+    const hasSeenTerms = localStorage.getItem('guest_terms_seen');
+
+    if (!hasSeenTerms) {
+      setShowTerms(true);
+    } else {
+      handleAlert(); // still show login alert if they already saw terms
+    }
   };
+
+  const handleTermsDone = () => {
+    localStorage.setItem('guest_terms_seen', 'true');
+    setShowTerms(false);
+  };
+
+  const handleSearchSubmit = async () => {
+    if (searchTerm.trim() === '') {
+      setPage(0);
+      setUsers([]);
+      setHasMore(true);
+      return;
+    }
+    setSearchLoading(true); // ✅ Show spinner only on button click
+
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select(
+          'id, name, profile_pic, country, gender, status, age, decency_rating'
+        )
+        .ilike('name', `%${searchTerm}%`);
+
+      if (error) throw error;
+    } catch (err) {
+      console.error('Search error:', err.message);
+    } finally {
+      setLoading(false);
+      setSearchLoading(false); // ✅ Hide spinner after search
+    }
+  };
+
   return (
     <div className="chatlist-container">
       <Header />
+      <AdVignette />
       {loading ? (
         <LoadingSpinner />
       ) : (
         <>
           <div className="sketchy-search-wrapper">
-            <input
-              type="text"
-              className="sketchy-search"
-              placeholder={`🔍 ${i18n.t('searchUsers')}`}
-              value={searchTerm}
-              onChange={(e) => {
-                handleAlert();
-              }}
-            />
-            <button className="search-button" onClick={handleAlert}>
+            <div className="search-input-container">
+              <input
+                type="text"
+                className="sketchy-search"
+                placeholder={`🔍 ${i18n.t('searchUsers')}`}
+                value={searchTerm}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSearchTerm(value);
+
+                  if (value.trim() === '') {
+                    setPage(0);
+                    setUsers([]);
+                    setHasMore(true);
+                    setActiveTab('all');
+                    localStorage.setItem('activeTab', 'all');
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearchSubmit();
+                  }
+                }}
+              />
+
+              {/* Show cross icon inside input when there is text */}
+              {searchTerm.trim() !== '' && (
+                <button
+                  className="clear-search-button"
+                  onClick={async () => {
+                    setSearchTerm(''); // clear input
+                    setPage(0);
+                    setHasMore(true);
+                    setActiveTab('all');
+                    localStorage.setItem('activeTab', 'all');
+
+                    setLoading(true); // ✅ show spinner while loading "All" tab
+
+                    try {
+                      const { data, error } = await supabase
+                        .from('users')
+                        .select(
+                          'id, name, profile_pic, country, gender, status, age, decency_rating, created_at'
+                        )
+                        .order('created_at', { ascending: false });
+
+                      if (error) throw error;
+
+                      // Process users as usual
+                      const processed = data.map((u) => ({
+                        ...u,
+                        avatar: u.profile_pic || empty,
+                        // notifications: unreadCounts[u.id] || 0,
+                        pinned: false, // reset pinned if needed
+                        status: u.status || 'offline',
+                      }));
+
+                      setUsers(processed);
+                    } catch (err) {
+                      console.error('Error loading all users:', err);
+                    } finally {
+                      setLoading(false); // ✅ hide spinner
+                    }
+                  }}
+                  title="Clear search"
+                >
+                  <FaTimes />
+                </button>
+              )}
+            </div>
+
+            {/* Search icon outside input */}
+            <button className="search-button" onClick={handleSearchSubmit}>
               <FaSearch />
             </button>
           </div>
+
           <div className="tab-bar">
             <button className={`sketchy-tab`}>{i18n.t('all')}</button>
             <button
@@ -466,7 +510,7 @@ const GuestUser = () => {
               <>
                 {filteredGuestUsers.map((user) => (
                   <>
-                    <div className="user-card" onClick={handleAlert}>
+                    <div className="user-card" onClick={handleUserClick}>
                       <div className="user-avatar-wrapper">
                         <img
                           src={user.profile_pic || empty}
@@ -624,81 +668,15 @@ const GuestUser = () => {
       )}
       {alertMessage && (
         <SketchyAlert
-         message="You have to log in to access this feature."
+          message="You have to log in to access this feature."
           withButton={alertMessage.withButton}
           onClose={() => setAlertMessage(null)}
         />
       )}{' '}
-      {/*
-      <Link to="/miss-scratch" className="fab-camera-button" title="Scratch">
-        <FaMagic />
-      </Link> */}
       <Link onClick={handleFire} className="fab-roast-button" title="Roast">
         <FaFire />
       </Link>
-      {adVisible && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0,0,0,0.7)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: '#fff',
-              padding: '20px',
-              borderRadius: '10px',
-              textAlign: 'center',
-              width: '90%',
-              maxWidth: '400px',
-            }}
-          >
-            <div className="ad-header">
-              <span className="ad-label">Ad</span>
-              <span className="ad-by">Powered by Adsterra</span>
-            </div>
-            <div
-              id="ad-container"
-              style={{
-                marginTop: '20px',
-                minHeight: '100px',
-                border: '2px dashed #007bff',
-                borderRadius: '10px',
-                background: '#f9f9f9',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              {!adLoaded && <span>Loading Ad...</span>}
-            </div>
-            <button
-              onClick={handleCloseAd}
-              disabled={closeAdCountdown > 0} // disabled until countdown ends
-              style={{
-                marginTop: '20px',
-                padding: '10px 20px',
-                background: closeAdCountdown > 0 ? '#555' : '#111', // different style while disabled
-                color: '#fff',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: closeAdCountdown > 0 ? 'not-allowed' : 'pointer',
-                position: 'relative',
-              }}
-            >
-              Close Ad {closeAdCountdown > 0 && `(${closeAdCountdown})`}
-            </button>
-          </div>
-        </div>
-      )}
+      {showTerms && <TermsPopup onDone={handleTermsDone} />}
     </div>
   );
 };

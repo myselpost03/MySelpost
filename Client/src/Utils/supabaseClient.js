@@ -6,8 +6,7 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-const SOURCE_SUPABASE_URL = "https://bomgzfyjyjncmvcrxvvj.supabase.co";
-const SOURCE_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvbWd6ZnlqeWpuY212Y3J4dnZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUxNTkwNTAsImV4cCI6MjA3MDczNTA1MH0.rlhK7_I04HyGdc5WC5oqppvnlehg8lgKtVVfEN-n_mo";
-
+const SOURCE_SUPABASE_URL = "https://aipmrlixkhxqbojjxyoz.supabase.co";
+const SOURCE_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpcG1ybGl4a2h4cWJvamp4eW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU1MDc3MTIsImV4cCI6MjA4MTA4MzcxMn0.p26degYcqNEtJJDoNP-1pq8HbCD8ANqkoS0PU7yF8o4"
 
 export const supabaseStorage = createClient(SOURCE_SUPABASE_URL, SOURCE_SUPABASE_KEY);

@@ -865,7 +865,7 @@ const Profile = () => {
           onClose={() => setAlertMessage(null)}
         />
       )}
-      <BannerAd />
+      {/* <BannerAd /> */}
       <Toaster />
     </>
   );
