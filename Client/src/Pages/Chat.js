@@ -1,25 +1,39 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
-import ChatHeader from "../Components/ChatHeader";
-import { supabase, supabaseStorage } from "../Utils/supabaseClient";
-import { FaImage } from "react-icons/fa";
-import bannedData from "../JSON/bannedWords.json";
-import SketchyAlert from "../Components/SketchyAlert";
-import { trackEvent } from "../Utils/analytics";
-import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
-import imageCompression from "browser-image-compression";
-import i18n from "../i18n";
-import "../Styles/Chat.css";
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
+import ChatHeader from '../Components/ChatHeader';
+import { supabase, supabaseStorage } from '../Utils/supabaseClient';
+import { FaImage } from 'react-icons/fa';
+import bannedData from '../JSON/bannedWords.json';
+import SketchyAlert from '../Components/SketchyAlert';
+import { trackEvent } from '../Utils/analytics';
+import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
+import imageCompression from 'browser-image-compression';
+import i18n from '../i18n';
+import AudioTermsSlider from '../Components/AudioTermsSlider';
+import '../Styles/Chat.css';
 
+const AUDIO_TERMS_KEY = 'audioTermsAccepted';
+
+const hasAcceptedAudioTerms = () => {
+  return localStorage.getItem(AUDIO_TERMS_KEY) === 'true';
+};
+
+const markAudioTermsAccepted = () => {
+  localStorage.setItem(AUDIO_TERMS_KEY, 'true');
+};
 
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const [alertMessage, setAlertMessage] = useState(null);
   const [isBlocked, setIsBlocked] = useState(false);
-  const [modalImage, setModalImage] = useState(null);
+  const [modalImageMsg, setModalImageMsg] = useState(null);
+const [showPlusMenu, setShowPlusMenu] = useState(false);
+const [showAudioTerms, setShowAudioTerms] = useState(false);
+const [pendingAudioStart, setPendingAudioStart] = useState(false);
+
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [audioChunks, setAudioChunks] = useState([]);
@@ -36,16 +50,17 @@ const Chat = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showNotice, setShowNotice] = useState(false);
   const [showGifSearch, setShowGifSearch] = useState(false);
-  const [gifQuery, setGifQuery] = useState("");
+  const [gifQuery, setGifQuery] = useState('');
   const [gifs, setGifs] = useState([]);
   const [gifLoading, setGifLoading] = useState(false);
   const [isSendingGif, setIsSendingGif] = useState(false);
   const [sendingGifId, setSendingGifId] = useState(null);
+const [imageState, setImageState] = useState({});
 
   const inputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const recentMessages = useRef([]);
-  const lastPasted = useRef("");
+  const lastPasted = useRef('');
   const sendingGifRef = useRef(false);
 
   // Get reciever id
@@ -54,17 +69,19 @@ const Chat = () => {
   const { state } = useLocation();
 
   // Get current user
-  const currentUser = JSON.parse(localStorage.getItem("user"));
+  const currentUser = JSON.parse(localStorage.getItem('user'));
 
   // Get target user
   const targetUser = state?.targetUser;
 
   const navigate = useNavigate();
-const [bgStyle, setBgStyle] = useState("");
+  const [bgStyle, setBgStyle] = useState('');
 
   useEffect(() => {
     // Load background from localStorage on component mount
-    const savedBg = localStorage.getItem("chatBackground") || `repeating-linear-gradient(
+    const savedBg =
+      localStorage.getItem('chatBackground') ||
+      `repeating-linear-gradient(
       45deg,
       #fffef9,
       #fffef9 10px,
@@ -81,13 +98,13 @@ const [bgStyle, setBgStyle] = useState("");
 
     const resetUnreadCount = async () => {
       const { error } = await supabase
-        .from("unread_counts")
+        .from('unread_counts')
         .update({ count: 0 })
-        .eq("sender_id", targetId)
-        .eq("receiver_id", currentUser.id);
+        .eq('sender_id', targetId)
+        .eq('receiver_id', currentUser.id);
 
       if (error) {
-        console.error("Error resetting unread count:", error);
+        console.error('Error resetting unread count:', error);
       }
     };
 
@@ -99,12 +116,12 @@ const [bgStyle, setBgStyle] = useState("");
     const checkAccess = async () => {
       if (!currentUser?.id) return;
       const { data, error } = await supabase
-        .from("users")
-        .select("self_destruct_pricing")
-        .eq("id", currentUser.id)
+        .from('users')
+        .select('self_destruct_pricing')
+        .eq('id', currentUser.id)
         .single();
 
-      if (!error && data?.self_destruct_pricing === "paid") {
+      if (!error && data?.self_destruct_pricing === 'paid') {
         setHasAccess(true);
       } else {
         setHasAccess(false);
@@ -118,52 +135,52 @@ const [bgStyle, setBgStyle] = useState("");
   useEffect(() => {
     if (showPayPal && window.paypal && currentUser) {
       if (
-        document.getElementById("paypal-button-container").childElementCount ===
+        document.getElementById('paypal-button-container').childElementCount ===
         0
       ) {
         window.paypal
           .Buttons({
             style: {
-              layout: "vertical",
-              color: "blue",
-              shape: "pill",
-              label: "paypal",
+              layout: 'vertical',
+              color: 'blue',
+              shape: 'pill',
+              label: 'paypal',
             },
             createOrder: (data, actions) => {
               return actions.order.create({
-                purchase_units: [{ amount: { value: "1.00" } }],
+                purchase_units: [{ amount: { value: '1.00' } }],
               });
             },
             onApprove: async (data, actions) => {
               await actions.order.capture();
 
               setAlertMessage({
-                text: "✅ Payment successful! Now you can chat with premium country user.",
+                text: '✅ Payment successful! Now you can chat with premium country user.',
                 withButton: true,
               });
 
-              const user = JSON.parse(localStorage.getItem("user"));
+              const user = JSON.parse(localStorage.getItem('user'));
               const id = user?.id;
 
               if (id) {
                 await supabase
-                  .from("users")
-                  .update({ self_destruct_pricing: "paid" })
-                  .eq("id", id);
+                  .from('users')
+                  .update({ self_destruct_pricing: 'paid' })
+                  .eq('id', id);
 
                 setHasAccess(true);
                 setAutoDeleteEnabled(false);
               }
             },
             onError: (err) => {
-              console.error("PayPal error:", err);
+              console.error('PayPal error:', err);
               setAlertMessage({
                 text: `❌ Payment Failed.`,
                 withButton: true,
               });
             },
           })
-          .render("#paypal-button-container");
+          .render('#paypal-button-container');
       }
     }
   }, [showPayPal, currentUser]);
@@ -174,17 +191,17 @@ const [bgStyle, setBgStyle] = useState("");
       try {
         const [{ data: blockedByMe }, { data: blockedMe }] = await Promise.all([
           supabase
-            .from("blocked_users")
-            .select("*")
-            .eq("blocker_id", currentUser.id)
-            .eq("blocked_id", targetId)
+            .from('blocked_users')
+            .select('*')
+            .eq('blocker_id', currentUser.id)
+            .eq('blocked_id', targetId)
             .maybeSingle(),
 
           supabase
-            .from("blocked_users")
-            .select("*")
-            .eq("blocker_id", targetId)
-            .eq("blocked_id", currentUser.id)
+            .from('blocked_users')
+            .select('*')
+            .eq('blocker_id', targetId)
+            .eq('blocked_id', currentUser.id)
             .maybeSingle(),
         ]);
 
@@ -192,8 +209,8 @@ const [bgStyle, setBgStyle] = useState("");
         setIBlockedOtherUser(!!blockedByMe);
         setBlockedByOtherUser(!!blockedMe);
       } catch (err) {
-        if (err.message !== "PGRST116") {
-          console.error("Block status check failed:", err.message);
+        if (err.message !== 'PGRST116') {
+          console.error('Block status check failed:', err.message);
         }
       }
     };
@@ -206,23 +223,23 @@ const [bgStyle, setBgStyle] = useState("");
   useEffect(() => {
     const checkBlockStatus = async () => {
       const { data: blockedByMe, error: error1 } = await supabase
-        .from("blocked_users")
-        .select("*")
-        .eq("blocker_id", currentUser.id)
-        .eq("blocked_id", targetId)
+        .from('blocked_users')
+        .select('*')
+        .eq('blocker_id', currentUser.id)
+        .eq('blocked_id', targetId)
         .maybeSingle();
 
       const { data: blockedMe, error: error2 } = await supabase
-        .from("blocked_users")
-        .select("*")
-        .eq("blocker_id", targetId)
-        .eq("blocked_id", currentUser.id)
+        .from('blocked_users')
+        .select('*')
+        .eq('blocker_id', targetId)
+        .eq('blocked_id', currentUser.id)
         .maybeSingle();
 
-      if (error1 && error1.code !== "PGRST116")
-        console.error("Error1:", error1.message);
-      if (error2 && error2.code !== "PGRST116")
-        console.error("Error2:", error2.message);
+      if (error1 && error1.code !== 'PGRST116')
+        console.error('Error1:', error1.message);
+      if (error2 && error2.code !== 'PGRST116')
+        console.error('Error2:', error2.message);
 
       setIBlockedOtherUser(!!blockedByMe);
       setBlockedByOtherUser(!!blockedMe);
@@ -249,20 +266,20 @@ const [bgStyle, setBgStyle] = useState("");
       loadInitialMessages();
     };
 
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   // Fetch and store talked count
   useEffect(() => {
     const fetchAndStoreTalkedUsers = async () => {
       const { data, error } = await supabase
-        .from("chats")
-        .select("sender_id, receiver_id")
+        .from('chats')
+        .select('sender_id, receiver_id')
         .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`);
 
       if (error) {
-        console.error("Error fetching messages:", error);
+        console.error('Error fetching messages:', error);
         return;
       }
 
@@ -280,13 +297,13 @@ const [bgStyle, setBgStyle] = useState("");
 
       // 🔍 Fetch current talked_to_count from users table
       const { data: userData, error: userFetchError } = await supabase
-        .from("users")
-        .select("talked_to_count")
-        .eq("id", currentUser.id)
+        .from('users')
+        .select('talked_to_count')
+        .eq('id', currentUser.id)
         .single();
 
       if (userFetchError) {
-        console.error("Failed to fetch user data:", userFetchError);
+        console.error('Failed to fetch user data:', userFetchError);
         return;
       }
 
@@ -295,17 +312,17 @@ const [bgStyle, setBgStyle] = useState("");
       // 🧠 Only update if count is different
       if (currentCount !== talkedToCount) {
         const { error: updateError } = await supabase
-          .from("users")
+          .from('users')
           .update({ talked_to_count: talkedToCount })
-          .eq("id", currentUser.id);
+          .eq('id', currentUser.id);
 
         if (updateError) {
-          console.error("Failed to update talked_to_count:", updateError);
+          console.error('Failed to update talked_to_count:', updateError);
         } else {
           console.log(`Updated talked_to_count to ${talkedToCount}`);
         }
       } else {
-        console.log("talked_to_count unchanged, skipping update");
+        console.log('talked_to_count unchanged, skipping update');
       }
     };
 
@@ -315,12 +332,12 @@ const [bgStyle, setBgStyle] = useState("");
   // Update message seen status
   useEffect(() => {
     messages.forEach(async (msg) => {
-      if (msg.type === "received" && !msg.seen) {
+      if (msg.type === 'received' && !msg.seen) {
         // Update DB
         await supabase
-          .from("chats")
-          .update({ status: "seen" })
-          .eq("id", msg.id);
+          .from('chats')
+          .update({ status: 'seen' })
+          .eq('id', msg.id);
 
         // Update local state
         setMessages((prev) =>
@@ -341,7 +358,7 @@ const [bgStyle, setBgStyle] = useState("");
       const createdAt = new Date(msg.created_at).getTime();
       if (now - createdAt >= 24 * 60 * 60 * 1000) {
         // Delete from DB
-        await supabase.from("chats").delete().eq("id", msg.id);
+        await supabase.from('chats').delete().eq('id', msg.id);
 
         // Delete from local state
         setMessages((prev) => prev.filter((m) => m.id !== msg.id));
@@ -354,41 +371,41 @@ const [bgStyle, setBgStyle] = useState("");
     if (!mediaRecorder) return;
 
     mediaRecorder.onstop = async () => {
-      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
       const fileName = `${Date.now()}.webm`;
       const filePath = `chat-audio/${currentUser.id}/${fileName}`;
 
       // Upload to Supabase storage
       const { error: uploadError } = await supabaseStorage.storage
-        .from("chat-audio")
+        .from('chat-audio')
         .upload(filePath, audioBlob);
 
       if (uploadError) {
-        console.error("Upload failed:", uploadError.message);
+        console.error('Upload failed:', uploadError.message);
         return;
       }
 
       const { data: publicURLData } = supabaseStorage.storage
-        .from("chat-audio")
+        .from('chat-audio')
         .getPublicUrl(filePath);
 
       const audioUrl = publicURLData?.publicUrl;
 
       // Save message in chats table
       const { data, error } = await supabase
-        .from("chats")
+        .from('chats')
         .insert([
           {
             sender_id: currentUser.id,
             receiver_id: targetId,
             message: audioUrl,
-            type: "audio",
+            type: 'audio',
           },
         ])
         .select();
 
       if (error) {
-        console.error("Insert audio message failed:", error.message);
+        console.error('Insert audio message failed:', error.message);
         return;
       }
 
@@ -396,7 +413,7 @@ const [bgStyle, setBgStyle] = useState("");
         const dbMsg = {
           id: data[0].id,
           text: data[0].message,
-          type: "sent",
+          type: 'sent',
           timestamp: data[0].created_at,
           isAudio: true,
         };
@@ -408,7 +425,7 @@ const [bgStyle, setBgStyle] = useState("");
   // Auto Scroll to Bottom of Newest Messages
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
 
@@ -416,16 +433,15 @@ const [bgStyle, setBgStyle] = useState("");
   const loadInitialMessages = async () => {
     //setIsLoading(true);
     const { data, error } = await supabase
-      .from("chats")
-      .select("*")
+      .from('chats')
+      .select('*')
       .or(
         `and(sender_id.eq.${currentUser.id},receiver_id.eq.${targetId}),and(sender_id.eq.${targetId},receiver_id.eq.${currentUser.id})`
       )
-      .order("created_at", { ascending: true });
-      
+      .order('created_at', { ascending: true });
 
     if (error) {
-      console.error("Initial message load failed:", error.message);
+      console.error('Initial message load failed:', error.message);
       setIsLoading(false);
       return;
     }
@@ -439,17 +455,17 @@ const [bgStyle, setBgStyle] = useState("");
     const formatted = filtered.map((msg) => ({
       id: msg.id,
       text: msg.message,
-      type: msg.sender_id === currentUser.id ? "sent" : "received",
+      type: msg.sender_id === currentUser.id ? 'sent' : 'received',
       sender_id: msg.sender_id,
       time: new Date(msg.created_at).toLocaleTimeString(),
       status: msg.status,
       isRequest: msg.is_request,
       timestamp: msg.created_at,
-      isAudio: msg.type === "audio", // <-- mark audio messages here
-      isImage: msg.type === "image",
-      isGif: msg.type === "gif", // 👈 mark GIFs
-      gifUrl: msg.type === "gif" ? msg.message : null, // 👈 store URL
-      seen: msg.status === "seen",
+      isAudio: msg.type === 'audio', // <-- mark audio messages here
+      isImage: msg.type === 'image',
+      isGif: msg.type === 'gif', // 👈 mark GIFs
+      gifUrl: msg.type === 'gif' ? msg.message : null, // 👈 store URL
+      seen: msg.status === 'seen',
     }));
 
     setMessages(formatted);
@@ -459,28 +475,42 @@ const [bgStyle, setBgStyle] = useState("");
     setIsLoading(false); // Done loading
     // Reset unread count (other user → current user)
     await supabase
-      .from("unread_counts")
+      .from('unread_counts')
       .update({ count: 0 })
-      .eq("sender_id", targetId)
-      .eq("receiver_id", currentUser.id);
+      .eq('sender_id', targetId)
+      .eq('receiver_id', currentUser.id);
   };
+  const openAdThen = (cb) => {
+  const adWindow = window.open(
+    'https://otieu.com/4/10380848',
+    '_blank'
+  );
+
+  const timer = setInterval(() => {
+    if (adWindow?.closed) {
+      clearInterval(timer);
+      cb();
+    }
+  }, 500);
+};
+
 
   // Fetch new messages
   const fetchNewMessages = async () => {
     const query = supabase
-      .from("chats")
-      .select("*")
+      .from('chats')
+      .select('*')
       .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-      .order("created_at", { ascending: true });
+      .order('created_at', { ascending: true });
 
     if (lastFetchedAt) {
-      query.gt("created_at", lastFetchedAt);
+      query.gt('created_at', lastFetchedAt);
     }
 
     const { data, error } = await query;
 
     if (error) {
-      console.error("Polling error:", error.message);
+      console.error('Polling error:', error.message);
       return;
     }
 
@@ -494,12 +524,12 @@ const [bgStyle, setBgStyle] = useState("");
       const formatted = filtered.map((msg) => ({
         id: msg.id,
         text: msg.message,
-        type: msg.sender_id === currentUser.id ? "sent" : "received",
+        type: msg.sender_id === currentUser.id ? 'sent' : 'received',
         time: new Date(msg.created_at).toLocaleTimeString(),
         timestamp: msg.created_at,
-        isImage: msg.type === "image",
-        isGif: msg.type === "gif", // <-- ADD THIS
-        gifUrl: msg.type === "gif" ? msg.message : null,
+        isImage: msg.type === 'image',
+        isGif: msg.type === 'gif', // <-- ADD THIS
+        gifUrl: msg.type === 'gif' ? msg.message : null,
       }));
 
       setMessages((prev) => {
@@ -520,7 +550,7 @@ const [bgStyle, setBgStyle] = useState("");
 
       try {
         // Delete from Supabase
-        await supabase.from("chats").delete().eq("id", messageId);
+        await supabase.from('chats').delete().eq('id', messageId);
 
         // Delete from storage if image
         {
@@ -538,7 +568,7 @@ const [bgStyle, setBgStyle] = useState("");
         // Update local state
         setMessages((prev) => prev.filter((m) => m.id !== messageId));
       } catch (err) {
-        console.error("Failed to delete message:", err.message);
+        console.error('Failed to delete message:', err.message);
       }
     }, 60 * 60 * 1000); // 1 hour
   };
@@ -550,21 +580,21 @@ const [bgStyle, setBgStyle] = useState("");
     const seconds = Math.floor((now - date) / 1000);
 
     const intervals = [
-      { label: "year", seconds: 31536000 },
-      { label: "month", seconds: 2592000 },
-      { label: "day", seconds: 86400 },
-      { label: "hour", seconds: 3600 },
-      { label: "minute", seconds: 60 },
+      { label: 'year', seconds: 31536000 },
+      { label: 'month', seconds: 2592000 },
+      { label: 'day', seconds: 86400 },
+      { label: 'hour', seconds: 3600 },
+      { label: 'minute', seconds: 60 },
     ];
 
     for (const interval of intervals) {
       const count = Math.floor(seconds / interval.seconds);
       if (count >= 1) {
-        return `${count} ${interval.label}${count > 1 ? "s" : ""} ago`;
+        return `${count} ${interval.label}${count > 1 ? 's' : ''} ago`;
       }
     }
 
-    return i18n.t("justNow");
+    return i18n.t('justNow');
   }
 
   // Send Message
@@ -573,9 +603,9 @@ const [bgStyle, setBgStyle] = useState("");
     setIsSending(true);
 
     trackEvent({
-      action: "button_click",
-      category: "Chat Page",
-      label: "Send Message Button",
+      action: 'button_click',
+      category: 'Chat Page',
+      label: 'Send Message Button',
     });
 
     const messageText = input.trim();
@@ -584,7 +614,7 @@ const [bgStyle, setBgStyle] = useState("");
       return;
     }
 
-    setInput("");
+    setInput('');
     inputRef.current?.focus();
 
     const isAbusive = bannedData.abusiveWords.some((w) =>
@@ -593,13 +623,13 @@ const [bgStyle, setBgStyle] = useState("");
     // Insert message into DB
     try {
       const { data, error } = await supabase
-        .from("chats")
+        .from('chats')
         .insert([
           {
             sender_id: currentUser.id,
             receiver_id: targetId,
             message: messageText,
-            type: "text",
+            type: 'text',
             is_abusive: isAbusive,
           },
         ])
@@ -611,7 +641,7 @@ const [bgStyle, setBgStyle] = useState("");
         const dbMsg = {
           id: data[0].id,
           text: data[0].message,
-          type: "sent",
+          type: 'sent',
           time: new Date(data[0].created_at).toLocaleTimeString(),
           timestamp: data[0].created_at,
         };
@@ -621,13 +651,13 @@ const [bgStyle, setBgStyle] = useState("");
 
         // Ensure chat partner is pinned
         await supabase
-          .from("pinned_users")
+          .from('pinned_users')
           .upsert([{ user_id: currentUser.id, pinned_user_id: targetId }]);
 
         // Update unread counts
         if (!blockedByOtherUser && !iBlockedOtherUser) {
           const { data: unreadData, error: unreadError } = await supabase
-            .from("unread_counts")
+            .from('unread_counts')
             .upsert(
               {
                 sender_id: currentUser.id,
@@ -635,20 +665,21 @@ const [bgStyle, setBgStyle] = useState("");
                 count: 1,
                 updated_at: new Date().toISOString(),
               },
-              { onConflict: ["sender_id", "receiver_id"] }
+              { onConflict: ['sender_id', 'receiver_id'] }
             )
             .select();
 
           if (!unreadError && unreadData?.[0]) {
             const newCount = unreadData[0].count + 1;
             await supabase
-              .from("unread_counts")
+              .from('unread_counts')
               .update({ count: newCount, updated_at: new Date().toISOString() })
-              .eq("sender_id", currentUser.id)
-              .eq("receiver_id", targetId);
+              .eq('sender_id', currentUser.id)
+              .eq('receiver_id', targetId);
 
             // Send push if receiver not in same chat
-            try {
+            {
+              /**      try {
               const { data: receiverData, error: routeError } = await supabase
                 .from("users")
                 .select("active_route")
@@ -666,14 +697,15 @@ const [bgStyle, setBgStyle] = useState("");
               }
             } catch (err) {
               console.error("❌ Error sending push:", err.message);
+            }*/
             }
           }
         } else {
-          console.log("🚫 Message blocked, push skipped.");
+          console.log('🚫 Message blocked, push skipped.');
         }
       }
     } catch (err) {
-      console.error("❌ Supabase insert error:", err.message);
+      console.error('❌ Supabase insert error:', err.message);
     } finally {
       setIsSending(false);
     }
@@ -682,12 +714,12 @@ const [bgStyle, setBgStyle] = useState("");
   // Block toggle
   const handleBlockToggle = async () => {
     trackEvent({
-      action: "button_click",
-      category: "Chat Page",
-      label: "Block Button",
+      action: 'button_click',
+      category: 'Chat Page',
+      label: 'Block Button',
     });
     if (!isBlocked) {
-      const { error } = await supabase.from("blocked_users").insert([
+      const { error } = await supabase.from('blocked_users').insert([
         {
           blocker_id: currentUser.id,
           blocked_id: targetId,
@@ -695,31 +727,31 @@ const [bgStyle, setBgStyle] = useState("");
       ]);
 
       if (error) {
-        console.error("Block failed:", error.message);
+        console.error('Block failed:', error.message);
         return;
       }
       setIsBlocked(true);
-      toast.success(i18n.t("userBlocked"));
+      toast.success(i18n.t('userBlocked'));
     } else {
       const { error } = await supabase
-        .from("blocked_users")
+        .from('blocked_users')
         .delete()
-        .eq("blocker_id", currentUser.id)
-        .eq("blocked_id", targetId);
+        .eq('blocker_id', currentUser.id)
+        .eq('blocked_id', targetId);
 
       if (error) {
-        toast.error(i18n.t("unblockFailed"));
-        console.error("Unblock failed:", error.message);
+        toast.error(i18n.t('unblockFailed'));
+        console.error('Unblock failed:', error.message);
         return;
       }
       setIsBlocked(false);
-      toast.success(i18n.t("userUnblocked"));
+      toast.success(i18n.t('userUnblocked'));
     }
   };
 
   // On pressing enter, send message
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       sendMessage();
     }
   };
@@ -732,8 +764,8 @@ const [bgStyle, setBgStyle] = useState("");
     // Normalize input for smart detection
     const lowerText = newText.toLowerCase();
     const normalizedText = lowerText
-      .replace(/[\s\-.:/]/g, "")
-      .replace(/dot/g, ".");
+      .replace(/[\s\-.:/]/g, '')
+      .replace(/dot/g, '.');
 
     // Abusive check
     const abusiveWordsInText = bannedData.abusiveWords.filter((word) =>
@@ -742,10 +774,10 @@ const [bgStyle, setBgStyle] = useState("");
 
     if (abusiveWordsInText.length > 0) {
       // Decrement decency in DB
-      const { error } = await supabase.rpc("decrement_decency", {
+      const { error } = await supabase.rpc('decrement_decency', {
         user_id_input: currentUser.id,
       });
-      if (error) console.error("❌ RPC error:", error.message);
+      if (error) console.error('❌ RPC error:', error.message);
     }
 
     // Link check
@@ -753,9 +785,9 @@ const [bgStyle, setBgStyle] = useState("");
       normalizedText.includes(link.toLowerCase())
     );
     if (hasLink) {
-      setInput("");
+      setInput('');
       inputRef.current?.focus();
-      await supabase.rpc("decrement_decency", {
+      await supabase.rpc('decrement_decency', {
         user_id_input: currentUser.id,
       });
       return;
@@ -763,17 +795,17 @@ const [bgStyle, setBgStyle] = useState("");
 
     // Phone number check
     const phonePattern = /\b\d{10,13}\b/;
-    if (phonePattern.test(newText.replace(/[\s-]/g, ""))) {
-      setInput("");
+    if (phonePattern.test(newText.replace(/[\s-]/g, ''))) {
+      setInput('');
       inputRef.current?.focus();
-      await supabase.rpc("decrement_decency", {
+      await supabase.rpc('decrement_decency', {
         user_id_input: currentUser.id,
       });
       return;
     }
 
     // Detect copy-paste
-    const allowPasteUsers = ["Shivani", "Madison"];
+    const allowPasteUsers = ['Shivani', 'Madison'];
     if (
       !allowPasteUsers.includes(currentUser.name) &&
       newText.length - input.length > 10 &&
@@ -781,12 +813,12 @@ const [bgStyle, setBgStyle] = useState("");
     ) {
       lastPasted.current = newText;
       setAlertMessage({
-        text: `⚠️ ${i18n.t("pasteLongNotAllowed")}`,
-        buttons: ["close"],
+        text: `⚠️ ${i18n.t('pasteLongNotAllowed')}`,
+        buttons: ['close'],
       });
-      setInput("");
+      setInput('');
       inputRef.current?.focus();
-      await supabase.rpc("decrement_decency", {
+      await supabase.rpc('decrement_decency', {
         user_id_input: currentUser.id,
       });
       return;
@@ -796,26 +828,26 @@ const [bgStyle, setBgStyle] = useState("");
   // Detect pasting and deduct the coins (skip Shivani & Madison)
   const handlePaste = async (e) => {
     trackEvent({
-      action: "button_click",
-      category: "Chat Page",
-      label: "Paste Button",
+      action: 'button_click',
+      category: 'Chat Page',
+      label: 'Paste Button',
     });
 
-    const allowPasteUsers = ["Shivani", "Madison"];
+    const allowPasteUsers = ['Shivani', 'Madison'];
 
     if (!allowPasteUsers.includes(currentUser.name)) {
-      const pastedText = e.clipboardData.getData("text/plain").toLowerCase();
+      const pastedText = e.clipboardData.getData('text/plain').toLowerCase();
       if (pastedText) {
         setAlertMessage({
-          text: i18n.t("pasteNotAllowed"),
+          text: i18n.t('pasteNotAllowed'),
           withButton: true,
         });
-        const { error } = await supabase.rpc("decrement_decency", {
+        const { error } = await supabase.rpc('decrement_decency', {
           user_id_input: currentUser.id,
         });
 
         if (error) {
-          console.error("❌ RPC error:", error.message);
+          console.error('❌ RPC error:', error.message);
         }
       }
     }
@@ -873,72 +905,72 @@ const [bgStyle, setBgStyle] = useState("");
     try {
       uploadFile = await compressAndResize(file, 60); // target ~60KB
     } catch (err) {
-      console.error("Image compression failed, using original:", err);
+      console.error('Image compression failed, using original:', err);
     }
-    const fileExt = file.name.split(".").pop();
+    const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `chat-images/${currentUser.id}/${fileName}`;
 
     const { error: uploadError } = await supabaseStorage.storage
-      .from("chat-assets")
+      .from('chat-assets')
       .upload(filePath, uploadFile);
 
     if (uploadError) {
-      console.error("Upload failed:", uploadError.message);
+      console.error('Upload failed:', uploadError.message);
       setIsSendingImage(false);
       return;
     }
 
     const { data: publicURLData } = supabaseStorage.storage
-      .from("chat-assets")
+      .from('chat-assets')
       .getPublicUrl(filePath);
 
     const imageUrl = publicURLData?.publicUrl;
 
     const { data, error } = await supabase
-      .from("chats")
+      .from('chats')
       .insert([
         {
           sender_id: currentUser.id,
           receiver_id: targetId,
           message: imageUrl,
-          type: "image",
+          type: 'image',
         },
       ])
       .select();
 
     if (error) {
-      console.error("Failed to insert image message:", error.message);
+      console.error('Failed to insert image message:', error.message);
       setIsSendingImage(false);
       return;
     }
     const messageId = data?.[0]?.id;
     if (messageId) {
       // Update unread counts
-      await supabase.from("unread_counts").upsert(
+      await supabase.from('unread_counts').upsert(
         {
           sender_id: currentUser.id,
           receiver_id: targetId,
           count: 1,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: ["sender_id", "receiver_id"] }
+        { onConflict: ['sender_id', 'receiver_id'] }
       );
     }
     if (data && data[0]) {
       const dbMsg = {
         id: data[0].id,
         text: data[0].message,
-        type: "sent",
+        type: 'sent',
         isImage: true,
         time: new Date(data[0].created_at).toLocaleTimeString(),
         timestamp: data[0].created_at,
       };
 
       setMessages((prev) => [...prev, dbMsg]);
-      if (!(currentUser.name === "Shivani" || currentUser.name === "Madison")) {
+      if (!(currentUser.name === 'Shivani' || currentUser.name === 'Madison')) {
         const imageSendKey = `imageSentDate_${currentUser.id}`;
-        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
         localStorage.setItem(imageSendKey, today);
       }
     }
@@ -976,13 +1008,13 @@ const [bgStyle, setBgStyle] = useState("");
     }
 */
     }
-    if (currentUser.name === "shivani" || currentUser.name === "madison") {
+    if (currentUser.name === 'shivani' || currentUser.name === 'madison') {
       return; // no limit for these users
     }
 
     const imageSendKey = `imageSentDate_${currentUser.id}`;
     const lastSentDate = localStorage.getItem(imageSendKey);
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
     {
       /*if (lastSentDate === today) {
@@ -995,18 +1027,19 @@ const [bgStyle, setBgStyle] = useState("");
   // Delete Sent Image on Click
   const handleImageClick = async (msg) => {
     trackEvent({
-      action: "button_click",
-      category: "Chat Page",
-      label: "Share Image Button",
+      action: 'button_click',
+      category: 'Chat Page',
+      label: 'Share Image Button',
     });
-    setModalImage(msg.text); // Open modal
+   setModalImageMsg(msg);
 
-    const bucketName = "chat-assets";
+
+    const bucketName = 'chat-assets';
     const imageUrl = msg.text;
 
     // 1. Unblur image immediately
     const imgElement = document.querySelector(`img[src="${imageUrl}"]`);
-    if (imgElement) imgElement.classList.remove("blurred");
+    if (imgElement) imgElement.classList.remove('blurred');
 
     setTimeout(async () => {
       try {
@@ -1017,7 +1050,7 @@ const [bgStyle, setBgStyle] = useState("");
         );
 
         // 3. Delete all messages with same imageUrl (from both sides)
-        await supabase.from("chats").delete().eq("message", imageUrl);
+        await supabase.from('chats').delete().eq('message', imageUrl);
 
         // 4. Delete from storage
         if (filePath) {
@@ -1027,23 +1060,25 @@ const [bgStyle, setBgStyle] = useState("");
         // 5. Update UI (remove all image messages with this URL)
         setMessages((prev) => prev.filter((m) => m.text !== imageUrl));
       } catch (err) {
-        console.error("Error deleting image:", err.message);
+        console.error('Error deleting image:', err.message);
       }
     }, 10000);
   };
 
+  const handleAudioTermsAccept = () => {
+  markAudioTermsAccepted();      // save once
+  setShowAudioTerms(false);      // close popup
+
+  if (pendingAudioStart) {
+    setPendingAudioStart(false);
+    handleMicClick();            // now start recording
+  }
+};
+
+
   // Mic Icon Click
   const handleMicClick = async () => {
-    const hasUploadedImage =
-      localStorage.getItem("hasUploadedImage") === "true";
-    if (!hasUploadedImage) {
-      setAlertMessage({
-        text: "📸 Upload your image under roast section to use microphone 🎤.",
-        withButton: true,
-      });
-      return;
-    }
-
+   
     if (!isRecording) {
       try {
         // ✅ Ask permission first (needed for mobile Chrome)
@@ -1052,14 +1087,14 @@ const [bgStyle, setBgStyle] = useState("");
         });
 
         // ✅ Better mobile-friendly MIME type fallback
-        let mimeType = "audio/webm";
+        let mimeType = 'audio/webm';
         if (!MediaRecorder.isTypeSupported(mimeType)) {
-          if (MediaRecorder.isTypeSupported("audio/mp4")) {
-            mimeType = "audio/mp4";
-          } else if (MediaRecorder.isTypeSupported("audio/ogg")) {
-            mimeType = "audio/ogg";
+          if (MediaRecorder.isTypeSupported('audio/mp4')) {
+            mimeType = 'audio/mp4';
+          } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
+            mimeType = 'audio/ogg';
           } else {
-            mimeType = ""; // let browser decide
+            mimeType = ''; // let browser decide
           }
         }
 
@@ -1074,32 +1109,32 @@ const [bgStyle, setBgStyle] = useState("");
         };
 
         recorder.onstop = async () => {
-          const blob = new Blob(chunks, { type: mimeType || "audio/webm" });
-          const fileExt = mimeType.split("/")[1] || "webm";
+          const blob = new Blob(chunks, { type: mimeType || 'audio/webm' });
+          const fileExt = mimeType.split('/')[1] || 'webm';
           const fileName = `${Date.now()}.${fileExt}`;
           const filePath = `chat-audio/${currentUser.id}/${fileName}`;
 
           const { error: uploadError } = await supabaseStorage.storage
-            .from("chat-audio")
+            .from('chat-audio')
             .upload(filePath, blob);
 
           if (uploadError) {
-            console.error("Upload failed:", uploadError.message);
+            console.error('Upload failed:', uploadError.message);
             return;
           }
 
           const { data: publicURLData } = supabaseStorage.storage
-            .from("chat-audio")
+            .from('chat-audio')
             .getPublicUrl(filePath);
 
           const audioUrl = publicURLData?.publicUrl;
 
-          await supabase.from("chats").insert([
+          await supabase.from('chats').insert([
             {
               sender_id: currentUser.id,
               receiver_id: targetId,
               message: audioUrl,
-              type: "audio",
+              type: 'audio',
             },
           ]);
         };
@@ -1109,9 +1144,9 @@ const [bgStyle, setBgStyle] = useState("");
         setAudioChunks(chunks);
         setIsRecording(true);
       } catch (err) {
-        console.error("🎤 Mic error:", err);
+        console.error('🎤 Mic error:', err);
         setAlertMessage({
-          text: "❌ Audio sharing only works in laptops/computers.",
+          text: '❌ Audio sharing only works in laptops/computers.',
           withButton: true,
         });
       }
@@ -1128,11 +1163,11 @@ const [bgStyle, setBgStyle] = useState("");
     setGifs([]);
 
     try {
-      const customerId = "user_" + Math.random().toString(36).substr(2, 9);
+      const customerId = 'user_' + Math.random().toString(36).substr(2, 9);
       const API_KEY =
         process.env.REACT_APP_KLIPY_KEY ||
-        "QE4eFLlyLYo5GpWgrwgmKLojHdUZh9K5Ys8fJUmBO77H5G2xUFAzmxk2WiHDuMWf";
-      const BASE = "https://api.klipy.com/api/v1";
+        'QE4eFLlyLYo5GpWgrwgmKLojHdUZh9K5Ys8fJUmBO77H5G2xUFAzmxk2WiHDuMWf';
+      const BASE = 'https://api.klipy.com/api/v1';
       const endpoint = `${BASE}/${API_KEY}/gifs/search?q=${encodeURIComponent(
         gifQuery.trim()
       )}&per_page=12&customer_id=${customerId}&content_filter=medium&locale=en`;
@@ -1172,7 +1207,7 @@ const [bgStyle, setBgStyle] = useState("");
 
       setGifs(mapped);
     } catch (err) {
-      console.error("Error fetching gifs", err);
+      console.error('Error fetching gifs', err);
       setGifs([]);
     } finally {
       setGifLoading(false);
@@ -1191,19 +1226,19 @@ const [bgStyle, setBgStyle] = useState("");
 
     try {
       const { data, error } = await supabase
-        .from("chats")
+        .from('chats')
         .insert([
           {
             sender_id: currentUser.id,
             receiver_id: targetId,
             message: gifUrl,
-            type: "gif",
+            type: 'gif',
           },
         ])
         .select();
 
       if (error) {
-        console.error("Failed to send GIF:", error.message);
+        console.error('Failed to send GIF:', error.message);
         return;
       }
 
@@ -1211,7 +1246,7 @@ const [bgStyle, setBgStyle] = useState("");
         const dbMsg = {
           id: data[0].id,
           text: data[0].message,
-          type: "sent",
+          type: 'sent',
           isGif: true,
           gifUrl: data[0].message,
           time: new Date(data[0].created_at).toLocaleTimeString(),
@@ -1223,22 +1258,22 @@ const [bgStyle, setBgStyle] = useState("");
         // Auto-delete after 1 minute
         setTimeout(async () => {
           try {
-            await supabase.from("chats").delete().eq("id", dbMsg.id);
+            await supabase.from('chats').delete().eq('id', dbMsg.id);
             setMessages((prev) => prev.filter((m) => m.id !== dbMsg.id));
           } catch (err) {
-            console.error("Error deleting GIF:", err.message);
+            console.error('Error deleting GIF:', err.message);
           }
         }, 60 * 1000);
       }
 
-      await supabase.from("unread_counts").upsert(
+      await supabase.from('unread_counts').upsert(
         {
           sender_id: currentUser.id,
           receiver_id: targetId,
           count: 1,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: ["sender_id", "receiver_id"] }
+        { onConflict: ['sender_id', 'receiver_id'] }
       );
 
       setShowGifSearch(false);
@@ -1253,28 +1288,28 @@ const [bgStyle, setBgStyle] = useState("");
     // Detect BACK button (browser navigation)
     const handlePopState = async () => {
       await supabase
-        .from("users")
+        .from('users')
         .update({ active_route: `/` })
-        .eq("id", currentUser.id);
+        .eq('id', currentUser.id);
     };
-    window.addEventListener("popstate", handlePopState);
+    window.addEventListener('popstate', handlePopState);
 
     // Detect BACKGROUND / FOREGROUND (like Home or Recent Apps button)
     const handleVisibilityChange = async () => {
       if (document.hidden) {
         await supabase
-          .from("users")
+          .from('users')
           .update({ active_route: `/` })
-          .eq("id", currentUser.id);
+          .eq('id', currentUser.id);
       } else {
         //console.log("📱 App moved to foreground");
       }
     };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      window.removeEventListener("popstate", handlePopState);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener('popstate', handlePopState);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -1282,19 +1317,19 @@ const [bgStyle, setBgStyle] = useState("");
   const handleBack = async () => {
     navigate(-1);
     await supabase
-      .from("users")
+      .from('users')
       .update({ active_route: `/` })
-      .eq("id", currentUser.id);
+      .eq('id', currentUser.id);
   };
 
   useEffect(() => {
-    const hasSeenNotice = localStorage.getItem("autoDeleteNoticeSeen");
+    const hasSeenNotice = localStorage.getItem('autoDeleteNoticeSeen');
     if (!hasSeenNotice) {
       setShowNotice(true);
 
       const timer = setTimeout(() => {
         setShowNotice(false);
-        localStorage.setItem("autoDeleteNoticeSeen", "true"); // mark as seen
+        localStorage.setItem('autoDeleteNoticeSeen', 'true'); // mark as seen
       }, 5000);
 
       return () => clearTimeout(timer);
@@ -1302,17 +1337,20 @@ const [bgStyle, setBgStyle] = useState("");
   }, []);
 
   return (
-    <div className="Chat-UI" style={{
+    <div
+      className="Chat-UI"
+      style={{
         background: bgStyle,
-        backgroundBlendMode: "multiply",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
+        backgroundBlendMode: 'multiply',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
         fontFamily: '"Comic Sans MS", "Caveat", cursive',
-      }}>
+      }}
+    >
       <ChatHeader
-        title={targetUser?.name || "Chat"}
+        title={targetUser?.name || 'Chat'}
         onBack={handleBack}
         onBlockToggle={handleBlockToggle}
         isBlocked={isBlocked}
@@ -1326,10 +1364,10 @@ const [bgStyle, setBgStyle] = useState("");
                 <div>💳 Complete your payment below:</div>
                 <div
                   id="paypal-button-container"
-                  style={{ marginTop: "1rem" }}
+                  style={{ marginTop: '1rem' }}
                 />
               </div>
-            ) : typeof alertMessage === "string" ? (
+            ) : typeof alertMessage === 'string' ? (
               alertMessage
             ) : (
               alertMessage.text
@@ -1337,11 +1375,11 @@ const [bgStyle, setBgStyle] = useState("");
           }
           buttons={
             showPayPal
-              ? ["close"]
-              : typeof alertMessage === "object" &&
+              ? ['close']
+              : typeof alertMessage === 'object' &&
                 Array.isArray(alertMessage.buttons)
               ? alertMessage.buttons
-              : ["close"]
+              : ['close']
           }
           onClose={() => {
             setAlertMessage(null);
@@ -1359,28 +1397,28 @@ const [bgStyle, setBgStyle] = useState("");
           <div className="top-actions desktop-only">
             <div className="left-actions">
               <button className="block-btn" onClick={handleBlockToggle}>
-                {isBlocked ? "Unblock" : "Block"}
+                {isBlocked ? 'Unblock' : 'Block'}
               </button>
             </div>
 
             <div className="right-actions auto-delete-toggle">
               <label className="toggle-label">Self-Destruct: 24h</label>
               <div
-                className={`toggle-switch ${autoDeleteEnabled ? "on" : "off"}`}
+                className={`toggle-switch ${autoDeleteEnabled ? 'on' : 'off'}`}
               >
                 <div className="toggle-thumb" />
               </div>
             </div>
           </div>
           {showNotice && (
-            <div className="auto-delete-notice">🕒 {i18n.t("autoDelete")}</div>
+            <div className="auto-delete-notice">🕒 {i18n.t('autoDelete')}</div>
           )}
           {/* Show user/chat blocked UI */}
           {blockedByOtherUser || iBlockedOtherUser ? (
             <div className="blocked-ui">
-              <h2>🚫 {i18n.t("chatBlocked")}</h2>
-              {iBlockedOtherUser && <p>{i18n.t("youBlocked")}</p>}
-              {blockedByOtherUser && <p>{i18n.t("blockedByUser")}</p>}
+              <h2>🚫 {i18n.t('chatBlocked')}</h2>
+              {iBlockedOtherUser && <p>{i18n.t('youBlocked')}</p>}
+              {blockedByOtherUser && <p>{i18n.t('blockedByUser')}</p>}
             </div>
           ) : (
             <>
@@ -1389,47 +1427,80 @@ const [bgStyle, setBgStyle] = useState("");
                 {messages.map((msg) => (
                   <div
                     key={msg.localId ?? msg.id} // <- stable key: prefer localId if present
-                    className={`message ${msg.type} ${msg.status || ""}`}
+                    className={`message ${msg.type} ${msg.status || ''}`}
                     onClick={() => msg.isImage && handleImageClick(msg)}
                   >
                     {msg.isGif ? (
                       <img src={msg.gifUrl} alt="GIF" className="chat-gif" />
                     ) : msg.isImage ? (
-                      msg.type === "sent" ? (
+                      msg.type === 'sent' ? (
                         <p>
-                          <em>📤 {i18n.t("sentImage")}</em>
+                          <em>📤 {i18n.t('sentImage')}</em>
                         </p>
                       ) : (
                         <div className="chat-image-wrapper">
-                          {!revealedImages[msg.id] ? (
-                            <div
-                              className="image-placeholder"
-                              onClick={() => {
-                                setRevealedImages((prev) => ({
-                                  ...prev,
-                                  [msg.id]: true,
-                                }));
-                                handleImageClick(msg);
-                              }}
-                            >
-                              <p className="click-to-reveal-text">
-                                {i18n.t("revealImage")}
-                              </p>
-                            </div>
-                          ) : (
-                            <img
-                              src={msg.text}
-                              alt="Received"
-                              className="chat-image"
-                              onLoad={() =>
-                                setLoadingImages((prev) => ({
-                                  ...prev,
-                                  [msg.id]: false,
-                                }))
-                              }
-                            />
-                          )}
-                        </div>
+  {(() => {
+    const state = imageState[msg.id] || {};
+
+    // STEP 1 — not revealed yet
+    if (!state.revealed) {
+      return (
+        <div
+          className="image-placeholder"
+          onClick={() =>
+            openAdThen(() => {
+              setImageState((prev) => ({
+                ...prev,
+                [msg.id]: { revealed: true, unblurred: false },
+              }));
+            })
+          }
+        >
+          <p className="click-to-reveal-text">
+            {i18n.t('revealImage')}
+          </p>
+        </div>
+      );
+    }
+
+    // STEP 2 — revealed but BLURRED
+    if (state.revealed && !state.unblurred) {
+      return (
+        <div className="blurred-image-container">
+          <img
+            src={msg.text}
+            alt="Blurred"
+            className="chat-image blurred"
+          />
+          <button
+            className="unblur-btn"
+            onClick={() =>
+              openAdThen(() => {
+                setImageState((prev) => ({
+                  ...prev,
+                  [msg.id]: { revealed: true, unblurred: true },
+                }));
+              })
+            }
+          >
+            Unblur Image
+          </button>
+        </div>
+      );
+    }
+
+    // STEP 3 — permanently unblurred
+    return (
+      <img
+        src={msg.text}
+        alt="Unblurred"
+        className="chat-image"
+        onClick={() => handleImageClick(msg)}
+      />
+    );
+  })()}
+</div>
+
                       )
                     ) : msg.isAudio ? (
                       <div className="chat-audio">
@@ -1440,7 +1511,7 @@ const [bgStyle, setBgStyle] = useState("");
                         {msg.text.split(/\s+/).map((word, i) => {
                           const normalized = word
                             .toLowerCase()
-                            .replace(/[\s\-.:/]/g, "");
+                            .replace(/[\s\-.:/]/g, '');
                           const isWordAbusive = bannedData.abusiveWords.some(
                             (w) => normalized.includes(w.toLowerCase())
                           );
@@ -1452,14 +1523,14 @@ const [bgStyle, setBgStyle] = useState("");
                                 // Blur if the whole message is abusive OR this word is abusive
                                 filter:
                                   msg.is_abusive || isWordAbusive
-                                    ? "blur(5px)"
-                                    : "none",
+                                    ? 'blur(5px)'
+                                    : 'none',
                                 backgroundColor: isWordAbusive
-                                  ? "#eee"
-                                  : "transparent",
-                                borderRadius: "4px",
-                                padding: "0 2px",
-                                marginRight: "2px",
+                                  ? '#eee'
+                                  : 'transparent',
+                                borderRadius: '4px',
+                                padding: '0 2px',
+                                marginRight: '2px',
                               }}
                             >
                               {word}
@@ -1470,12 +1541,12 @@ const [bgStyle, setBgStyle] = useState("");
                     )}
                     <div className="message-footer">
                       <span className="time">{getTimeAgo(msg.timestamp)}</span>
-                      {msg.type === "sent" && (
+                      {msg.type === 'sent' && (
                         <span className={`time ${msg.seen}`}>
-                          {msg.seen ? i18n.t("seen") : i18n.t("sent")}
+                          {msg.seen ? i18n.t('seen') : i18n.t('sent')}
                         </span>
                       )}
-                    </div>{" "}
+                    </div>{' '}
                   </div>
                 ))}
                 <div ref={messagesEndRef} />
@@ -1495,7 +1566,7 @@ const [bgStyle, setBgStyle] = useState("");
                     type="file"
                     accept="image/*"
                     id="image-upload"
-                    style={{ display: "none" }}
+                    style={{ display: 'none' }}
                     onClick={handleFileInputClick}
                     onChange={handleImageUpload}
                   />
@@ -1517,14 +1588,14 @@ const [bgStyle, setBgStyle] = useState("");
                   onChange={handleInputChange}
                   onKeyDown={handleKeyPress}
                   onPaste={handlePaste}
-                  placeholder={i18n.t("typeMessage")}
+                  placeholder={i18n.t('typeMessage')}
                 />
 
                 <button
                   onClick={sendMessage}
                   disabled={isSending || isSendingImage || !input.trim()}
                 >
-                  {isSending ? "➤" : "➤"}
+                  {isSending ? '➤' : '➤'}
                 </button>
               </div>
             </>
@@ -1546,19 +1617,52 @@ const [bgStyle, setBgStyle] = useState("");
             type="file"
             accept="image/*"
             id="image-upload"
-            style={{ display: "none" }}
+            style={{ display: 'none' }}
             onClick={handleFileInputClick}
             onChange={handleImageUpload}
           />
         </div>
-        <div className="icon-wrapper">
-          <button
-            className="gif-btn"
-            onClick={() => setShowGifSearch(!showGifSearch)}
-          >
-            GIF
-          </button>
-        </div>
+   <div className="icon-wrapper plus-wrapper">
+  <button
+  style={{background: 'none', color: '#111', fontSize: '22px'}}
+    onClick={() => setShowPlusMenu((prev) => !prev)}
+  >
+    +
+  </button>
+
+  <div className={`plus-menu ${showPlusMenu ? 'open' : ''}`}>
+    <button
+      className="plus-item"
+   onClick={() => {
+  setShowPlusMenu(false);
+
+  if (!hasAcceptedAudioTerms()) {
+    // Show popup only once
+    setPendingAudioStart(true);
+    setShowAudioTerms(true);
+    return;
+  }
+
+  // Already accepted → start recording directly
+  handleMicClick();
+}}
+
+    >
+      🎤 <span>Audio</span>
+    </button>
+
+    <button
+      className="plus-item"
+      onClick={() => {
+        setShowGifSearch(true);
+        setShowPlusMenu(false);
+      }}
+    >
+      🎞️ <span>GIF</span>
+    </button>
+  </div>
+</div>
+
 
         {/*
         <div className="icon-wrapper">
@@ -1575,7 +1679,7 @@ const [bgStyle, setBgStyle] = useState("");
           onChange={handleInputChange}
           onKeyDown={handleKeyPress}
           onPaste={handlePaste}
-          placeholder={i18n.t("typeMessage")}
+          placeholder={i18n.t('typeMessage')}
         />
 
         <button
@@ -1584,62 +1688,91 @@ const [bgStyle, setBgStyle] = useState("");
             isSending || isSendingImage || isSendingGif || !input.trim()
           }
         >
-          {isSending ? "➤" : "➤"}
+          {isSending ? '➤' : '➤'}
         </button>
       </div>
 
       {/* Show full view image on click */}
-      {modalImage && (
-        <div className="image-modal" onClick={() => setModalImage(null)}>
-          <div style={{ position: "relative", textAlign: "center" }}>
-            {/* Loader */}
-            <div id="loader" className="bw-loader-container">
-              <div className="bw-loader"></div>
-            </div>
+     {modalImageMsg && (
+  <div className="image-modal" onClick={() => setModalImageMsg(null)}>
+    <div
+      style={{ position: 'relative', textAlign: 'center' }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {(() => {
+        const state = imageState[modalImageMsg.id] || {};
 
-            <img
-              src={modalImage}
-              alt="Full View"
-              style={{
-                maxWidth: "90%",
-                maxHeight: "90%",
-                display: "block",
-                margin: "0 auto",
-              }}
-              onLoad={() => {
-                const loader = document.getElementById("loader");
-                if (loader) loader.style.display = "none";
-              }}
-              onError={() => {
-                const loader = document.getElementById("loader");
-                if (loader) loader.firstChild.style.borderTopColor = "red";
-              }}
-            />
-          </div>
-        </div>
-      )}
+        // STILL BLURRED IN MODAL
+        if (state.revealed && !state.unblurred) {
+          return (
+            <>
+              <img
+                src={modalImageMsg.text}
+                alt="Blurred"
+                className="chat-image blurred"
+                style={{ maxWidth: '90%', maxHeight: '90%' }}
+              />
+
+              <button
+                className="unblur-btn modal-unblur"
+                onClick={() =>
+                  openAdThen(() => {
+                    setImageState((prev) => ({
+                      ...prev,
+                      [modalImageMsg.id]: {
+                        revealed: true,
+                        unblurred: true,
+                      },
+                    }));
+                  })
+                }
+              >
+                Unblur Image
+              </button>
+            </>
+          );
+        }
+
+        // UNBLURRED
+        return (
+          <img
+            src={modalImageMsg.text}
+            alt="Full View"
+            style={{
+              maxWidth: '90%',
+              maxHeight: '90%',
+              display: 'block',
+              margin: '0 auto',
+            }}
+          />
+        );
+      })()}
+    </div>
+  </div>
+)}
+
       {showGifSearch && (
         <div className="gif-search-panel">
           <div className="gif-search-header">
-            <h4>{i18n.t("searchGifs")}</h4>
+            <h4>{i18n.t('searchGifs')}</h4>
             <button onClick={() => setShowGifSearch(false)}>×</button>
           </div>
 
           <div className="gif-search-input">
             <input
-              placeholder={i18n.t("searchGifExample")}
+              placeholder={i18n.t('searchGifExample')}
               value={gifQuery}
               onChange={(e) => setGifQuery(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && fetchGifs()}
+              onKeyPress={(e) => e.key === 'Enter' && fetchGifs()}
             />
             <button onClick={fetchGifs} disabled={gifLoading}>
-              {gifLoading ? i18n.t("searching") : i18n.t("search")}
+              {gifLoading ? i18n.t('searching') : i18n.t('search')}
             </button>
           </div>
 
           <div className="gif-results">
             {gifLoading && (
-              <div style={{ marginLeft: "15%" }}>{i18n.t("loadingGifs")}</div>
+              <div style={{ marginLeft: '15%' }}>{i18n.t('loadingGifs')}</div>
             )}
             {gifs.map((gif) => (
               <div
@@ -1654,9 +1787,9 @@ const [bgStyle, setBgStyle] = useState("");
                     muted
                     playsInline
                     style={{
-                      width: "100%",
-                      height: "100px",
-                      objectFit: "cover",
+                      width: '100%',
+                      height: '100px',
+                      objectFit: 'cover',
                     }}
                   >
                     <source src={gif.mp4Url} type="video/mp4" />
@@ -1666,49 +1799,49 @@ const [bgStyle, setBgStyle] = useState("");
                     src={gif.url}
                     alt={gif.title}
                     style={{
-                      width: "100%",
-                      height: "100px",
-                      objectFit: "cover",
+                      width: '100%',
+                      height: '100px',
+                      objectFit: 'cover',
                     }}
                   />
                 )}
                 {sendingGifId === gif.id && (
                   <div
                     style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      background: "rgba(0,0,0,0.6)",
-                      color: "white",
-                      padding: "4px 8px",
-                      borderRadius: "6px",
-                      fontSize: "12px",
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      background: 'rgba(0,0,0,0.6)',
+                      color: 'white',
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
                     }}
                   >
-                    {i18n.t("sending")}
+                    {i18n.t('sending')}
                   </div>
                 )}
                 <div
                   style={{
-                    position: "absolute",
-                    bottom: "0",
-                    left: "0",
-                    width: "100%",
-                    textAlign: "center",
-                    background: "rgba(0,0,0,0.3)",
-                    color: "white",
-                    fontSize: "10px",
-                    padding: "2px 0",
-                    borderBottomLeftRadius: "4px",
-                    borderBottomRightRadius: "4px",
+                    position: 'absolute',
+                    bottom: '0',
+                    left: '0',
+                    width: '100%',
+                    textAlign: 'center',
+                    background: 'rgba(0,0,0,0.3)',
+                    color: 'white',
+                    fontSize: '10px',
+                    padding: '2px 0',
+                    borderBottomLeftRadius: '4px',
+                    borderBottomRightRadius: '4px',
                   }}
                 >
-                  {i18n.t("gifVia")}{" "}
+                  {i18n.t('gifVia')}{' '}
                   <a
                     href="https://klipy.com"
                     target="_blank"
-                    style={{ color: "white", textDecoration: "underline" }}
+                    style={{ color: 'white', textDecoration: 'underline' }}
                   >
                     Klipy
                   </a>
@@ -1718,6 +1851,10 @@ const [bgStyle, setBgStyle] = useState("");
           </div>
         </div>
       )}
+      {showAudioTerms && (
+  <AudioTermsSlider onAccept={handleAudioTermsAccept} />
+)}
+
       <Toaster />
     </div>
   );

@@ -1,21 +1,32 @@
-import { useEffect } from "react";
+// AdVignette.jsx
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const AdVignette = () => {
+  const location = useLocation();
+
   useEffect(() => {
-    // Check if ad already shown in this session
-    if (sessionStorage.getItem("vignette_shown")) return;
+    const key = `vignette_${location.pathname}`;
 
-    sessionStorage.setItem("vignette_shown", "true");
+    // Already shown on this page in this session
+    if (sessionStorage.getItem(key)) return;
 
-    const script = document.createElement("script");
-    script.dataset.zone = "10376740";
-    script.src = "https://gizokraijaw.net/vignette.min.js";
+    sessionStorage.setItem(key, 'true');
+
+    const script = document.createElement('script');
+    script.dataset.zone = '10376740';
+    script.src = 'https://gizokraijaw.net/vignette.min.js';
     script.async = true;
 
     document.body.appendChild(script);
-  }, []);
 
-  return null; // No UI
+    // Optional cleanup: remove script on unmount (not strictly necessary)
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, [location.pathname]);
+
+  return null;
 };
 
 export default AdVignette;

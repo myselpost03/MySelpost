@@ -49,6 +49,7 @@ import { trackEvent } from './Utils/analytics';
 import i18n from './i18n';
 import InstallBanner from './Components/InstallBanner';
 import { isWebView } from './Utils/isWebView';
+import AdVignette from './Components/AdVignette';
 
 const protectedRoutes = [
   { path: '/prompt', component: Prompt },
@@ -372,6 +373,7 @@ function AppContent() {
   return (
     <>
       <UserStatusWrapper />
+      <AdVignette />
       <Routes>
         {publicRoutes.map(({ path, component: Component }) => (
           <Route key={path} path={path} element={<Component />} />

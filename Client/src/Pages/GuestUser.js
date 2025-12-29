@@ -253,6 +253,7 @@ const GuestUser = () => {
         .select(
           'id, name, gender, age, country, status, decency_rating, profile_pic, google_login, created_at'
         )
+        .neq('country', 'IN')
         .order('google_login', { ascending: true }) // false (0) comes first, true (1) comes later
         .order('created_at', { ascending: false }) // newest first within each group
         .range(page * 10, page * 10 + 9);
@@ -326,15 +327,26 @@ const GuestUser = () => {
 
     return roundRobin.slice(0, end);
   }, [users, genderFilter, countryFilter, searchTerm, page]);
-  const handleUserClick = () => {
-    const hasSeenTerms = localStorage.getItem('guest_terms_seen');
+const handleUserClick = () => {
+  // Open the direct link in a new tab/window
+  const newWindow = window.open('https://otieu.com/4/10380848', '_blank');
 
-    if (!hasSeenTerms) {
-      setShowTerms(true);
-    } else {
-      handleAlert(); // still show login alert if they already saw terms
-    }
-  };
+  // Check if window opened successfully
+  if (newWindow) {
+    // Poll to see if the user closed the new tab
+    const timer = setInterval(() => {
+      if (newWindow.closed) {
+        clearInterval(timer);
+        // Show alert after user closes the direct link
+        handleAlert();
+      }
+    }, 500);
+  } else {
+    // Fallback if popup blocked
+    alert('Please allow popups for this site');
+  }
+};
+
 
   const handleTermsDone = () => {
     localStorage.setItem('guest_terms_seen', 'true');
@@ -370,7 +382,6 @@ const GuestUser = () => {
   return (
     <div className="chatlist-container">
       <Header />
-      <AdVignette />
       {loading ? (
         <LoadingSpinner />
       ) : (
@@ -676,7 +687,7 @@ const GuestUser = () => {
       <Link onClick={handleFire} className="fab-roast-button" title="Roast">
         <FaFire />
       </Link>
-      {showTerms && <TermsPopup onDone={handleTermsDone} />}
+      {/*showTerms && <TermsPopup onDone={handleTermsDone} />*/}
     </div>
   );
 };

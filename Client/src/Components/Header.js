@@ -186,15 +186,15 @@ const loadAd = () => {
     navigate("/register");
   };
 
-  const handleRoast = () => {
-    trackEvent({
-      action: "button_click",
-      category: "Header",
-      label: "Roast Button",
-    });
-     // setAdVisible(true);
-    navigate("/roast");
-  };
+ const handleRoast = () => {
+  trackEvent({
+    action: "button_click",
+    category: "Header",
+    label: "Roast Button",
+  });
+
+  window.location.href = "https://otieu.com/4/10380848";
+};
 
   const handleMobileRedirect = (path) => {
     if (isMobile) navigate(path);
@@ -285,7 +285,7 @@ const loadAd = () => {
         <div className="nav-logged-in">
           <div className="roast-button-container">
             <button onClick={handleRoast} className="profile-button">
-              {t("roast")}
+              Sponsor
             </button>
             {/*<span className="new-badge">New</span>*/}
           </div>

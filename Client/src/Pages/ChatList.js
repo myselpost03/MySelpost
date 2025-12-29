@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../Components/Header';
-import TermsPopup from '../Components/TermsPopup';
+import TermsSlider from '../Components/TermsSlider';
 import '../Styles/ChatList.css';
 import {
   FaCircle,
@@ -247,6 +247,8 @@ const ChatList = () => {
   const [firstLoad, setFirstLoad] = useState(true);
   const [loading, setLoading] = useState(true); // tab/filter loading
   const [hasFetched, setHasFetched] = useState(false); // 👈 new flag
+const [showTermsSlider, setShowTermsSlider] = useState(false);
+const [pendingChatUser, setPendingChatUser] = useState(null);
 
   const [searchLoading, setSearchLoading] = useState(false); // dedicated search loader
   const [countries, setCountries] = useState([]);
@@ -606,6 +608,7 @@ const ChatList = () => {
       localStorage.setItem('autoPinnedUsers', JSON.stringify(current));
     }
   };
+
   const loadAd = () => {
     const adContainer = document.getElementById('ad-container');
     if (!adContainer) return; // wait until container exists
@@ -639,33 +642,81 @@ const ChatList = () => {
       setAdLoaded(false);
       loadAd();
     }
-  }, [adVisible]);
-  const handleProtectedNavigation = (e, path, targetUser = null) => {
-    e.preventDefault();
-    const isLoggedIn = localStorage.getItem('user');
+  }, [adVisible]);const isForeignerChat = (targetUser) => {
+  if (!user?.country || !targetUser?.country) return false;
+  return user.country !== targetUser.country;
+};
 
-    if (!isLoggedIn) {
-        navigate('/register');
-        return;
+const handleProtectedNavigation = (e, path, targetUser = null) => {
+  // ✅ safety guards
+  if (e?.preventDefault) e.preventDefault();
+  if (!targetUser || !targetUser.id) return;
+
+  const isLoggedIn = localStorage.getItem('user');
+  if (!isLoggedIn) {
+    navigate('/register');
+    return;
+  }
+
+  // ✅ Auto-pin safely
+  addAutoPinnedId(targetUser.id);
+
+  setUsers((prevUsers) =>
+    prevUsers.map((u) =>
+      u.id === targetUser.id ? { ...u, pinned: true } : u
+    )
+  );
+
+  // ✅ FOREIGNER FLOW
+  if (isForeignerChat(targetUser)) {
+    // already accepted → direct chat
+    if (hasAcceptedForeignTerms(targetUser.id)) {
+      navigate(path, { state: { targetUser } });
+      return;
     }
 
-    // Auto-pin the target user
-    addAutoPinnedId(targetUser.id);
-    const maxPinned = 10;
-    const autoPinnedIds = JSON.parse(localStorage.getItem('autoPinnedUsers') || '[]');
-    if (!autoPinnedIds.includes(targetUser.id)) {
-        if (autoPinnedIds.length >= maxPinned) autoPinnedIds.shift();
-        autoPinnedIds.push(targetUser.id);
-        localStorage.setItem('autoPinnedUsers', JSON.stringify(autoPinnedIds));
-    }
+    // not accepted → show popup
+    setPendingChatUser(targetUser);
+    setShowTermsSlider(true);
+    return;
+  }
 
-    // Update users state to reflect pinned immediately
-    setUsers((prevUsers) =>
-        prevUsers.map((u) => (u.id === targetUser.id ? { ...u, pinned: true } : u))
-    );
+  // ✅ SAME COUNTRY → DIRECT CHAT
+  navigate(path, { state: { targetUser } });
+};
 
-    // Directly navigate to chat
-    navigate(path, { state: { targetUser } });
+// --- Helpers for storing foreign user acceptance ---
+const hasAcceptedForeignTerms = (targetUserId) => {
+  const accepted = JSON.parse(
+    localStorage.getItem('foreignTermsAccepted') || '{}'
+  );
+  return !!accepted[`${user.id}_${targetUserId}`];
+};
+
+const markForeignTermsAccepted = (targetUserId) => {
+  const accepted = JSON.parse(
+    localStorage.getItem('foreignTermsAccepted') || '{}'
+  );
+  accepted[`${user.id}_${targetUserId}`] = true;
+  localStorage.setItem('foreignTermsAccepted', JSON.stringify(accepted));
+};
+
+
+// --- Called when user clicks "Accept Terms" in the popup ---
+const handleAcceptTerms = () => {
+  if (!pendingChatUser?.id) return;
+
+  // Mark acceptance
+  markForeignTermsAccepted(pendingChatUser.id);
+
+  // Hide popup
+  setShowTermsSlider(false);
+
+  // Navigate to chat
+  navigate(`/chat/${pendingChatUser.id}`, { state: { targetUser: pendingChatUser } });
+
+  // Clear pending user
+  setPendingChatUser(null);
 };
 
 
@@ -700,38 +751,6 @@ const ChatList = () => {
     setPendingNavigation(null); // clear
   };
 
-  const handleTermsDone = () => {
-      localStorage.setItem("hasAcceptedTerms", "true");
-
-    setShowTerms(false);
-
-    if (!pendingNavigation) return;
-
-    const { path, targetUser } = pendingNavigation;
-
-    // Auto-pin logic (same as before)
-    addAutoPinnedId(targetUser.id);
-    const maxPinned = 10;
-    const autoPinnedIds = JSON.parse(
-      localStorage.getItem('autoPinnedUsers') || '[]'
-    );
-    if (!autoPinnedIds.includes(targetUser.id)) {
-      if (autoPinnedIds.length >= maxPinned) autoPinnedIds.shift();
-      autoPinnedIds.push(targetUser.id);
-      localStorage.setItem('autoPinnedUsers', JSON.stringify(autoPinnedIds));
-    }
-
-    setUsers((prevUsers) =>
-      prevUsers.map((u) =>
-        u.id === targetUser.id ? { ...u, pinned: true } : u
-      )
-    );
-
-    navigate(path, { state: { targetUser } });
-
-    setPendingNavigation(null);
-  };
-
   useEffect(() => {
     const fetchUserPremiumStatus = async () => {
       const { data, error } = await supabase
@@ -755,6 +774,7 @@ const ChatList = () => {
   const handlePaypalRedirect = () => {
     navigate(`/payments/${user.id}`);
   };
+
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [dataChanged, setDataChanged] = useState(false); // ✅ Track if data changed
   const [submitting, setSubmitting] = useState(false); // ✅ Show "Submitting..."
@@ -1003,91 +1023,6 @@ const ChatList = () => {
     }
   };
 
-  const togglePin = async (targetUserId) => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) return;
-
-    const alreadyPinned = users.find((u) => u.id === targetUserId && u.pinned);
-
-    if (alreadyPinned) {
-      // Unpin
-      const { error } = await supabase
-        .from('pinned_users')
-        .delete()
-        .match({ user_id: user.id, pinned_user_id: targetUserId });
-
-      if (!error) {
-        setUsers((prevUsers) =>
-          prevUsers.map((u) =>
-            u.id === targetUserId ? { ...u, pinned: false } : u
-          )
-        );
-
-        // Also update localStorage
-        const autoPinned =
-          JSON.parse(localStorage.getItem('autoPinnedUsers')) || [];
-        localStorage.setItem(
-          'autoPinnedUsers',
-          JSON.stringify(autoPinned.filter((id) => id !== targetUserId))
-        );
-      } else {
-        console.error('Error unpinning:', error.message);
-      }
-    } else {
-      // Pin
-      // 1. Get current pinned users count from Supabase
-      const { data: currentPinned, error: fetchError } = await supabase
-        .from('pinned_users')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: true }); // oldest first
-
-      if (fetchError) {
-        console.error('Error fetching pinned users:', fetchError.message);
-        return;
-      }
-
-      // 2. If already 10 pinned, remove the oldest one
-      if (currentPinned.length >= 10) {
-        const oldest = currentPinned[0];
-        const { error: deleteError } = await supabase
-          .from('pinned_users')
-          .delete()
-          .match({ user_id: user.id, pinned_user_id: oldest.pinned_user_id });
-
-        if (deleteError) {
-          console.error(
-            'Error removing oldest pinned user:',
-            deleteError.message
-          );
-          return;
-        }
-      }
-
-      // 3. Insert new pinned user
-      const { error: insertError } = await supabase
-        .from('pinned_users')
-        .insert([{ user_id: user.id, pinned_user_id: targetUserId }]);
-
-      if (!insertError) {
-        setUsers((prevUsers) =>
-          prevUsers.map((u) =>
-            u.id === targetUserId ? { ...u, pinned: true } : u
-          )
-        );
-
-        // Update localStorage
-        const autoPinned =
-          JSON.parse(localStorage.getItem('autoPinnedUsers')) || [];
-        autoPinned.push(targetUserId);
-        if (autoPinned.length > 10) autoPinned.shift();
-        localStorage.setItem('autoPinnedUsers', JSON.stringify(autoPinned));
-      } else {
-        console.error('Error pinning:', insertError.message);
-      }
-    }
-  };
-
   const hasPinnedNotification = users.some(
     (u) => u.pinned && unreadCounts[u.id] > 0
   );
@@ -1167,16 +1102,6 @@ const ChatList = () => {
     };
   }, [hasMore, loadingMore, loading, searchTerm]);
 
-  const handlePinToggle = (e, userId) => {
-    e.preventDefault(); // Stop navigation
-    e.stopPropagation(); // Prevent click bubbling
-
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === userId ? { ...user, pinned: !user.pinned } : user
-      )
-    );
-  };
 
   const handleMarkAllAsSeen = async () => {
     const updated = { ...unreadCounts };
@@ -1221,19 +1146,32 @@ const ChatList = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleScratch = () => {
-    navigate('/miss-scratch');
-  };
-  const handleFilterClick = () => {
-    setShowAllTabs(true);
+  const handleRoast = () => {
+    trackEvent({
+      action: 'button_click',
+      category: 'Header',
+      label: 'Roast Button',
+    });
+
+    localStorage.setItem('showFilterToast', 'true');
+    window.location.href = 'https://otieu.com/4/10380848';
   };
 
   const handleFilterToast = () => {
     toast.error('Reach 100 likes on your profile to unlock this feature', {
       duration: 4000,
-      position: 'bottom-center',
+      position: 'top-center',
     });
   };
+
+  useEffect(() => {
+    const shouldShowToast = localStorage.getItem('showFilterToast');
+
+    if (shouldShowToast) {
+      handleFilterToast();
+      localStorage.removeItem('showFilterToast'); // prevent repeat
+    }
+  }, []);
 
   const handleNotification = async () => {
     setNotificationCount(0); // reset UI immediately
@@ -1260,6 +1198,7 @@ const ChatList = () => {
         .eq('seen', false);
     }
   };
+
 
   // 👉 searchLoading can be used inside your list UI
   {
@@ -1446,7 +1385,7 @@ const ChatList = () => {
               className={`sketchy-tab ${
                 activeTab === 'online' ? 'active' : ''
               }`}
-           /** 
+              /** 
   onClick={() => {
     const newTab = activeTab === 'online' ? 'all' : 'online';
     setActiveTab(newTab);
@@ -1454,7 +1393,7 @@ const ChatList = () => {
     localStorage.setItem('activeTab', newTab);
   }} 
   */
-              onClick={handleFilterToast}
+              onClick={handleRoast}
             >
               {i18n.t('online')}
             </button>
@@ -1471,7 +1410,7 @@ const ChatList = () => {
               <FaMapMarkerAlt style={{ marginRight: '6px' }} />
             </button>
 
-            <button className="sketchy-tab" onClick={handleFilterToast}>
+            <button className="sketchy-tab" onClick={handleRoast}>
               {' '}
               {/* handleFilterClick */}
               <FaFilter style={{ marginRight: '6px' }} />
@@ -1521,17 +1460,17 @@ const ChatList = () => {
                 {filteredUsers
                   .filter((u) => u.id !== user.id)
                   .map((user) => (
-                    <Link
-                      to="#"
-                      key={user.id}
-                      className={`user-card ${
-                        user.notifications > 0 ? 'has-notification' : ''
-                      }`}
-                      onClick={(e) => {
-                        handleUserClick(user.id);
-                        handleProtectedNavigation(e, `/chat/${user.id}`, user);
-                      }}
-                    >
+                   <Link
+  key={user.id}
+  className={`user-card ${
+    user.notifications > 0 ? 'has-notification' : ''
+  }`}
+  onClick={(e) => {
+    handleUserClick(user.id);
+    handleProtectedNavigation(e, `/chat/${user.id}`, user);
+  }}
+>
+
                       <div className="user-avatar-wrapper">
                         <Link
                           to={`/profile/${user.id}`}
@@ -1969,6 +1908,10 @@ const ChatList = () => {
           </div>
         )}
       </div>
+      {showTermsSlider && (
+  <TermsSlider onAccept={handleAcceptTerms} />
+)}
+
       <Toaster />
     </>
   );
