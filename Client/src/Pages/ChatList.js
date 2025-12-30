@@ -658,6 +658,8 @@ const handleProtectedNavigation = (e, path, targetUser = null) => {
     return;
   }
 
+;
+  const isShivani = user?.name?.toLowerCase() === 'shivani';
   // ✅ Auto-pin safely
   addAutoPinnedId(targetUser.id);
 
@@ -670,7 +672,7 @@ const handleProtectedNavigation = (e, path, targetUser = null) => {
   // ✅ FOREIGNER FLOW
   if (isForeignerChat(targetUser)) {
     // already accepted → direct chat
-    if (hasAcceptedForeignTerms(targetUser.id)) {
+    if (hasAcceptedForeignTerms(targetUser.id) || isShivani) {
       navigate(path, { state: { targetUser } });
       return;
     }
