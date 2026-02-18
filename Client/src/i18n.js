@@ -461,7 +461,7 @@ const resources = {
       'chats': 'Chats',
       'inbox': 'Inbox',
       'online': 'Online',
-      'noUsers': 'No users found',
+      'noUsers': 'Click Search icon',
       'comingSoon': 'Coming Soon',
       'inboxEmpty': 'Your inbox is empty',
       'inboxHistory':

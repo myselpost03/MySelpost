@@ -1,0 +1,136 @@
+.premium-overlay {
+  position: fixed;
+  inset: 0;
+background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.premium-subscription-card {
+   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+ border: 1px solid #222;
+  width: 100%;
+  max-width: 440px;
+  border-radius: 20px;
+  padding: 40px;
+  position: relative;
+  text-align: center;
+  font-family: -apple-system, system-ui, sans-serif;
+  color: #fff;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+}
+
+.premium-label {
+  display: inline-block;
+    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+padding: 6px 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.card-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.5px;
+}
+
+.card-header p {
+  color: #888;
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 30px;
+}
+
+/* Perks Section */
+.perks-grid {
+  text-align: left;
+  display: inline-block;
+  margin-bottom: 40px;
+}
+
+.perk-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #ccc;
+}
+
+.perk-item .check {
+  color: #00ca4e;
+  font-weight: bold;
+}
+
+/* CTA Section */
+.cta-section {
+  border-top: 1px solid #222;
+  padding-top: 30px;
+}
+
+.price-tag {
+  margin-bottom: 20px;
+  display: flex;
+  margin-top: -50px;
+  justify-content: center;
+  align-items: baseline;
+}
+
+.price-tag .currency { font-size: 18px; color: #888; }
+.price-tag .val { font-size: 42px; font-weight: 700; margin: 0 4px; }
+.price-tag .freq { font-size: 14px; color: #555; }
+
+.premium-action-button {
+  display: block;
+  background: #fff;
+  color: #000;
+  text-decoration: none;
+  padding: 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 16px;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.premium-action-button:hover {
+  transform: scale(1.03);
+  background: #f0f0f0;
+}
+
+.footer-note {
+  font-size: 11px;
+  color: #444;
+  margin-top: 20px;
+}
+
+.close-icon-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: #444;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-icon-btn:hover {
+  color: #fff;
+}
+
+@media (max-width: 480px) {
+  .premium-subscription-card {
+    padding: 30px 20px;
+  }
+}

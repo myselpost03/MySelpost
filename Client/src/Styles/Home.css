@@ -1,14 +1,199 @@
+/* --- Fix for Cropped Banner Ads --- */
+
+.ad-wrapper-banner-protected {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 15px 0 !important;
+  overflow: visible !important; /* Allow the scaled ad to be seen */
+}
+
+.ad-container-inner-protected {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+/* On screens smaller than 728px (the standard banner width) */
+@media (max-width: 768px) {
+  .ad-wrapper-banner-protected .ad-container-inner-protected {
+    /* This calculates the scale factor so the 728px ad fits in smaller screens */
+    /* Example: If screen is 360px, it scales to ~0.48 */
+    transform: scale(calc(100vw / 750)); 
+    transform-origin: center center;
+    
+    /* We need to reduce the height of the container because scale() doesn't 
+       automatically shrink the space the element takes up */
+    margin: -20px 0; 
+  }
+}
+
+/* Specifically for very small phones */
+@media (max-width: 400px) {
+  .ad-wrapper-banner-protected .ad-container-inner-protected {
+    transform: scale(calc(100vw / 800));
+ margin-bottom: 40px;
+  }
+}/* Container for the whole page stack */
+.main-layout-stack {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden; /* Prevent the whole page from shaking/scrolling left-right */
+}
+
+/* Updated Ad Wrappers */
+.ad-wrapper-native-protected, 
+.ad-wrapper-banner-protected {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+  /* This is the fix for cutting off: */
+  overflow-x: auto; 
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Force the internal Adsterra iframe/div to behave */
+.ad-wrapper-native-protected > div,
+.ad-wrapper-banner-protected > div {
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Extra mobile-specific fix */
+@media (max-width: 480px) {
+  .home-main-content {
+    margin-top: -10px;
+  }
+  .ad-wrapper-native-protected{
+    margin-bottom: 24px;
+  }
+}/* Container for the whole page */
+.main-layout-stack {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Full screen height */
+}
+
+/* Header usually has a height, let's ensure content starts after it */
+.ad-wrapper-native-protected {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+  margin-top: 70px; /* Adjust this to match your Header's actual height */
+}
+
+/* This pushes the bottom ad and footer down */
+.home-main-content {
+  flex: 1; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+  transform: scale(0.9);
+}
+
+.ad-wrapper-banner {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 15px 0;
+}
+
+/* Button container spacing for desktop vs mobile */
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .button-container {
+    flex-direction: row; /* Side by side on desktop */
+    gap: 30px;
+  }
+}.ad-container-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  overflow: hidden; /* Prevents layout breaking if ad is too wide */
+}
+
+.ad-container-bottom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 30px;
+  margin-bottom: 50px;
+}
+
+/* On Mobile, you can tighten the spacing if needed */
+@media (max-width: 768px) {
+  .ad-container-top {
+    margin-top: 10px;
+    margin-bottom: 5px;
+  }
+}
+.button-container {
+  display: flex;
+  flex-direction: row; /* default: horizontal */
+  align-items: center;
+  justify-content: center;
+  gap: 1rem; /* space between buttons */
+}
+
+.or-text {
+  margin: 0 0.5rem; /* optional spacing around "OR" text */
+}
+
+/* Mobile styles */
+@media (max-width: 768px) { /* adjust breakpoint as needed */
+  .button-container {
+    flex-direction: column; /* vertical stacking on mobile */
+    gap: 0.5rem; /* adjust spacing for vertical layout */
+  }
+
+  .or-text {
+    margin: 0; /* optional: remove horizontal spacing for vertical */
+  }
+}
+
+
 /* ===============================
    ⚪🖤 Light Theme (White Base, Black Accents)
 ================================= */
 .background-animated {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  background: #ffffff;
+  flex-direction: column;background: linear-gradient(180deg, #fbc2eb 0%, #a6c1ee 100%);
+
   color: #111;
   overflow: hidden;
 }
+.sketchy-button-insta{
+  background: radial-gradient(circle at top, #ffb3d9, #ff5fa2 55%, #b61d63);background-size: 300%;
+  padding: 0.9rem 1.8rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-top: -20px;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-family: 'patrick hand', serif;
+  cursor: pointer;
+  transition: all 0.35s ease;}
 
 /* Blur background when modal/alert open */
 .blurred {
@@ -38,33 +223,18 @@
   gap: 1.5rem;
 }
 
-.sketchy-button {
-  background: #fff;
-  border: 2px solid #000;
-  border-radius: 14px;
-  padding: 0.9rem 1.8rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #000;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-}
-.sketchy-button:hover {
-  background: #000;
-  color: #fff;
-  transform: translateY(-3px) scale(1.05);
-}
-.sketchy-button:active {
-  transform: scale(0.96);
-}
 
+
+/* OR text stylized */
 .or-text {
   font-weight: bold;
   font-size: 1rem;
-  color: #333;
-  opacity: 0.8;
+  color: #111;
+  opacity: 0.9;
+  text-shadow: 0 0 4px rgba(0,0,0,0.4);
 }
+
+
 
 /* ===============================
    📦 Modal Overlay

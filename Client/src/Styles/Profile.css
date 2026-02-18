@@ -6,6 +6,14 @@
 @import url(https://fonts.googleapis.com/css?family=Patrick+Hand+SC:regular);
 @import url(https://fonts.googleapis.com/css?family=Stylish:regular);
 @import url(https://fonts.googleapis.com/css?family=Averia+Libre:300,300italic,regular,italic,700,700italic);
+.mosaic-canvas {
+  display: none; /* disable canvas completely */
+}
+.mosaic-img {
+  image-rendering: crisp-edges;
+  image-rendering: high-quality;
+}
+
 .sketchy-profile-wrapper {
   max-width: 500px;
   margin: 4rem auto;
@@ -465,13 +473,14 @@
 }
 
 .sketchy-blur-overlay {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backdrop-filter: blur(8px);
-  background-color: rgba(0, 0, 0, 0.6);
-  z-index: 1;
+  backdrop-filter: none;
+  background-color: transparent;
 }
+
+.blurred-note {
+  backdrop-filter: none;
+}
+
 
 .sketchy-fullscreen-image {
   max-width: 90%;

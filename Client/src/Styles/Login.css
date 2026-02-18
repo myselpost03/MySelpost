@@ -1,3 +1,10 @@
+.login-banner{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  background: #f5f6fa;
+  margin-top: -120px;
+}
 /* Container */
 .login-container {
   min-height: 100vh;

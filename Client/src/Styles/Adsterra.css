@@ -1,0 +1,7 @@
+.ad-wrapper {
+  width: 300px;      /* adjust to your desired small size */
+  height: 50%;
+  overflow: hidden;  /* prevents extra spacing */
+  transform: scale(1);  /* shrink */
+  transform-origin: top left;
+}

@@ -3,6 +3,14 @@
 @import url(https://fonts.googleapis.com/css?family=Schoolbell:regular);
 @import url(https://fonts.googleapis.com/css?family=RocknRoll+One:regular);
 
+.roast-banner{
+   width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: -90px;
+}
+
+
 /* General page layout */
 .roast-page {
   display: flex;
@@ -11,12 +19,9 @@
   min-height: 100vh;
   color: #222;
   font-family: "Inter", sans-serif;
-  background: linear-gradient(
-    to right,
-    #7b7c7c,
-    #d7d2cc
-  ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-}
+background: radial-gradient(circle at 20% 30%, #ff9a9e 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, #fad0c4 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, #fbc2eb 0%, #fbc2eb 100%);}
 
 /* Card container */
 .roast-card-container {

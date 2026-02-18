@@ -4,6 +4,7 @@ import OneSignal from "react-onesignal";
 import { supabase } from "../Utils/supabaseClient";
 import i18n from "../i18n";
 import "../Styles/SketchyAlert.css";
+import AdsterraBanner from "./AdsterraBanner";
 
 const SketchyAlert = ({ message, buttons = ["close"], onClose, onGuest, onNews, onPay }) => {
   const [subscribed, setSubscribed] = useState(false);
@@ -124,6 +125,9 @@ const loadAd = () => {
     <div className="sketchy-alert-new">
       <div className="alert-content">
         <p>{message}</p>
+        {/*<div className="alert-banner">
+          <AdsterraBanner />
+        </div>*/}
         <div className="alert-buttons">
           {buttons.includes("pay") && (
             <button className="pay-btn" onClick={onPay}>

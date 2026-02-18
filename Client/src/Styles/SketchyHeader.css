@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: center;
   padding: 10px;
-  background-color: black;
+  background: linear-gradient(135deg, #b24592 0%, #f15f79 100%);
   color: white;
   font-family: "Irish Grover", cursive;
 }

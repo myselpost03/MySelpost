@@ -27,4 +27,11 @@ export { default as ResetPassword } from "./ResetPassword";
 export { default as Notifications } from "./Notifications";
 export { default as Secret } from "./Secret";
 export { default as MissScratch } from "./MissScratch";
+export { default as Private } from "./Private";
+export { default as EnterPage } from "./EnterPage";
+export { default as OptionsPage } from "./OptionsPage";
+export { default as Russian } from "./Russian";
+
+export { default as Refund } from "./Refund";
+export { default as LiveSupport } from "./LiveSupport";
 export { default as Demo } from "./Demo";

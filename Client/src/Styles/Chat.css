@@ -1,8 +1,479 @@
-@import url("https://fonts.googleapis.com/css2?family=Caveat&display=swap");
-@import url("https://fonts.googleapis.com/css?family=Patrick+Hand:regular");
+@import url('https://fonts.googleapis.com/css2?family=Caveat&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Patrick+Hand:regular');
+@import url(https://fonts.googleapis.com/css?family=Signika:regular,500,600,700);
+.reveal-number {
+  position: fixed;
+  margin-top: 20%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1;
 
+  padding: 12px 18px;
+  border-radius: 12px;
+
+  background: linear-gradient(
+    45deg,
+    #ff0055,
+    #ff5e62,
+    #ff9966
+  );
+
+  box-shadow: 0 6px 18px rgba(255, 75, 110, 0.25);
+  color: #fff;
+  transition: all 0.25s ease;
+
+  position: fixed;
+}
+
+/* hover lift */
+.reveal-number:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(255, 75, 110, 0.35);
+}
+
+/* MINI VIP BADGE */
+.mini-vip-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+
+  padding: 3px 6px;
+  border-radius: 6px;
+font-family: 'arial', serif;
+  background: linear-gradient(45deg, #ffd700, #ffb300);
+  color: #222;
+
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+
+  animation: vipPulse 2s infinite ease-in-out;
+}
+
+/* subtle pulse animation */
+@keyframes vipPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* label */
+.reveal-num-text {
+  font-weight: 600;
+  font-size: 14px;
+  opacity: 0.95;
+  font-family: Arial, serif;
+}
+
+/* number */
+.reveal-num-code {
+  font-weight: 700;
+  letter-spacing: 2px;
+  font-size: 16px;
+  font-family: Arial, serif;
+}
+
+/* country code visible */
+.country-code {
+  color: #fff;
+}
+
+/* blur number */
+.blur-number {
+  filter: blur(6px);
+  user-select: none;
+  margin-left: 3px;
+  transition: filter 0.3s ease;
+}
+
+.reveal-number:hover .blur-number {
+  filter: blur(4px);
+}
+
+.get-unblocked {
+  background: linear-gradient(135deg, #111111, #2b2b2b);
+  color: #ffffff;
+  border: 1px solid #ffffff;
+  padding: 9px 20px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+/* click */
+.get-unblocked:active {
+  transform: scale(0.96);
+}
+
+/* VIP badge */
+.get-unblocked::after {
+  content: 'VIP';
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background-color: #111;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 1px solid #111111;
+}
+.get-unblocked {
+  background: linear-gradient(135deg, #111111, #2b2b2b);
+  color: #ffffff;
+  border: 1px solid #ffffff;
+  padding: 9px 22px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+/* click effect */
+.get-unblocked:active {
+  transform: scale(0.96);
+}
+
+/* Pink premium VIP badge */
+.get-unblocked::after {
+  content: 'VIP';
+  position: absolute;
+  top: -7px;
+  right: -12px;
+  background: linear-gradient(135deg, #ff4d8d, #ff8fb3);
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 999px;
+  border: 1px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(255, 77, 141, 0.4);
+}
+.premium-call-card {
+  background: #fff;
+  border: 1px solid #e4e6eb;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 4px;
+  max-width: 280px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.premium-call-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.premium-call-icon {
+  font-size: 16px;
+}
+
+.premium-call-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.premium-call-badge {
+  margin-left: auto;
+  font-size: 9px;
+  background: #000;
+  color: #fff;
+  padding: 2px 5px;
+  border-radius: 5px;
+}
+
+.premium-call-body {
+  font-size: 13px;
+  color: #444;
+  margin-bottom: 8px;
+}
+
+.premium-call-upgrade-btn {
+  width: 100%;
+  border: none;
+  background: #000;
+  color: #fff;
+  padding: 7px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.premium-call-answer-btn {
+  width: 100%;
+  border: none;
+  background: #28a745;
+  color: #fff;
+  padding: 7px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.upgrade-banner {
+  padding: 12px;
+  text-align: center;
+  background: #fff3cd;
+  border-top: 1px solid #ffeeba;
+}
+
+.upgrade-banner button {
+  margin-top: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #ff9800;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.blocked-by {
+  font-family: 'signika', sans-serif;
+  color: #979393;
+}
+
+.upi-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  background-color: #ffffff;
+  color: #202124;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  font-family: 'Google Sans', sans-serif; /* Main font */
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3);
+  transition: all 0.2s;
+}
+
+/* TARGET THE RUPEE SYMBOL HERE */
+.rupee-font {
+  font-family: 'Arial', sans-serif; /* Or 'Inter', 'Roboto', or 'Verdana' */
+  font-weight: 700;
+  margin-left: 10px;
+  margin-right: 1px;
+  color: #000; /* Optional: Make the icon blue for extra "pop" */
+}
+
+/* UPI Icon before the text */
+.upi-btn::before {
+  content: '';
+  display: inline-block;
+  width: 45px;
+  height: 18px;
+  margin-right: 12px;
+  background: url('https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg')
+    no-repeat center;
+  background-size: contain;
+}
+
+.upi-btn:hover {
+  background-color: #f8f9fa;
+  border-color: #d2e3fc;
+}
+.upi-btn {
+  /* Layout & Sizing */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  background-color: #ffffff;
+  color: #1c1b1f; /* Standard dark text */
+  border: 1.5px solid #ececec;
+  border-radius: 8px; /* Standard UPI merchant button radius */
+  font-family: 'poppins', serif;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+
+  /* Interaction */
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.upi-btn:hover {
+  background-color: #fdfdfd;
+  border-color: #0070e0; /* Blue accent on hover */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+/* The UPI Icon Styling */
+.upi-btn::before {
+  content: '';
+  display: inline-block;
+  /* UPI logo aspect ratio is roughly 3:1 */
+  width: 50px;
+  height: 18px;
+  margin-right: 12px;
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+.premium-lock-container {
+  max-width: 420px;
+  padding: 24px;
+  background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+  border: 1px solid #3a3000;
+  margin-top: -48vh;
+  z-index: 100;
+  box-shadow: 0 12px 30px rgba(255, 200, 0, 0.15);
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+.price-highlight {
+  font-weight: 800;
+  color: #1a1a1a;
+  background: linear-gradient(135deg, #ffe066, #ffcc33);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.refund-highlight {
+  font-weight: 800;
+  color: #1a1a1a;
+  background: linear-gradient(135deg, #ffe066, #ffcc33);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.premium-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffcc33;
+  margin-bottom: 12px;
+  text-shadow: 0 0 8px rgba(255, 204, 51, 0.4);
+
+  font-family: 'poppins', serif;
+}
+
+.premium-text {
+  font-size: 14.5px;
+  color: #d6d6d6;
+  margin-bottom: 22px;
+  line-height: 1.5;
+  font-family: 'yatra one', serif;
+}
+
+.premium-text b {
+  color: #ffd84d;
+}
+
+.buy-premium-btn {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ffcc33, #e6a700);
+  box-shadow: 0 6px 18px rgba(255, 200, 0, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.buy-premium-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(255, 200, 0, 0.5);
+}
+
+.buy-premium-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 14px rgba(255, 200, 0, 0.3);
+}
+
+.btn-main-text {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: 0.6px;
+}
+.btn-refund-text {
+  display: block;
+  font-size: 11.5px;
+  margin-top: 12px;
+  color: #2a2200;
+  opacity: 0.75;
+}
+.live-support-badge {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+
+  font-family: 'space grotesk', serif;
+  font-weight: 600;
+  color: #ffd84d;
+  background: rgba(255, 200, 0, 0.12);
+  border: 1px solid rgba(255, 200, 0, 0.35);
+  box-shadow: 0 0 10px rgba(255, 200, 0, 0.25);
+}
+
+.btn-sub-text {
+  display: block;
+  font-size: 12px;
+  margin-top: 4px;
+  color: #3a2b00;
+  opacity: 0.85;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.viewPrivate {
+  position: relative; /* This allows the 'X' to stick to the corner of THIS div */
+  color: #fff;
+  background: linear-gradient(45deg, #ee0979, #ff6a00);
+  text-align: center;
+  padding: 1rem;
+  margin-top: 9%;
+  font-size: 1.2rem;
+  font-weight: bold;
+  font-family: 'Winky Rough', serif;
+  border-radius: 12px;
+}
+
+/* Styling for the Cross Badge */
+.closeBadge {
+  position: absolute;
+  top: 8px; /* Distance from top edge */
+  right: 12px; /* Distance from right edge */
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.closeBadge:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
 .Chat-UI {
-  font-family: "Comic Sans MS", "Caveat", cursive;
+  font-family: 'Comic Sans MS', 'Caveat', cursive;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -18,7 +489,7 @@
     radial-gradient(circle at top left, #fffef9 0%, #f1efdb 100%);
   background-blend-mode: multiply;
 }
-.messages {
+.chat-messages {
   flex-grow: 1; /* fill available space */
   min-height: 0; /* allow flex to shrink properly */
   overflow-y: auto;
@@ -26,6 +497,7 @@
   margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
+  color: #000;
   gap: 0.8rem;
   scroll-behavior: smooth;
 }
@@ -50,7 +522,7 @@
 }
 
 /* Hide scrollbar for WebKit */
-.messages::-webkit-scrollbar {
+.chat-messages::-webkit-scrollbar {
   display: none;
 }
 
@@ -96,7 +568,7 @@
   }
 }
 
-.message {
+.chat-message {
   max-width: 70%;
   word-wrap: break-word;
   padding: 0.6rem 1rem;
@@ -105,10 +577,11 @@
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
   animation: sketch-bounce 0.3s ease-in-out;
   font-size: 1rem;
+  color: #000;
   line-height: 1.4;
 }
 
-.message img {
+.chat-message img {
   max-width: 100%;
   height: auto;
   border-radius: 8px;
@@ -116,26 +589,28 @@
   display: block;
 }
 
-.message p {
+.chat-message p {
+  color: #000;
   margin: 0;
-  font-family: "patrick hand", serif;
+  font-family: 'patrick hand', serif;
 }
 
-.message .time {
+.chat-message .time {
   font-size: 0.75rem;
   color: #555;
   margin-top: 4px;
   display: block;
   text-align: right;
   opacity: 0.7;
-  font-family: "patrick hand", serif;
+  font-family: 'patrick hand', serif;
 }
 
-.message.sent {
+.chat-message.sent {
   align-self: flex-end;
   background-color: #c0f5c0;
-  font-family: "Patrick Hand", serif;
+  font-family: 'Patrick Hand', serif;
   opacity: 0;
+  color: #111;
   transform: translateY(20px);
   animation: slideFadeIn 0.5s forwards; /* duration and forwards to keep final state */
 }
@@ -147,10 +622,11 @@
   }
 }
 
-.message.received {
+.chat-message.received {
   align-self: flex-start;
   background-color: #d4e9f0;
-  font-family: "patrick hand", serif;
+  font-family: 'patrick hand', serif;
+  color: #111;
 }
 
 .input-area {
@@ -161,12 +637,12 @@
   gap: 0.5rem;
   position: relative;
   flex-wrap: wrap;
-  font-family: "patrick hand", serif;
+  font-family: 'patrick hand', serif;
 }
 
-.input-area input[type="text"] {
+.input-area input[type='text'] {
   flex: 1;
-  font-family: "patrick hand", serif;
+  font-family: 'patrick hand', serif;
 
   padding: 0.6rem 1rem;
   border: 2px dashed #888;
@@ -251,7 +727,7 @@
   justify-content: center;
   height: 100%;
   text-align: center;
-  font-family: "Caveat", cursive;
+  font-family: 'Caveat', cursive;
   color: #922;
 }
 
@@ -261,7 +737,7 @@
   padding: 0.3rem 0.8rem;
   font-size: 1rem;
   border-radius: 10px;
-  font-family: "patrick hand", serif;
+  font-family: 'patrick hand', serif;
   cursor: pointer;
   color: #c33;
   margin: 0.5rem auto;
@@ -280,7 +756,7 @@
   color: #444;
   flex-shrink: 0;
   cursor: pointer;
-  font-family: "patrick hand", serif;
+  font-family: 'patrick hand', serif;
 }
 
 /* Top actions */
@@ -295,7 +771,7 @@
 .left-actions .block-btn {
   padding: 0.4rem 1rem;
   background-color: #ffe2e2;
-  font-family: "patrick hand", cursive, sans-serif;
+  font-family: 'patrick hand', cursive, sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -313,7 +789,7 @@
 .toggle-label {
   font-size: 0.85rem;
   font-weight: bold;
-  font-family: "patrick hand", cursive, sans-serif;
+  font-family: 'patrick hand', cursive, sans-serif;
   color: var(--chat-label-color, #333);
 }
 
@@ -351,7 +827,11 @@
 .toggle-switch.on .toggle-thumb {
   transform: translateX(24px);
 }
-
+@media screen and (min-width: 1024px) {
+  .premium-lock-container {
+    display: none;
+  }
+}
 /* Mobile specific styles */
 @media (max-width: 480px) {
   /* Remove dashed border and shadow from chat-box */
@@ -393,7 +873,7 @@
   }
 
   /* Adjust input text style in fixed input */
-  .input-area.mobile-only input[type="text"] {
+  .input-area.mobile-only input[type='text'] {
     flex: 1;
     border: 1px solid #888;
     border-radius: 20px;
@@ -427,7 +907,7 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     min-width: 120px;
     z-index: 1000;
-    font-family: "Patrick Hand", cursive, serif;
+    font-family: 'Patrick Hand', cursive, serif;
   }
 
   .mobile-menu-dropdown button {
@@ -546,9 +1026,10 @@
   background: #444;
 }
 
-.click-to-reveal-text {
+.click-to-reveal-img-text {
   font-size: 14px;
   font-weight: bold;
+  color: #fff;
 }
 @media (max-width: 480px) {
   .chat-container {
@@ -558,8 +1039,9 @@
 }
 
 @media (max-width: 480px) {
-  .message {
+  .chat-message {
     margin: 0.4rem 0.6rem;
+    color: #111;
   }
 }
 
@@ -571,7 +1053,7 @@
   background: linear-gradient(135deg, #ffecd2, #fcb69f);
   color: #333;
   font-weight: bold;
-  font-family: "Patrick Hand", cursive, serif;
+  font-family: 'Patrick Hand', cursive, serif;
   border-radius: 15px;
   text-align: center;
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
@@ -669,7 +1151,7 @@
 .gif-search-header h4 {
   margin: 0;
   color: #ffffff;
-  font-family: "Patrick Hand", cursive;
+  font-family: 'Patrick Hand', cursive;
   font-size: 1.2rem;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -708,7 +1190,7 @@
   border-radius: 25px;
   background: #111;
   color: #fff;
-  font-family: "Patrick Hand", cursive;
+  font-family: 'Patrick Hand', cursive;
   font-size: 1rem;
   outline: none;
   transition: all 0.3s ease;
@@ -730,7 +1212,7 @@
   border: 2px solid #333;
   border-radius: 25px;
   cursor: pointer;
-  font-family: "Patrick Hand", cursive;
+  font-family: 'Patrick Hand', cursive;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -740,7 +1222,7 @@
 }
 
 .gif-search-input button:before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: -100%;
@@ -787,7 +1269,7 @@
   grid-column: 1 / -1;
   text-align: center;
   color: #fff;
-  font-family: "Patrick Hand", cursive;
+  font-family: 'Patrick Hand', cursive;
   padding: 20px;
 }
 
@@ -801,7 +1283,7 @@
 }
 
 .gif-item:before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -964,7 +1446,7 @@
   transform: translateX(-50%);
   padding: 6px 14px;
   border-radius: 8px;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.7);
   color: white;
   border: none;
   cursor: pointer;
@@ -974,7 +1456,6 @@
 .plus-wrapper {
   position: relative;
 }
-
 
 /* Dropdown menu */
 .plus-menu {
@@ -994,9 +1475,7 @@
   transform: translateY(10px) scale(0.95);
   pointer-events: none;
 
-  transition: 
-    opacity 0.25s ease,
-    transform 0.25s ease;
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 /* Open state */

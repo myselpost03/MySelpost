@@ -1,28 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import Header from "../Components/Header";
-import "../Styles/Register.css";
-import bcrypt from "bcryptjs";
-import imageCompression from "browser-image-compression";
-import { supabase, supabaseStorage } from "../Utils/supabaseClient";
-import { trackEvent } from "../Utils/analytics";
-import confetti from "canvas-confetti"; // ✅ Import confettiimport { Toaster } from 'react-hot-toast';
-import toast, { Toaster } from "react-hot-toast";
-import { GoogleLogin } from "@react-oauth/google";
-import { jwtDecode } from "jwt-decode"; // ✅ Correct import
-import BannerAd from "../Components/BannerAd";
-import i18n from "../i18n";
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Header from '../Components/Header';
+import '../Styles/Register.css';
+import bcrypt from 'bcryptjs';
+import imageCompression from 'browser-image-compression';
+import { supabase, supabaseStorage } from '../Utils/supabaseClient';
+import { trackEvent } from '../Utils/analytics';
+import confetti from 'canvas-confetti'; // ✅ Import confettiimport { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode'; // ✅ Correct import
+import BannerAd from '../Components/BannerAd';
+import i18n from '../i18n';
+import AdsterraBanner from '../Components/AdsterraBanner';
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
+    name: '',
+    email: '',
+    password: '',
+    phone: '',
     profilePic: null,
-    inviteCode: "",
+    inviteCode: '',
   });
-  const [inviteError, setInviteError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
+  const [inviteError, setInviteError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [compressing, setCompressing] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
 
@@ -36,10 +38,10 @@ const Register = () => {
 
   const [step, setStep] = useState(1);
   const [emailValid, setEmailValid] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  const [country, setCountry] = useState("Hidden");
+  const [country, setCountry] = useState('Hidden');
 
   const [nameTaken, setNameTaken] = useState(false);
   const navigate = useNavigate();
@@ -51,27 +53,27 @@ const Register = () => {
     if (!basicPattern.test(trimmedEmail)) return false;
 
     const allowedExactDomains = [
-      "gmail.com",
-      "yahoo.com",
-      "outlook.com",
-      "hotmail.com",
-      "icloud.com",
-      "aol.com",
-      "protonmail.com",
-      "zoho.com",
-      "mail.com",
-      "gmx.com",
+      'gmail.com',
+      'yahoo.com',
+      'outlook.com',
+      'hotmail.com',
+      'icloud.com',
+      'aol.com',
+      'protonmail.com',
+      'zoho.com',
+      'mail.com',
+      'gmx.com',
     ];
 
     const allowedMultiPartDomains = [
-      "gmail.co.uk",
-      "gmail.com.au",
-      "outlook.co.uk",
-      "yahoo.co.in",
+      'gmail.co.uk',
+      'gmail.com.au',
+      'outlook.co.uk',
+      'yahoo.co.in',
       // Add more if needed
     ];
 
-    const domain = trimmedEmail.split("@")[1];
+    const domain = trimmedEmail.split('@')[1];
 
     // Exact match check
     if (allowedExactDomains.includes(domain)) {
@@ -91,9 +93,9 @@ const Register = () => {
   const checkEmailExists = async (email) => {
     if (!email) return false;
     const { data } = await supabase
-      .from("users")
-      .select("email")
-      .eq("email", email);
+      .from('users')
+      .select('email')
+      .eq('email', email);
     return data && data.length > 0;
   };
 
@@ -109,34 +111,34 @@ const Register = () => {
 
   useEffect(() => {
     if (!formData.password) {
-      setPasswordError("");
+      setPasswordError('');
       return;
     }
 
     if (formData.password.length < 8) {
-      setPasswordError(i18n.t("passwordMinLength"));
+      setPasswordError(i18n.t('passwordMinLength'));
     } else {
-      setPasswordError("");
+      setPasswordError('');
     }
   }, [formData.password]);
 
   useEffect(() => {
     if (!formData.inviteCode.trim()) {
-      setInviteError(""); // clear if empty
+      setInviteError(''); // clear if empty
       return;
     }
 
     const timeout = setTimeout(async () => {
       const { data: inviteData, error } = await supabase
-        .from("invites")
-        .select("sender_id")
-        .eq("code", formData.inviteCode.trim())
+        .from('invites')
+        .select('sender_id')
+        .eq('code', formData.inviteCode.trim())
         .single();
 
       if (error || !inviteData) {
-        setInviteError(`❌ ${i18n.t("invalidInvite")}`);
+        setInviteError(`❌ ${i18n.t('invalidInvite')}`);
       } else {
-        setInviteError(""); // valid code
+        setInviteError(''); // valid code
       }
     }, 500); // debounce 0.5s
 
@@ -146,13 +148,13 @@ const Register = () => {
   const handleGoogleLogin = async (credentialResponse) => {
     try {
       const decoded = jwtDecode(credentialResponse.credential);
-      console.log("Google User Info:", decoded);
+      console.log('Google User Info:', decoded);
 
       // Optional: Check if user exists in supabase
       const { data: existingUser } = await supabase
-        .from("users")
-        .select("*")
-        .eq("email", decoded.email)
+        .from('users')
+        .select('*')
+        .eq('email', decoded.email)
         .single();
 
       let userId;
@@ -161,7 +163,7 @@ const Register = () => {
       } else {
         // Insert new user
         const { data: insertedUser, error: insertError } = await supabase
-          .from("users")
+          .from('users')
           .insert([
             {
               name: decoded.name,
@@ -180,7 +182,7 @@ const Register = () => {
       }
 
       localStorage.setItem(
-        "user",
+        'user',
         JSON.stringify({
           id: userId,
           name: decoded.name,
@@ -191,20 +193,20 @@ const Register = () => {
         })
       );
 
-      toast.success(i18n.t("googleLoginSuccess"));
+      toast.success(i18n.t('googleLoginSuccess'));
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
       setTimeout(() => {
         if (isMobileDevice()) {
-          navigate("/chat-list", { replace: true });
+          navigate('/chat-list', { replace: true });
         } else {
-          navigate("/", { replace: true });
+          navigate('/', { replace: true });
         }
         setLoading(false);
       }, 1500);
     } catch (err) {
       console.error(err);
-      toast.error(i18n.t("googleLoginFailed"));
+      toast.error(i18n.t('googleLoginFailed'));
       setLoading(false);
     }
   };
@@ -257,9 +259,9 @@ const Register = () => {
   const checkNameExists = async (name) => {
     if (!name) return false;
     const { data } = await supabase
-      .from("users")
-      .select("name")
-      .eq("name", name);
+      .from('users')
+      .select('name')
+      .eq('name', name);
     return data && data.length > 0;
   };
 
@@ -319,7 +321,7 @@ const Register = () => {
       const compressedFile = await compressAndResize(file, 10);
 
       const compressedKB = (compressedFile.size / 1024).toFixed(2);
-      console.log("Compressed size KB:", compressedFile.size / 1024);
+      console.log('Compressed size KB:', compressedFile.size / 1024);
 
       setCompressedSize(compressedKB);
       setCompressedImage(URL.createObjectURL(compressedFile));
@@ -329,37 +331,37 @@ const Register = () => {
         profilePic: compressedFile,
       }));
     } catch (error) {
-      console.error("Compression error:", error);
+      console.error('Compression error:', error);
     } finally {
       setCompressing(false); // ✅ done compressing
       clearInterval(intervalId);
     }
   };
-
+  const [phoneError, setPhoneError] = useState('');
   const handleChange = async (e) => {
     const { name, value, files } = e.target;
 
-    if (name === "name") {
+    if (name === 'name') {
       // ✅ Allow only letters, numbers, underscore, and dots
       const regex = /^[a-zA-Z0-9._]{1,12}$/;
 
-      if (value === "" || regex.test(value)) {
+      if (value === '' || regex.test(value)) {
         setFormData((prev) => ({
           ...prev,
           [name]: value,
         }));
-        setError(""); // clear error if valid
+        setError(''); // clear error if valid
       } else {
-        setError(i18n.t("nameInvalid"));
+        setError(i18n.t('nameInvalid'));
       }
       return;
     }
 
-    if (name === "email") {
+    if (name === 'email') {
       setEmailValid(isEmailValid(value));
     }
 
-    if (name === "profilePic" && files && files[0]) {
+    if (name === 'profilePic' && files && files[0]) {
       await handleImageUpload(e);
     } else {
       setFormData((prev) => ({
@@ -370,12 +372,12 @@ const Register = () => {
   };
 
   useEffect(() => {
-    fetch("https://ipwho.is/?fields=country_code")
+    fetch('https://ipwho.is/?fields=country_code')
       .then((res) => res.json())
       .then((response) => {
-        setCountry(response.country_code || "Hidden");
+        setCountry(response.country_code || 'Hidden');
       })
-      .catch(() => setCountry("Hidden"));
+      .catch(() => setCountry('Hidden'));
   }, []);
 
   useEffect(() => {
@@ -412,7 +414,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
       // Required fields check
@@ -422,41 +424,41 @@ const Register = () => {
         !formData.password ||
         !formData.profilePic
       ) {
-        setError(i18n.t("allFieldsRequired"));
+        setError(i18n.t('allFieldsRequired'));
         setLoading(false);
         return;
       }
 
       // Password length check
       if (formData.password.length < 8) {
-        setError(i18n.t("passwordMinLength"));
+        setError(i18n.t('passwordMinLength'));
         setLoading(false);
         return;
       }
 
       const { data: existingEmail } = await supabase
-        .from("users")
-        .select("email")
-        .eq("email", formData.email)
+        .from('users')
+        .select('email')
+        .eq('email', formData.email)
         .single();
 
       if (existingEmail) {
-        setError(i18n.t("emailRegistered"));
+        setError(i18n.t('emailRegistered'));
         setLoading(false);
         return;
       }
 
       // File type validation
-      const validTypes = ["image/jpeg", "image/png", "image/webp"];
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
-      if (!formData.profilePic.type.startsWith("image/")) {
-        setError(i18n.t("invalidImageFile"));
+      if (!formData.profilePic.type.startsWith('image/')) {
+        setError(i18n.t('invalidImageFile'));
         setLoading(false);
         return;
       }
 
       if (!validTypes.includes(formData.profilePic.type)) {
-        setError(i18n.t("invalidImageFormat"));
+        setError(i18n.t('invalidImageFormat'));
         setLoading(false);
         return;
       }
@@ -464,18 +466,18 @@ const Register = () => {
       let inviterId = null;
       if (formData.inviteCode) {
         const { data: inviteData, error: inviteError } = await supabase
-          .from("invites")
-          .select("sender_id")
-          .eq("code", formData.inviteCode.trim())
+          .from('invites')
+          .select('sender_id')
+          .eq('code', formData.inviteCode.trim())
           .single();
 
         if (inviteError || !inviteData) {
-          setInviteError(`❌ ${i18n.t("invalidInvite")}`);
+          setInviteError(`❌ ${i18n.t('invalidInvite')}`);
           setLoading(false);
           return;
         }
         inviterId = inviteData.sender_id;
-        setInviteError("");
+        setInviteError('');
       }
 
       const hashedPassword = await bcrypt.hash(formData.password, 10);
@@ -483,25 +485,25 @@ const Register = () => {
       // Upload profile pic to storage DB
       let profilePicUrl = null;
       if (formData.profilePic) {
-        const fileExt = formData.profilePic.name.split(".").pop();
+        const fileExt = formData.profilePic.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
         const filePath = `avatars/${fileName}`;
 
         const { error: uploadError } = await supabaseStorage.storage
-          .from("profile-pics")
+          .from('profile-pics')
           .upload(filePath, formData.profilePic);
 
         if (uploadError) throw uploadError;
 
         const { data: publicUrlData } = supabaseStorage.storage
-          .from("profile-pics")
+          .from('profile-pics')
           .getPublicUrl(filePath);
 
         profilePicUrl = publicUrlData.publicUrl;
       }
 
       // Insert user into main DB
-      const { error: insertError } = await supabase.from("users").insert([
+      const { error: insertError } = await supabase.from('users').insert([
         {
           name: formData.name,
           email: formData.email,
@@ -517,27 +519,27 @@ const Register = () => {
       if (insertError) throw insertError;
 
       if (inviterId) {
-        await supabase.rpc("increment_reward_coins", {
+        await supabase.rpc('increment_reward_coins', {
           user_id_input: inviterId,
           increment_by: 50,
         });
       }
       // Track registration event
       trackEvent({
-        action: "button_click",
-        category: "User Interaction",
-        label: "Register Button",
+        action: 'button_click',
+        category: 'User Interaction',
+        label: 'Register Button',
       });
 
       // Simulate login after registration
       const { data: userData, error: loginError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("email", formData.email)
+        .from('users')
+        .select('*')
+        .eq('email', formData.email)
         .single();
 
       if (loginError || !userData) {
-        setError(i18n.t("loginAfterRegFailed"));
+        setError(i18n.t('loginAfterRegFailed'));
         return;
       }
 
@@ -546,13 +548,13 @@ const Register = () => {
         userData.password
       );
       if (!passwordMatch) {
-        setError(i18n.t("passwordMismatch"));
+        setError(i18n.t('passwordMismatch'));
         return;
       }
 
       // Save user locally
       localStorage.setItem(
-        "user",
+        'user',
         JSON.stringify({
           id: userData.id,
           name: userData.name,
@@ -563,26 +565,26 @@ const Register = () => {
       );
 
       setShowAlert(true);
-      toast.success(i18n.t("registeredSuccess"));
+      toast.success(i18n.t('registeredSuccess'));
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 
       setTimeout(() => {
         setShowAlert(false);
         if (isMobileDevice()) {
-          navigate("/chat-list", { replace: true });
+          navigate('/chat-list', { replace: true });
         } else {
-          navigate("/", { replace: true });
+          navigate('/', { replace: true });
         }
         setLoading(false);
       }, 2000);
     } catch (err) {
-      setError(err.message || i18n.t("somethingWentWrong"));
+      setError(err.message || i18n.t('somethingWentWrong'));
     } finally {
       setLoading(false);
     }
   };
   const handleGoogleLoginError = () => {
-    toast.error(i18n.t("googleLoginFailed"));
+    toast.error(i18n.t('googleLoginFailed'));
   };
   return (
     <div>
@@ -595,7 +597,7 @@ const Register = () => {
             await handleSubmit(e);
           }}
         >
-          <h2 className="acct-text">{i18n.t("createAccount")}</h2>
+          <h2 className="acct-text">{i18n.t('createAccount')}</h2>
 
           {step === 1 && (
             <>
@@ -607,64 +609,41 @@ const Register = () => {
               <input
                 type="text"
                 name="name"
-                placeholder={i18n.t("name")}
+                placeholder={i18n.t('name')}
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className={nameTaken ? "invalid" : ""}
+                className={nameTaken ? 'invalid' : ''}
               />
-              {nameTaken && <p className="error-msg">{i18n.t("nameTaken")}</p>}
-              {error.includes("Name") && <p className="error-msg">{error}</p>}
+              {nameTaken && <p className="error-msg">{i18n.t('nameTaken')}</p>}
+              {error.includes('Name') && <p className="error-msg">{error}</p>}
 
               <input
                 type="email"
                 name="email"
-                placeholder={i18n.t("email")}
+                placeholder={i18n.t('email')}
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className={!emailValid ? "invalid" : ""}
+                className={!emailValid ? 'invalid' : ''}
               />
               {!emailValid && (
-                <p className="error-msg">{i18n.t("enterValidEmail")}</p>
+                <p className="error-msg">{i18n.t('enterValidEmail')}</p>
               )}
               {emailTaken && (
-                <p className="error-msg">{i18n.t("emailRegistered")}</p>
+                <p className="error-msg">{i18n.t('emailRegistered')}</p>
               )}
-              <p className="step-indicator">{i18n.t("step1")}</p>
+              <p className="step-indicator">{i18n.t('step1')}</p>
             </>
           )}
           {step === 2 && (
             <>
-              <input
-                type="password"
-                name="password"
-                placeholder={i18n.t("password")}
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className={passwordError ? "invalid" : ""}
-              />
-              {passwordError && <p className="error-msg">{passwordError}</p>}
-
-              {/*<input
-                type="text"
-                name="inviteCode"
-                placeholder={`${i18n.t("inviteCode")} (${i18n.t("optional")})`}
-                value={formData.inviteCode}
-                onChange={(e) =>
-                  setFormData({ ...formData, inviteCode: e.target.value })
-                }
-                className={`input ${inviteError ? "input-error" : ""}`}
-              />
-              {inviteError && <p className="error-text">{inviteError}</p>}
-**/}
               <div className="profile-pic-selector">
                 <label className="profile-pic-card">
                   <span className="profile-pic-text">
                     {formData.profilePic
-                      ? i18n.t("fileSelected")
-                      : i18n.t("selectProfile")}
+                      ? i18n.t('fileSelected')
+                      : i18n.t('selectProfile')}
                   </span>
                   <input
                     type="file"
@@ -679,24 +658,57 @@ const Register = () => {
 
               {error && <p className="error-msg">{error}</p>}
 
+              <input
+                type="password"
+                name="password"
+                placeholder={i18n.t('password')}
+                value={formData.password}
+                onChange={handleChange}
+                required
+                className={passwordError ? 'invalid' : ''}
+              />
+              {passwordError && <p className="error-msg">{passwordError}</p>}
+              <input
+                type="text"
+                name="phone"
+                placeholder="Instagram (Optional)"
+                value={formData.phone}
+                onChange={handleChange}
+                style={{ marginBottom: '5px' }}
+                className={phoneError ? 'invalid' : ''}
+              />
+
+              {/*<input
+                type="text"
+                name="inviteCode"
+                placeholder={`${i18n.t("inviteCode")} (${i18n.t("optional")})`}
+                value={formData.inviteCode}
+                onChange={(e) =>
+                  setFormData({ ...formData, inviteCode: e.target.value })
+                }
+                className={`input ${inviteError ? "input-error" : ""}`}
+              />
+              {inviteError && <p className="error-text">{inviteError}</p>}
+**/}
+
               <button
                 type="submit"
                 disabled={!isFormValid || loading || compressing}
                 className="register-btn"
               >
                 {compressing
-                  ? `${i18n.t("compressing")} (${elapsedTime}s)`
+                  ? `${i18n.t('compressing')} (${elapsedTime}s)`
                   : loading
-                  ? i18n.t("registering")
-                  : i18n.t("register")}
+                  ? i18n.t('registering')
+                  : i18n.t('register')}
               </button>
 
               <p className="link-to-login">
-                {i18n.t("alreadyAccount")}{" "}
-                <Link to="/login">{i18n.t("login")}</Link>
+                {i18n.t('alreadyAccount')}{' '}
+                <Link to="/login">{i18n.t('login')}</Link>
               </p>
 
-              <p className="step-indicator">{i18n.t("step2")}</p>
+              <p className="step-indicator">{i18n.t('step2')}</p>
             </>
           )}
         </form>
@@ -706,7 +718,10 @@ const Register = () => {
           </p>
         )*/}
       </div>
-            {/* <BannerAd /> */}
+      {/*     <div className="login-banner">
+             <AdsterraBanner />
+           </div>
+*/}{' '}
       <Toaster />
     </div>
   );

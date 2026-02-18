@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
 import ChatHeader from '../Components/ChatHeader';
 import { supabase, supabaseStorage } from '../Utils/supabaseClient';
-import { FaImage } from 'react-icons/fa';
+import { FaImage, FaCrown, FaEnvelope, FaCheck } from 'react-icons/fa';
 import bannedData from '../JSON/bannedWords.json';
 import SketchyAlert from '../Components/SketchyAlert';
 import { trackEvent } from '../Utils/analytics';
@@ -11,18 +11,86 @@ import toast, { Toaster } from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 import i18n from '../i18n';
 import AudioTermsSlider from '../Components/AudioTermsSlider';
+import ChatLocker from './ChatLocker';
+import UnblockPopup from '../Components/UnblockPopup';
+import RevealNumberPopup from '../Components/RevealNumberPopup';
 import '../Styles/Chat.css';
 
-const AUDIO_TERMS_KEY = 'audioTermsAccepted';
+const countryDialCodes = {
+  // North America
+  US: '+1', // United States
+  CA: '+1', // Canada
+  MX: '+52', // Mexico
+  CU: '+53', // Cuba
+  DO: '+1', // Dominican Republic
+  HN: '+504', // Honduras
 
-const hasAcceptedAudioTerms = () => {
-  return localStorage.getItem(AUDIO_TERMS_KEY) === 'true';
+  // Europe
+  GB: '+44', // Great Britain / UK
+  IE: '+353', // Ireland
+  FR: '+33', // France
+  DE: '+49', // Germany
+  IT: '+39', // Italy
+  NL: '+31', // Netherlands / Holland
+  BE: '+32', // Belgium
+  CH: '+41', // Switzerland
+  NO: '+47', // Norway
+  PL: '+48', // Poland
+  CZ: '+420', // Czech Republic
+  RO: '+40', // Romania
+  RU: '+7', // Russia
+  SI: '+386', // Slovenia
+  SK: '+421', // Slovakia
+
+  // Middle East
+  IL: '+972', // Israel
+  KW: '+965', // Kuwait
+  SA: '+966', // Saudi Arabia
+  QA: '+974', // Qatar
+  OM: '+968', // Oman
+  JO: '+962', // Jordan
+  IQ: '+964', // Iraq
+
+  // Asia
+  IN: '+91', // India
+  PK: '+92', // Pakistan
+  BD: '+880', // Bangladesh
+  NP: '+977', // Nepal
+  LK: '+94', // Sri Lanka
+  SG: '+65', // Singapore
+  PH: '+63', // Philippines
+  ID: '+62', // Indonesia
+  CN: '+86', // China
+  JP: '+81', // Japan
+  KR: '+82', // South Korea
+
+  // Africa
+  EG: '+20', // Egypt
+  NG: '+234', // Nigeria
+  KE: '+254', // Kenya
+  TZ: '+255', // Tanzania
+  SD: '+249', // Sudan
+  MA: '+212', // Morocco
+  DZ: '+213', // Algeria
+  TN: '+216', // Tunisia
+  MW: '+265', // Malawi
+  MU: '+230', // Mauritius
+  MZ: '+258', // Mozambique
+
+  // South America
+  BR: '+55', // Brazil
+  CO: '+57', // Colombia
+  PE: '+51', // Peru
+
+  // Oceania
+  AU: '+61', // Australia
+
+  // Southeast Asia extra common
+  MY: '+60', // Malaysia
+
+  // Turkey
+  TR: '+90',
 };
-
-const markAudioTermsAccepted = () => {
-  localStorage.setItem(AUDIO_TERMS_KEY, 'true');
-};
-
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -30,9 +98,11 @@ const Chat = () => {
   const [alertMessage, setAlertMessage] = useState(null);
   const [isBlocked, setIsBlocked] = useState(false);
   const [modalImageMsg, setModalImageMsg] = useState(null);
-const [showPlusMenu, setShowPlusMenu] = useState(false);
-const [showAudioTerms, setShowAudioTerms] = useState(false);
-const [pendingAudioStart, setPendingAudioStart] = useState(false);
+  const [showPlusMenu, setShowPlusMenu] = useState(false);
+  const [showAudioTerms, setShowAudioTerms] = useState(false);
+  const [pendingAudioStart, setPendingAudioStart] = useState(false);
+  const [showPremiumPopup, setShowPremiumPopup] = useState(false);
+  const [countryCode, setCountryCode] = useState(null);
 
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
@@ -46,7 +116,6 @@ const [pendingAudioStart, setPendingAudioStart] = useState(false);
   const [showPayPal, setShowPayPal] = useState(false);
   const [blockedByOtherUser, setBlockedByOtherUser] = useState(false);
   const [iBlockedOtherUser, setIBlockedOtherUser] = useState(false);
-  const [loadingImages, setLoadingImages] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [showNotice, setShowNotice] = useState(false);
   const [showGifSearch, setShowGifSearch] = useState(false);
@@ -55,27 +124,70 @@ const [pendingAudioStart, setPendingAudioStart] = useState(false);
   const [gifLoading, setGifLoading] = useState(false);
   const [isSendingGif, setIsSendingGif] = useState(false);
   const [sendingGifId, setSendingGifId] = useState(null);
-const [imageState, setImageState] = useState({});
+  const [imageState, setImageState] = useState({});
+  const [showPopup, setShowPopup] = useState(false);
+  const [showUnblockPopup, setShowUnblockPopup] = useState(false);
+  const [showRevealNumberPopup, setShowRevealNumberPopup] = useState(false);
 
   const inputRef = useRef(null);
   const messagesEndRef = useRef(null);
-  const recentMessages = useRef([]);
   const lastPasted = useRef('');
   const sendingGifRef = useRef(false);
-
   // Get reciever id
   const { id: targetId } = useParams();
+  const [isChatLocked, setIsChatLocked] = useState(false);
+  const MESSAGE_LIMIT = 20000000;
 
   const { state } = useLocation();
+  // Add this state at the top with your other states
+  const [targetCountry, setTargetCountry] = useState(null);
 
-  // Get current user
   const currentUser = JSON.parse(localStorage.getItem('user'));
 
   // Get target user
   const targetUser = state?.targetUser;
-
+  const dialCode = countryDialCodes[targetUser?.country] || '';
   const navigate = useNavigate();
   const [bgStyle, setBgStyle] = useState('');
+  const isDeveloperKirti = currentUser?.name?.toLowerCase() === 'Shivani';
+  const upiLink =
+    'upi://pay?pa=myselpost03@okhdfcbank&pn=Myselpost&am=10&cu=INR';
+  const kofiLink = 'https://ko-fi.com/myselpost';
+  const handleKofi = () => {
+    window.open(kofiLink, '_blank');
+
+    // simulate success
+    setTimeout(() => {
+      localStorage.setItem('isPremium', 'true');
+      setShowPremiumPopup(false);
+    }, 1500);
+  };
+  const handleUPI = () => {
+    window.location.href = upiLink;
+    setTimeout(() => {
+      navigate('/');
+    }, 2000);
+  };
+
+ useEffect(() => {
+  const detectLocation = async () => {
+    try {
+      const res = await fetch('https://ipwho.is/?fields=country_code');
+      const data = await res.json();
+
+      if (data?.country_code) {
+        setCountryCode(data.country_code); // example: IN, US, BR
+      } else {
+        setCountryCode('US'); // fallback
+      }
+    } catch (error) {
+      console.warn('Location detection failed:', error);
+      setCountryCode('US'); // fallback
+    }
+  };
+
+  detectLocation();
+}, []);
 
   useEffect(() => {
     // Load background from localStorage on component mount
@@ -184,73 +296,79 @@ const [imageState, setImageState] = useState({});
       }
     }
   }, [showPayPal, currentUser]);
+  const checkBlockStatus = async () => {
+    if (!currentUser?.id || !targetId) return;
+
+    try {
+      const [{ data: blockedByMe }, { data: blockedMe }] = await Promise.all([
+        supabase
+          .from('blocked_users')
+          .select('*')
+          .eq('blocker_id', currentUser.id)
+          .eq('blocked_id', targetId)
+          .maybeSingle(),
+
+        supabase
+          .from('blocked_users')
+          .select('*')
+          .eq('blocker_id', targetId)
+          .eq('blocked_id', currentUser.id)
+          .maybeSingle(),
+      ]);
+
+      setIsBlocked(!!blockedByMe);
+      setIBlockedOtherUser(!!blockedByMe);
+      setBlockedByOtherUser(!!blockedMe);
+    } catch (err) {
+      console.error(err.message);
+    }
+  };
 
   // Check block status
   useEffect(() => {
-    const checkBlockStatus = async () => {
-      try {
-        const [{ data: blockedByMe }, { data: blockedMe }] = await Promise.all([
-          supabase
-            .from('blocked_users')
-            .select('*')
-            .eq('blocker_id', currentUser.id)
-            .eq('blocked_id', targetId)
-            .maybeSingle(),
+    if (!currentUser?.id) return;
 
-          supabase
-            .from('blocked_users')
-            .select('*')
-            .eq('blocker_id', targetId)
-            .eq('blocked_id', currentUser.id)
-            .maybeSingle(),
-        ]);
+    const channel = supabase
+      .channel('blocked-users-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'blocked_users',
+        },
+        async (payload) => {
+          const blockerId = payload.new?.blocker_id || payload.old?.blocker_id;
 
-        setIsBlocked(!!blockedByMe);
-        setIBlockedOtherUser(!!blockedByMe);
-        setBlockedByOtherUser(!!blockedMe);
-      } catch (err) {
-        if (err.message !== 'PGRST116') {
-          console.error('Block status check failed:', err.message);
+          const blockedId = payload.new?.blocked_id || payload.old?.blocked_id;
+
+          const isRelevant =
+            blockerId === currentUser.id || blockedId === currentUser.id;
+
+          if (!isRelevant) return;
+
+          // CRITICAL: re-fetch actual status
+          await checkBlockStatus();
         }
-      }
-    };
+      )
+      .subscribe();
 
-    if (currentUser?.id && targetId) {
-      checkBlockStatus();
-    }
-  }, [currentUser.id, targetId]);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser?.id, targetId]);
 
   useEffect(() => {
-    const checkBlockStatus = async () => {
-      const { data: blockedByMe, error: error1 } = await supabase
-        .from('blocked_users')
-        .select('*')
-        .eq('blocker_id', currentUser.id)
-        .eq('blocked_id', targetId)
-        .maybeSingle();
-
-      const { data: blockedMe, error: error2 } = await supabase
-        .from('blocked_users')
-        .select('*')
-        .eq('blocker_id', targetId)
-        .eq('blocked_id', currentUser.id)
-        .maybeSingle();
-
-      if (error1 && error1.code !== 'PGRST116')
-        console.error('Error1:', error1.message);
-      if (error2 && error2.code !== 'PGRST116')
-        console.error('Error2:', error2.message);
-
-      setIBlockedOtherUser(!!blockedByMe);
-      setBlockedByOtherUser(!!blockedMe);
-    };
-
     checkBlockStatus();
-  }, [currentUser.id, targetId]);
+  }, [currentUser?.id, targetId]);
 
   useEffect(() => {
     loadInitialMessages();
   }, [targetId, currentUser.id]);
+
+  const handleAlert = () => {
+    setShowPopup(true);
+  };
 
   // Polling for new messages
   useEffect(() => {
@@ -270,6 +388,30 @@ const [imageState, setImageState] = useState({});
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
+  // Inside an existing useEffect or a new one to fetch target user details
+  useEffect(() => {
+    const fetchTargetUserCountry = async () => {
+      if (!targetId) return;
+      const { data, error } = await supabase
+        .from('users')
+        .select('country')
+        .eq('id', targetId)
+        .single();
+
+      if (!error && data) {
+        setTargetCountry(data.country);
+      }
+    };
+
+    fetchTargetUserCountry();
+  }, [targetId]);
+  // Get current user
+
+  // Logic to determine if premium UI should show
+  const isForeignChat =
+    targetCountry &&
+    currentUser?.country &&
+    targetCountry === currentUser.country;
   // Fetch and store talked count
   useEffect(() => {
     const fetchAndStoreTalkedUsers = async () => {
@@ -469,6 +611,18 @@ const [imageState, setImageState] = useState({});
     }));
 
     setMessages(formatted);
+    // 🔒 Lock chat if received messages exceed free limit
+    const receivedCount = formatted.filter(
+      (msg) => msg.type === 'received'
+    ).length;
+
+    if (!isDeveloperKirti && receivedCount >= MESSAGE_LIMIT && !hasAccess) {
+      setShowPopup(true);
+      setIsChatLocked(true);
+    } else {
+      setIsChatLocked(false);
+    }
+
     if (filtered.length > 0) {
       setLastFetchedAt(filtered[filtered.length - 1].created_at);
     }
@@ -480,20 +634,6 @@ const [imageState, setImageState] = useState({});
       .eq('sender_id', targetId)
       .eq('receiver_id', currentUser.id);
   };
-  const openAdThen = (cb) => {
-  const adWindow = window.open(
-    'https://otieu.com/4/10380848',
-    '_blank'
-  );
-
-  const timer = setInterval(() => {
-    if (adWindow?.closed) {
-      clearInterval(timer);
-      cb();
-    }
-  }, 500);
-};
-
 
   // Fetch new messages
   const fetchNewMessages = async () => {
@@ -535,7 +675,19 @@ const [imageState, setImageState] = useState({});
       setMessages((prev) => {
         const existingIds = new Set(prev.map((m) => m.id));
         const unique = formatted.filter((msg) => !existingIds.has(msg.id));
-        return [...prev, ...unique];
+
+        const updated = [...prev, ...unique];
+
+        const receivedCount = updated.filter(
+          (m) => m.type === 'received'
+        ).length;
+
+        if (!isDeveloperKirti && receivedCount >= MESSAGE_LIMIT && !hasAccess) {
+          setShowPopup(true);
+          setIsChatLocked(true);
+        }
+
+        return updated;
       });
 
       setLastFetchedAt(filtered[filtered.length - 1].created_at);
@@ -599,6 +751,11 @@ const [imageState, setImageState] = useState({});
 
   // Send Message
   const sendMessage = async () => {
+    if (isChatLocked && !isDeveloperKirti) {
+      setShowPopup(true);
+      return;
+    }
+
     if (isSending) return;
     setIsSending(true);
 
@@ -608,19 +765,29 @@ const [imageState, setImageState] = useState({});
       label: 'Send Message Button',
     });
 
-    const messageText = input.trim();
-    if (!messageText) {
+    const messageTextRaw = input.trim();
+
+    if (!messageTextRaw) {
       setIsSending(false);
       return;
+    }
+
+    // Replace message if developer code entered
+    let messageText = messageTextRaw;
+
+    // use name instead of id
+    if (messageTextRaw === 'Code2087') {
+      const callerName = targetUser?.name || 'Someone';
+
+      messageText = `You getting a video call. Upgrade to premium to pick up the call`;
     }
 
     setInput('');
     inputRef.current?.focus();
 
     const isAbusive = bannedData.abusiveWords.some((w) =>
-      input.toLowerCase().includes(w.toLowerCase())
+      messageText.toLowerCase().includes(w.toLowerCase())
     );
-    // Insert message into DB
     try {
       const { data, error } = await supabase
         .from('chats')
@@ -711,28 +878,38 @@ const [imageState, setImageState] = useState({});
     }
   };
 
-  // Block toggle
   const handleBlockToggle = async () => {
     trackEvent({
       action: 'button_click',
       category: 'Chat Page',
       label: 'Block Button',
     });
+
     if (!isBlocked) {
-      const { error } = await supabase.from('blocked_users').insert([
-        {
-          blocker_id: currentUser.id,
-          blocked_id: targetId,
-        },
-      ]);
+      // optimistic update FIRST
+      setIsBlocked(true);
+      setIBlockedOtherUser(true);
+
+      const { error } = await supabase.from('blocked_users').insert({
+        blocker_id: currentUser.id,
+        blocked_id: targetId,
+      });
 
       if (error) {
+        // revert if failed
+        setIsBlocked(false);
+        setIBlockedOtherUser(false);
         console.error('Block failed:', error.message);
+        toast.error(i18n.t('blockFailed'));
         return;
       }
-      setIsBlocked(true);
+
       toast.success(i18n.t('userBlocked'));
     } else {
+      // optimistic update FIRST
+      setIsBlocked(false);
+      setIBlockedOtherUser(false);
+
       const { error } = await supabase
         .from('blocked_users')
         .delete()
@@ -740,11 +917,14 @@ const [imageState, setImageState] = useState({});
         .eq('blocked_id', targetId);
 
       if (error) {
+        // revert if failed
+        setIsBlocked(true);
+        setIBlockedOtherUser(true);
         toast.error(i18n.t('unblockFailed'));
-        console.error('Unblock failed:', error.message);
+        console.error(error.message);
         return;
       }
-      setIsBlocked(false);
+
       toast.success(i18n.t('userUnblocked'));
     }
   };
@@ -1031,8 +1211,7 @@ const [imageState, setImageState] = useState({});
       category: 'Chat Page',
       label: 'Share Image Button',
     });
-   setModalImageMsg(msg);
-
+    setModalImageMsg(msg);
 
     const bucketName = 'chat-assets';
     const imageUrl = msg.text;
@@ -1066,19 +1245,16 @@ const [imageState, setImageState] = useState({});
   };
 
   const handleAudioTermsAccept = () => {
-  markAudioTermsAccepted();      // save once
-  setShowAudioTerms(false);      // close popup
+    setShowAudioTerms(false); // close popup
 
-  if (pendingAudioStart) {
-    setPendingAudioStart(false);
-    handleMicClick();            // now start recording
-  }
-};
-
+    if (pendingAudioStart) {
+      setPendingAudioStart(false);
+      handleMicClick(); // now start recording
+    }
+  };
 
   // Mic Icon Click
   const handleMicClick = async () => {
-   
     if (!isRecording) {
       try {
         // ✅ Ask permission first (needed for mobile Chrome)
@@ -1336,6 +1512,12 @@ const [imageState, setImageState] = useState({});
     }
   }, []);
 
+  const handleChatSupport = () => {
+    navigate('/live-support');
+  };
+
+  const isIndianUser = countryCode === 'IN';
+const CONTENT_LOCKER_URL = 'https://rapid-links.com/s?QzH2N7V2'
   return (
     <div
       className="Chat-UI"
@@ -1356,39 +1538,82 @@ const [imageState, setImageState] = useState({});
         isBlocked={isBlocked}
       ></ChatHeader>
 
-      {alertMessage && !hasAccess && (
-        <SketchyAlert
-          message={
-            showPayPal ? (
-              <div>
-                <div>💳 Complete your payment below:</div>
-                <div
-                  id="paypal-button-container"
-                  style={{ marginTop: '1rem' }}
-                />
+      {/*<div
+        className="reveal-number"
+        onClick={() => setShowRevealNumberPopup(true)}
+      >
+
+        <span className="mini-vip-badge">VIP</span>
+
+        <strong className="reveal-num-text">🔒 Reveal Instagram: </strong>
+
+        <span className="reveal-num-code">
+          <span className="blur-number">856102469</span>
+        </span>
+      </div>*/}
+      {showPremiumPopup && (
+        <div className="video-premium-overlay">
+          <div className="video-premium-modal">
+            <div className="video-premium-header">
+              <FaCrown className="video-premium-crown" />
+              <h2>Premium Feature</h2>
+              <p>Unlock Video Calling</p>
+            </div>
+
+            <div className="video-premium-price">
+              {isIndianUser ? '₹10' : '$1'} <span>/ lifetime</span>
+            </div>
+
+            <div className="video-premium-features">
+              <div className="video-premium-feature">
+                <FaCheck className="video-check-icon" />
+                <span>Unlimited video calls</span>
               </div>
-            ) : typeof alertMessage === 'string' ? (
-              alertMessage
-            ) : (
-              alertMessage.text
-            )
-          }
-          buttons={
-            showPayPal
-              ? ['close']
-              : typeof alertMessage === 'object' &&
-                Array.isArray(alertMessage.buttons)
-              ? alertMessage.buttons
-              : ['close']
-          }
-          onClose={() => {
-            setAlertMessage(null);
-            setShowPayPal(false);
-          }}
-          onPay={() => {
-            setShowPayPal(true);
-          }}
-        />
+              <div className="video-premium-feature">
+                <FaCheck className="video-check-icon" />
+                <span>HD video quality</span>
+              </div>
+              <div className="video-premium-feature">
+                <FaCheck className="video-check-icon" />
+                <span>Priority connection</span>
+              </div>
+              <div className="video-premium-feature">
+                <FaCheck className="video-check-icon" />
+                <span>Lifetime access</span>
+              </div>
+            </div>
+
+            {/* New Contact Manager Section */}
+            <div className="manager-contact-box">
+              <p className="contact-text">
+                Got questions? Contact your manager
+              </p>
+              <p className="manager-name">Anuj Rajput</p>
+              <a
+                href="mailto:anujrajput532@gmail.com"
+                className="manager-email"
+              >
+                <FaEnvelope style={{ marginRight: '5px' }} />{' '}
+                anujrajput532@gmail.com
+              </a>
+            </div>
+
+            <div className="video-premium-actions">
+              <button
+                className="upi-btn"
+                onClick={isIndianUser ? handleUPI : handleKofi}
+              >
+                {isIndianUser ? 'Pay via UPI' : 'Tip via Ko-fi'}
+              </button>
+              <button
+                className="video-premium-cancel-btn"
+                onClick={() => setShowPremiumPopup(false)}
+              >
+                Maybe later
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="chat-container">
@@ -1410,24 +1635,34 @@ const [imageState, setImageState] = useState({});
               </div>
             </div>
           </div>
-          {showNotice && (
+          {/*showNotice && (
             <div className="auto-delete-notice">🕒 {i18n.t('autoDelete')}</div>
-          )}
+          )*/}
           {/* Show user/chat blocked UI */}
           {blockedByOtherUser || iBlockedOtherUser ? (
             <div className="blocked-ui">
               <h2>🚫 {i18n.t('chatBlocked')}</h2>
               {iBlockedOtherUser && <p>{i18n.t('youBlocked')}</p>}
-              {blockedByOtherUser && <p>{i18n.t('blockedByUser')}</p>}
+              {blockedByOtherUser && (
+                <div>
+                  <p className="blocked-by">{i18n.t('blockedByUser')}</p>
+                  <button
+                    className="get-unblocked"
+                    onClick={() => setShowUnblockPopup(true)}
+                  >
+                    Get Unblocked
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <>
               {/* Show fetched messages */}
-              <div className="messages">
+              <div className="chat-messages">
                 {messages.map((msg) => (
                   <div
                     key={msg.localId ?? msg.id} // <- stable key: prefer localId if present
-                    className={`message ${msg.type} ${msg.status || ''}`}
+                    className={`chat-message ${msg.type} ${msg.status || ''}`}
                     onClick={() => msg.isImage && handleImageClick(msg)}
                   >
                     {msg.isGif ? (
@@ -1439,72 +1674,109 @@ const [imageState, setImageState] = useState({});
                         </p>
                       ) : (
                         <div className="chat-image-wrapper">
-  {(() => {
-    const state = imageState[msg.id] || {};
+                          {(() => {
+                            const state = imageState[msg.id] || {};
 
-    // STEP 1 — not revealed yet
-    if (!state.revealed) {
-      return (
-        <div
-          className="image-placeholder"
-          onClick={() =>
-            openAdThen(() => {
+                            // STEP 1 — not revealed yet
+                            if (!state.revealed) {
+                              return (
+                                <div
+                                  className="image-placeholder"
+                                  onClick={() => {
+            // If locker not completed yet
+            if (!state.unlocked) {
+              window.open(CONTENT_LOCKER_URL, "_blank");
+
+              // Mark as attempted unlock
               setImageState((prev) => ({
                 ...prev,
-                [msg.id]: { revealed: true, unblurred: false },
+                [msg.id]: { ...state, unlocked: true },
               }));
-            })
-          }
-        >
-          <p className="click-to-reveal-text">
-            {i18n.t('revealImage')}
-          </p>
-        </div>
-      );
-    }
 
-    // STEP 2 — revealed but BLURRED
-    if (state.revealed && !state.unblurred) {
-      return (
-        <div className="blurred-image-container">
-          <img
-            src={msg.text}
-            alt="Blurred"
-            className="chat-image blurred"
-          />
-          <button
-            className="unblur-btn"
-            onClick={() =>
-              openAdThen(() => {
-                setImageState((prev) => ({
-                  ...prev,
-                  [msg.id]: { revealed: true, unblurred: true },
-                }));
-              })
+              return;
             }
-          >
-            Unblur Image
-          </button>
-        </div>
-      );
-    }
+             // If already unlocked, reveal image
+            setImageState((prev) => ({
+              ...prev,
+              [msg.id]: { ...state, revealed: true },
+            }));
+          }}
+                                >
+                                  <p
+                                    style={{ color: '#fff' }}
+                                    className="click-to-reveal-img-text"
+                                  >
+                                    {state.unlocked
+              ? "Click Again to Reveal Image"
+              : "Click to Reveal Image"}
+                                  </p>
+                                </div>
+                              );
+                            }
 
-    // STEP 3 — permanently unblurred
-    return (
-      <img
-        src={msg.text}
-        alt="Unblurred"
-        className="chat-image"
-        onClick={() => handleImageClick(msg)}
-      />
-    );
-  })()}
-</div>
+                            // STEP 2 — revealed but BLURRED
+                            if (state.revealed && !state.unblurred) {
+                              return (
+                                <div className="blurred-image-container">
+                                  <img
+                                    src={msg.text}
+                                    alt="Blurred"
+                                    className="chat-image blurred"
+                                  />
+                                  <button
+                                    className="unblur-btn"
+                                    onClick={() => setModalImageMsg(msg)}
+                                  >
+                                    Unblur Image
+                                  </button>
+                                </div>
+                              );
+                            }
 
+                            // STEP 3 — permanently unblurred
+                            return (
+                              <img
+                                src={msg.text}
+                                alt="Unblurred"
+                                className="chat-image"
+                                onClick={() => handleImageClick(msg)}
+                              />
+                            );
+                          })()}
+                        </div>
                       )
                     ) : msg.isAudio ? (
                       <div className="chat-audio">
                         <audio controls src={msg.text} />
+                      </div>
+                    ) : msg.text?.includes(
+                        'video calling you. Upgrade to premium to pick up the call'
+                      ) ? (
+                      <div className="premium-call-card">
+                        <div className="premium-call-header">
+                          <span className="premium-call-icon">📹</span>
+                          <span className="premium-call-title">
+                            Incoming Video Call
+                          </span>
+                          <span className="premium-call-badge">VIP</span>
+                        </div>
+
+                        <div className="premium-call-body">{msg.text}</div>
+
+                        {!hasAccess && (
+                          <button
+                            className="premium-call-upgrade-btn"
+                            onClick={() => setShowPremiumPopup(true)}
+                          >
+                            Upgrade
+                          </button>
+                        )}
+
+                        {hasAccess && (
+                          <button className="premium-call-answer-btn">
+                            Answer Call
+                          </button>
+                        )}
                       </div>
                     ) : (
                       <p>
@@ -1520,7 +1792,6 @@ const [imageState, setImageState] = useState({});
                             <span
                               key={i}
                               style={{
-                                // Blur if the whole message is abusive OR this word is abusive
                                 filter:
                                   msg.is_abusive || isWordAbusive
                                     ? 'blur(5px)'
@@ -1602,69 +1873,49 @@ const [imageState, setImageState] = useState({});
           )}
         </div>
       </div>
+      {(!isChatLocked || isDeveloperKirti) &&
+      !blockedByOtherUser &&
+      !iBlockedOtherUser ? (
+        <div className="input-area mobile-only">
+          <div className="icon-wrapper">
+            <label htmlFor="image-upload" className="icon-btn">
+              {isSendingImage ? (
+                <span className="dotting-indicator">...</span>
+              ) : (
+                <FaImage />
+              )}
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              id="image-upload"
+              style={{ display: 'none' }}
+              onClick={handleFileInputClick}
+              onChange={handleImageUpload}
+            />
+          </div>
+          <div className="icon-wrapper plus-wrapper">
+            <button
+              style={{ background: 'none', color: '#111', fontSize: '22px' }}
+              onClick={() => setShowPlusMenu((prev) => !prev)}
+            >
+              +
+            </button>
 
-      {/* Input area fixed at bottom on mobile, outside chat-container */}
-      <div className="input-area mobile-only">
-        <div className="icon-wrapper">
-          <label htmlFor="image-upload" className="icon-btn">
-            {isSendingImage ? (
-              <span className="dotting-indicator">...</span>
-            ) : (
-              <FaImage />
-            )}
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            id="image-upload"
-            style={{ display: 'none' }}
-            onClick={handleFileInputClick}
-            onChange={handleImageUpload}
-          />
-        </div>
-   <div className="icon-wrapper plus-wrapper">
-  <button
-  style={{background: 'none', color: '#111', fontSize: '22px'}}
-    onClick={() => setShowPlusMenu((prev) => !prev)}
-  >
-    +
-  </button>
+            <div className={`plus-menu ${showPlusMenu ? 'open' : ''}`}>
+              <button
+                className="plus-item"
+                onClick={() => {
+                  setShowGifSearch(true);
+                  setShowPlusMenu(false);
+                }}
+              >
+                🎞️ <span>GIF</span>
+              </button>
+            </div>
+          </div>
 
-  <div className={`plus-menu ${showPlusMenu ? 'open' : ''}`}>
-    <button
-      className="plus-item"
-   onClick={() => {
-  setShowPlusMenu(false);
-
-  if (!hasAcceptedAudioTerms()) {
-    // Show popup only once
-    setPendingAudioStart(true);
-    setShowAudioTerms(true);
-    return;
-  }
-
-  // Already accepted → start recording directly
-  handleMicClick();
-}}
-
-    >
-      🎤 <span>Audio</span>
-    </button>
-
-    <button
-      className="plus-item"
-      onClick={() => {
-        setShowGifSearch(true);
-        setShowPlusMenu(false);
-      }}
-    >
-      🎞️ <span>GIF</span>
-    </button>
-  </div>
-</div>
-
-
-        {/*
+          {/*
         <div className="icon-wrapper">
           <FaGift
             onClick={handleMicClick}
@@ -1673,83 +1924,73 @@ const [imageState, setImageState] = useState({});
           />
         </div>*/}
 
-        <input
-          type="text"
-          value={input}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyPress}
-          onPaste={handlePaste}
-          placeholder={i18n.t('typeMessage')}
-        />
+          <input
+            type="text"
+            value={input}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyPress}
+            onPaste={handlePaste}
+            placeholder={i18n.t('typeMessage')}
+          />
 
-        <button
-          onClick={sendMessage}
-          disabled={
-            isSending || isSendingImage || isSendingGif || !input.trim()
-          }
-        >
-          {isSending ? '➤' : '➤'}
-        </button>
-      </div>
+          <button
+            onClick={sendMessage}
+            disabled={
+              isSending || isSendingImage || isSendingGif || !input.trim()
+            }
+          >
+            {isSending ? '➤' : '➤'}
+          </button>
+        </div>
+      ) : (
+        <ChatLocker isOpen={showPopup} onClose={() => setShowPopup(false)} />
+      )}
 
       {/* Show full view image on click */}
-     {modalImageMsg && (
-  <div className="image-modal" onClick={() => setModalImageMsg(null)}>
-    <div
-      style={{ position: 'relative', textAlign: 'center' }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      {(() => {
-        const state = imageState[modalImageMsg.id] || {};
+      {modalImageMsg && (
+        <div className="image-modal" onClick={() => setModalImageMsg(null)}>
+          <div
+            style={{ position: 'relative', textAlign: 'center' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {(() => {
+              const state = imageState[modalImageMsg.id] || {};
 
-        // STILL BLURRED IN MODAL
-        if (state.revealed && !state.unblurred) {
-          return (
-            <>
-              <img
-                src={modalImageMsg.text}
-                alt="Blurred"
-                className="chat-image blurred"
-                style={{ maxWidth: '90%', maxHeight: '90%' }}
-              />
+              
+              if (state.revealed && !state.unblurred) {
+                return (
+                  <>
+                    <img
+                      src={modalImageMsg.text}
+                      alt="Blurred"
+                      className="chat-image blurred"
+                      style={{ maxWidth: '90%', maxHeight: '90%' }}
+                    />
 
-              <button
-                className="unblur-btn modal-unblur"
-                onClick={() =>
-                  openAdThen(() => {
-                    setImageState((prev) => ({
-                      ...prev,
-                      [modalImageMsg.id]: {
-                        revealed: true,
-                        unblurred: true,
-                      },
-                    }));
-                  })
-                }
-              >
-                Unblur Image
-              </button>
-            </>
-          );
-        }
+                    <button className="unblur-btn modal-unblur">
+                      Unblur Image
+                    </button>
+                  </>
+                );
+              }
 
-        // UNBLURRED
-        return (
-          <img
-            src={modalImageMsg.text}
-            alt="Full View"
-            style={{
-              maxWidth: '90%',
-              maxHeight: '90%',
-              display: 'block',
-              margin: '0 auto',
-            }}
-          />
-        );
-      })()}
-    </div>
-  </div>
-)}
+              // UNBLURRED
+              return (
+                <img
+                  src={modalImageMsg.text}
+                  alt="Full View"
+                  style={{
+                    maxWidth: '90%',
+                    maxHeight: '90%',
+                    display: 'block',
+                    margin: '0 auto',
+                  }}
+                />
+              );
+            })()}
+          </div>
+        </div>
+      )}
 
       {showGifSearch && (
         <div className="gif-search-panel">
@@ -1851,10 +2092,15 @@ const [imageState, setImageState] = useState({});
           </div>
         </div>
       )}
-      {showAudioTerms && (
-  <AudioTermsSlider onAccept={handleAudioTermsAccept} />
-)}
-
+      {showAudioTerms && <AudioTermsSlider onAccept={handleAudioTermsAccept} />}
+      <UnblockPopup
+        isOpen={showUnblockPopup}
+        onClose={() => setShowUnblockPopup(false)}
+      />
+      <RevealNumberPopup
+        isOpen={showRevealNumberPopup}
+        onClose={() => setShowRevealNumberPopup(false)}
+      />
       <Toaster />
     </div>
   );

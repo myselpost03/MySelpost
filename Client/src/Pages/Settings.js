@@ -123,8 +123,50 @@ const loadAd = () => {
       loadAd();
     }
   }, [adVisible]);
+  const [notificationAllowed, setNotificationAllowed] = useState(false);
+  const [checkingPermission, setCheckingPermission] = useState(true);
 
+  useEffect(() => {
+    const checkPermission = async () => {
+      try {
+        // Check existing permission
+        if (Notification.permission === 'granted') {
+          setNotificationAllowed(true);
+          await OneSignal.User.PushSubscription.optIn();
+        } else {
+          setNotificationAllowed(false);
+        }
+      } catch (err) {
+        console.error(err);
+        setNotificationAllowed(false);
+      } finally {
+        setCheckingPermission(false);
+      }
+    };
+
+    checkPermission();
+  }, []);
+
+  const handleNotify = async () => {
+      try {
+        const permission = await OneSignal.Notifications.requestPermission();
   
+        if (permission === true || Notification.permission === 'granted') {
+          await OneSignal.User.PushSubscription.optIn();
+  
+          const playerId = OneSignal.User.PushSubscription.id;
+          console.log('✅ Player ID:', playerId);
+  
+          setNotificationAllowed(true);
+        } else {
+          console.log('❌ Permission denied');
+          setNotificationAllowed(false);
+        }
+      } catch (err) {
+        console.error('❌ Error subscribing:', err);
+        setNotificationAllowed(false);
+      }
+    };
 
   const changeBackground = (style) => {
     localStorage.setItem("chatBackground", style);
@@ -231,6 +273,10 @@ const loadAd = () => {
           <div className="settings-item" onClick={handleContact}>
             <span>{i18n.t("contactUs")}</span>
             <button className="settings-btn"> {i18n.t("go")} </button>
+          </div>
+          <div className="settings-item" onClick={handleNotify}>
+            <span>Allow Notification</span>
+            <button className="settings-btn"> Allow </button>
           </div>
            <div className="settings-item">
             <span style={{fontSize: '15px'}}>{i18n.t("restrictMessages")}</span>

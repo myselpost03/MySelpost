@@ -1,3 +1,9 @@
+.alert-banner{
+   width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .sketchy-alert-new {
   position: fixed;
   top: 50%;

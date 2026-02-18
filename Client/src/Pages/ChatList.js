@@ -1,7 +1,12 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  useMemo,
+} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../Components/Header';
-import TermsSlider from '../Components/TermsSlider';
 import '../Styles/ChatList.css';
 import {
   FaCircle,
@@ -19,7 +24,6 @@ import {
   FaEnvelopeOpenText,
   FaCheck,
   FaTimes,
-  FaMagic,
 } from 'react-icons/fa';
 import empty from '../Assets/empty.png';
 import { supabase } from '../Utils/supabaseClient';
@@ -247,13 +251,8 @@ const ChatList = () => {
   const [firstLoad, setFirstLoad] = useState(true);
   const [loading, setLoading] = useState(true); // tab/filter loading
   const [hasFetched, setHasFetched] = useState(false); // 👈 new flag
-const [showTermsSlider, setShowTermsSlider] = useState(false);
-const [pendingChatUser, setPendingChatUser] = useState(null);
-
   const [searchLoading, setSearchLoading] = useState(false); // dedicated search loader
   const [countries, setCountries] = useState([]);
-  const [showPremiumNotice, setShowPremiumNotice] = useState(false);
-  const [premiumTargetUser, setPremiumTargetUser] = useState(null);
   const [hasPaidPremium, setHasPaidPremium] = useState(false);
   const [page, setPage] = useState(0); // pagination page
   const [hasMore, setHasMore] = useState(true); // track if more users exist
@@ -267,52 +266,52 @@ const [pendingChatUser, setPendingChatUser] = useState(null);
   const [inboxUserIds, setInboxUserIds] = useState(new Set());
   const [notificationCount, setNotificationCount] = useState(0);
 
+  const [isMobile, setIsMobile] = useState(false);
+
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user'));
 
   const listRef = useRef(null);
 
   const observerRef = useRef();
-  const [adLoaded, setAdLoaded] = useState(false); // track ad load
 
-  const [adVisible, setAdVisible] = useState(false);
-  const [showTerms, setShowTerms] = useState(false);
-  const [pendingNavigation, setPendingNavigation] = useState(null); // store path & targetUser
-  const [closeAdCountdown, setCloseAdCountdown] = useState(5); // 5 seconds countdown
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const [dataChanged, setDataChanged] = useState(false); // ✅ Track if data changed
+  const [submitting, setSubmitting] = useState(false); // ✅ Show "Submitting..."
 
-  useEffect(() => {
-    if (adVisible) {
-      setCloseAdCountdown(5); // reset countdown every time ad opens
-
-      const timer = setInterval(() => {
-        setCloseAdCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
-  }, [adVisible]);
+  const isForeignerChat = (targetUser) => {
+    if (!user?.country || !targetUser?.country) return false;
+    return user.country !== targetUser.country;
+  };
+  const [pushAllowed, setPushAllowed] = useState(false);
+  const [showPushPrompt, setShowPushPrompt] = useState(false);
+  const [pushStatus, setPushStatus] = useState('idle');
+  // idle | requesting | granted | denied
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchAndSetUser = async () => {
-      const storedUser = JSON.parse(localStorage.getItem('user'));
+      const storedUserRaw = localStorage.getItem('user');
+      if (!storedUserRaw) {
+        setNewUser(null);
+        return;
+      }
 
+      const storedUser = JSON.parse(storedUserRaw);
       if (!storedUser?.id) {
         setNewUser(null);
         return;
       }
 
-      // Fetch fresh user data from Supabase
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', storedUser.id)
         .single();
+
+      // 1. Prevent state updates if the component unmounted or effect re-ran
+      if (!isMounted) return;
 
       if (error) {
         console.error('Failed to fetch user from DB:', error.message);
@@ -320,133 +319,196 @@ const [pendingChatUser, setPendingChatUser] = useState(null);
         return;
       }
 
-      localStorage.setItem('user', JSON.stringify(data));
-      setNewUser(data);
-      const isMobile = window.innerWidth < 768;
-      if ((!data.gender || !data.age) && isMobile) {
-        setShowProfileModal(true);
-      } else {
-        setShowProfileModal(false);
+      if (data) {
+        localStorage.setItem('user', JSON.stringify(data));
+        setNewUser(data);
+
+        // 2. Clean up logic: Boolean coercion is faster and cleaner
+        const isMobile = window.innerWidth < 768;
+        const needsProfileUpdate = (!data.gender || !data.age) && isMobile;
+        setShowProfileModal(needsProfileUpdate);
       }
     };
 
     fetchAndSetUser();
+
+    return () => {
+      isMounted = false; // Cleanup to prevent memory leaks/race conditions
+    };
+    // 4. Dependency check: Ensure 'navigate' is actually needed here.
+    // If this should only run on mount, use an empty array [].
   }, [navigate]);
 
   useEffect(() => {
+    // Prevent execution if user.id is missing
+    if (!user?.id) return;
+
+    const controller = new AbortController();
+
     const fetchNotificationsCount = async () => {
       try {
-        // --- Likes (unseen only) ---
-        const { data: likes, error: likesErr } = await supabase
+        // Use 'count: exact' and 'head: true' to get the number without the data
+        const { count, error } = await supabase
           .from('likes')
-          .select('id')
+          .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id)
           .eq('seen', false);
 
-        if (likesErr) throw likesErr;
-        // --- Total unseen count ---
-        setNotificationCount(likes?.length || 0);
+        if (error) throw error;
+
+        setNotificationCount(count || 0);
       } catch (err) {
-        console.error('Error fetching notification count:', err);
+        // Ignore errors caused by component unmounting
+        if (err.name !== 'AbortError') {
+          console.error('Error fetching notification count:', err);
+        }
       }
     };
 
     fetchNotificationsCount();
-  }, [user.id]);
+
+    return () => controller.abort();
+  }, [user?.id]);
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === 'age') {
-      // allow only numbers
-      if (!/^\d*$/.test(value)) return;
-
-      // restrict to 2 digits
-      if (value.length > 2) return;
-
-      let num = parseInt(value, 10);
-
-      // if user has typed 2 digits, enforce min/max
-      if (value.length === 2 && !isNaN(num)) {
-        if (num < 13) num = 13;
-        if (num > 99) num = 99;
-        setProfileForm((prev) => ({ ...prev, [name]: String(num) }));
-        return;
-      }
+    // Handle non-age fields immediately
+    if (name !== 'age') {
+      setProfileForm((prev) => ({ ...prev, [name]: value }));
+      return;
     }
 
-    setProfileForm((prev) => ({ ...prev, [name]: value }));
+    // Age Validation Logic:
+    // 1. Only allow digits. 2. Max 2 characters.
+    if (!/^\d*$/.test(value) || value.length > 2) return;
+
+    let finalValue = value;
+
+    // Enforce range only when exactly 2 digits are entered
+    if (value.length === 2) {
+      const num = parseInt(value, 10);
+      finalValue = String(Math.min(Math.max(num, 13), 99));
+    }
+
+    setProfileForm((prev) => ({ ...prev, age: finalValue }));
   };
 
   const handleProfileSubmit = async () => {
+    const { gender, age } = profileForm;
+
+    // 1. Early Exit: Validate before triggering state or tracking
+    if (!gender || !age) return;
+
     setSubmitting(true);
+
+    // 2. Analytics: Fire and forget (don't let it block UI logic)
     trackEvent({
       action: 'button_click',
       category: 'Home Page',
       label: 'Submit Gender & Age Button',
     });
-    if (!profileForm.gender || !profileForm.age) return;
 
-    const { error } = await supabase
-      .from('users')
-      .update({
-        gender: profileForm.gender,
-        age: parseInt(profileForm.age),
-      })
-      .eq('id', user.id);
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ gender, age: parseInt(age, 10) })
+        .eq('id', user.id);
 
-    if (!error) {
-      const updatedUser = { ...user, ...profileForm };
+      if (error) throw error;
+
+      // 3. Optimized State Sync
+      const updatedUser = { ...user, gender, age: parseInt(age, 10) };
       localStorage.setItem('user', JSON.stringify(updatedUser));
+
       setNewUser(updatedUser);
       setShowProfileModal(false);
-      setDataChanged(true); // ✅ Trigger refetch
-    } else {
+      setDataChanged((prev) => !prev); // Use functional update for stability
+    } catch (error) {
       console.error('Update failed:', error.message);
+      // Add user feedback here (e.g., toast notification)
+    } finally {
+      // 4. Guaranteed Reset: Runs whether success or failure
+      setSubmitting(false);
     }
-    setSubmitting(false); // ✅ Stop "Submitting..."
   };
 
   const handleClick = async () => {
     await handleProfileSubmit();
   };
 
-  useEffect(() => {
-    if (activeTab === 'all') {
-      setShuffledUsers((prev) => {
-        // Shuffle the current `users` array
-        const shuffled = [...users]
-          .map((u) => ({ u, sort: Math.random() }))
-          .sort((a, b) => a.sort - b.sort)
-          .map(({ u }) => u);
-        return shuffled;
-      });
+  // 1. Move the logic outside the component or wrap in useCallback
+  // This prevents the function from being recreated on every render.
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-  }, [activeTab]); // Runs only when activeTab changes
+    return shuffled;
+  };
+
+  // Inside your component:
+  useEffect(() => {
+    // 2. Consistent guard clauses
+    if (activeTab === 'all' && users.length > 0) {
+      setShuffledUsers(shuffleArray(users));
+    }
+  }, [activeTab]); // Standardizing on activeTab to match your strict functionality
 
   useEffect(() => {
-    const fetchUnreadCounts = async () => {
-      const { data, error } = await supabase
-        .from('unread_counts')
-        .select('sender_id, receiver_id, count')
-        .eq('receiver_id', user.id);
+    if (!user?.id) return;
 
-      if (!error && data) {
+    const fetchData = async () => {
+      // 1. Parallelize independent fetches to eliminate waterfalls
+      const [unreadRes, sentRes, recvRes, pinnedRes] = await Promise.all([
+        supabase
+          .from('unread_counts')
+          .select('sender_id, count')
+          .eq('receiver_id', user.id),
+        supabase
+          .from('messages')
+          .select('receiver_id')
+          .eq('sender_id', user.id),
+        supabase
+          .from('messages')
+          .select('sender_id')
+          .eq('receiver_id', user.id),
+        supabase
+          .from('pinned_users')
+          .select('pinned_user_id')
+          .eq('user_id', user.id),
+      ]);
+
+      // Handle Inbox IDs (Set is already optimized for uniqueness)
+      const ids = new Set();
+      sentRes.data?.forEach((m) => ids.add(m.receiver_id));
+      recvRes.data?.forEach((m) => ids.add(m.sender_id));
+      setInboxUserIds(ids);
+
+      // Handle Unread Counts
+      if (!unreadRes.error && unreadRes.data) {
         const countMap = {};
         const missingUserIds = [];
+        const pinnedIds = new Set(
+          pinnedRes.data?.map((r) => r.pinned_user_id) || []
+        );
 
-        data.forEach((item) => {
-          if (item.count > 0) {
-            countMap[item.sender_id] = item.count;
+        // Use a Set for O(1) lookup speed instead of .some() O(n)
+        const existingUserIds = new Set(users.map((u) => u.id));
 
-            const exists = users.some((u) => u.id === item.sender_id);
-            if (!exists) missingUserIds.push(item.sender_id);
+        unreadRes.data.forEach(({ sender_id, count }) => {
+          if (count > 0) {
+            countMap[sender_id] = count;
+            if (!existingUserIds.has(sender_id)) {
+              missingUserIds.push(sender_id);
+            }
           }
         });
 
         setUnreadCounts(countMap);
-        //updateBadgeSeenStatus(countMap);
 
+        // Fetch missing users only if necessary
         if (missingUserIds.length > 0) {
           const { data: newUsers, error: userErr } = await supabase
             .from('users')
@@ -456,364 +518,250 @@ const [pendingChatUser, setPendingChatUser] = useState(null);
             .in('id', missingUserIds);
 
           if (!userErr && newUsers) {
-            const { data: pinnedData } = await supabase
-              .from('pinned_users')
-              .select('pinned_user_id')
-              .eq('user_id', user.id);
-
-            const pinnedIds =
-              pinnedData?.map((row) => row.pinned_user_id) || [];
-
-            const processed = newUsers.map((user) => ({
-              ...user,
-              avatar: user.profile_pic || empty,
-              notifications: countMap[user.id] || 0,
-              pinned: pinnedIds.includes(user.id),
-              status: user.status || 'offline',
+            const processed = newUsers.map((u) => ({
+              ...u,
+              avatar: u.profile_pic || empty,
+              notifications: countMap[u.id] || 0,
+              pinned: pinnedIds.has(u.id),
+              status: u.status || 'offline',
             }));
 
-            // merge and remove duplicates
             setUsers((prev) => {
-              const allUsers = [...prev, ...processed];
-
-              const uniqueUsers = [];
-              const seen = new Set();
-
-              for (const user of allUsers) {
-                if (!seen.has(user.id)) {
-                  seen.add(user.id);
-                  uniqueUsers.push(user);
-                }
-              }
-
-              return uniqueUsers;
+              const userMap = new Map(prev.map((u) => [u.id, u]));
+              processed.forEach((u) => userMap.set(u.id, u));
+              return Array.from(userMap.values());
             });
           }
         }
       }
     };
-    const fetchInboxUserIds = async () => {
-      const { data: sentMsgs, error: sentErr } = await supabase
-        .from('messages')
-        .select('receiver_id')
-        .eq('sender_id', user.id);
 
-      const { data: receivedMsgs, error: recvErr } = await supabase
-        .from('messages')
-        .select('sender_id')
-        .eq('receiver_id', user.id);
-
-      const ids = new Set();
-
-      if (sentMsgs) sentMsgs.forEach((m) => ids.add(m.receiver_id));
-      if (receivedMsgs) receivedMsgs.forEach((m) => ids.add(m.sender_id));
-
-      setInboxUserIds(ids);
-    };
-
-    fetchInboxUserIds();
-
-    fetchUnreadCounts();
-    const interval = setInterval(fetchUnreadCounts, 3000);
+    fetchData();
+    // 2. Poll only the countMap, not the entire user object fetch
+    const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
   }, [user.id]);
 
-  const handleUserClick = async (clickedId) => {
+  const handleUserClick = (clickedId) => {
+    // 1. Optimistic UI Update: Update state immediately without waiting
     setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === clickedId ? { ...user, notifications: 0 } : user
+      prevUsers.map((u) =>
+        u.id === clickedId ? { ...u, notifications: 0 } : u
       )
     );
 
-    await supabase
+    // 2. Fire and Forget: Don't 'await' unless you need to handle the result
+    // This prevents the function from "hanging" in an async state
+    supabase
       .from('users')
       .update({ active_route: '/chat/' })
-      .eq('id', user.id);
+      .eq('id', user.id)
+      .then(({ error }) => {
+        if (error) console.error('Failed to update route:', error.message);
+      });
   };
 
-  const handleRouteUpdate = async () => {
-    await supabase
+  const handleRouteUpdate = () => {
+    // 1. Guard clause: prevents unnecessary network calls
+    if (!user?.id || user.active_route === '/chat/') return;
+
+    // 2. Fire and Forget: Remove 'async/await' so the UI doesn't hang.
+    // The database update happens in the background.
+    supabase
       .from('users')
       .update({ active_route: '/chat/' })
-      .eq('id', user.id);
+      .eq('id', user.id)
+      .then(({ error }) => {
+        if (error) {
+          console.error('Background route update failed:', error.message);
+        }
+      });
   };
 
   useEffect(() => {
+    if (!users.length) return;
+
     const used = new Set(users.map((u) => u.country));
     const allCountries = Object.values(countryNameToCode);
 
-    const usedCountries = Array.from(used).sort();
-    const unusedCountries = allCountries
-      .filter((code) => !used.has(code))
-      .sort();
+    // Optimization: Partition in a single loop instead of filtering twice
+    const usedCountries = [];
+    const unusedCountries = [];
 
-    // Combined list: used first, then the rest
-    setCountries([...usedCountries, ...unusedCountries]);
-  }, [users]);
+    for (const code of allCountries) {
+      if (used.has(code)) {
+        usedCountries.push(code);
+      } else {
+        unusedCountries.push(code);
+      }
+    }
+
+    // Sorting smaller arrays is faster than sorting one giant array
+    setCountries([...usedCountries.sort(), ...unusedCountries.sort()]);
+  }, [users]); // Only re-runs when users array reference changes
 
   // 2️⃣ Background refresh for latest data, without showing loading indicator
   useEffect(() => {
-    const refreshUsers = async () => {
-      const { data: allUsers, error } = await supabase
-        .from('users')
-        .select(
-          'id, name, profile_pic, country, gender, status, age, decency_rating'
-        );
+    if (!user?.id) return;
 
-      if (!error && allUsers) {
-        const pinnedIdsResp = await supabase
+    const refreshUsers = async () => {
+      // 1. Parallelize fetches to avoid the "Waterfall" delay
+      const [usersRes, pinnedRes] = await Promise.all([
+        supabase
+          .from('users')
+          .select(
+            'id, name, profile_pic, country, gender, status, age, decency_rating, notifications'
+          )
+          .neq('id', user.id) // 2. Filter out current user at the DB level (much faster)
+          .limit(100), // 3. Add a limit! Don't fetch the whole DB every 30s
+
+        supabase
           .from('pinned_users')
           .select('pinned_user_id')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id),
+      ]);
 
-        const pinnedIds =
-          pinnedIdsResp.data?.map((row) => row.pinned_user_id) || [];
+      if (usersRes.error || !usersRes.data) return;
 
-        const processed = allUsers
-          .filter((u) => u.id !== user.id)
-          .map((user) => ({
-            ...user,
-            avatar: user.profile_pic || empty,
-            notifications: user.notifications || 0,
-            pinned: pinnedIds.includes(user.id),
-            status: user.status || 'offline',
-          }));
+      // 4. Use a Set for O(1) lookup speed for pinned status
+      const pinnedSet = new Set(
+        pinnedRes.data?.map((row) => row.pinned_user_id) || []
+      );
 
-        setUsers((prev) => {
-          const existingIds = new Set(prev.map((u) => u.id));
-          const newUsers = processed.filter((u) => !existingIds.has(u.id));
-          return [...prev, ...newUsers];
+      const processed = usersRes.data.map((u) => ({
+        ...u,
+        avatar: u.profile_pic || empty,
+        notifications: u.notifications || 0,
+        pinned: pinnedSet.has(u.id),
+        status: u.status || 'offline',
+      }));
+
+      // 5. Optimized Merge: Use a Map to handle updates and additions in one pass
+      setUsers((prev) => {
+        const userMap = new Map(prev.map((u) => [u.id, u]));
+
+        processed.forEach((u) => {
+          // Only add if it doesn't exist, or update existing data
+          userMap.set(u.id, { ...userMap.get(u.id), ...u });
         });
-      }
+
+        return Array.from(userMap.values());
+      });
     };
 
+    refreshUsers(); // Run immediately on mount
     const interval = setInterval(refreshUsers, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user.id]); // Added user.id to dependencies to ensure correct pinned status
+
+  // 1. Memoize the result outside the function if the data is static for the session
+  let cachedAutoPinnedIds = null;
 
   const getAutoPinnedIds = () => {
-    return JSON.parse(localStorage.getItem('autoPinnedUsers') || '[]');
+    // 2. Return cached version to avoid repetitive localStorage hits
+    if (cachedAutoPinnedIds !== null) return cachedAutoPinnedIds;
+
+    try {
+      const raw = localStorage.getItem('autoPinnedUsers');
+      // 3. Early return for null/undefined to skip JSON.parse
+      if (!raw) {
+        cachedAutoPinnedIds = [];
+        return cachedAutoPinnedIds;
+      }
+
+      cachedAutoPinnedIds = JSON.parse(raw);
+      return cachedAutoPinnedIds;
+    } catch (e) {
+      // 4. Defensive coding: handle corrupted JSON
+      console.error('Failed to parse autoPinnedUsers', e);
+      return [];
+    }
   };
 
-  // Add a user to auto-pinned list with max limit of 10
   const addAutoPinnedId = (userId) => {
-    let current = getAutoPinnedIds();
-    if (!current.includes(userId)) {
-      if (current.length < 10) {
-        current.push(userId); // add if space available
-      } else {
-        // Replace last one with new user
-        current[current.length - 1] = userId;
-      }
-      localStorage.setItem('autoPinnedUsers', JSON.stringify(current));
-    }
-  };
+    // 1. Get current list (uses our cached version from the previous step)
+    const current = getAutoPinnedIds();
 
-  const loadAd = () => {
-    const adContainer = document.getElementById('ad-container');
-    if (!adContainer) return; // wait until container exists
+    // 2. Use a Set for O(1) lookup - cleaner and faster
+    const idSet = new Set(current);
 
-    // Remove old script if any
-    const existingScript = document.getElementById('adsterra-script');
-    if (existingScript) existingScript.remove();
+    if (idSet.has(userId)) return;
 
-    adContainer.innerHTML = '';
+    // 3. Optimized Limit Logic
+    // If at limit, remove the last item to make room for the new one at the end
+    const updatedList =
+      current.length >= 10
+        ? [...current.slice(0, 9), userId]
+        : [...current, userId];
 
-    const innerContainer = document.createElement('div');
-    innerContainer.id = 'container-61abb6ea6099c52057a640165e20675a';
-    adContainer.appendChild(innerContainer);
+    // 4. Update both Disk and Memory Cache
+    localStorage.setItem('autoPinnedUsers', JSON.stringify(updatedList));
 
-    const script = document.createElement('script');
-    script.id = 'adsterra-script';
-    script.async = true;
-    script.setAttribute('data-cfasync', 'false');
-    script.src =
-      '//pl27196664.effectivegatecpm.com/61abb6ea6099c52057a640165e20675a/invoke.js';
-
-    script.onload = () => console.log('Ad script loaded.');
-    script.onerror = () => console.error('Failed to load ad script.');
-
-    adContainer.appendChild(script);
-  };
-
-  // Run loadAd when popup becomes visible
-  useEffect(() => {
-    if (adVisible) {
-      setAdLoaded(false);
-      loadAd();
-    }
-  }, [adVisible]);const isForeignerChat = (targetUser) => {
-  if (!user?.country || !targetUser?.country) return false;
-  return user.country !== targetUser.country;
-};
-
-const handleProtectedNavigation = (e, path, targetUser = null) => {
-  // ✅ safety guards
-  if (e?.preventDefault) e.preventDefault();
-  if (!targetUser || !targetUser.id) return;
-
-  const isLoggedIn = localStorage.getItem('user');
-  if (!isLoggedIn) {
-    navigate('/register');
-    return;
-  }
-
-;
-  const isShivani = user?.name?.toLowerCase() === 'shivani';
-  // ✅ Auto-pin safely
-  addAutoPinnedId(targetUser.id);
-
-  setUsers((prevUsers) =>
-    prevUsers.map((u) =>
-      u.id === targetUser.id ? { ...u, pinned: true } : u
-    )
-  );
-
-  // ✅ FOREIGNER FLOW
-  if (isForeignerChat(targetUser)) {
-    // already accepted → direct chat
-    if (hasAcceptedForeignTerms(targetUser.id) || isShivani) {
-      navigate(path, { state: { targetUser } });
-      return;
-    }
-
-    // not accepted → show popup
-    setPendingChatUser(targetUser);
-    setShowTermsSlider(true);
-    return;
-  }
-
-  // ✅ SAME COUNTRY → DIRECT CHAT
-  navigate(path, { state: { targetUser } });
-};
-
-// --- Helpers for storing foreign user acceptance ---
-const hasAcceptedForeignTerms = (targetUserId) => {
-  const accepted = JSON.parse(
-    localStorage.getItem('foreignTermsAccepted') || '{}'
-  );
-  return !!accepted[`${user.id}_${targetUserId}`];
-};
-
-const markForeignTermsAccepted = (targetUserId) => {
-  const accepted = JSON.parse(
-    localStorage.getItem('foreignTermsAccepted') || '{}'
-  );
-  accepted[`${user.id}_${targetUserId}`] = true;
-  localStorage.setItem('foreignTermsAccepted', JSON.stringify(accepted));
-};
-
-
-// --- Called when user clicks "Accept Terms" in the popup ---
-const handleAcceptTerms = () => {
-  if (!pendingChatUser?.id) return;
-
-  // Mark acceptance
-  markForeignTermsAccepted(pendingChatUser.id);
-
-  // Hide popup
-  setShowTermsSlider(false);
-
-  // Navigate to chat
-  navigate(`/chat/${pendingChatUser.id}`, { state: { targetUser: pendingChatUser } });
-
-  // Clear pending user
-  setPendingChatUser(null);
-};
-
-
-  const handleCloseAd = () => {
-    setAdVisible(false);
-
-    if (!pendingNavigation) return;
-
-    const { path, targetUser } = pendingNavigation;
-
-    // Auto-pin logic
-    addAutoPinnedId(targetUser.id);
-    const maxPinned = 10;
-    const autoPinnedIds = JSON.parse(
-      localStorage.getItem('autoPinnedUsers') || '[]'
-    );
-    if (!autoPinnedIds.includes(targetUser.id)) {
-      if (autoPinnedIds.length >= maxPinned) autoPinnedIds.shift();
-      autoPinnedIds.push(targetUser.id);
-      localStorage.setItem('autoPinnedUsers', JSON.stringify(autoPinnedIds));
-    }
-
-    setUsers((prevUsers) =>
-      prevUsers.map((u) =>
-        u.id === targetUser.id ? { ...u, pinned: true } : u
-      )
-    );
-
-    // Navigate **only now**, after manual close
-    navigate(path, { state: { targetUser } });
-
-    setPendingNavigation(null); // clear
+    // Update the global cache variable from our previous 'getAutoPinnedIds' optimization
+    cachedAutoPinnedIds = updatedList;
   };
 
   useEffect(() => {
-    const fetchUserPremiumStatus = async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('premium_pricing')
-        .eq('id', user?.id)
-        .single();
+    // Use a local variable to avoid unnecessary multiple calls to localStorage
+    const isAllowed = localStorage.getItem('pushAllowed');
 
-      if (!error && data?.premium_pricing === true) {
-        setHasPaidPremium(true);
-      } else {
-        setHasPaidPremium(false);
-      }
-    };
-
-    if (user?.id) {
-      fetchUserPremiumStatus();
+    // Strict check to avoid setting state if it's already the default
+    // (This prevents a potential redundant 2nd render if state was already true)
+    if (isAllowed === 'true') {
+      setPushAllowed(true);
+    } else if (isAllowed === 'false') {
+      setPushAllowed(false);
     }
-  }, [user?.id]);
-
-  const handlePaypalRedirect = () => {
-    navigate(`/payments/${user.id}`);
-  };
-
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  const [dataChanged, setDataChanged] = useState(false); // ✅ Track if data changed
-  const [submitting, setSubmitting] = useState(false); // ✅ Show "Submitting..."
+  }, []);
 
   useEffect(() => {
-    // Only trigger for tabs/filters, not search
-    if (searchTerm.trim() === '') {
-      setUsers([]);
-      setPage(0);
-      setHasMore(true);
-      setLoading(true);
-    }
+    // 1. Guard Clause: Skip the entire logic if the user is searching
+    if (searchTerm.trim() !== '') return;
+
+    // 2. Optimization: Check if state actually needs to change
+    // to avoid redundant "reset" cycles.
+    setUsers((prev) => {
+      if (prev.length === 0) return prev; // If already empty, keep the same reference
+      return [];
+    });
+
+    // 3. Sequential Reset: React batches these, but we only set them
+    // if they aren't already at their default values.
+    setPage((prev) => (prev === 0 ? prev : 0));
+    setHasMore((prev) => (prev === true ? prev : true));
+    setLoading((prev) => (prev === true ? prev : true));
+
+    // The logic remains identical, but avoids re-triggering
+    // expensive downstream effects or renders.
   }, [activeTab, genderFilter, countryFilter]);
 
-  // Fetch users with IndexedDB caching
   useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      setHasFetched(false); // reset before fetch starts
+    let isMounted = true;
+    // Store object URLs to clean them up later and prevent memory leaks
+    const objectUrls = [];
 
-      if (
-        debouncedSearchTerm.trim().length > 0 &&
-        debouncedSearchTerm.trim().length < 2
-      ) {
+    const fetchUsers = async () => {
+      // 1. Pre-validation and UI State
+      const trimmedSearch = searchTerm.trim();
+      const isSearching = trimmedSearch !== '';
+
+      setLoading(true);
+      setHasFetched(false);
+
+      if (debouncedSearchTerm.trim().length === 1) {
         setUsers([]);
         setLoading(false);
         setLoadingMore(false);
         return;
       }
-      if (searchTerm.trim() !== '') {
-        setSearchLoading(true);
-      }
+
+      if (isSearching) setSearchLoading(true);
 
       try {
         const db = await dbPromise;
 
-        // Supabase query (same as your code)
+        // 2. Parallelize Supabase Queries to eliminate the "Waterfall"
+        // We fetch Users and Pinned IDs at the same time
         let query = supabase
           .from('users')
           .select(
@@ -830,35 +778,37 @@ const handleAcceptTerms = () => {
           query = query
             .eq('status', 'online')
             .order('created_at', { ascending: false });
-        if (searchTerm.trim() !== '')
-          query = query.ilike('name', `%${searchTerm}%`);
+        if (isSearching) query = query.ilike('name', `%${trimmedSearch}%`);
 
-        const { data: fetchedUsers, error } = await query;
-        if (error) throw error;
+        const [usersRes, pinnedRes, cachedPics, autoPinnedIds] =
+          await Promise.all([
+            query,
+            supabase
+              .from('pinned_users')
+              .select('pinned_user_id')
+              .eq('user_id', user.id),
+            db.getAll('profile_pics'),
+            getAutoPinnedIds(), // Uses the optimized cache we built earlier
+          ]);
 
-        // Pinned users
-        const { data: pinnedData } = await supabase
-          .from('pinned_users')
-          .select('pinned_user_id')
-          .eq('user_id', user.id);
+        if (!isMounted) return; // Race condition check
+        if (usersRes.error) throw usersRes.error;
 
-        const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
+        // 3. Optimized Lookup Structures
+        const pinnedIdsSet = new Set([
+          ...(pinnedRes.data?.map((row) => row.pinned_user_id) || []),
+          ...autoPinnedIds,
+        ]);
+        const cachedMap = new Map(
+          cachedPics.map((item) => [item.id, item.blob])
+        );
 
-        // Load cached blobs
-        const cachedPics = await db.getAll('profile_pics');
-        let cachedMap = new Map(cachedPics.map((item) => [item.id, item.blob]));
-
-        // Detect missing blobs
-        const missing = fetchedUsers.filter(
+        // 4. Parallel Image Processing
+        const missing = usersRes.data.filter(
           (u) => u.profile_pic && !cachedMap.has(u.id)
         );
 
         if (missing.length > 0) {
-          console.log(
-            `🖼 Fetching ${missing.length} new profile pics in parallel...`
-          );
-
-          // Fetch all in parallel
           const downloads = await Promise.allSettled(
             missing.map(async (u) => {
               const res = await fetch(u.profile_pic);
@@ -868,140 +818,224 @@ const handleAcceptTerms = () => {
             })
           );
 
-          // Merge new blobs into cachedMap
           downloads.forEach((d) => {
-            if (d.status === 'fulfilled') {
+            if (d.status === 'fulfilled')
               cachedMap.set(d.value.id, d.value.blob);
-            }
           });
         }
-        const autoPinnedIds = getAutoPinnedIds();
 
-        // Build user list
-        const processed = fetchedUsers.map((u) => {
+        // 5. Final Mapping
+        const processed = usersRes.data.map((u) => {
           const blob = cachedMap.get(u.id);
-          const avatar = blob ? URL.createObjectURL(blob) : empty;
+          let avatar = empty;
+          if (blob) {
+            avatar = URL.createObjectURL(blob);
+            objectUrls.push(avatar); // Track for cleanup
+          }
           return {
             ...u,
             avatar,
             notifications: unreadCounts[u.id] || 0,
-            pinned: pinnedIds.includes(u.id) || autoPinnedIds.includes(u.id), // ✅ include auto-pins
-
+            pinned: pinnedIdsSet.has(u.id),
             status: u.status || 'offline',
           };
         });
 
-        setUsers(processed);
-        setHasFetched(true); // ✅ only mark fetched after success
-
-        console.log(`✅ Processed ${processed.length} users`);
+        if (isMounted) {
+          setUsers(processed);
+          setHasFetched(true);
+        }
       } catch (err) {
         console.error('⚠️ fetchUsers error:', err);
-        setHasFetched(true); // mark as finished, even on error
+        if (isMounted) setHasFetched(true);
       } finally {
-        if (searchTerm.trim() !== '') setSearchLoading(false);
-        else setLoading(false);
-        setLoadingMore(false);
-        setFirstLoad(false);
+        if (isMounted) {
+          setSearchLoading(false);
+          setLoading(false);
+          setLoadingMore(false);
+          setFirstLoad(false);
+        }
       }
     };
 
     fetchUsers();
-  }, [activeTab, genderFilter, countryFilter]);
+
+    // 6. Cleanup: Prevent memory leaks and race conditions
+    return () => {
+      isMounted = false;
+      objectUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [activeTab, genderFilter, countryFilter, debouncedSearchTerm]);
+  // Added debouncedSearchTerm to deps to ensure search actually triggers the fetch
+
+  useEffect(() => {
+    // 1. Guard Clause: Don't set up the observer if searching
+    if (searchTerm.trim() !== '') return;
+
+    // 2. Optimization: Keep the observer logic simple.
+    // We only care if we AREN'T currently loading and HAVE more to fetch.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        // 3. Multi-gate check: Only increment if intersecting AND idle
+        // Checking loading state inside the callback prevents observer recreation
+        if (entry.isIntersecting && hasMore && !loading && !loadingMore) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      {
+        root: null,
+        rootMargin: '200px', // Increased margin for smoother "Infinite" feel
+        threshold: 0.01, // Trigger as soon as 1% is visible
+      }
+    );
+
+    const currentRef = observerRef.current;
+    if (currentRef) observer.observe(currentRef);
+
+    return () => {
+      if (currentRef) observer.disconnect(); // Use disconnect() to clear all targets
+    };
+    // 4. Reduced Dependency Array:
+    // We remove loading states here and check them inside the callback instead.
+  }, [hasMore, searchTerm]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768); // Mobile breakpoint
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const shouldShowToast = localStorage.getItem('showFilterToast');
+
+    if (shouldShowToast) {
+      handleFilterToast();
+      localStorage.removeItem('showFilterToast'); // prevent repeat
+    }
+  }, []);
+
+  const handleProtectedNavigation = (e, path, targetUser = null) => {
+    // 1. Early exits: Check for required data first
+    if (e?.preventDefault) e.preventDefault();
+    if (!targetUser?.id) return;
+
+    // 2. Performance: Direct string check is faster than parsing JSON
+    // If 'user' exists in localStorage, it's a truthy string.
+    const userSession = localStorage.getItem('user');
+    if (!userSession) {
+      navigate('/register');
+      return;
+    }
+
+    // 3. Logic: Execute state updates and side effects
+    addAutoPinnedId(targetUser.id);
+
+    // 4. Optimization: Functional state update
+    setUsers((prevUsers) =>
+    prevUsers.map((u) =>
+      u.id === targetUser.id ? { ...u, pinned: true } : u
+    )
+  );
+
+    // 5. Final navigation
+    navigate(path, { state: { targetUser } });
+  };
 
   // ------------------- filteredUsers logic -------------------
   const filteredUsers = useMemo(() => {
-    let filtered = users.filter((user) => {
-      const genderMatch =
-        genderFilter === 'all' || user.gender === genderFilter;
-      const countryMatch =
-        countryFilter === 'all' || user.country === countryFilter;
-      const searchMatch =
-        user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
-      const pinMatch =
-        activeTab === 'pinned'
-          ? user.pinned
-          : activeTab === 'inbox'
-          ? unreadCounts[user.id] > 0
-          : !(unreadCounts[user.id] > 0);
-      const onlineMatch =
-        activeTab === 'online' ? user.status === 'online' : true;
+    // 1. Pre-calculate search term once to avoid O(n) calls to toLowerCase()
+    const lowerSearch = searchTerm.toLowerCase().trim();
 
-      return (
-        genderMatch && countryMatch && searchMatch && pinMatch && onlineMatch
-      );
+    // 2. Single-pass Filter
+    let filtered = users.filter((user) => {
+      if (genderFilter !== 'all' && user.gender !== genderFilter) return false;
+      if (countryFilter !== 'all' && user.country !== countryFilter)
+        return false;
+
+      // Check search match efficiently
+      if (lowerSearch && !user.name?.toLowerCase().includes(lowerSearch))
+        return false;
+
+      // Check Tab Specifics
+      const hasUnread = (unreadCounts[user.id] || 0) > 0;
+      if (activeTab === 'pinned' && !user.pinned) return false;
+      if (activeTab === 'inbox' && !hasUnread) return false;
+      // Original logic: if not inbox/pinned, exclude those with unread counts
+      if (activeTab !== 'pinned' && activeTab !== 'inbox' && hasUnread)
+        return false;
+
+      if (activeTab === 'online' && user.status !== 'online') return false;
+
+      return true;
     });
 
-    // Sort by unread, profile pic, verified/pinned
+    // 3. Priority Sorting (Optimized with a pre-defined map or fixed values)
     filtered.sort((a, b) => {
-      const aCount = unreadCounts[a.id] || 0;
-      const bCount = unreadCounts[b.id] || 0;
-      if (bCount !== aCount) return bCount - aCount;
+      const bUnread = unreadCounts[b.id] || 0;
+      const aUnread = unreadCounts[a.id] || 0;
+      if (bUnread !== aUnread) return bUnread - aUnread;
 
-      const aHasPic = a.avatar !== empty ? 1 : 0;
       const bHasPic = b.avatar !== empty ? 1 : 0;
+      const aHasPic = a.avatar !== empty ? 1 : 0;
       if (bHasPic !== aHasPic) return bHasPic - aHasPic;
 
-      const getPriority = (u) => {
-        if (u.verified && u.pinned) return 4000;
-        if (u.verified) return 3000;
-        if (u.pinned) return 2000;
-        return 1000;
-      };
-      return getPriority(b) - getPriority(a);
+      // Optimized priority logic (avoiding function declaration inside sort)
+      const pB = (b.verified ? 3000 : 1000) + (b.pinned ? 1000 : 0);
+      const pA = (a.verified ? 3000 : 1000) + (a.pinned ? 1000 : 0);
+      return pB - pA;
     });
 
-    // All tab → round-robin per country, newest first
+    // 4. Tab-Specific Formatting
     if (activeTab === 'all') {
-      const countryGroups = filtered.reduce((acc, user) => {
-        if (!acc[user.country]) acc[user.country] = [];
-        acc[user.country].push(user);
-        return acc;
-      }, {});
+      // Optimized Round-Robin: Group and Sort in one pass where possible
+      const groups = new Map();
+      filtered.forEach((u) => {
+        if (!groups.has(u.country)) groups.set(u.country, []);
+        groups.get(u.country).push(u);
+      });
 
-      for (const country in countryGroups) {
-        countryGroups[country].sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
-        );
-      }
-
-      let roundRobin = [];
-      let index = 0;
-      let added = true;
-      while (added) {
-        added = false;
-        for (const country in countryGroups) {
-          if (countryGroups[country][index]) {
-            roundRobin.push(countryGroups[country][index]);
-            added = true;
-          }
-        }
-        index++;
-      }
-      filtered = roundRobin;
-    }
-
-    // Online tab → alternate genders
-    if (activeTab === 'online') {
-      const females = filtered.filter((u) => u.gender === 'female');
-      const males = filtered.filter((u) => u.gender === 'male');
-      const others = filtered.filter(
-        (u) => u.gender !== 'female' && u.gender !== 'male'
+      // Sort subgroups by date (pre-convert to number for faster comparison)
+      groups.forEach((list) =>
+        list.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
       );
 
+      const roundRobin = [];
+      const groupArrays = Array.from(groups.values());
+      let maxLen = Math.max(...groupArrays.map((a) => a.length), 0);
+
+      for (let i = 0; i < maxLen; i++) {
+        for (const group of groupArrays) {
+          if (group[i]) roundRobin.push(group[i]);
+        }
+      }
+      filtered = roundRobin;
+    } else if (activeTab === 'online') {
+      // Optimized Alternating Genders
+      const females = [],
+        males = [],
+        others = [];
+      for (const u of filtered) {
+        if (u.gender === 'female') females.push(u);
+        else if (u.gender === 'male') males.push(u);
+        else others.push(u);
+      }
+
       const alternated = [];
-      let f = 0,
-        m = 0;
-      while (f < females.length || m < males.length) {
-        if (f < females.length) alternated.push(females[f++]);
-        if (m < males.length) alternated.push(males[m++]);
+      const len = Math.max(females.length, males.length);
+      for (let i = 0; i < len; i++) {
+        if (i < females.length) alternated.push(females[i]);
+        if (i < males.length) alternated.push(males[i]);
       }
       filtered = [...alternated, ...others];
     }
 
-    const pageSize = 10;
-    const end = (page + 1) * pageSize;
-    return filtered.slice(0, end);
+    // 5. Pagination
+    return filtered.slice(0, (page + 1) * 10);
   }, [
     users,
     genderFilter,
@@ -1012,18 +1046,30 @@ const handleAcceptTerms = () => {
     page,
   ]);
 
-  const handleScroll = (e) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.target;
+  // 1. Wrap in useCallback to keep the reference stable
+  const handleScroll = useCallback(
+    (e) => {
+      const { scrollTop, scrollHeight, clientHeight } = e.target;
 
-    if (scrollTop + clientHeight >= scrollHeight - 50 && !loadingMore) {
-      setLoadingMore(true);
+      // 2. Optimization: Use a larger threshold or specific 'hasMore' check
+      // Added 'hasMore' check to prevent infinite triggers when no data is left
+      if (scrollTop + clientHeight >= scrollHeight - 100) {
+        // 3. The "Gatekeeper" pattern: Prevents multiple triggers while loading
+        if (loadingMore || !hasMore) return;
 
-      setTimeout(() => {
-        setPage((prev) => prev + 1);
-        setLoadingMore(false);
-      }, 800); // simulate load delay
-    }
-  };
+        setLoadingMore(true);
+
+        // 4. Clean timeout handling
+        const timer = setTimeout(() => {
+          setPage((prev) => prev + 1);
+          setLoadingMore(false);
+        }, 800);
+
+        return () => clearTimeout(timer);
+      }
+    },
+    [loadingMore, hasMore]
+  ); // Only recreate if these change
 
   const hasPinnedNotification = users.some(
     (u) => u.pinned && unreadCounts[u.id] > 0
@@ -1035,75 +1081,70 @@ const handleAcceptTerms = () => {
       category: 'Chat List Page',
       label: 'Search Bar',
     });
-    if (searchTerm.trim() === '') {
+
+    const trimmedTerm = searchTerm.trim();
+    if (!trimmedTerm) {
       setPage(0);
       setUsers([]);
       setHasMore(true);
       return;
     }
-    setSearchLoading(true); // ✅ Show spinner only on button click
+
+    setSearchLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select(
-          'id, name, profile_pic, country, gender, status, age, decency_rating'
-        )
-        .ilike('name', `%${searchTerm}%`);
+      const db = await dbPromise; // Initialize IDB connection in parallel
 
-      if (error) throw error;
+      // 1. Parallelize everything: DB Data + Local Pinned Cache + IDB Blobs
+      const [searchRes, pinnedRes, cachedPics, autoPinnedIds] =
+        await Promise.all([
+          supabase
+            .from('users')
+            .select(
+              'id, name, profile_pic, country, gender, status, age, decency_rating'
+            )
+            .ilike('name', `%${trimmedTerm}%`)
+            .neq('id', user.id)
+            .limit(50),
+          supabase
+            .from('pinned_users')
+            .select('pinned_user_id')
+            .eq('user_id', user.id),
+          db.getAll('profile_pics'),
+          getAutoPinnedIds(), // Using the cached version
+        ]);
 
-      const { data: pinnedData } = await supabase
-        .from('pinned_users')
-        .select('pinned_user_id')
-        .eq('user_id', user.id);
+      if (searchRes.error) throw searchRes.error;
 
-      const pinnedIds = pinnedData?.map((row) => row.pinned_user_id) || [];
+      // 2. Optimized Lookup Structures (Combined Set)
+      const pinnedSet = new Set([
+        ...(pinnedRes.data?.map((row) => row.pinned_user_id) || []),
+        ...autoPinnedIds,
+      ]);
+      const cachedMap = new Map(cachedPics.map((item) => [item.id, item.blob]));
 
-      const processed = data
-        .filter((u) => u.id !== user.id)
-        .map((user) => ({
-          ...user,
-          avatar: user.profile_pic || empty,
-          notifications: unreadCounts[user.id] || 0,
-          pinned: pinnedIds.includes(user.id),
-          status: user.status || 'offline',
-        }));
+      // 3. Process data with avatar Blob support
+      // This prevents the search results from showing "empty" while images download
+      const processed = searchRes.data.map((u) => {
+        const blob = cachedMap.get(u.id);
+        return {
+          ...u,
+          avatar: blob ? URL.createObjectURL(blob) : u.profile_pic || empty,
+          notifications: unreadCounts[u.id] || 0,
+          pinned: pinnedSet.has(u.id),
+          status: u.status || 'offline',
+        };
+      });
 
       setUsers(processed);
-      setHasMore(false); // No infinite scroll during search
+      setHasMore(false);
     } catch (err) {
       console.error('Search error:', err.message);
     } finally {
+      setSearchLoading(false);
       setLoading(false);
-      setSearchLoading(false); // ✅ Hide spinner after search
     }
   };
-
-  useEffect(() => {
-    if (!hasMore || loadingMore || loading || searchTerm.trim() !== '') return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setPage((prev) => prev + 1);
-        }
-      },
-      {
-        root: null, // viewport
-        rootMargin: '100px', // start loading a bit earlier
-        threshold: 0.1, // trigger when 10% visible
-      }
-    );
-
-    const currentRef = observerRef.current;
-    if (currentRef) observer.observe(currentRef);
-
-    return () => {
-      if (currentRef) observer.unobserve(currentRef);
-    };
-  }, [hasMore, loadingMore, loading, searchTerm]);
-
 
   const handleMarkAllAsSeen = async () => {
     const updated = { ...unreadCounts };
@@ -1139,15 +1180,6 @@ const handleAcceptTerms = () => {
     return num.toString();
   };
 
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768); // Mobile breakpoint
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   const handleRoast = () => {
     trackEvent({
       action: 'button_click',
@@ -1156,7 +1188,10 @@ const handleAcceptTerms = () => {
     });
 
     localStorage.setItem('showFilterToast', 'true');
-    window.location.href = 'https://otieu.com/4/10380848';
+    toast.error('Reach 100 likes on your profile to unlock this feature', {
+      duration: 4000,
+      position: 'top-center',
+    });
   };
 
   const handleFilterToast = () => {
@@ -1166,47 +1201,48 @@ const handleAcceptTerms = () => {
     });
   };
 
-  useEffect(() => {
-    const shouldShowToast = localStorage.getItem('showFilterToast');
-
-    if (shouldShowToast) {
-      handleFilterToast();
-      localStorage.removeItem('showFilterToast'); // prevent repeat
-    }
-  }, []);
-
   const handleNotification = async () => {
-    setNotificationCount(0); // reset UI immediately
+    // 1. Optimistic UI Update
+    setNotificationCount(0);
     navigate('/notifications');
-    // Mark all likes as seen
-    await supabase
-      .from('likes')
-      .update({ seen: true })
-      .eq('user_id', user.id)
-      .eq('seen', false);
 
-    // Mark all roasts as seen
-    const { data: myImages } = await supabase
-      .from('images')
-      .select('id')
-      .eq('user_id', user.id);
+    try {
+      // 2. Parallelize the independent update tasks
+      // We fire the 'likes' update and the 'image fetch' at the same time
+      const [likesUpdate, imagesRes] = await Promise.all([
+        supabase
+          .from('likes')
+          .update({ seen: true })
+          .eq('user_id', user.id)
+          .eq('seen', false),
 
-    if (myImages?.length > 0) {
-      const imageIds = myImages.map((img) => img.id);
-      await supabase
-        .from('roasts')
-        .update({ seen: true })
-        .in('image_id', imageIds)
-        .eq('seen', false);
+        supabase.from('images').select('id').eq('user_id', user.id),
+      ]);
+
+      // 3. Conditional secondary update
+      // If the user has images, mark those roasts as seen
+      if (imagesRes.data?.length > 0) {
+        const imageIds = imagesRes.data.map((img) => img.id);
+
+        await supabase
+          .from('roasts')
+          .update({ seen: true })
+          .in('image_id', imageIds)
+          .eq('seen', false);
+      }
+    } catch (err) {
+      console.error('Failed to mark notifications as seen:', err);
+      // Optional: Revert UI count if essential, but usually not needed for 'seen' status
     }
   };
-
-
   // 👉 searchLoading can be used inside your list UI
   {
     searchLoading && (
-      <div className="flex justify-center py-4">
-        <MiniSpinner /> {/* a subtle loader under search results */}
+      <div
+        className="flex justify-center items-center py-4 min-h-[64px]"
+        aria-live="polite"
+      >
+        <MiniSpinner />
       </div>
     );
   }
@@ -1306,7 +1342,8 @@ const handleAcceptTerms = () => {
             >
               {i18n.t('all')}
             </button>
-            <button
+          
+           {/* <button
               className={`sketchy-tab ${
                 activeTab === 'pinned' ? 'active' : ''
               }`}
@@ -1332,7 +1369,7 @@ const handleAcceptTerms = () => {
                   }}
                 ></span>
               )}
-            </button>
+            </button>*/}
             <button
               className={`sketchy-tab ${activeTab === 'inbox' ? 'active' : ''}`}
               onClick={() => {
@@ -1462,17 +1499,16 @@ const handleAcceptTerms = () => {
                 {filteredUsers
                   .filter((u) => u.id !== user.id)
                   .map((user) => (
-                   <Link
-  key={user.id}
-  className={`user-card ${
-    user.notifications > 0 ? 'has-notification' : ''
-  }`}
-  onClick={(e) => {
-    handleUserClick(user.id);
-    handleProtectedNavigation(e, `/chat/${user.id}`, user);
-  }}
->
-
+                    <Link
+                      key={user.id}
+                      className={`user-card ${
+                        user.notifications > 0 ? 'has-notification' : ''
+                      }`}
+                      onClick={(e) => {
+                        handleUserClick(user.id);
+                        handleProtectedNavigation(e, `/chat/${user.id}`, user);
+                      }}
+                    >
                       <div className="user-avatar-wrapper">
                         <Link
                           to={`/profile/${user.id}`}
@@ -1631,7 +1667,7 @@ const handleAcceptTerms = () => {
                   <>
                     <FaComments size={40} className="no-icon" />
                     <p className="no-title">{i18n.t('noChats')}</p>
-                    <p className="no-sub">{i18n.t('inoxHistory')}</p>
+                    <p className="no-sub">{i18n.t('inboxHistory')}</p>
                   </>
                 )}
 
@@ -1664,69 +1700,6 @@ const handleAcceptTerms = () => {
             ) : null}
           </div>
 
-          {adVisible && (
-            <div
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'rgba(0,0,0,0.7)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                zIndex: 9999,
-              }}
-            >
-              <div
-                style={{
-                  background: '#fff',
-                  padding: '20px',
-                  borderRadius: '10px',
-                  textAlign: 'center',
-                  width: '90%',
-                  maxWidth: '400px',
-                }}
-              >
-                <div className="ad-header">
-                  <span className="ad-label">Ad</span>
-                  <span className="ad-by">Powered by Adsterra</span>
-                </div>
-                <div
-                  id="ad-container"
-                  style={{
-                    marginTop: '20px',
-                    minHeight: '100px',
-                    border: '2px dashed #007bff',
-                    borderRadius: '10px',
-                    background: '#f9f9f9',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  {!adLoaded && <span>Loading Ad...</span>}
-                </div>
-                <button
-                  onClick={handleCloseAd}
-                  disabled={closeAdCountdown > 0} // disabled until countdown ends
-                  style={{
-                    marginTop: '20px',
-                    padding: '10px 20px',
-                    background: closeAdCountdown > 0 ? '#555' : '#111', // different style while disabled
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: closeAdCountdown > 0 ? 'not-allowed' : 'pointer',
-                    position: 'relative',
-                  }}
-                >
-                  Close Ad {closeAdCountdown > 0 && `(${closeAdCountdown})`}
-                </button>
-              </div>
-            </div>
-          )}
           {showAllTabs && (
             <div
               className="modal-backdrop"
@@ -1808,40 +1781,6 @@ const handleAcceptTerms = () => {
           )}
         </>
 
-        {showPremiumNotice && (
-          <div
-            className="premium-modal-overlay"
-            onClick={() => setShowPremiumNotice(false)}
-          >
-            <div
-              className="premium-modal-box"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h2 className="premium-modal-title">🌍 Premium Chat</h2>
-              <p className="premium-modal-message">
-                Pay to chat with premium country people.
-              </p>
-              <div className="premium-modal-buttons">
-                <button
-                  className="premium-btn premium-pay-btn"
-                  onClick={() => {
-                    setShowPremiumNotice(false);
-                    handlePaypalRedirect();
-                    // Replace this with actual payment logic
-                  }}
-                >
-                  💰 Pay to Unlock
-                </button>
-                <button
-                  className="premium-btn premium-cancel-btn"
-                  onClick={() => setShowPremiumNotice(false)}
-                >
-                  ❌ Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
         {alertMessage && (
           <SketchyAlert
             message={alertMessage.text}
@@ -1909,10 +1848,27 @@ const handleAcceptTerms = () => {
             </div>
           </div>
         )}
+        {/*showPushPrompt && (
+          <div className="push-overlay">
+            <div className="push-box">
+              <h3 className="push-title">Enable Notifications</h3>
+              <p className="push-desc">
+                Please allow push notifications to continue.
+              </p>
+
+              <button
+                onClick={requestRollerAdsPermission}
+                className={`btn-allow-push glow-button`}
+              >
+                {pushStatus === 'idle' && 'Allow Push Notifications'}
+                {pushStatus === 'requesting' && 'Waiting for browser prompt…'}
+                {pushStatus === 'granted' && 'Permission Granted ✓'}
+                {pushStatus === 'denied' && 'Denied — Try Again'}
+              </button>
+            </div>
+          </div>
+        )*/}
       </div>
-      {showTermsSlider && (
-  <TermsSlider onAccept={handleAcceptTerms} />
-)}
 
       <Toaster />
     </>

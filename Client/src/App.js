@@ -11,15 +11,20 @@ import {
   Home,
   Register,
   Login,
+  Private,
   ResetPassword,
   Sketch,
   AppSketch,
   WebSketch,
+  OptionsPage,
+  Refund,
   Updates,
+  EnterPage,
   Notifications,
   Prompt,
   Pricing,
   Secret,
+  Russian,
   MissScratch,
   Settings,
   Roast,
@@ -38,6 +43,7 @@ import {
   Coins,
   PaymentPage,
   Demo,
+  LiveSupport,
 } from './Pages/index';
 import LoadingSpinner from './Components/LoadingSpinner';
 import { supabase } from './Utils/supabaseClient';
@@ -47,43 +53,54 @@ import FeedbackPopup from './Components/FeedbackPopup';
 import { isRunningAsPWA } from './CheckPWA';
 import { trackEvent } from './Utils/analytics';
 import i18n from './i18n';
-import InstallBanner from './Components/InstallBanner';
 import { isWebView } from './Utils/isWebView';
-import AdVignette from './Components/AdVignette';
 
 const protectedRoutes = [
-  { path: '/prompt', component: Prompt },
-  { path: '/app-doodle', component: AppDoodle },
-  { path: '/web-doodle', component: WebDoodle },
   { path: '/notifications', component: Notifications },
   { path: '/chat/:id', component: Chat },
   { path: '/profile/:id', component: Profile },
-  { path: '/coins/:id', component: Coins },
   { path: '/settings', component: Settings },
+  {
+    /* path: '/prompt', component: Prompt },
+  { path: '/app-doodle', component: AppDoodle },
   { path: '/payments/:id', component: PaymentPage },
+  { path: '/web-doodle', component: WebDoodle },
+  { path: '/coins/:id', component: Coins */
+  },
 ];
 
 const publicRoutes = [
-  { path: '/', component: Home },
+  { path: '/', component: Sketch }, // Home
+  { path: '/demo', component: Demo },
+  { path: '/viewer', component: Private },
+  { path: '/refund', component: Refund },
+  { path: '/chat-entrance', component: ChatEntrance },
   { path: '/register', component: Register },
+
   { path: '/login', component: Login },
-  { path: '/sketch', component: Sketch },
+  { path: '/guest-user', component: GuestUser },
+  { path: '/chat-list', component: ChatList },
+  { path: '/roast', component: Roast },
   { path: '/about', component: About },
   { path: '/terms', component: Terms },
-  { path: '/roast', component: Roast },
-  { path: '/share-secret', component: Secret },
-  { path: '/miss-scratch', component: MissScratch },
-  { path: '/reset-password', component: ResetPassword },
-  { path: '/chat-entrance', component: ChatEntrance },
-  { path: '/guest-user', component: GuestUser },
   { path: '/privacy-policy', component: Privacy },
   { path: '/updates', component: Updates },
   { path: '/contact-us', component: Contact },
+  { path: '/reset-password', component: ResetPassword },
+
+
+  { path: '/home-page', component: Sketch },
+  {
+    /*
+  { path: '/viewer', component: EnterPage },
+  { path: '/live-support', component: LiveSupport },
+  { path: '/options', component: OptionsPage },
   { path: '/pricing', component: Pricing },
-  { path: '/chat-list', component: ChatList },
   { path: '/app-sketch', component: AppSketch },
   { path: '/web-sketch', component: WebSketch },
-  { path: '/demo', component: Demo },
+  { path: '/share-secret', component: Secret },
+  { path: '/miss-scratch', component: MissScratch */
+  },
 ];
 
 // Detect mobile
@@ -234,7 +251,8 @@ function AppContent() {
     };
   }, []);
 
-  useEffect(() => {
+  {
+    /*useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
     if (!storedUser || !storedUser.id) return;
 
@@ -253,7 +271,8 @@ function AppContent() {
       } catch {}
     }, 3600000);
     return () => clearInterval(interval);
-  }, []);
+  }, []);*/
+  }
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -326,10 +345,21 @@ function AppContent() {
     setShowFeedback(false);
   };
 
-  useEffect(() => {
-    if (!isMobileDevice()) {
+  {
+    /*  useEffect(() => {
+     if (!isMobileDevice() || isMobileDevice()) {
       setReady(true); // render routes normally on desktop
       return;
+    }
+  }, [])*/
+  }
+
+  useEffect(() => {
+    {
+      /* if (!isMobileDevice()) {
+      setReady(true); // render routes normally on desktop
+      return;
+    }*/
     }
 
     const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -343,10 +373,10 @@ function AppContent() {
     // Mobile root "/" redirection
     if (location.pathname === '/') {
       if (!storedUser?.id) {
-        navigate('/guest-user', { replace: true });
+        navigate('/home-page', { replace: true }); //guest-user
         return;
       } else {
-        navigate('/chat-list', { replace: true });
+        navigate('/home-page', { replace: true }); //chat-list
         return;
       }
     }
@@ -358,7 +388,7 @@ function AppContent() {
 
     const protectedRoutes = ['/chat-list', '/chat/:id', '/profile/:id'];
     if (!storedUser?.id && protectedRoutes.includes(location.pathname)) {
-      navigate('/guest-user', { replace: true });
+      navigate('/home-page', { replace: true }); //guest-user
       return;
     }
 
@@ -373,7 +403,7 @@ function AppContent() {
   return (
     <>
       <UserStatusWrapper />
-      <AdVignette />
+      {/* <AdsterraScripts /> */}
       <Routes>
         {publicRoutes.map(({ path, component: Component }) => (
           <Route key={path} path={path} element={<Component />} />

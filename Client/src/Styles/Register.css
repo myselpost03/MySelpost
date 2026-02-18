@@ -44,7 +44,8 @@
 /* Inputs */
 .register-form input[type="text"],
 .register-form input[type="email"],
-.register-form input[type="password"] {
+.register-form input[type="password"],
+.register-form input[type="tel"] {
   width: 100%;
   padding: 12px 15px;
   border-radius: 10px;

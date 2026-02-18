@@ -11,6 +11,64 @@ body {
   touch-action: pan-x pan-y;
   overflow-x: hidden;
 }
+
+.page-wrapper{
+  margin-top: 40px;
+   width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.push-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.push-box {
+  background: #fff;
+  padding: 26px;
+  border-radius: 18px;
+  width: 90%;
+  max-width: 340px;
+  text-align: center;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.15);
+  animation: fadeUp 0.45s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.btn-allow-push {
+  border: none;
+  background: #4a6bff;
+  color: white;
+  font-size: 1rem;
+  padding: 12px 18px;
+  width: 100%;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.glow-button {
+  animation: glow 1.6s infinite alternate ease-in-out;
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 7px rgba(74, 107, 255, 0.6); }
+  to { box-shadow: 0 0 17px rgba(74, 107, 255, 1); }
+}
+
+
 .sketchy-search-wrapper {
   display: flex;
   align-items: center;
@@ -26,8 +84,8 @@ body {
   width: 100%;
   padding: 8px 30px 8px 12px; /* leave space on right for cross icon */
   border-radius: 6px;
-  border: 1px solid #ccc;
   font-size: 14px;
+  
 }
 
 .clear-search-button {
@@ -63,11 +121,8 @@ body {
     padding: 0.5rem 1rem;
     max-width: 600px;
     margin: 10% auto;
-    border: 2px dashed #ccc;
-    border-radius: 16px;
-    box-shadow: 3px 3px 0px #ccc;
     background: #fffef9;
-
+box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
     /* Hide scrollbar - Chrome, Edge, Safari */
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE 10+ */
@@ -96,8 +151,6 @@ body {
   align-items: center;
   padding: 0.2rem;
   background: #fffdf7;
-  border-radius: 18px;
-  border: 2px dashed #333;
   animation: popIn 0.4s ease forwards;
   transition: transform 0.3s ease;
   gap: 1rem;
@@ -352,8 +405,8 @@ body {
   height: 44px;
   margin-top: -2px;
   padding: 0 14px;
-  background: linear-gradient(135deg, #000, #4b4a4a);
-  color: white;
+  background: linear-gradient(135deg, #b24592 0%, #f15f79 100%);
+color: white;
   border: none;
   border-radius: 10px;
   font-size: 1.2rem;
@@ -764,8 +817,7 @@ body {
   height: 50px;
   color: white;
   border-radius: 50%;
-  background: linear-gradient(135deg, #000, #4b4a4a);
-  font-size: 1.4rem;
+background: linear-gradient(135deg, #590d22 0%, #c9184a 50%, #ff4d6d 100%);  font-size: 1.4rem;
   z-index: 1000;
   box-shadow: 0 6px 15px rgba(255, 255, 255, 0.15);
   border: none;
@@ -785,7 +837,7 @@ body {
   transform: scale(0.95);
 }
 
-.fab-roast-button {
+.fab-roast-btn {
   position: fixed;
   bottom: 29px;
   right: 20px;
@@ -793,7 +845,7 @@ body {
   height: 60px;
   color: white;
   border-radius: 50%;
-  background: linear-gradient(135deg, #000, #4b4a4a);
+  background: linear-gradient(135deg, #b24592 0%, #f15f79 100%);
 
   font-size: 1.7rem;
   z-index: 1000;

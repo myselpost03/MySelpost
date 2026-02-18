@@ -690,21 +690,15 @@ const Profile = () => {
                         : i18n.t('saveProfile')
                       : i18n.t('updateProfile')}
                   </button>
-                  <button
+                 
+                 {/* <button
                     className="sketchy-coin-btn-new"
                     onClick={handleCoins}
                     style={{ marginTop: 10 }}
                   >
                     {i18n.t('getCoins')}
-                  </button>
-                  <button
-                    className="sketchy-install-btn"
-                    onClick={() => setShowPopup(true)}
-                    disabled={!deferredPrompt}
-                    style={{ marginTop: 10 }}
-                  >
-                    {i18n.t('installApp')}
-                  </button>
+                  </button>*/}
+                 
                   <button
                     className="sketchy-logout-btn"
                     onClick={handleLogout}
@@ -729,10 +723,7 @@ const Profile = () => {
               userId={id}
               currentUserId={currentUserId}
             />
-            <span className={`blurred-note ${!showNote ? 'hidden' : ''}`}>
-              {i18n.t('eachTap')} <br />
-              {i18n.t('reachLikes')}
-            </span>
+          
           </div>
         </div>
 

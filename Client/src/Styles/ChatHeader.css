@@ -1,4 +1,351 @@
-.chat-header {
+@import url(https://fonts.googleapis.com/css?family=Noto+Sans:100,200,300,regular,500,600,700,800,900,100italic,200italic,300italic,italic,500italic,600italic,700italic,800italic,900italic);
+/* Profile card inside premium modal - FIXED */
+.video-premium-modal {
+  position: relative; /* REQUIRED for absolute close button */
+}
+
+/* Close (X) button */
+.video-premium-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.05);
+  color: #aaa;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.video-premium-close-btn:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.video-premium-close-btn:active {
+  transform: scale(0.95);
+}
+.video-premium-modal {
+  animation: popupScale 0.2s ease;
+}
+
+@keyframes popupScale {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}.profile-card {
+  padding: 10px;
+  border-radius: 10px;
+  margin: 8px 0;
+
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.06);
+
+  box-shadow: none;
+}
+
+/* smaller image for modal */
+.profile-img {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 6px;
+}
+
+/* better contrast */
+.profile-name {
+  margin: 0;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* readable subtitle */
+.profile-role {
+  margin: 2px 0 10px;
+  color: #aaa;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+/* cleaner note box */
+.profile-note {
+  background: rgba(255,255,255,0.04);
+  padding: 8px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  color: #bbb;
+  line-height: 1.4;
+}
+
+/* FIXED button sizing */
+.profile-btn {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  background: linear-gradient(90deg, #ffd700, #ffae00);
+  color: #000;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.profile-btn:hover {
+  opacity: 0.9;
+}
+
+.profile-btn:active {
+  transform: scale(0.97);
+}
+
+/* Manager Contact Section */
+.manager-contact-box {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 15px;
+}
+
+.contact-text {
+  font-size: 0.7rem;
+  color: #888;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.manager-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffd700; /* Matching the crown color */
+  margin: 4px 0;
+}
+
+.manager-email {
+  font-size: 0.8rem;
+  color: #ccc;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.manager-email:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* Updated UPI Button Styles for consistency */
+.upi-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg, #ffd700, #ffae00);
+  color: #000;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.upi-btn:active {
+  transform: scale(0.98);
+}
+/* Container Overlay */
+.video-premium-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  font-family: 'noto sans', serif;
+}
+
+.video-premium-modal {
+  background: #111;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 16px;
+
+  padding: 16px;              /* reduced padding */
+  width: 85%;
+  max-width: 300px;           /* smaller width */
+
+  max-height: 85vh;           /* prevent tall modal */
+  overflow-y: none;           /* scroll if needed */
+
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+
+  color: white;
+}
+
+.video-upi{
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  border: none;
+  background: #fff;
+  color: #1a1a2e;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Header - More compact */
+.video-premium-header h2 {
+  margin: 5px 0 2px;
+  font-size: 1.4rem;
+}
+
+.video-premium-header p {
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+.video-premium-crown {
+  font-size: 2rem; /* Scaled down */
+  color: #ffd700;
+}
+
+/* Condensed Price */
+.video-premium-price {
+  font-size: 1.6rem;
+  margin: 8px 0;
+}
+.video-premium-price span {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Tighter Features List */
+.video-premium-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns to save vertical space */
+  gap: 8px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.video-premium-feature {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem; /* Smaller text */
+  color: #ccc;
+}
+
+.video-check-icon {
+  color: #ffd700;
+  min-width: 12px;
+}
+
+/* Action Buttons - Stacked but slim */
+.video-premium-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.video-premium-buy-btn {
+  background: linear-gradient(90deg, #ffd700, #ffae00);
+  color: #000;
+  border: none;
+  padding: 12px; /* Slimmer padding */
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.video-premium-cancel-btn {
+  background: transparent;
+  color: #555;
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.video-call-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 40px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: transparent;
+  color: #ffffff;
+
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* hover effect */
+.video-call-icon:hover {
+  transform: scale(1.1);
+  opacity: 0.85;
+}
+
+/* click effect */
+.video-call-icon:active {
+  transform: scale(0.95);
+}
+
+/* VIP badge 
+.video-call-icon::after {
+  content: "VIP";
+
+  position: absolute;
+  top: -4px;
+  right: -6px;
+
+  font-size: 8px;
+  font-weight: 600;
+
+  padding: 2px 4px;
+
+  border-radius: 6px;
+
+  background: #ff3b30; 
+  color: white;
+
+  line-height: 1;
+
+  box-shadow: 0 0 0 2px #1a1a1a; 
+}*/.chat-header {
   position: fixed;
   top: 0;
   left: 0;

@@ -5,12 +5,70 @@
 * {
   -webkit-tap-highlight-color: transparent;
 }
+.header-premium-btn {
+  background: linear-gradient(135deg, #ff758c, #ff7eb3);
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 12px 12px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  box-shadow: 0 8px 20px rgba(255, 46, 99, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
 
-.logo {
+/* soft shine sweep */
+.header-premium-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+  transform: skewX(-20deg);
+}
+
+/* hover = heartbeat energy */
+.header-premium-btn:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 12px 28px rgba(255, 46, 99, 0.5);
+  background: linear-gradient(135deg, #ff7ab6, #ff3d6e);
+}
+
+.header-premium-btn:hover::before {
+  animation: shine 0.9s ease;
+}
+
+/* click */
+.header-premium-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 6px 16px rgba(255, 46, 99, 0.35);
+}
+
+@keyframes shine {
+  from {
+    left: -75%;
+  }
+  to {
+    left: 125%;
+  }
+}
+
+.logo-header {
   font-size: 1.8rem;
   font-weight: bold;
   color: #fff;
-  font-family: "Irish Grover", sans-serif;
+  font-family: 'Irish Grover', sans-serif;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   text-decoration: none;
@@ -30,7 +88,7 @@
   border: none;
   font-size: 0.95rem;
   outline: none;
-  font-family: "Segoe UI", sans-serif;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 .disabled-link {
@@ -69,7 +127,7 @@
   outline: none;
   font-size: 1.1rem;
   transition: color 0.2s;
-  font-family: "acme", serif;
+  font-family: 'acme', serif;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   cursor: pointer; /* 🔥 This fixes the issue */
@@ -87,16 +145,15 @@
   font-size: 1.3rem;
   color: white;
   cursor: pointer;
-  font-family: "freckle face", serif;
-  background-color: #000000;
+  font-family: 'freckle face', serif;
+  background: none;
   outline: none;
   text-decoration: none;
   display: inline-flex; /* ✅ forces same alignment */
-  align-items: center;  /* ✅ aligns text baseline */
+  align-items: center; /* ✅ aligns text baseline */
   justify-content: center;
-  height: 40px;         /* ✅ forces consistent height */
+  height: 40px; /* ✅ forces consistent height */
 }
-
 
 .header {
   position: fixed;
@@ -108,14 +165,14 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px; /* Reduced padding to prevent overflow */
-  background-color: #000;
+  background: linear-gradient(135deg, #b24592 0%, #f15f79 100%);
   flex-wrap: wrap; /* allow wrapping on small screens */
   box-sizing: border-box;
 }
 
 /* Optional smoother shadow below header for clarity */
 .header::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: -1px;
   left: 0;
@@ -150,7 +207,7 @@
   border-radius: 16px;
   box-shadow: 6px 6px 0px #000;
   max-width: 90%;
-  font-family: "Comic Sans MS", "Lilita One", cursive;
+  font-family: 'Comic Sans MS', 'Lilita One', cursive;
   text-align: center;
 }
 
@@ -229,7 +286,7 @@
 .sketchy-feature-button {
   padding: 10px 16px;
   font-size: 1.1rem;
-  font-family: "Lilita One", sans-serif;
+  font-family: 'Lilita One', sans-serif;
   background-color: #eee; /* matches your sketchy-profile-update-btn */
   border: 2px dashed #000;
   border-radius: 12px;
@@ -268,9 +325,6 @@
   z-index: 10;
   letter-spacing: 0.5px;
 }
-
-
-
 
 .roast-button-container {
   position: relative;

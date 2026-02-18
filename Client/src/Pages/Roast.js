@@ -15,6 +15,7 @@ import {
 import imageCompression from 'browser-image-compression';
 import bannedWords from '../JSON/bannedWords.json';
 import toast, { Toaster } from 'react-hot-toast';
+import Demo from "./Demo";
 import {
   saveRoastImages,
   getRoastImages,
@@ -23,6 +24,7 @@ import {
   getRoastLastSync,
 } from '../Utils/db';
 import i18n from '../i18n';
+import AdsterraBanner from "../Components/AdsterraBanner";
 
 const timeAgo = (date) => {
   const inputDate = new Date(date + 'Z'); // 👈 Ensures it's treated as UTC
@@ -50,6 +52,8 @@ function Roast() {
   const [cards, setCards] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+ const [showPopup, setShowPopup] = useState(false);
+  
   const [showSwipeGuide, setShowSwipeGuide] = useState(
     localStorage.getItem('hasSeenSwipeGuide') !== 'true'
   );
@@ -64,88 +68,18 @@ function Roast() {
     localStorage.getItem('hasSharedRoast') === 'true'
   );
   const currentUser = JSON.parse(localStorage.getItem('user'));
-  const [adLoaded, setAdLoaded] = useState(false); // track ad load
 
-  const [adVisible, setAdVisible] = useState(false);
-  const [closeAdCountdown, setCloseAdCountdown] = useState(5); // 5 seconds countdown
 
-  useEffect(() => {
-    if (adVisible) {
-      setCloseAdCountdown(5); // reset countdown every time ad opens
-
-      const timer = setInterval(() => {
-        setCloseAdCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
-  }, [adVisible]);
-
-  const loadAd = () => {
-    const adContainer = document.getElementById('ad-container');
-    if (!adContainer) return; // wait until container exists
-
-    // Remove old script if any
-    const existingScript = document.getElementById('adsterra-script');
-    if (existingScript) existingScript.remove();
-
-    adContainer.innerHTML = '';
-
-    const innerContainer = document.createElement('div');
-    innerContainer.id = 'container-61abb6ea6099c52057a640165e20675a';
-    adContainer.appendChild(innerContainer);
-
-    const script = document.createElement('script');
-    script.id = 'adsterra-script';
-    script.async = true;
-    script.setAttribute('data-cfasync', 'false');
-    script.src =
-      '//pl27196664.effectivegatecpm.com/61abb6ea6099c52057a640165e20675a/invoke.js';
-
-    script.onload = () => console.log('Ad script loaded.');
-    script.onerror = () => console.error('Failed to load ad script.');
-
-    adContainer.appendChild(script);
-  };
-
-  // Run loadAd when popup becomes visible
-  useEffect(() => {
-    if (adVisible) {
-      setAdLoaded(false);
-      loadAd();
-    }
-  }, [adVisible]);
-
-  const handleCloseAd = () => {
-    setAdVisible(false);
-    if (currentUser) setFabOpen((prev) => !prev);
-  };
-
-  const handleCloseGuestAd = () => {
-    setAdVisible(false);
+  const toggleFAB = () => {
+    if (currentUser) {
+      setFabOpen((prev) => !prev);
+    } else {
+      setShowPopup(true);
       setAlertMessage({
         text: i18n.t('loginRequired'),
         withButton: true,
       });
-  };
-
-  const toggleFAB = () => {
-    if (currentUser) {
-      //setFabOpen((prev) => !prev);
-      setAdVisible(true);
-    } else {
-      setAdVisible(true);
-    {/*  setAlertMessage({
-        text: i18n.t('loginRequired'),
-        withButton: true,
-      });
-    }*/} } 
+    } 
   };
 
   const handleShare = () => {
@@ -428,7 +362,7 @@ function Roast() {
     setCards(updatedCards);
   };
 
-  const handleBack = () => navigate(-1);
+  const handleBack = () => navigate('/');
 
   const handleSwipe = (direction) => {
     if (showSwipeGuide) {
@@ -591,7 +525,7 @@ function Roast() {
   return (
     <>
       <SketchyHeader title={i18n.t('roast')} onBack={handleBack} />
-
+ 
       <div className="roast-page" {...swipeHandlers}>
         <div className="roast-card-container">
           {showSwipeGuide && (
@@ -705,6 +639,7 @@ function Roast() {
             </div>
           </div>
         </div>
+        
       </div>
       <input
         type="file"
@@ -712,8 +647,10 @@ function Roast() {
         id="upload-input"
         style={{ display: 'none' }}
         onChange={handleImageUpload}
-      />
-
+      />{/*
+   <div className="roast-banner">
+          <AdsterraBanner />
+        </div>*/}
       {/* Main FAB */}
       <button className="fab-upload" onClick={toggleFAB} title="Actions">
         <FaFire />
@@ -767,79 +704,17 @@ function Roast() {
           </div>
         </div>
       )}
-      {alertMessage && (
+      {/*alertMessage && (
         <SketchyAlert
           message={alertMessage.text}
           withButton={alertMessage.withButton}
           onClose={() => setAlertMessage(null)}
         />
-      )}
+      )*/}
+      
       {fullImage && (
         <div className="full-image-overlay" onClick={() => setFullImage(null)}>
           <img src={fullImage} alt="Full Roast" className="full-image-popup" />
-        </div>
-      )}
-      {adVisible && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0,0,0,0.7)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: '#fff',
-              padding: '20px',
-              borderRadius: '10px',
-              textAlign: 'center',
-              width: '90%',
-              maxWidth: '400px',
-            }}
-          >
-            <div className="ad-header">
-              <span className="ad-label">Ad</span>
-              <span className="ad-by">Powered by Adsterra</span>
-            </div>
-            <div
-              id="ad-container"
-              style={{
-                marginTop: '20px',
-                minHeight: '100px',
-                border: '2px dashed #007bff',
-                borderRadius: '10px',
-                background: '#f9f9f9',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              {!adLoaded && <span>Loading Ad...</span>}
-            </div>
-            <button
-              onClick={currentUser ? handleCloseAd : handleCloseGuestAd}
-              disabled={closeAdCountdown > 0} // disabled until countdown ends
-              style={{
-                marginTop: '20px',
-                padding: '10px 20px',
-                background: closeAdCountdown > 0 ? '#555' : '#111', // different style while disabled
-                color: '#fff',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: closeAdCountdown > 0 ? 'not-allowed' : 'pointer',
-                position: 'relative',
-              }}
-            >
-              Close Ad {closeAdCountdown > 0 && `(${closeAdCountdown})`}
-            </button>
-          </div>
         </div>
       )}
 

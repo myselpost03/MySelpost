@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import Header from "../Components/Header";
-import Footer from "../Components/Footer";
-import "../Styles/Home.css";
-import SketchyAlert from "../Components/SketchyAlert";
-import InviteFAB from "../Components/InviteFAB";
-import { supabase } from "../Utils/supabaseClient";
-import { trackEvent } from "../Utils/analytics";
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Header from '../Components/Header';
+import Footer from '../Components/Footer';
+import '../Styles/Home.css';
+import SketchyAlert from '../Components/SketchyAlert';
+import { supabase } from '../Utils/supabaseClient';
+import { trackEvent } from '../Utils/analytics';
+import AdsterraBanner from '../Components/AdsterraBanner';
+import AdsterraNativeBanner from '../Components/AdsterraNativeBanner';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -15,11 +16,15 @@ const Home = () => {
   const [alertMessage, setAlertMessage] = useState(null);
   const [user, setUser] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [profileForm, setProfileForm] = useState({ gender: "", age: "" });
+  const [profileForm, setProfileForm] = useState({ gender: '', age: '' });
+  const [loadingInsta, setLoadingInsta] = useState(true);
+  const handlePrivate = () => {
+    navigate('/private');
+  };
 
   useEffect(() => {
     const fetchAndSetUser = async () => {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
+      const storedUser = JSON.parse(localStorage.getItem('user'));
 
       if (!storedUser?.id) {
         setUser(null);
@@ -28,18 +33,18 @@ const Home = () => {
 
       // Fetch fresh user data from Supabase
       const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", storedUser.id)
+        .from('users')
+        .select('*')
+        .eq('id', storedUser.id)
         .single();
 
       if (error) {
-        console.error("Failed to fetch user from DB:", error.message);
+        console.error('Failed to fetch user from DB:', error.message);
         setUser(null);
         return;
       }
 
-      localStorage.setItem("user", JSON.stringify(data));
+      localStorage.setItem('user', JSON.stringify(data));
       setUser(data);
 
       // Show profile modal only if age or gender missing
@@ -53,10 +58,52 @@ const Home = () => {
     fetchAndSetUser();
   }, [navigate]);
 
-   const handleProfileChange = (e) => {
+  useEffect(() => {
+    // TIMER LOGIC: Hide loading after 3 seconds
+    const timer = setTimeout(() => {
+      setLoadingInsta(false);
+    }, 3000);
+
+    const fetchAndSetUser = async () => {
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+
+      if (!storedUser?.id) {
+        setUser(null);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', storedUser.id)
+        .single();
+
+      if (error) {
+        console.error('Failed to fetch user from DB:', error.message);
+        setUser(null);
+        return;
+      }
+
+      localStorage.setItem('user', JSON.stringify(data));
+      setUser(data);
+
+      if (!data.gender || !data.age) {
+        setShowProfileModal(true);
+      } else {
+        setShowProfileModal(false);
+      }
+    };
+
+    fetchAndSetUser();
+
+    // Cleanup timer if component unmounts
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
+  const handleProfileChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "age") {
+    if (name === 'age') {
       // allow only numbers
       if (!/^\d*$/.test(value)) return;
 
@@ -77,42 +124,41 @@ const Home = () => {
     setProfileForm((prev) => ({ ...prev, [name]: value }));
   };
 
-
   const handleProfileSubmit = async () => {
     trackEvent({
-      action: "button_click",
-      category: "Home Page",
-      label: "Submit Gender & Age Button",
+      action: 'button_click',
+      category: 'Home Page',
+      label: 'Submit Gender & Age Button',
     });
     if (!profileForm.gender || !profileForm.age) return;
 
     const { error } = await supabase
-      .from("users")
+      .from('users')
       .update({
         gender: profileForm.gender,
         age: parseInt(profileForm.age),
       })
-      .eq("id", user.id);
+      .eq('id', user.id);
 
     if (!error) {
       const updatedUser = { ...user, ...profileForm };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
       setShowProfileModal(false);
     } else {
-      console.error("Update failed:", error.message);
+      console.error('Update failed:', error.message);
     }
   };
 
   const handleChatClick = () => {
-    navigate("/chat-entrance");
+    navigate('/chat-entrance');
   };
 
   const handleBuildAppClick = () => {
     trackEvent({
-      action: "button_click",
-      category: "Home Page",
-      label: "Sketch App Button",
+      action: 'button_click',
+      category: 'Home Page',
+      label: 'Sketch App Button',
     });
     setShowBuildModal(true);
   };
@@ -122,12 +168,12 @@ const Home = () => {
 
   const handleBuildChoice = (type) => {
     setShowBuildModal(false);
-    if (type === "sketch") {
-      navigate("/sketch");
-    } else if (type === "prompt") {
-      const storedUser = localStorage.getItem("user");
+    if (type === 'sketch') {
+      navigate('/sketch');
+    } else if (type === 'prompt') {
+      const storedUser = localStorage.getItem('user');
       if (storedUser) {
-        navigate("/prompt");
+        navigate('/prompt');
       } else {
         setShowAlert(true);
       }
@@ -138,21 +184,81 @@ const Home = () => {
     await handleProfileSubmit();
   };
 
+  const handleVideo = () => {
+    navigate('/community');
+  };
+
   return (
     <div className="background-animated">
-      <div className={showAlert || showBuildModal ? "blurred" : ""}>
+      <div className={showAlert || showBuildModal ? 'blurred' : ''}>
         <Header />
-        <main className="center-wrapper">
+        {/* 1. Native Ad: No negative margins, just simple padding */}
+        <div className="ad-wrapper-native-protected">
+          <div className="ad-container-inner-protected">
+            <AdsterraNativeBanner />
+          </div>
+        </div>
+        <div className="ad-wrapper-banner-protected">
+          <div className="ad-container-inner-protected">
+            <AdsterraBanner />
+          </div>
+        </div>
+        {/* 2. Main Content: Use flex-grow to push the bottom ad down */}
+        <main className="home-main-content">
           <div className="button-container">
-            <button className="sketchy-button" onClick={handleChatClick}>
-              Chat
-            </button>
-            <span className="or-text">OR</span>
-            <button className="sketchy-button" onClick={handleBuildAppClick}>
-              Sketch
-            </button>
+            <div
+              className="community"
+              style={{ display: 'flex', padding: '20px' }}
+            >
+              {loadingInsta ? (
+                /* SHOW THIS DURING THE 3 SECONDS */
+                <div
+                  style={{
+                    marginTop: '-50px',
+                    color: '#000',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  <span className="loading-label">Loading instaviewer...</span>
+                </div>
+              ) : (
+                /* SHOW THIS AFTER 3 SECONDS */
+                <div
+                  className="viewPrivate"
+                  onClick={handlePrivate}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginTop: '-50px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg"
+                    alt="Instagram"
+                    style={{ width: '25px', height: '25px' }}
+                  />
+                  <span>Insta Account Viewer</span>
+                </div>
+              )}
+            </div>
+            {/* <span
+                className="or-text"
+                style={{
+                  marginRight: '20px',
+                  marginLeft: '20px',
+                  marginTop: '20px',
+                }}
+              >
+                OR
+              </span>
+            <button className="sketchy-button-insta" onClick={handleChatClick}>
+              Chat Foreign Girls or Boys (Free)
+            </button>*/}
           </div>
         </main>
+
         <Footer />
       </div>
 
@@ -164,13 +270,13 @@ const Home = () => {
             <div className="modal-buttons">
               <button
                 className="sketchy-button"
-                onClick={() => handleBuildChoice("sketch")}
+                onClick={() => handleBuildChoice('sketch')}
               >
                 Sketch (Free)
               </button>
               <button
                 className="sketchy-button"
-                onClick={() => handleBuildChoice("prompt")}
+                onClick={() => handleBuildChoice('prompt')}
               >
                 Prompt (Paid)
               </button>
@@ -181,12 +287,11 @@ const Home = () => {
           </div>
         </div>
       )}
-
       {showAlert && (
         <div className="modal-overlay">
           <div className="sketchy-alert-box register-alert-modal">
             <p>
-              To use the Prompt option, you must first{" "}
+              To use the Prompt option, you must first{' '}
               <Link to="/register" className="sketchy-link">
                 register
               </Link>
@@ -198,7 +303,6 @@ const Home = () => {
           </div>
         </div>
       )}
-
       {alertMessage && (
         <SketchyAlert
           message={alertMessage.text}
@@ -220,9 +324,9 @@ const Home = () => {
                   type="radio"
                   name="gender"
                   value="male"
-                  checked={profileForm.gender === "male"}
+                  checked={profileForm.gender === 'male'}
                   onChange={handleProfileChange}
-                />{" "}
+                />{' '}
                 Male
               </label>
               <label className="option-box">
@@ -230,9 +334,9 @@ const Home = () => {
                   type="radio"
                   name="gender"
                   value="female"
-                  checked={profileForm.gender === "female"}
+                  checked={profileForm.gender === 'female'}
                   onChange={handleProfileChange}
-                />{" "}
+                />{' '}
                 Female
               </label>
             </div>
@@ -252,8 +356,6 @@ const Home = () => {
           </div>
         </div>
       )}
-
-      {user && <InviteFAB />}
     </div>
   );
 };

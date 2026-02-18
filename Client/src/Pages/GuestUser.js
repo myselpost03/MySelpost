@@ -14,12 +14,14 @@ import {
   FaMapMarkerAlt,
   FaFilter,
 } from 'react-icons/fa';
+import AdsterraBanner from "../Components/AdsterraBanner";
 import empty from '../Assets/empty.png';
 import { supabase } from '../Utils/supabaseClient';
 import LoadingSpinner from '../Components/LoadingSpinner';
 import ReactCountryFlag from 'react-country-flag';
 import SketchyAlert from '../Components/SketchyAlert';
 import i18n from '../i18n';
+import Demo from './Demo';
 import TermsPopup from '../Components/TermsPopup';
 import AdVignette from '../Components/AdVignette';
 import { FaTimes } from 'react-icons/fa';
@@ -241,8 +243,9 @@ const GuestUser = () => {
   const [hasMore, setHasMore] = useState(true); // track if more users exist
   const [loadingMore, setLoadingMore] = useState(false);
   const navigate = useNavigate();
-
-  const handleFire = () => {
+  const [showPopup, setShowPopup] = useState(false);
+  const [showBanner, setShowBanner] = useState(true);
+  const handleNavigate = () => {
     navigate('/roast');
   };
   useEffect(() => {
@@ -283,6 +286,7 @@ const GuestUser = () => {
       text: i18n.t('loginForChat'),
       withButton: true,
     });
+    setShowPopup(true);
   };
   const filteredGuestUsers = useMemo(() => {
     // Step 1: Filter based on gender, country, and search
@@ -297,10 +301,20 @@ const GuestUser = () => {
       return genderMatch && countryMatch && nameMatch;
     });
 
-    // Step 2: Sort by newest first
-    filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    // Step 2: SORT BY GENDER FIRST, then by newest first
+    // Assuming gender values are 'female' and 'male'
+    filtered.sort((a, b) => {
+      // 1. Primary Sort: Gender (Female first)
+      if (a.gender === 'female' && b.gender !== 'female') return -1;
+      if (a.gender !== 'female' && b.gender === 'female') return 1;
+
+      // 2. Secondary Sort: Newest first (created_at)
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
 
     // Step 3: Show one user per country (round-robin style)
+    // Note: This logic will naturally prioritize women because they
+    // are now at the front of each country's array.
     const countryGroups = filtered.reduce((acc, user) => {
       if (!acc[user.country]) acc[user.country] = [];
       acc[user.country].push(user);
@@ -321,37 +335,24 @@ const GuestUser = () => {
       index++;
     }
 
-    // Optional: limit number of users per page
+    // Final Step: If you want to strictly force ALL females to the top
+    // regardless of the round-robin country mixing, sort one last time:
+    roundRobin.sort((a, b) => {
+      if (a.gender === 'female' && b.gender !== 'female') return -1;
+      if (a.gender !== 'female' && b.gender === 'female') return 1;
+      return 0;
+    });
+
     const pageSize = 10;
     const end = (page + 1) * pageSize;
 
     return roundRobin.slice(0, end);
   }, [users, genderFilter, countryFilter, searchTerm, page]);
-const handleUserClick = () => {
-  // Open the direct link in a new tab/window
-  const newWindow = window.open('https://otieu.com/4/10380848', '_blank');
-
-  // Check if window opened successfully
-  if (newWindow) {
-    // Poll to see if the user closed the new tab
-    const timer = setInterval(() => {
-      if (newWindow.closed) {
-        clearInterval(timer);
-        // Show alert after user closes the direct link
-        handleAlert();
-      }
-    }, 500);
-  } else {
-    // Fallback if popup blocked
-    alert('Please allow popups for this site');
-  }
-};
-
-
-  const handleTermsDone = () => {
-    localStorage.setItem('guest_terms_seen', 'true');
-    setShowTerms(false);
+  const handleUserClick = () => {
+    handleAlert();
   };
+
+
 
   const handleSearchSubmit = async () => {
     if (searchTerm.trim() === '') {
@@ -379,6 +380,10 @@ const handleUserClick = () => {
     }
   };
 
+  const handlePrivate = () => {
+    navigate('/private');
+  };
+
   return (
     <div className="chatlist-container">
       <Header />
@@ -386,6 +391,31 @@ const handleUserClick = () => {
         <LoadingSpinner />
       ) : (
         <>
+     
+          {/* <div className="page-wrapper">
+              <AdsterraBanner />
+            {/*showBanner && (
+              <div
+                className="viewPrivate"
+                onClick={handlePrivate}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <button
+                  className="closeBadge"
+                  onClick={() => setShowBanner(false)}
+                >
+                  &times;
+                </button>
+
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg"
+                  alt="Instagram"
+                  style={{ width: '25px', height: '25px' }}
+                />
+                <span>Private Account Viewer</span>
+              </div>
+            )
+          </div>*/}
           <div className="sketchy-search-wrapper">
             <div className="search-input-container">
               <input
@@ -459,7 +489,7 @@ const handleUserClick = () => {
             </div>
 
             {/* Search icon outside input */}
-            <button className="search-button" onClick={handleSearchSubmit}>
+            <button className="search-button" onClick={handleUserClick}>
               <FaSearch />
             </button>
           </div>
@@ -468,7 +498,7 @@ const handleUserClick = () => {
             <button className={`sketchy-tab`}>{i18n.t('all')}</button>
             <button
               className={`sketchy-tab`}
-              onClick={handleAlert}
+              onClick={handleUserClick}
               style={{ position: 'relative' }}
             >
               {i18n.t('chats')}
@@ -683,10 +713,16 @@ const handleUserClick = () => {
           withButton={alertMessage.withButton}
           onClose={() => setAlertMessage(null)}
         />
-      )}{' '}
-      <Link onClick={handleFire} className="fab-roast-button" title="Roast">
+      )}
+      {/*
+        <Demo 
+        isOpen={showPopup} 
+        onClose={() => setShowPopup(false)} 
+      />
+     */}
+      <button onClick={handleNavigate} className="fab-roast-btn" title="Roast">
         <FaFire />
-      </Link>
+      </button>
       {/*showTerms && <TermsPopup onDone={handleTermsDone} />*/}
     </div>
   );

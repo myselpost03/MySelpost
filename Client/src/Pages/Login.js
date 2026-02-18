@@ -9,6 +9,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import BannerAd from "../Components/BannerAd";
 import i18n from "../i18n";
+import AdsterraBanner from "../Components/AdsterraBanner";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -165,6 +166,7 @@ const Login = () => {
   return (
     <div>
       <Header />
+      
       <div className="login-container">
         <form className="login-form" onSubmit={handleSubmit}>
           <h2>{i18n.t("logIN")}</h2>
@@ -203,7 +205,9 @@ const Login = () => {
           </p>
         </form>
       </div>
-      {/* <BannerAd /> */}
+  {/*  <div className="login-banner">
+          <AdsterraBanner />
+        </div>*/}
     </div>
   );
 };

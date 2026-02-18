@@ -1,0 +1,344 @@
+/* Fake Navigation Styling */
+.fake-nav-container {
+width: 100%;
+
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 15px;
+  background: #fff;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.fake-menu-icon {
+  cursor: pointer;
+  color: #555;
+  display: flex;
+  align-items: center;
+}
+
+.fake-search-bar {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fake-search-bar input {
+  width: 100%;
+  padding: 10px 15px 10px 40px;
+  border-radius: 25px;
+  border: 1px solid #eee;
+  background-color: #f8f9fa;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+.search-svg {
+  position: absolute;
+  left: 15px;
+  color: #888;
+  pointer-events: none;
+}
+
+/* Ensure mobile responsiveness */
+@media (max-width: 480px) {
+  .fake-nav-container {
+    margin: 10px;
+    gap: 10px;
+  }
+}.fake-stats-overlay {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-left: -2.5%;
+    margin-top: -3%;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    color: white;
+    font-size: 13px;
+}
+
+.stats-left {
+    display: flex;
+    align-items: center;
+}
+
+.view-count, .like-count {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}.img-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.fake-stats-overlay {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none; /* Allows clicking through to the image */
+  z-index: 5;
+}
+
+.view-count {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px); /* Modern frosted glass effect */
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.upload-time {
+  background: rgba(0, 0, 0, 0.5);
+  color: #ddd;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+}
+:root {
+  --love-pink: #ff4d6d;
+  --love-gradient: linear-gradient(135deg, #ff758f 0%, #ff4d6d 100%);
+  --soft-pink-bg: #fff0f3;
+  --card-shadow: 0 10px 25px rgba(255, 77, 109, 0.12);
+}
+
+/* Auth Footer Styling */
+.auth-footer {
+  position: fixed;
+  bottom: -100px; /* Hidden by default */
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  padding: 20px;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1);
+  transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+}
+
+.auth-footer.visible {
+  bottom: 0; /* Slides up when active */
+}
+
+.auth-content {
+  text-align: center;
+  max-width: 500px;
+}
+
+.auth-content p {
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: #444;
+}
+
+.auth-btns {
+  display: flex;
+  gap: 15px;
+}
+
+.login-btn, .register-btn {
+  padding: 12px 30px;
+  border-radius: 50px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.login-btn {
+  background: transparent;
+  border: 2px solid var(--love-pink);
+  color: var(--love-pink);
+}
+
+.register-btn {
+  background: var(--love-gradient);
+  color: white;
+}
+
+.register-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4);
+}
+
+/* Ensure images don't stretch vertically but keep portraits visible */
+.img-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5; /* More portrait-friendly than a 1:1 square */
+  overflow: hidden;
+}
+/* Ensure the container is the reference point */
+.img-container {
+  position: relative; 
+  width: 100%;
+  aspect-ratio: 1 / 1; 
+  overflow: hidden;
+}
+
+.img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top; /* Keeps faces visible */
+}
+
+/* NEW OVERLAY BUTTON STYLE */
+.overlay-download-btn {
+  position: absolute;
+  bottom: 15px;      /* Distance from bottom of image */
+  left: 50%;
+  transform: translateX(-50%); /* Centers the button perfectly */
+  
+  width: 85%;        /* Slightly smaller than the image width */
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+  backdrop-filter: blur(5px);           /* Cool glass effect */
+  color: var(--love-pink);
+  
+  border: none;
+  border-radius: 50px; /* Pill shape looks cooler */
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.overlay-download-btn:hover {
+  background: var(--love-pink);
+  color: white;
+  width: 90%; /* Slight expansion effect */
+}
+
+/* Keep the card body tidy */
+.love-card-body {
+  padding: 15px;
+  background: white;
+}
+
+.love-page-wrapper {
+  background-color: var(--soft-pink-bg);
+  min-height: 100vh;
+  padding: 100px 20px 40px; /* Top padding for fixed Header */
+}
+
+.content-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Responsive Grid */
+.love-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 32px;
+}
+
+/* The Card Structure */
+.love-card {
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+.love-card:hover {
+  transform: translateY(-8px);
+}
+
+.img-container {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* Square images look very modern in grids */
+}
+
+.img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.love-card-body {
+  padding: 20px;
+}
+
+/* FIXED DOWNLOAD BUTTON STYLE */
+.fixed-download-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--love-gradient);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(255, 77, 109, 0.3);
+  transition: all 0.2s ease;
+}
+
+.fixed-download-btn:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 20px rgba(255, 77, 109, 0.4);
+}
+
+.fixed-download-btn:active {
+  transform: scale(0.98);
+}
+
+/* Comment Styling */
+.comment-display {
+  max-height: 90px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  border-top: 1px solid #fdf0f0;
+  padding-top: 10px;
+}
+
+.single-comment {
+  font-size: 0.85rem;
+  color: #4a4a4a;
+  margin-bottom: 6px;
+  padding: 4px 0;
+}
+
+.input-box input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ffe5ec;
+  border-radius: 12px;
+  background: #fffafa;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.input-box input:focus {
+  border-color: var(--love-pink);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(255, 77, 109, 0.1);
+}
+
+/* Utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
