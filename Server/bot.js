@@ -9,7 +9,7 @@ bot.start((ctx) => {
 });
 
 bot.command('view', (ctx) => {
-    ctx.reply('Click the button below to open the Insta Lens app:', {
+    ctx.reply('Click the button below to open the Insta Lens:', {
         reply_markup: {
             inline_keyboard: [
                 [
