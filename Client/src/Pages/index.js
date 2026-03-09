@@ -31,7 +31,8 @@ export { default as Private } from "./Private";
 export { default as EnterPage } from "./EnterPage";
 export { default as OptionsPage } from "./OptionsPage";
 export { default as Russian } from "./Russian";
-
+export { default as Media } from "./Media";
 export { default as Refund } from "./Refund";
 export { default as LiveSupport } from "./LiveSupport";
 export { default as Demo } from "./Demo";
+export { default as Results } from "./Results";

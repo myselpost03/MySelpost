@@ -25,6 +25,7 @@
     "leaflet": "^1.9.4",
     "lottie-react": "^2.4.1",
     "mobile-device-detect": "^0.4.3",
+    "monetag-tg-sdk": "^1.0.2",
     "node-device-detector": "^2.2.4",
     "react": "^19.1.0",
     "react-color": "^2.19.3",

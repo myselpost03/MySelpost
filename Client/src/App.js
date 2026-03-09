@@ -19,6 +19,8 @@ import {
   OptionsPage,
   Refund,
   Updates,
+  Results,
+  Media,
   EnterPage,
   Notifications,
   Prompt,
@@ -70,13 +72,15 @@ const protectedRoutes = [
 ];
 
 const publicRoutes = [
-  { path: '/', component: Sketch }, // Home
+  { path: '/', component: Private }, // Home, Sketch
   { path: '/demo', component: Demo },
   { path: '/viewer', component: Private },
+  
+  { path: '/results', component: Results },
   { path: '/refund', component: Refund },
   { path: '/chat-entrance', component: ChatEntrance },
   { path: '/register', component: Register },
-
+  { path: '/media', component: Media },
   { path: '/login', component: Login },
   { path: '/guest-user', component: GuestUser },
   { path: '/chat-list', component: ChatList },
@@ -88,8 +92,7 @@ const publicRoutes = [
   { path: '/contact-us', component: Contact },
   { path: '/reset-password', component: ResetPassword },
 
-
-  { path: '/home-page', component: Sketch },
+  { path: '/home-page', component: Private }, //Viewer
   {
     /*
   { path: '/viewer', component: EnterPage },

@@ -197,7 +197,7 @@ const ChatHeader = ({ title, onBack, onBlockToggle, isBlocked }) => {
         )}
       </button>
     )}*/}
-        {/* onClick={() => setShowPremiumPopup(true)}
+        
         <button
           className="video-call-icon"
           onClick={() =>
@@ -205,7 +205,7 @@ const ChatHeader = ({ title, onBack, onBlockToggle, isBlocked }) => {
           }
         >
           <FaVideo size={20} />
-        </button>*/}
+        </button>
       </div>
       {showPremiumPopup && (
         <div className="video-premium-overlay">

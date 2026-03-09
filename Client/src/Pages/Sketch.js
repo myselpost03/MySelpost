@@ -153,8 +153,8 @@ const Sketch = () => {
     flexDirection: 'column',
     color: COLORS.textMain,
     position: 'relative',
-    filter: showModal ? 'blur(8px)' : 'none', // Blur content when modal is active
-    pointerEvents: showModal ? 'none' : 'auto', // Disable interaction
+    //filter: showModal ? 'blur(8px)' : 'none', // Blur content when modal is active
+    //pointerEvents: showModal ? 'none' : 'auto', // Disable interaction
   };
 
   const modalOverlayStyle = {
@@ -252,15 +252,15 @@ const Sketch = () => {
 
   return (
     <>
-      <style>
+      {/*<style>
         {`
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 `}
-      </style>
-      {isLoading && (
+      </style>*/}
+   {/*isLoading && (
         <>
          
           <div
@@ -293,9 +293,9 @@ const Sketch = () => {
            
           </div>
         </>
-      )}
+      )*/}
       {/* Onboarding Modal */}
-      {showModal && (
+      {/*showModal && (
         <div style={modalOverlayStyle}>
           <div style={modalStyle}>
             <h2 style={{ marginBottom: '10px' }}>Welcome!</h2>
@@ -357,7 +357,6 @@ const Sketch = () => {
                 I agree to the Terms and Conditions
               </label>
             </div>
-            {/* Notification Button inside Modal */}
             {!notificationAllowed ? (
               <button
                 onClick={handleSubscribe}
@@ -427,16 +426,16 @@ const Sketch = () => {
             </button>
           </div>
         </div>
-      )}
+      )*/}
 
       {/* Main Content */}
       <div style={containerStyle}>
         <Header />
-        {!showModal && (
+        {/*!showModal && (
           <div style={{ marginTop: '20%' }}>
             <AdsterraNativeBanner />
           </div>
-        )}
+        )*/}
         <main style={{ flex: 1, display: 'flex', padding: '20px' }}>
           <div style={cardStyle}>
             <div style={{ display: 'flex', gap: '12px' }}>

@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import { supabase } from '../Utils/supabaseClient';
 import InstaPopup from '../Components/InstaPopup';
 import Tip from './Tip';
-import createAdHandler from 'monetag-tg-sdk';
 import group from '../Assets/group.jpg';
+import kofi from "../Assets/kofi.jpg";
 import Header from '../Components/Header';
 import Demo from './Demo';
 import '../Styles/Private.css';
 
-const Private = () => {
-  const [step, setStep] = useState('home');
+const Results = () => {
+  const [step, setStep] = useState('results');
   const [activeTab, setActiveTab] = useState('home');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -26,17 +26,7 @@ const Private = () => {
   const [saveStatus, setSaveStatus] = useState('');
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [previewImage, setPreviewImage] = useState(null);
-const [boosts, setBoosts] = useState(7);
-const [boostCooldown, setBoostCooldown] = useState(0);
-// Store the target finish time instead of just a progress percentage
-const [finishTime, setFinishTime] = useState(null);
-// --- Boost Cooldown Effect ---
-useEffect(() => {
-  if (boostCooldown > 0) {
-    const timer = setInterval(() => setBoostCooldown(prev => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }
-}, [boostCooldown]);
+
   const navigate = useNavigate();
   // Carousel Data
   const carouselItems = [
@@ -46,35 +36,13 @@ useEffect(() => {
     localStorage.getItem('lastSearchTime') || null
   );
   const [isLocked, setIsLocked] = useState(false);
-  const [isAdLoading, setIsAdLoading] = useState(false); // UI state for buttons
+
   const postImages = React.useMemo(() => {
     return Array.from({ length: 9 }, (_, i) => ({
       id: i,
-      url: i === 0 ? group : `https://picsum.photos/seed/post${i}/300/300`,
+      url: i === 0 ? kofi : `https://picsum.photos/seed/post${i}/300/300`,
     }));
   }, []);
-
-  // --- Monetag Ad Trigger ---
-  const triggerAd = async (onSuccess) => {
-    if (typeof window.show_10702451 !== 'function') {
-      console.warn('Monetag SDK not loaded');
-      onSuccess(); // Proceed if ad fails to load
-      return;
-    }
-
-    setIsAdLoading(true);
-    try {
-      await window.show_10702451();
-      console.log('Ad watched successfully');
-      onSuccess();
-    } catch (e) {
-      console.log('Ad skipped or failed');
-      // Decide if you want to allow continuation even if skipped
-      onSuccess();
-    } finally {
-      setIsAdLoading(false);
-    }
-  };
 
   // Handlers
   const handleVIP = () => setShowPopup(true);
@@ -102,14 +70,6 @@ useEffect(() => {
       setTimeout(() => setSaveStatus(''), 4000);
     }
   };
-  const handleTabClick = (tab) => {
-    if (tab === 'recent' || tab === 'vault') {
-      triggerAd(() => setActiveTab(tab));
-    } else {
-      setActiveTab(tab);
-    }
-  };
-
   useEffect(() => {
     if (lastSearchTime) {
       const oneWeek = 7 * 24 * 60 * 60 * 1000;
@@ -141,58 +101,54 @@ useEffect(() => {
     return () => clearInterval(timer);
   }, []);
 
-// --- Updated Processing Logic ---
-useEffect(() => {
-  const TOTAL_DURATION = 3600000; // 1 hour in ms
+  useEffect(() => {
+    if (step === 'processing') {
+      const stages = [
+        'Establishing secure tunnel...',
+        'Overriding handshake protocol...',
+        'Bypassing SSL pinning...',
+        'Extracting encrypted shards...',
+        'Reassembling media packets...',
+        'Decrypting metadata...',
+        'Finalizing secure connection...',
+      ];
 
-  if (step === 'processing' && !finishTime) {
-    setFinishTime(Date.now() + TOTAL_DURATION);
-  }
+      let currentTick = 0;
 
-  if (finishTime) {
-    const timer = setInterval(() => {
-      const now = Date.now();
-      const remaining = finishTime - now;
+      // Interval set to 250ms (~25 seconds total)
+      const interval = setInterval(() => {
+        setStep((prevStep) => {
+          // Random increment logic:
+          // Sometimes it moves 1%, sometimes it "stalls" (0)
+          const increment = Math.random() > 0.3 ? 1 : 0;
+          currentTick += increment;
 
-      if (remaining <= 0) {
-        setProgress(100);
-        clearInterval(timer);
-        navigate('/results', { state: { username } });
-      } else {
-        // Progress is based on how much of the original duration is left
-        const p = ((TOTAL_DURATION - remaining) / TOTAL_DURATION) * 100;
-        setProgress(Math.min(p, 99));
-      }
-    }, 100);
-    return () => clearInterval(timer);
-  }
-}, [step, finishTime, navigate, username]);
+          const p = Math.min((currentTick / 100) * 100, 100);
+          setProgress(p);
 
-const handleBoost = async () => {
-  if (boosts <= 0 || boostCooldown > 0) return;
+          // Log update logic
+          const logIndex = Math.floor((p / 101) * stages.length);
+          setLog(stages[logIndex]);
 
-  await triggerAd(() => {
-    // Reduce remaining time by 1/7th of the original 1 hour
-    const reduction = 3600000 / 7; 
-    setFinishTime(prev => (prev ? prev - reduction : Date.now()));
-    
-    setBoosts(prev => prev - 1);
-    setBoostCooldown(30); // 30s cooldown
-  });
-};
- // Ensure this specific structure for your handleStartSearch
-const handleStartSearch = async () => {
-  if (isAdLoading) return; // Prevent double clicks
+          if (p >= 100) {
+            clearInterval(interval);
+            // 2 second "Hold" at 100% for dramatic effect
+            setTimeout(() => navigate('/results', { state: { username } }), 500);
+          }
+          return 'processing';
+        });
+      }, 250); // 250ms = slower, more deliberate pace
 
-  // We explicitly call triggerAd and pass the state updates as the callback
-  await triggerAd(() => {
+      return () => clearInterval(interval);
+    }
+  }, [step]);
+  const handleStartSearch = () => {
     const now = new Date().getTime();
     localStorage.setItem('lastSearchTime', now);
     setLastSearchTime(now);
     setIsLocked(true);
     setStep('processing');
-  });
-};
+  };
   return (
     <>
       <Header />
@@ -206,12 +162,11 @@ const handleStartSearch = async () => {
             </div>
           )}
           <div className="tab-nav">
-            {['recent', 'home', 'vault'].map((t) => (
+            {['recent', 'home', 'stories'].map((t) => (
               <button
                 key={t}
                 className={`tab-btn ${activeTab === t ? 'active' : ''}`}
-                onClick={() => handleTabClick(t)}
-                disabled={isAdLoading}
+                onClick={() => setActiveTab(t)}
               >
                 {t.toUpperCase()}
               </button>
@@ -235,15 +190,12 @@ const handleStartSearch = async () => {
                       onChange={(e) => setUsername(e.target.value)}
                     />
                   </div>
-
                   <button
                     className="primary-btn"
-                    disabled={!username  || isAdLoading}
+                    disabled={!username || isLocked}
                     onClick={handleStartSearch}
                   >
-                    {isAdLoading
-                      ? 'Loading Ad...'
-                      : 'START'}
+                    {isLocked ? '1 Search Allowed Per Week' : 'START'}
                   </button>
                 </>
               )}
@@ -268,18 +220,6 @@ const handleStartSearch = async () => {
                     </span>
                     <span className="sub-text">Decrypting Data...</span>
                   </div>
-                 <button 
-  className="boost-btn" 
-  style={{ backgroundColor: '#FFD700', color: '#000', padding: '10px', marginTop: '10px' }}
-  onClick={handleBoost}
-  disabled={boosts === 0 || boostCooldown > 0 || isAdLoading}
->
-  {boostCooldown > 0 
-    ? `Wait ${boostCooldown}s...` 
-    : boosts > 0 
-      ? `Boost Progress (${boosts} left)` 
-      : "Processing..."}
-</button>
                 </div>
               )}
 
@@ -358,6 +298,29 @@ const handleStartSearch = async () => {
               </div>
             </div>
           )}
+
+{activeTab === 'stories' && (
+  <div className="stories-view">
+    <p className="sub-text">Recent Stories of Target User</p>
+    <div className="stories-grid">
+      {[1, 2,3].map((num) => (
+        <div 
+          key={num} 
+          className="story-item" 
+          onClick={() => {
+            handleVIP();
+          }}
+        >
+          <div className="story-ring">
+            <img src={group} alt="Story" className="story-thumb" />
+            <div className="lock-overlay-small">🔒</div>
+          </div>
+          <span>Story {num}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
           {activeTab === 'vault' && (
             <div className="vault-view">
               <p className="sub-text">Recent Unlocked Media.</p>
@@ -400,4 +363,4 @@ const handleStartSearch = async () => {
   );
 };
 
-export default Private;
+export default Results;

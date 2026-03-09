@@ -1,158 +1,123 @@
-import React, { useEffect, useState } from 'react';
-import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
-import OneSignal from 'react-onesignal';
+import React, {useState, useEffect} from 'react';
+import UPI from './UPI';
+import Tip from './Tip';
+import '../Styles/Demo.css';
 
-export default function Demo() {
-  const [files, setFiles] = useState([]);
-  const [isDownloading, setIsDownloading] = useState(false); // Added loading state
-
-  const handleSubscribe = async () => {
-    try {
-      // Ask permission
-      await OneSignal.Notifications.requestPermission();
-
-      if (Notification.permission === 'granted') {
-        await OneSignal.User.PushSubscription.optIn();
-        const playerId = OneSignal.User.PushSubscription.id;
-        console.log('✅ Player ID:', playerId);
-      } else {
-        console.log('⚠️ Notification permission not granted');
-      }
-    } catch (err) {
-      console.error('❌ Error subscribing for push:', err);
-    }
-  };
-
+const Demo = ({
+  username,
+  carouselItems,
+  carouselIndex,
+  setCarouselIndex,
+  postImages,
+  handleContentLocker,
+  setPreviewImage
+}) => {
+  // Add a safety check here
+  const current = carouselItems && carouselItems[carouselIndex];
+const [showPopup, setShowPopup] = useState(false);
+  const [countryCode, setCountryCode] = useState(null);
   useEffect(() => {
-    const font = new FontFace(
-      'Poppins',
-      'url(https://fonts.gstatic.com/s/poppins/v20/pxiEyp8kv8JHgFVrJJfedw.woff2)'
+      fetch('https://ipwho.is/?fields=country_code')
+        .then((res) => res.json())
+        .then((data) => setCountryCode(data?.country_code || 'US'))
+        .catch(() => setCountryCode('US'));
+    }, []);
+  const nextSlide = () =>
+    setCarouselIndex((prev) =>
+      prev === carouselItems.length - 1 ? 0 : prev + 1
     );
-    font.load().then((loaded) => {
-      document.fonts.add(loaded);
-    });
-  }, []);
+  const prevSlide = () =>
+    setCarouselIndex((prev) =>
+      prev === 0 ? carouselItems.length - 1 : prev - 1
+    );
 
-  const handleFileChange = (e) => {
-    setFiles([...e.target.files]);
-  };
-
-  const processImage = (image) => {
-    return new Promise((resolve) => {
-      const userImg = new Image();
-      const templateImg = new Image();
-
-      templateImg.src = '/6.png';
-      templateImg.onload = () => {
-        userImg.src = URL.createObjectURL(image);
-        userImg.onload = () => {
-          const T_WIDTH = templateImg.width;
-          const T_HEIGHT = templateImg.height;
-
-          const canvas = document.createElement('canvas');
-          canvas.width = T_WIDTH;
-          canvas.height = T_HEIGHT;
-          const ctx = canvas.getContext('2d');
-
-          ctx.drawImage(templateImg, 0, 0, T_WIDTH, T_HEIGHT);
-
-          const paddingLeftRight = T_WIDTH * 0.05;
-          const paddingTop = T_HEIGHT * 0.3;
-          const paddingBottom = T_HEIGHT * 0.05;
-
-          const targetX = paddingLeftRight;
-          const targetY = paddingTop;
-          const targetW = T_WIDTH - paddingLeftRight * 2;
-          const targetH = T_HEIGHT - paddingTop - paddingBottom;
-
-          const imgRatio = userImg.width / userImg.height;
-          const targetRatio = targetW / targetH;
-
-          let drawWidth, drawHeight;
-
-          if (imgRatio > targetRatio) {
-            drawWidth = targetW;
-            drawHeight = targetW / imgRatio;
-          } else {
-            drawHeight = targetH;
-            drawWidth = targetH * imgRatio;
-          }
-
-          const offsetX = targetX + (targetW - drawWidth) / 2;
-          const offsetY = targetY;
-
-          ctx.drawImage(userImg, offsetX, offsetY, drawWidth, drawHeight);
-
-          canvas.toBlob(
-            (blob) => {
-              URL.revokeObjectURL(userImg.src);
-              resolve(blob);
-            },
-            'image/jpeg',
-            0.95
-          );
-        };
-      };
-    });
-  };
-
-  const downloadZip = async () => {
-    if (!files.length) return alert('Select images first!');
-
-    setIsDownloading(true); // Start loading
-
-    try {
-      const zip = new JSZip();
-
-      for (const file of files) {
-        const processed = await processImage(file);
-        zip.file(`processed_${file.name}`, processed);
-      }
-
-      const zipFile = await zip.generateAsync({ type: 'blob' });
-      saveAs(zipFile, 'processed_images.zip');
-    } catch (error) {
-      console.error('Download failed', error);
-      alert('Something went wrong during the download.');
-    } finally {
-      setIsDownloading(false); // End loading
-    }
-  };
-
+  // If data isn't ready yet, return null to prevent the crash
+  if (!current) return null;
+  
   return (
-    <div style={{ padding: 20, fontFamily: 'Poppins, sans-serif' }}>
-      <h2>Template Fit (No Crop + Margins)</h2>
-      <input
-        type="file"
-        multiple
-        accept="image/*"
-        onChange={handleFileChange}
-        disabled={isDownloading} // Disable input while processing
-      />
-      <p>{files.length} file(s) selected</p>
-      <button onClick={handleSubscribe}>Subscribe</button>
-      <button
-        onClick={downloadZip}
-        disabled={isDownloading || files.length === 0} // Disable button while processing
-        style={{
-          padding: '12px 24px',
-          marginTop: 10,
-          cursor: isDownloading ? 'not-allowed' : 'pointer',
-          backgroundColor: isDownloading ? '#ccc' : '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-        }}
-      >
-        {isDownloading ? 'Processing & Downloading...' : 'Download ZIP'}
-      </button>
+    <div className="carousel-root">
+      <div className="carousel-header-main">
+        <h2 className="results-title">
+          Results for Target User
+        </h2>
+      </div>
 
-      {isDownloading && (
-        <p style={{ color: '#007bff', marginTop: '10px' }}>
-          Please wait, generating your files...
-        </p>
-      )}
+      <div className="modern-carousel">
+        <div className="carousel-nav-header">
+          <button className="nav-arrow" onClick={prevSlide}>
+            ‹
+          </button>
+
+          <div className="carousel-title-box">
+            <span className="type-icon">{current.icon}</span>
+            <h3 className="carousel-main-title">{current.title}</h3>
+            <div className="indicator-dots">
+              {carouselItems.map((_, i) => (
+                <div
+                  key={i}
+                  className={`dot-bar ${i === carouselIndex ? 'active' : ''}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <button className="nav-arrow" onClick={nextSlide}>
+            ›
+          </button>
+        </div>
+
+        {/* Content Area - No 'key' here to prevent flickering */}
+        <div className="carousel-content-area">
+          {current.type === 'media' ? (
+            <div className="modern-grid fade-in">
+            {postImages.map((img, index) => {
+              const isUnlocked = index === 0; // First image logic
+              return (
+                <div 
+                  key={img.id} 
+                  className={`modern-blur-item ${isUnlocked ? 'unlocked-preview' : ''}`}
+                  onClick={() => isUnlocked && setPreviewImage(img.url)}
+                >
+                  <img 
+                    src={img.url} 
+                    alt="" 
+                    className="img-layer" 
+                    style={isUnlocked ? { filter: 'none', transform: 'none' } : {}} 
+                  />
+                  
+                  {!isUnlocked && (
+                    <div className="lock-overlay-v2">
+                      <span className="lock-icon-mini">🔒</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          ) : (
+            <div className="modern-list fade-in">
+              {[...Array(current.count)].map((_, i) => (
+                <div key={i} className="modern-list-item">
+                  <div className="skeleton-avatar" />
+                  <div className="skeleton-line" />
+                  <span className="lock-tag">Encrypted</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button className="unlock-full-btn" onClick={handleContentLocker}>
+          Download All Posts
+        </button>
+      </div>
+       {countryCode === 'IN' ? (
+                <UPI isOpen={showPopup} onClose={() => setShowPopup(false)} />
+              ) : (
+                <Tip isOpen={showPopup} onClose={() => setShowPopup(false)} />
+              )}
     </div>
   );
-}
+};
+
+export default Demo;

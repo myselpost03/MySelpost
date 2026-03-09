@@ -1,3 +1,325 @@
+.stories-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 0px;
+}
+.boost-btn {
+  background-color: #FFD700;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.boost-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.story-item {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s;
+}
+.story-item:hover {
+  transform: scale(1.05);
+}
+.story-ring {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border: 3px solid #f09433;
+  border-radius: 50%;
+  overflow: hidden;
+}
+.lock-overlay-small {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}/* Unlocked styling */
+.unlocked-preview {
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.unlocked-preview:hover {
+  transform: scale(1.02);
+}
+
+/* Full Screen Modal */
+.full-screen-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(53, 51, 51, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 80vh;
+}
+
+.modal-content img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 0 30px rgba(66, 64, 64, 0.5);
+}
+
+.close-modal {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 35px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}/* --- Realistic Glass Container --- */
+.modern-carousel {
+  background: linear-gradient(145deg, rgba(20, 20, 20, 0.9), rgba(40, 40, 40, 0.7));
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  margin-top: 20px;
+  /* Prevent layout jump */
+  min-height: 400px; 
+}
+
+/* --- Header & Nav --- */
+.carousel-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.nav-arrow {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px; /* Square with slight roundness looks more "pro" than circles */
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.nav-arrow:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* --- Content Transitions (Prevents Flickering) --- */
+.carousel-content-area {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+  /* Removed the 'key' from React to prevent unmounting flicker */
+}
+
+/* --- Authentic Media Grid --- */
+.modern-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.modern-blur-item {
+  position: relative;
+  aspect-ratio: 1/1;
+  background: #1a1a1a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.img-layer {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(20px) grayscale(0.5); /* Higher blur + grayscale for realism */
+  transform: scale(1.1);
+}
+
+.lock-overlay-v2 {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.lock-icon-mini {
+  font-size: 18px;
+  opacity: 0.8;
+  filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+}
+
+/* --- Pro List View (Authentic Skeleton) --- */
+.modern-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px; /* Divider look */
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.modern-list-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #161616;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.skeleton-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #2a2a2a;
+}
+
+.skeleton-line {
+  flex: 1;
+  height: 8px;
+  margin: 0 15px;
+  background: #2a2a2a;
+  border-radius: 4px;
+  max-width: 120px;
+}
+
+/* --- Indicator Bars --- */
+.indicator-dots {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.dot-bar {
+  width: 12px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.dot-bar.active {
+  background: #ffffff;
+  width: 24px;
+}
+
+/* --- High-Quality CTA --- */
+.unlock-full-btn {
+  width: 100%;
+  margin-top: 25px;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: #ffffff;
+  color: #000;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: transform 0.1s active;
+}
+
+.unlock-full-btn:active {
+  transform: scale(0.98);
+}
+/* MEDIA GRID */
+.blur-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.blur-media-item {
+  height: 100px;
+  border-radius: 10px;
+  background: linear-gradient(135deg,#444,#222);
+  filter: blur(6px);
+  position: relative;
+}
+
+.lock-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  backdrop-filter: blur(4px);
+}
+
+/* LIST BLUR */
+.blur-list {
+  margin-bottom: 15px;
+}
+
+.blur-list-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.avatar-placeholder {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #444;
+  filter: blur(5px);
+  margin-right: 10px;
+}
+
+.text-placeholder {
+  height: 12px;
+  width: 60%;
+  border-radius: 6px;
+  background: #555;
+  filter: blur(5px);
+}
+
+/* BUTTON */
+.download-btn {
+  background: linear-gradient(135deg,#667eea,#764ba2);
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.full-width {
+  width: 100%;
+}
 .processing-wrapper {
   margin: 10px 0;
   animation: slideUp 0.4s ease-out;
@@ -164,7 +486,7 @@
 }
 
 .notify-submit {
-    padding: 0 15px;
+    padding: 0 5px;
     background: #b6df9e;
     border: none;
     outline: none;

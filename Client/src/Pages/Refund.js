@@ -32,11 +32,11 @@ const Refund = () => {
 
             <form onSubmit={handleRefundSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <div style={{ textAlign: 'left' }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#999', marginLeft: '5px' }}>TRANSACTION ID</label>
+                <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#999', marginLeft: '5px' }}>Your Email</label>
                 <input 
                   required 
                   type="text" 
-                  placeholder="e.g. UPI123456789" 
+                  placeholder="e.g. john@gmail.com" 
                   className="input-field" 
                   style={{ marginTop: '5px' }}
                 />
@@ -45,7 +45,7 @@ const Refund = () => {
               <div style={{ textAlign: 'left' }}>
                 <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#999', marginLeft: '5px' }}>REASON FOR REFUND</label>
                 <select className="input-field" style={{ marginTop: '5px', background: '#fff' }}>
-                  <option>Didn't find matches</option>
+                  <option>Didn't get what expected</option>
                   <option>Changed my mind</option>
                   <option>Technical error</option>
                   <option>Other</option>
@@ -57,18 +57,18 @@ const Refund = () => {
               </button>
             </form>
 
-            <div style={{ marginTop: '30px', padding: '15px', borderRadius: '10px', background: '#f8f9fa', border: '1px dashed #ccc' }}>
+           {/* <div style={{ marginTop: '30px', padding: '15px', borderRadius: '10px', background: '#f8f9fa', border: '1px dashed #ccc' }}>
               <p style={{ fontSize: '0.7rem', color: '#777', margin: 0, lineHeight: '1.4' }}>
                 Note: Once a refund is initiated, your position in the queue will be permanently deleted and access will be revoked.
               </p>
-            </div>
+            </div>*/}
           </div>
         ) : (
           <div className="fade-in" style={{ textAlign: 'center', marginTop: '50px' }}>
             <div className="success-icon" style={{ fontSize: '4rem' }}>✅</div>
             <h2 style={{ color: '#2ecc71' }}>Request Received</h2>
             <p style={{ fontSize: '0.9rem', color: '#666' }}>
-              Your refund for <strong>₹1.00</strong> is being processed.<br />
+              Your refund for <strong>$1.00</strong> is being processed.<br />
               Ref ID: <strong>#IV-{Math.floor(Math.random() * 90000) + 10000}</strong>
             </p>
             <div style={{ margin: '20px auto', width: '100%', height: '4px', background: '#eee', borderRadius: '2px', overflow: 'hidden' }}>
