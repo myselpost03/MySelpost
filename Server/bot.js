@@ -1,33 +1,37 @@
-const { Telegraf, Markup } = require('telegraf');
+const express = require("express");
+const { Telegraf, Markup } = require("telegraf");
 
-// Replace 'YOUR_BOT_TOKEN_HERE' with the token you got from BotFather
-const bot = new Telegraf('8762626172:AAEMhGw_ZpLyCQyVkcrQNLu2DflujYffT08');
+const bot = new Telegraf(process.env.BOT_TOKEN);
+const app = express();
 
-// This handles the /start command
-bot.start((ctx) => {
-    ctx.reply('Welcome buddy! Type /view to initiate the process.');
+// Express needs to parse JSON for webhooks
+app.use(express.json());
+
+// Set up the webhook path
+const PORT = process.env.PORT || 10000;
+const WEBHOOK_PATH = `/telegraf/${bot.secretPathComponent()}`;
+
+// Tell Telegraf to use webhooks
+bot.telegram.setWebhook(`https://bot-1hr9.onrender.com${WEBHOOK_PATH}`);
+app.use(bot.webhookCallback(WEBHOOK_PATH));
+
+// Your commands
+bot.start((ctx) => ctx.reply("Welcome! Type /view"));
+bot.command("view", (ctx) => {
+  ctx.reply("Click the button below to open the Insta Lens:", {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          Markup.button.webApp(
+            "Open App",
+            "https://myselpost.com" // Replace with your URL
+          ),
+        ],
+      ],
+    },
+  });
 });
 
-bot.command('view', (ctx) => {
-    ctx.reply('Click the button below to open the Insta Lens:', {
-        reply_markup: {
-            inline_keyboard: [
-                [
-                    Markup.button.webApp(
-                        'Open App', 
-                        'https://myselpost.com' // Replace with your URL
-                    )
-                ]
-            ]
-        }
-    });
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
-
-// Launch the bot
-bot.launch();
-
-console.log('Bot is running... press Ctrl+C to stop.');
-
-// Enable graceful stop
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
