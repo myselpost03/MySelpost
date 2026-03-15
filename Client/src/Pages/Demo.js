@@ -1,123 +1,43 @@
-import React, {useState, useEffect} from 'react';
-import UPI from './UPI';
-import Tip from './Tip';
-import '../Styles/Demo.css';
+import React from 'react';
+// Move styles to a CSS file for better mobile performance
+import '../Styles/Demo.css'; 
 
-const Demo = ({
-  username,
-  carouselItems,
-  carouselIndex,
-  setCarouselIndex,
-  postImages,
-  handleContentLocker,
-  setPreviewImage
-}) => {
-  // Add a safety check here
-  const current = carouselItems && carouselItems[carouselIndex];
-const [showPopup, setShowPopup] = useState(false);
-  const [countryCode, setCountryCode] = useState(null);
-  useEffect(() => {
-      fetch('https://ipwho.is/?fields=country_code')
-        .then((res) => res.json())
-        .then((data) => setCountryCode(data?.country_code || 'US'))
-        .catch(() => setCountryCode('US'));
-    }, []);
-  const nextSlide = () =>
-    setCarouselIndex((prev) =>
-      prev === carouselItems.length - 1 ? 0 : prev + 1
-    );
-  const prevSlide = () =>
-    setCarouselIndex((prev) =>
-      prev === 0 ? carouselItems.length - 1 : prev - 1
-    );
+ const Demo = () => {
+  const bots = [
+    { id: 1, name: "BotFather", username: "botfather", avatar: "https://i.pravatar.cc/100?u=1" },
+    { id: 2, name: "Music Downloader", username: "music_bot", avatar: "https://i.pravatar.cc/100?u=2" },
+    { id: 3, name: "Currency Converter", username: "exchanger_bot", avatar: "https://i.pravatar.cc/100?u=3" },
+  ];
 
-  // If data isn't ready yet, return null to prevent the crash
-  if (!current) return null;
-  
   return (
-    <div className="carousel-root">
-      <div className="carousel-header-main">
-        <h2 className="results-title">
-          Results for Target User
-        </h2>
-      </div>
+    <div className="bot-page">
+      <header className="navbar">
+        <span className="logo">MySelpost</span>
+      </header>
 
-      <div className="modern-carousel">
-        <div className="carousel-nav-header">
-          <button className="nav-arrow" onClick={prevSlide}>
-            ‹
-          </button>
-
-          <div className="carousel-title-box">
-            <span className="type-icon">{current.icon}</span>
-            <h3 className="carousel-main-title">{current.title}</h3>
-            <div className="indicator-dots">
-              {carouselItems.map((_, i) => (
-                <div
-                  key={i}
-                  className={`dot-bar ${i === carouselIndex ? 'active' : ''}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          <button className="nav-arrow" onClick={nextSlide}>
-            ›
-          </button>
+      <main className="container">
+        <div className="hero">
+          <h1>Telegram Bot Directory</h1>
+          <p>Discover powerful tools for your Telegram experience.</p>
         </div>
 
-        {/* Content Area - No 'key' here to prevent flickering */}
-        <div className="carousel-content-area">
-          {current.type === 'media' ? (
-            <div className="modern-grid fade-in">
-            {postImages.map((img, index) => {
-              const isUnlocked = index === 0; // First image logic
-              return (
-                <div 
-                  key={img.id} 
-                  className={`modern-blur-item ${isUnlocked ? 'unlocked-preview' : ''}`}
-                  onClick={() => isUnlocked && setPreviewImage(img.url)}
-                >
-                  <img 
-                    src={img.url} 
-                    alt="" 
-                    className="img-layer" 
-                    style={isUnlocked ? { filter: 'none', transform: 'none' } : {}} 
-                  />
-                  
-                  {!isUnlocked && (
-                    <div className="lock-overlay-v2">
-                      <span className="lock-icon-mini">🔒</span>
-                    </div>
-                  )}
+        <div className="bot-grid">
+          {bots.map(bot => (
+            <div key={bot.id} className="bot-card">
+              <div className="bot-profile">
+                <img src={bot.avatar} alt={bot.name} className="bot-avatar" />
+                <div className="bot-info">
+                  <h3>{bot.name}</h3>
+                  <span className="bot-handle">@{bot.username}</span>
                 </div>
-              );
-            })}
-          </div>
-          ) : (
-            <div className="modern-list fade-in">
-              {[...Array(current.count)].map((_, i) => (
-                <div key={i} className="modern-list-item">
-                  <div className="skeleton-avatar" />
-                  <div className="skeleton-line" />
-                  <span className="lock-tag">Encrypted</span>
-                </div>
-              ))}
+              </div>
+              <button className="launch-btn" onClick={() => window.open(`https://t.me/${bot.username}`)}>
+                Launch Bot
+              </button>
             </div>
-          )}
+          ))}
         </div>
-
-        <button className="unlock-full-btn" onClick={handleContentLocker}>
-          Download All Posts
-        </button>
-      </div>
-       {countryCode === 'IN' ? (
-                <UPI isOpen={showPopup} onClose={() => setShowPopup(false)} />
-              ) : (
-                <Tip isOpen={showPopup} onClose={() => setShowPopup(false)} />
-              )}
+      </main>
     </div>
   );
-};
-
-export default Demo;
+};export default Demo;

@@ -1,176 +1,33 @@
-/* Container & Title */
-.carousel-root {
-  width: 100%;
-  max-width: 450px;
-  margin: 0 auto;
-  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
+.bot-page { background-color: #0e1621; min-height: 100vh; color: #fff; font-family: 'Inter', sans-serif; }
+.navbar { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.logo { font-weight: 800; font-size: 1.2rem; color: #2aabee; }
+.container { padding: 20px; max-width: 600px; margin: 0 auto; }
+.hero { text-align: center; margin-bottom: 40px; }
+.bot-grid { display: grid; gap: 16px; }
 
-.results-title {
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: rgba(46, 45, 45, 0.5);
-  margin-bottom: 15px;
-  text-align: center;
-}
-
-.results-title span {
-  color: #302f2f;
-  font-weight: 700;
-}
-
-/* Glassmorphism Card */
-.modern-carousel {
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 24px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-
-/* Navigation */
-.carousel-nav-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 25px;
-}
-
-.nav-arrow {
+.bot-card { 
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #fff;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 1.5rem;
-  line-height: 0;
-  transition: all 0.2s ease;
-}
-
-.nav-arrow:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.carousel-main-title {
-  font-size: 1rem;
-  font-weight: 500;
-  margin: 4px 0;
-  color: #efefef;
-}
-
-/* Authentic Grid */
-.modern-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.modern-blur-item {
-  position: relative;
-  aspect-ratio: 1/1;
-  border-radius: 6px;
-  background: #000;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.05);
-}
-
-.img-layer {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: blur(15px) brightness(0.5);
-  transform: scale(1.1);
-}
-
-/* Authentic List */
-.modern-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.modern-list-item {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 12px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-}
-
-.skeleton-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.skeleton-line {
-  flex: 1;
-  height: 6px;
-  margin: 0 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-}
-
-.lock-tag {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.3);
-  letter-spacing: 1px;
-}
-
-/* Realistic Button */
-.unlock-full-btn {
-  width: 100%;
-  margin-top: 24px;
   padding: 16px;
-  background: #fff;
-  color: #000;
+  border-radius: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.bot-card:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.06); }
+
+.bot-profile { display: flex; align-items: center; gap: 15px; }
+.bot-avatar { width: 48px; height: 48px; border-radius: 12px; }
+.bot-handle { color: #2aabee; font-size: 0.85rem; }
+
+.launch-btn {
+  background: #2aabee;
+  color: white;
   border: none;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 0.8rem;
-  letter-spacing: 1.5px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
-  transition: transform 0.1s ease;
-}
-
-.unlock-full-btn:active {
-  transform: scale(0.97);
-}
-
-/* Status Indicators */
-.dot-bar {
-  width: 8px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.1);
-  margin: 0 2px;
-  transition: 0.3s;
-}
-
-.dot-bar.active {
-  background: #fff;
-  width: 18px;
-}
-
-/* Animations */
-.fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
 }

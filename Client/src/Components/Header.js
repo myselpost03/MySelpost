@@ -228,7 +228,7 @@ const Header = () => {
     <header className="header">
       <div className="logo-container">
         <Link to="/" className="logo-header">
-          InstaLens
+          MySelpost
         </Link>
         {/*{user && !isMobile && (
           <div className="feature-banner-container">

@@ -1,3 +1,89 @@
+.tele-notice{
+font-family: 'poppins', serif;
+color: #555;
+}
+.telegram-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(90deg, #2aabee 0%, #229ed9 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+.inline-notice-gradient {
+  margin-top: 15%;
+  padding: 15px; /* Reduced from default/larger padding */
+  border-radius: 12px;
+  background: #f0f8ff; /* Optional: light background to contrast the button */
+  border: 1px solid #d1e9ff;
+}
+
+.inline-notice-gradient h3 {
+  margin-top: 0;
+  margin-bottom: 5px; /* Tightened space */
+  font-size: 1.1rem;
+}
+
+.inline-notice-gradient p {
+  margin: 0 0 10px 0; /* Tightened space */
+  font-size: 0.9rem;
+}
+
+.telegram-btn {
+  display: inline-block;
+  padding: 8px 16px; /* Smaller padding for a more compact button */
+  background: linear-gradient(90deg, #2aabee 0%, #229ed9 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: opacity 0.2s ease;
+}
+
+.telegram-btn:hover {
+  opacity: 0.9;
+}
+.telegram-btn:hover {
+  opacity: 0.9;
+}.inline-notice-gradient {
+  background: linear-gradient(180deg, #fff9c4 0%, #fff176 100%);
+  border: 1px solid #fbc02d;
+  border-radius: 8px;
+  padding: 10px; /* Reduced padding for smaller footprint */
+  margin-bottom: 15px;
+  text-align: center;
+  color: #5d4037;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px; /* Tighten the space between elements */
+}
+
+.inline-notice-gradient .notice-icon {
+  font-size: 1.2rem;
+}
+
+.inline-notice-gradient h3 {
+  margin: 0;
+  font-size: 0.95rem; /* Smaller header */
+}
+
+.inline-notice-gradient p {
+  margin: 0;
+  font-size: 0.8rem; /* Smaller text */
+}
+
+.inline-notice-gradient .primary-btn {
+  padding: 5px 15px;
+  font-size: 0.8rem;
+  margin-top: 5px;
+  min-width: auto;
+}
+
+
 .stories-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -834,6 +920,20 @@ label {
   cursor: pointer;
   transition: all 0.2s;
 }
+
+.primary-btn-disabled {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  background: #1a1a1a;
+  color: white;
+  opacity: 0.5;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
 
 .primary-btn:active { transform: scale(0.98); }
 

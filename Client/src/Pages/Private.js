@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
+import OneSignal from 'react-onesignal';
+
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../Utils/supabaseClient';
 import InstaPopup from '../Components/InstaPopup';
 import Tip from './Tip';
-import createAdHandler from 'monetag-tg-sdk';
+import TelegramPopup from '../Components/TelegramPopup';
 import group from '../Assets/group.jpg';
 import Header from '../Components/Header';
-import Demo from './Demo';
+import Result from './Result';
+import useTelegramMiniApp from '../Hooks/useTelegramMiniApp';
 import '../Styles/Private.css';
 
 const Private = () => {
@@ -18,6 +21,13 @@ const Private = () => {
   const [onlineUsers, setOnlineUsers] = useState(
     Math.floor(Math.random() * 1000) + 9000
   );
+  const [showModal, setShowModal] = useState(false);
+  const [gender, setGender] = useState('');
+  const [agreed, setAgreed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [notificationAllowed, setNotificationAllowed] = useState(false);
+  const [checkingPermission, setCheckingPermission] = useState(true);
+
   const [log, setLog] = useState('Initializing secure handshake...');
   const [queuePos] = useState(Math.floor(Math.random() * 200) + 114);
   const [showPopup, setShowPopup] = useState(false);
@@ -26,27 +36,38 @@ const Private = () => {
   const [saveStatus, setSaveStatus] = useState('');
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [previewImage, setPreviewImage] = useState(null);
-const [boosts, setBoosts] = useState(7);
-const [boostCooldown, setBoostCooldown] = useState(0);
-// Store the target finish time instead of just a progress percentage
-const [finishTime, setFinishTime] = useState(null);
-// --- Boost Cooldown Effect ---
-useEffect(() => {
-  if (boostCooldown > 0) {
-    const timer = setInterval(() => setBoostCooldown(prev => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }
-}, [boostCooldown]);
+  const [boosts, setBoosts] = useState(7);
+  const [boostCooldown, setBoostCooldown] = useState(0);
+  // Store the target finish time instead of just a progress percentage
+  const [finishTime, setFinishTime] = useState(null);
+  const adShowRef = useRef(null);
+  const isTelegram =
+    navigator.userAgent.toLowerCase().includes('telegram') ||
+    !!window?.Telegram?.WebApp;
+
+  useEffect(() => {
+    if (boostCooldown > 0) {
+      const timer = setInterval(
+        () => setBoostCooldown((prev) => prev - 1),
+        1000
+      );
+      return () => clearInterval(timer);
+    }
+  }, [boostCooldown]);
+
   const navigate = useNavigate();
   // Carousel Data
   const carouselItems = [
     { type: 'media', title: 'Posts History', count: 9, icon: '📸' },
   ];
+
   const [lastSearchTime, setLastSearchTime] = useState(
     localStorage.getItem('lastSearchTime') || null
   );
+
   const [isLocked, setIsLocked] = useState(false);
-  const [isAdLoading, setIsAdLoading] = useState(false); // UI state for buttons
+  const [isAdLoading, setIsAdLoading] = useState(false);
+
   const postImages = React.useMemo(() => {
     return Array.from({ length: 9 }, (_, i) => ({
       id: i,
@@ -54,30 +75,141 @@ useEffect(() => {
     }));
   }, []);
 
-  // --- Monetag Ad Trigger ---
-  const triggerAd = async (onSuccess) => {
-    if (typeof window.show_10702451 !== 'function') {
-      console.warn('Monetag SDK not loaded');
-      onSuccess(); // Proceed if ad fails to load
+  const COLORS = {
+    gradient: 'linear-gradient(135deg, #ff758c, #ff7eb3)',
+    bg: '#FFF5F7',
+    textMain: '#2D3748',
+    textMuted: '#718096',
+    primary: '#ff758c',
+    border: '#FED7E2',
+    white: '#FFFFFF',
+    success: '#ED64A6',
+    disabled: '#FFD1DC',
+    insta: '#E4405F',
+  };
+
+  const spinnerStyle = {
+    width: '24px',
+    height: '24px',
+    border: '3px solid #f3f3f3',
+    borderTop: '3px solid #ff758c',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  };
+
+  // --- OneSignal Permission Check ---
+  useEffect(() => {
+    const checkPermission = async () => {
+      try {
+        // Check existing permission
+        if (Notification.permission === 'granted') {
+          setNotificationAllowed(true);
+          await OneSignal.User.PushSubscription.optIn();
+        } else {
+          setNotificationAllowed(false);
+        }
+      } catch (err) {
+        console.error(err);
+        setNotificationAllowed(false);
+      } finally {
+        setCheckingPermission(false);
+      }
+    };
+
+    checkPermission();
+  }, []);
+
+  const handleSubscribe = async () => {
+    try {
+      const permission = await OneSignal.Notifications.requestPermission();
+
+      if (permission === true || Notification.permission === 'granted') {
+        await OneSignal.User.PushSubscription.optIn();
+
+        const playerId = OneSignal.User.PushSubscription.id;
+        console.log('✅ Player ID:', playerId);
+
+        setNotificationAllowed(true);
+      } else {
+        console.log('❌ Permission denied');
+        setNotificationAllowed(false);
+      }
+    } catch (err) {
+      console.error('❌ Error subscribing:', err);
+      setNotificationAllowed(false);
+    }
+  };
+  // Check localStorage on mount
+  useEffect(() => {
+    // Do not show modal inside Telegram
+    if (isTelegram) {
+      setShowModal(false);
       return;
     }
 
-    setIsAdLoading(true);
-    try {
-      await window.show_10702451();
-      console.log('Ad watched successfully');
+    const hasOnboarded = localStorage.getItem('user_onboarded');
+
+    if (!hasOnboarded) {
+      setShowModal(true);
+    }
+  }, [isTelegram]);
+
+  const handleOnboardingSubmit = () => {
+    if (gender && agreed) {
+      localStorage.setItem('user_onboarded', 'true');
+      localStorage.setItem('user_gender', gender);
+
+      setShowModal(false); // close modal first
+      setIsLoading(true); // show main loader
+
+      setTimeout(() => {
+        setIsLoading(false); // hide loader after 3 seconds
+      }, 3000);
+    }
+  };
+
+  // --- Initialize Onclicka Ad ---
+  useEffect(() => {
+    if (window.initCdTma) {
+      window
+        .initCdTma({ id: '6113234' }) // Replace with your actual ID
+        .then((show) => {
+          adShowRef.current = show;
+        })
+        .catch((e) => console.error('Ad Init Error:', e));
+    }
+  }, []);
+
+  // --- Updated triggerAd for better UI feedback ---
+  const triggerAd = async (onSuccess) => {
+    // Check if SDK is even present
+    if (typeof adShowRef.current !== 'function') {
+      console.warn('Ad SDK not initialized yet.');
+      // Optional: add a small delay or toast message here
       onSuccess();
+      return;
+    }
+
+    setIsAdLoading(true); // This sets the button text to "Loading Ad..."
+
+    try {
+      // Awaiting the actual ad display process
+      await adShowRef.current();
+      console.log('tma ad played');
+      onSuccess(); // Execute the intended action (e.g., setStep, setActiveTab)
     } catch (e) {
-      console.log('Ad skipped or failed');
-      // Decide if you want to allow continuation even if skipped
+      console.error('Ad display error:', e);
+      // You may want to prevent navigation if the ad is required
+      // If you want to force success even on error, keep this:
       onSuccess();
     } finally {
-      setIsAdLoading(false);
+      setIsAdLoading(false); // Reset loading state
     }
   };
 
   // Handlers
   const handleVIP = () => setShowPopup(true);
+
   const handleContentLocker = () => {
     window.location.href = 'https://rapid-links.com/s?DN8sU26j';
   };
@@ -102,8 +234,16 @@ useEffect(() => {
       setTimeout(() => setSaveStatus(''), 4000);
     }
   };
+
   const handleTabClick = (tab) => {
-    if (tab === 'recent' || tab === 'vault') {
+    // If user is on website (not Telegram)
+    if (!isTelegram && (tab === 'recent' || tab === 'vault')) {
+      setShowPopup(true);
+      return;
+    }
+
+    // Telegram users can access normally
+    if (isTelegram && (tab === 'recent' || tab === 'vault')) {
       triggerAd(() => setActiveTab(tab));
     } else {
       setActiveTab(tab);
@@ -141,62 +281,117 @@ useEffect(() => {
     return () => clearInterval(timer);
   }, []);
 
-// --- Updated Processing Logic ---
-useEffect(() => {
-  const TOTAL_DURATION = 3600000; // 1 hour in ms
+  // --- Updated Processing Logic ---
+  useEffect(() => {
+    const TOTAL_DURATION = 3600000; // 1 hour in ms
 
-  if (step === 'processing' && !finishTime) {
-    setFinishTime(Date.now() + TOTAL_DURATION);
-  }
+    if (step === 'processing' && !finishTime) {
+      setFinishTime(Date.now() + TOTAL_DURATION);
+    }
 
-  if (finishTime) {
-    const timer = setInterval(() => {
-      const now = Date.now();
-      const remaining = finishTime - now;
+    if (finishTime) {
+      const timer = setInterval(() => {
+        const now = Date.now();
+        const remaining = finishTime - now;
 
-      if (remaining <= 0) {
-        setProgress(100);
-        clearInterval(timer);
-        navigate('/results', { state: { username } });
-      } else {
-        // Progress is based on how much of the original duration is left
-        const p = ((TOTAL_DURATION - remaining) / TOTAL_DURATION) * 100;
-        setProgress(Math.min(p, 99));
-      }
-    }, 100);
-    return () => clearInterval(timer);
-  }
-}, [step, finishTime, navigate, username]);
+        if (remaining <= 0) {
+          setProgress(100);
+          clearInterval(timer);
+          navigate('/results', { state: { username } });
+        } else {
+          // Progress is based on how much of the original duration is left
+          const p = ((TOTAL_DURATION - remaining) / TOTAL_DURATION) * 100;
+          setProgress(Math.min(p, 99));
+        }
+      }, 100);
+      return () => clearInterval(timer);
+    }
+  }, [step, finishTime, navigate, username]);
 
-const handleBoost = async () => {
-  if (boosts <= 0 || boostCooldown > 0) return;
+  const handleBoost = async () => {
+    if (boosts <= 0 || boostCooldown > 0) return;
 
-  await triggerAd(() => {
-    // Reduce remaining time by 1/7th of the original 1 hour
-    const reduction = 3600000 / 7; 
-    setFinishTime(prev => (prev ? prev - reduction : Date.now()));
-    
-    setBoosts(prev => prev - 1);
-    setBoostCooldown(30); // 30s cooldown
-  });
-};
- // Ensure this specific structure for your handleStartSearch
-const handleStartSearch = async () => {
-  if (isAdLoading) return; // Prevent double clicks
+    await triggerAd(() => {
+      // Reduce remaining time by 1/7th of the original 1 hour
+      const reduction = 3600000 / 7;
+      setFinishTime((prev) => (prev ? prev - reduction : Date.now()));
 
-  // We explicitly call triggerAd and pass the state updates as the callback
-  await triggerAd(() => {
-    const now = new Date().getTime();
-    localStorage.setItem('lastSearchTime', now);
-    setLastSearchTime(now);
-    setIsLocked(true);
-    setStep('processing');
-  });
-};
+      setBoosts((prev) => prev - 1);
+      setBoostCooldown(30); // 30s cooldown
+    });
+  };
+
+  const handleStartClick = () => {
+    if (!username) return;
+
+    // If user is on normal website
+    if (!isTelegram) {
+      setShowPopup(true);
+      return;
+    }
+
+    // If inside Telegram
+    handleStartSearch();
+  };
+  // Ensure this specific structure for your handleStartSearch
+  const handleStartSearch = async () => {
+    if (isAdLoading) return; // Prevent double clicks
+
+    // We explicitly call triggerAd and pass the state updates as the callback
+    await triggerAd(() => {
+      const now = new Date().getTime();
+      localStorage.setItem('lastSearchTime', now);
+      setLastSearchTime(now);
+      setIsLocked(true);
+      setStep('processing');
+    });
+  };
+
+  const modalOverlayStyle = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    pointerEvents: 'auto', // Re-enable pointer events for the modal itself
+  };
+
+  const modalStyle = {
+    background: '#fff',
+    padding: '40px',
+    borderRadius: '24px',
+    width: '90%',
+    maxWidth: '400px',
+    textAlign: 'center',
+    boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+  };
+
   return (
     <>
       <Header />
-      <div className="bg-container">
+      <div className="bg-container" style={{ flexDirection: 'column' }}>
+        {!isTelegram && (
+          <div className="inline-notice-gradient">
+            <h3>Important Update 📢</h3>
+            <p className="tele-notice">
+              We have shifted our services to our official Telegram bot.
+            </p>
+            <a
+              href="https://t.me/instalens_bot/instalens"
+              target="_blank"
+              rel="noreferrer"
+              className="telegram-btn"
+            >
+              Join @instalens_bot
+            </a>
+          </div>
+        )}
+
         <div className="glass-card">
           {step !== 'results' && (
             <div className="live-indicator">
@@ -205,6 +400,7 @@ const handleStartSearch = async () => {
               <span style={{ marginLeft: '4px', opacity: 0.6 }}>Online</span>
             </div>
           )}
+
           <div className="tab-nav">
             {['recent', 'home', 'vault'].map((t) => (
               <button
@@ -222,8 +418,12 @@ const handleStartSearch = async () => {
             <div className="fade-content">
               {step === 'home' && (
                 <>
-                  <h2 className="title-text">Insta Viewer</h2>
-                  <p className="sub-text">Enter Target ID to scan profile.</p>
+                  <h2 className="title-text" style={{ whiteSpace: 'nowrap' }}>
+                    Private Insta Viewer
+                  </h2>
+                  <p className="sub-text">
+                    Enter User ID to View Private Account.
+                  </p>
                   <div className="input-group-modern">
                     <label className="input-label-premium">
                       👤 Target Profile
@@ -235,14 +435,58 @@ const handleStartSearch = async () => {
                       onChange={(e) => setUsername(e.target.value)}
                     />
                   </div>
+                  {!notificationAllowed && !isTelegram && (
+                    <button
+                      onClick={handleSubscribe}
+                      style={{
+                        width: '100%',
+                        marginTop: '12px',
+                        marginBottom: '10px',
+                        background: '#f8f9fa',
+                        border: `1px solid ${COLORS.border}`,
+                        color: COLORS.textMain,
+                        padding: '12px',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                      }}
+                    >
+                      🔔 Enable Notifications
+                    </button>
+                  )}
 
+                  {notificationAllowed && !isTelegram && (
+                    <div
+                      style={{
+                        color: COLORS.success,
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        marginTop: '10px',
+                        marginBottom: '10px',
+                        textAlign: 'center',
+                      }}
+                    >
+                      ✅ Notifications Enabled
+                    </div>
+                  )}
                   <button
-                    className="primary-btn"
-                    disabled={!username  || isAdLoading}
-                    onClick={handleStartSearch}
+                    className={
+                      !notificationAllowed && !isTelegram
+                        ? 'primary-btn-disabled'
+                        : 'primary-btn'
+                    }
+                    disabled={!username || isAdLoading}
+                    onClick={handleStartClick}
                   >
                     {isAdLoading
-                      ? 'Loading Ad...'
+                      ? 'Loading...'
+                      : !notificationAllowed && !isTelegram
+                      ? 'START'
                       : 'START'}
                   </button>
                 </>
@@ -268,23 +512,28 @@ const handleStartSearch = async () => {
                     </span>
                     <span className="sub-text">Decrypting Data...</span>
                   </div>
-                 <button 
-  className="boost-btn" 
-  style={{ backgroundColor: '#FFD700', color: '#000', padding: '10px', marginTop: '10px' }}
-  onClick={handleBoost}
-  disabled={boosts === 0 || boostCooldown > 0 || isAdLoading}
->
-  {boostCooldown > 0 
-    ? `Wait ${boostCooldown}s...` 
-    : boosts > 0 
-      ? `Boost Progress (${boosts} left)` 
-      : "Processing..."}
-</button>
+                  <button
+                    className="boost-btn"
+                    style={{
+                      backgroundColor: '#FFD700',
+                      color: '#000',
+                      padding: '10px',
+                      marginTop: '10px',
+                    }}
+                    onClick={handleBoost}
+                    disabled={boosts === 0 || boostCooldown > 0 || isAdLoading}
+                  >
+                    {boostCooldown > 0
+                      ? `Wait ${boostCooldown}s...`
+                      : boosts > 0
+                      ? `Boost Progress (${boosts} left)`
+                      : 'Processing...'}
+                  </button>
                 </div>
               )}
 
               {step === 'results' && (
-                <Demo
+                <Result
                   username={username}
                   carouselItems={carouselItems}
                   carouselIndex={carouselIndex}
@@ -379,12 +628,9 @@ const handleStartSearch = async () => {
             </div>
           )}
         </div>
-        {countryCode === 'IN' ? (
-          <InstaPopup isOpen={showPopup} onClose={() => setShowPopup(false)} />
-        ) : (
-          <InstaPopup isOpen={showPopup} onClose={() => setShowPopup(false)} />
-        )}
+        <TelegramPopup isOpen={showPopup} onClose={() => setShowPopup(false)} />
       </div>
+
       {previewImage && (
         <div
           className="full-screen-modal"
@@ -396,6 +642,142 @@ const handleStartSearch = async () => {
           </div>
         </div>
       )}
+      {/*showModal && (
+        <div style={modalOverlayStyle}>
+          <div style={modalStyle}>
+            <h2 style={{ marginBottom: '10px' }}>Welcome!</h2>
+            <p
+              style={{
+                color: COLORS.textMuted,
+                fontSize: '14px',
+                marginBottom: '24px',
+              }}
+            >
+              Please complete this to continue.
+            </p>
+            <div style={{ marginBottom: '20px', textAlign: 'left' }}>
+              <label
+                style={{
+                  fontWeight: '700',
+                  display: 'block',
+                  marginBottom: '8px',
+                }}
+              >
+                I am:
+              </label>
+              <select
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  border: `1px solid ${COLORS.border}`,
+                }}
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div
+              style={{
+                marginBottom: '24px',
+                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
+              <input
+                type="checkbox"
+                id="terms"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                style={{ transform: 'scale(1.2)' }}
+              />
+              <label
+                htmlFor="terms"
+                style={{ fontSize: '13px', color: COLORS.textMain }}
+              >
+                I agree to the Terms and Conditions
+              </label>
+            </div>
+            {!notificationAllowed ? (
+              <button
+                onClick={handleSubscribe}
+                style={{
+                  width: '100%',
+                  marginBottom: '15px',
+                  background: '#f8f9fa',
+                  border: `1px solid ${COLORS.border}`,
+                  color: COLORS.textMain,
+                  padding: '12px',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                🔔 Enable Notifications to Continue
+              </button>
+            ) : (
+              <div
+                style={{
+                  color: COLORS.success,
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  marginBottom: '15px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '5px',
+                }}
+              >
+                ✅ Notifications Enabled
+              </div>
+            )}
+            <button
+              onClick={handleOnboardingSubmit}
+              disabled={!gender || !agreed || !notificationAllowed || isLoading}
+              style={{
+                width: '100%',
+                padding: '14px',
+                borderRadius: '12px',
+                border: 'none',
+                background:
+                  gender && agreed && notificationAllowed
+                    ? COLORS.gradient
+                    : COLORS.disabled,
+                color: '#fff',
+                fontWeight: '700',
+                cursor:
+                  gender && agreed && notificationAllowed && !isLoading
+                    ? 'pointer'
+                    : 'not-allowed',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '10px',
+              }}
+            >
+              {isLoading ? (
+                <>
+                  <div style={spinnerStyle}></div>
+                  Please wait...
+                </>
+              ) : (
+                'Continue'
+              )}
+            </button>
+          </div>
+        </div>
+      )*/}
     </>
   );
 };
