@@ -1,33 +1,189 @@
-.bot-page { background-color: #0e1621; min-height: 100vh; color: #fff; font-family: 'Inter', sans-serif; }
-.navbar { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.logo { font-weight: 800; font-size: 1.2rem; color: #2aabee; }
-.container { padding: 20px; max-width: 600px; margin: 0 auto; }
-.hero { text-align: center; margin-bottom: 40px; }
-.bot-grid { display: grid; gap: 16px; }
+/* Fact Image Card */
 
-.bot-card { 
-  background: rgba(255, 255, 255, 0.03);
-  padding: 16px;
-  border-radius: 20px;
+.fact-image-card {
+  position: relative;
+  z-index: 1;
+  border-radius: 10px;
+  background: white;
+
+  margin-top: 128px;   /* instead of 20% */
+
+  padding: 10px;
+  width: 330px;
+  height: 220px;
+
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15), 
+              0 4px 10px rgba(0,0,0,0.1);
+
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: transform 0.2s, background 0.2s;
 }
 
-.bot-card:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.06); }
+.bg-fact {
+  background-color: #f4f0d7;
+  min-height: 100vh;
+  width: 100%;
 
-.bot-profile { display: flex; align-items: center; gap: 15px; }
-.bot-avatar { width: 48px; height: 48px; border-radius: 12px; }
-.bot-handle { color: #2aabee; font-size: 0.85rem; }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
-.launch-btn {
-  background: #2aabee;
-  color: white;
+  overflow-y: auto;
+}
+
+.background-image {
+  width: 100%;
+  height: 75%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+/* Fact Card */
+
+.fact-card {
+  position: relative;
+  z-index: 1;
+  transform: scale(0.9);
+  background: white;
+  padding: 25px 20px 20px 20px;
+  margin-top: -2%;
+  width: 365px;
+
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Red Pin */
+
+.pin {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: red;
+  border-radius: 50%;
+  border-color: 5px solid #fff;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Title */
+
+.fact-title {
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 30px;
+  font-weight: bold;
+  font-family: 'concert one', serif;
+}
+
+/* Image */
+
+.fact-image {
+  width: 100%;
+  height: 220px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  
+border-radius: 18px;
+}
+
+/* Buttons row */
+
+.button-row {
+  margin-top: 5px;
+  display: flex;
+  gap: 6px;
+  z-index: 1;
+}
+
+/* Buttons */
+
+.nav-btn {
+  padding: 12px 25px;
   border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 600;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   cursor: pointer;
+  white-space: nowrap;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Notebook text style */
+
+.fact-text {
+  font-size: 16px;
+  line-height: 34px;
+  font-family: 'Signika', serif;
+  margin: 0;                /* remove default <p> margin */
+  padding-top: 4px;
+ color: #000;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 33px,
+    #759eeb 34px
+  );
+
+  background-size: 100% 34px;
+}
+/* Like section */
+
+/* Like section */
+
+.like-row{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 12px;
+  gap: 6px;
+}
+
+.like-btn{
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.like-btn:hover{
+  transform: scale(1.15);
+}
+
+.like-btn.liked{
+  color: red;
+}
+
+.like-count{
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+}
+
+.like-overlay{
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  padding: 3px 8px;          
+  border-radius: 8px;
+
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }

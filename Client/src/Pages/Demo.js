@@ -1,43 +1,65 @@
-import React from 'react';
-// Move styles to a CSS file for better mobile performance
-import '../Styles/Demo.css'; 
+import React, {useState} from 'react';
+import '../Styles/Demo.css';
+import myBackgroundImage from '../Assets/bg.png';
+import fact from '../Assets/group.jpg';
 
- const Demo = () => {
-  const bots = [
-    { id: 1, name: "BotFather", username: "botfather", avatar: "https://i.pravatar.cc/100?u=1" },
-    { id: 2, name: "Music Downloader", username: "music_bot", avatar: "https://i.pravatar.cc/100?u=2" },
-    { id: 3, name: "Currency Converter", username: "exchanger_bot", avatar: "https://i.pravatar.cc/100?u=3" },
-  ];
+const Demo = () => {
+    const [liked, setLiked] = useState(false);
 
   return (
-    <div className="bot-page">
-      <header className="navbar">
-        <span className="logo">MySelpost</span>
-      </header>
+    <div className="bg-fact">
+      <img
+        src={myBackgroundImage}
+        alt="background"
+        className="background-image"
+      />
 
-      <main className="container">
-        <div className="hero">
-          <h1>Telegram Bot Directory</h1>
-          <p>Discover powerful tools for your Telegram experience.</p>
+      {/* Image Card */}
+      <div className="fact-image-card">
+        <img
+          src={fact}
+          className="fact-image"
+          alt="fact visual"
+          style={{ height: '220px' }}
+        />
+         <div className="like-overlay">
+          <button
+            className={`like-btn ${liked ? "liked" : ""}`}
+            onClick={() => setLiked(!liked)}
+          >
+            {liked ? "❤️" : "🤍"}
+          </button>
+          <span className="like-count">1.2K</span>
         </div>
+      </div>
 
-        <div className="bot-grid">
-          {bots.map(bot => (
-            <div key={bot.id} className="bot-card">
-              <div className="bot-profile">
-                <img src={bot.avatar} alt={bot.name} className="bot-avatar" />
-                <div className="bot-info">
-                  <h3>{bot.name}</h3>
-                  <span className="bot-handle">@{bot.username}</span>
-                </div>
-              </div>
-              <button className="launch-btn" onClick={() => window.open(`https://t.me/${bot.username}`)}>
-                Launch Bot
-              </button>
-            </div>
-          ))}
+      {/* Fact Card */}
+      {/* Fact Card */}
+      <div className="fact-card">
+        {/* red pin */}
+        <div className="pin"></div>
+
+        {/* title */}
+        <h2 className="fact-title">Fact</h2>
+    
+        {/* notebook text area */}
+        <p className="fact-text">
+          Welcome to factpins. There was a man who didn't study and got jailed
+          for 3 years. His parents filed a complaint against school. Then he
+          left his chool.
+        </p>
+        
+       <div className="button-row">
+        <button className="nav-btn">Notify Me</button>
+        <button className="nav-btn">🪙 Coins</button>
+        <button className="nav-btn">Next</button>
+         
         </div>
-      </main>
+      </div>
+
+    
     </div>
   );
-};export default Demo;
+};
+
+export default Demo;
