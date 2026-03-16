@@ -113,6 +113,13 @@
   z-index: 0;
 }
 
+@media (min-width: 768px) {
+  .background-image {
+    width: 99%;
+    height: 100%; /* full screen height */
+  }
+}
+
 /* Fact Card */
 
 .fact-card {
