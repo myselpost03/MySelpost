@@ -37,3 +37,7 @@ export { default as LiveSupport } from "./LiveSupport";
 export { default as Demo } from "./Demo";
 export { default as Results } from "./Results";
 export { default as FactProfile } from "./FactProfile";
+export { default as FactAbout } from "./FactAbout";
+export { default as FactTerms } from "./FactTerms";
+export { default as FactPrivacy } from "./FactPrivacy";
+export { default as FactPins } from "./FactPins";

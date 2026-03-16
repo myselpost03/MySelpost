@@ -101,6 +101,20 @@ const Contact = () => {
           )}
         </div>
       </div>
+        <div className="bottom-nav">
+        <button className="tab-btn" onClick={() => navigate('/demo')}>
+          🏠<span>Home</span>
+        </button>
+        <button className="tab-btn">
+          🔔<span>Notify</span>
+        </button>
+       {/*<button className="tab-btn">
+          🪙<span>Coins</span>
+        </button>*/}
+        <button className="tab-btn" onClick={() => navigate('/fact-profile')}>
+          ⚙️ <span>Settings</span>
+        </button>
+      </div>
     </div>
   );
 };

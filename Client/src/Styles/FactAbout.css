@@ -1,0 +1,57 @@
+.about-page{
+  min-height: 100vh;
+  background:#f4f0d7;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+.about-card{
+  background:white;
+  max-width:380px;
+  padding:25px;
+  border-radius:14px;
+
+  box-shadow:
+    0 12px 25px rgba(0,0,0,0.15),
+    0 5px 12px rgba(0,0,0,0.08);
+
+  text-align:center;
+}
+
+.about-title{
+  font-size:28px;
+  margin-bottom:15px;
+  font-family:'Concert One', serif;
+}
+
+.about-text{
+  font-size:15px;
+  line-height:26px;
+  color:#333;
+  margin-bottom:12px;
+}
+
+.about-features{
+  margin-top:15px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.feature{
+  background:#fafafa;
+  padding:10px;
+  border-radius:8px;
+  font-weight:600;
+  font-size:14px;
+
+  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+}
+
+.about-footer{
+  margin-top:18px;
+  font-size:13px;
+  color:#666;
+}

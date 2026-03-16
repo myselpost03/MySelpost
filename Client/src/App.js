@@ -12,6 +12,10 @@ import {
   Register,
   Login,
   Private,
+  FactAbout,
+  FactTerms,
+  FactPrivacy,
+  FactPins,
   FactProfile,
   ResetPassword,
   Sketch,
@@ -73,10 +77,15 @@ const protectedRoutes = [
 ];
 
 const publicRoutes = [
-  { path: '/', component: Private }, // Home, Sketch
+  { path: '/', component: FactPins }, // Private, Home, Sketch
   { path: '/demo', component: Demo },
   { path: '/viewer', component: Private },
+  { path: '/fact-pins', component: FactPins },
+  
   { path: '/fact-profile', component: FactProfile },
+  { path: '/fact-about', component: FactAbout },
+  { path: '/fact-terms', component: FactTerms },
+  { path: '/fact-privacy', component: FactPrivacy },
   
   { path: '/results', component: Results },
   { path: '/refund', component: Refund },
@@ -94,7 +103,7 @@ const publicRoutes = [
   { path: '/contact-us', component: Contact },
   { path: '/reset-password', component: ResetPassword },
 
-  { path: '/home-page', component: Private }, //Viewer
+  { path: '/home-page', component: FactPins }, //Private, Viewer
   {
     /*
   { path: '/viewer', component: EnterPage },
