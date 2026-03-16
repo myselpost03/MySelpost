@@ -1,6 +1,5 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react';
 import OneSignal from 'react-onesignal';
-
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../Utils/supabaseClient';
 import InstaPopup from '../Components/InstaPopup';

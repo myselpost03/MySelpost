@@ -36,3 +36,4 @@ export { default as Refund } from "./Refund";
 export { default as LiveSupport } from "./LiveSupport";
 export { default as Demo } from "./Demo";
 export { default as Results } from "./Results";
+export { default as FactProfile } from "./FactProfile";

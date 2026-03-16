@@ -12,6 +12,7 @@ import {
   Register,
   Login,
   Private,
+  FactProfile,
   ResetPassword,
   Sketch,
   AppSketch,
@@ -75,6 +76,7 @@ const publicRoutes = [
   { path: '/', component: Private }, // Home, Sketch
   { path: '/demo', component: Demo },
   { path: '/viewer', component: Private },
+  { path: '/fact-profile', component: FactProfile },
   
   { path: '/results', component: Results },
   { path: '/refund', component: Refund },
