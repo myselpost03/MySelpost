@@ -90,64 +90,93 @@ const Demo = () => {
   const [showCommunityPopup, setShowCommunityPopup] = useState(false);
   const [sessionViewCount, setSessionViewCount] = useState(0);
   const [filteredPostIds, setFilteredPostIds] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Use a Ref for the pointer so it updates INSTANTLY
+  // and loadMoreVideos always sees the correct current ID.
+  const nextIdRef = useRef(24);
+  const loaderRef = useRef(null);
+
+  const CHANNEL_NAME = 'ind_vids';
+  const LOAD_BATCH_SIZE = 5;
 
   const isTelegram =
     typeof window !== 'undefined' &&
     window.Telegram?.WebApp &&
     window.Telegram.WebApp.initData !== '';
 
-  const CHANNEL_NAME = 'ind_vids';
-  const LATEST_POST_ID = 23;
-  const LOAD_COUNT = 23;
+  const loadMoreVideos = () => {
+    if (isLoading || nextIdRef.current <= 0) return;
+    setIsLoading(true);
 
-  // 1. Filter posts on mount based on LocalStorage
-  useEffect(() => {
     const seenPosts = JSON.parse(localStorage.getItem('seen_vids') || '[]');
+    let newBatch = [];
+    let tempPointer = nextIdRef.current;
+    let safetyCounter = 0; // Prevent infinite loops
 
-    const allPosts = Array.from(
-      { length: LOAD_COUNT },
-      (_, i) => `${CHANNEL_NAME}/${LATEST_POST_ID - i}`
-    );
+    // Stop after finding 5 videos OR searching 100 IDs
+    // (This prevents hanging if there's a huge gap in your channel IDs)
+    while (
+      newBatch.length < LOAD_BATCH_SIZE &&
+      tempPointer > 0 &&
+      safetyCounter < 100
+    ) {
+      const postId = `${CHANNEL_NAME}/${tempPointer}`;
+      if (!seenPosts.includes(postId)) {
+        newBatch.push(postId);
+      }
+      tempPointer--;
+      safetyCounter++;
+    }
 
-    // Only keep posts that are NOT in the seenPosts array
-    const remainingPosts = allPosts.filter((id) => !seenPosts.includes(id));
-    setFilteredPostIds(remainingPosts);
+    nextIdRef.current = tempPointer;
+    if (newBatch.length > 0) {
+      setFilteredPostIds((prev) => [...prev, ...newBatch]);
+    }
+    setIsLoading(false);
+  };
+
+  // Initial Load
+  useEffect(() => {
+    loadMoreVideos();
   }, []);
 
-  // 2. Mark as seen in LocalStorage and handle the 10-swipe limit
+  // Infinite Scroll Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Trigger only when the sentinel is visible AND not currently loading
+        if (entries[0].isIntersecting && !isLoading) {
+          loadMoreVideos();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loaderRef.current) observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [isLoading]); // Only depend on isLoading status
+
+  const MAX_FREE_VIEWS = 100;
+
   const handleReelSeen = (postId) => {
-    // Update LocalStorage
     const seenPosts = JSON.parse(localStorage.getItem('seen_vids') || '[]');
     if (!seenPosts.includes(postId)) {
       const updatedSeen = [...seenPosts, postId];
       localStorage.setItem('seen_vids', JSON.stringify(updatedSeen));
     }
 
-    // Update Session Count for the Popup restriction
     setSessionViewCount((prev) => {
       const nextCount = prev + 1;
-      if (!isTelegram && nextCount === 10) {
+      // Update trigger to match new limit
+      if (!isTelegram && nextCount === MAX_FREE_VIEWS)
         setShowCommunityPopup(true);
-      }
       return nextCount;
     });
   };
 
-  const getTomorrowTimestamp = () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(9, 0, 0, 0);
-    return tomorrow.toLocaleString([], {
-      weekday: 'long',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const isLocked = !isTelegram && sessionViewCount >= 10;
-
+  // Update logic here too
+  const isLocked = !isTelegram && sessionViewCount >= MAX_FREE_VIEWS;
   return (
     <div
       style={{
@@ -160,17 +189,51 @@ const Demo = () => {
         <TelegramReel key={id} postId={id} onSeen={handleReelSeen} />
       ))}
 
-      {/* Show maintenance if we run out of new videos or reached 10 on web */}
-      {(filteredPostIds.length === 0 || isLocked) && (
+      {/* The Sentinel: Only show if not locked and more videos exist */}
+      {!isLocked && nextIdRef.current > 0 && (
+        <div
+          ref={loaderRef}
+          style={{
+            height: '20vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {isLoading && <div style={{ color: 'white' }}>Loading more...</div>}
+        </div>
+      )}
+
+      {/* Show End of Feed ONLY when actually at the end (ID 0) */}
+      {!isLocked && nextIdRef.current <= 0 && (
         <div style={reelSection}>
           <div style={maintenanceModal}>
-            <div style={modalIcon}>⚠️</div>
-            <h2 style={modalTitle}>{'Server is Down'}</h2>
+            <div style={modalIcon}>🏁</div>
+            <h2 style={modalTitle}>End of Feed</h2>
+            <p style={modalText}>You've seen all available videos!</p>
+          </div>
+        </div>
+      )}
+
+      {/* Show Lock screen ONLY if limit is hit */}
+      {isLocked && (
+        <div
+          style={{
+            ...reelSection,
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            zIndex: 100,
+            background: 'black',
+          }}
+        >
+          <div style={maintenanceModal}>
+            <div style={modalIcon}>🔒</div>
+            <h2 style={modalTitle}>Limit Reached</h2>
             <p style={modalText}>
-              {'We are working to fix the issues soon.'}
-              <br /> Server will be fixed by:
+              Join our community to watch more than 10 videos!
             </p>
-            <div style={timestampBadge}>{getTomorrowTimestamp()}</div>
           </div>
         </div>
       )}

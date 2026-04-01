@@ -56,10 +56,10 @@ function Roast() {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [showCommunityPopup, setShowCommunityPopup] = useState(false);
-const [swipeCount, setSwipeCount] = useState(() => {
-  return parseInt(localStorage.getItem('freeSwipeCount') || '0', 10);
-});
- 
+  const [swipeCount, setSwipeCount] = useState(() => {
+    return parseInt(localStorage.getItem('freeSwipeCount') || '0', 10);
+  });
+
   const isTelegram =
     typeof window !== 'undefined' &&
     window.Telegram?.WebApp &&
@@ -221,26 +221,26 @@ const [swipeCount, setSwipeCount] = useState(() => {
   };
 
   const canSwipe = () => {
-  if (isTelegram) return true; // Telegram users have no limit
-  if (swipeCount < 10) return true; // Web users get 10 free
-  return false;
-};
+    if (isTelegram) return true; // Telegram users have no limit
+    if (swipeCount < 10) return true; // Web users get 10 free
+    return false;
+  };
 
-const handleRestrictedSwipe = (direction) => {
-  if (canSwipe()) {
-    // If not Telegram, increment the counter
-    if (!isTelegram) {
-      setSwipeCount((prev) => prev + 1);
+  const handleRestrictedSwipe = (direction) => {
+    if (canSwipe()) {
+      // If not Telegram, increment the counter
+      if (!isTelegram) {
+        setSwipeCount((prev) => prev + 1);
+      }
+      handleSwipe(direction);
+    } else {
+      setShowCommunityPopup(true);
     }
-    handleSwipe(direction);
-  } else {
-    setShowCommunityPopup(true);
-  }
-};
+  };
 
   useEffect(() => {
-  localStorage.setItem('freeSwipeCount', swipeCount.toString());
-}, [swipeCount]);
+    localStorage.setItem('freeSwipeCount', swipeCount.toString());
+  }, [swipeCount]);
 
   useEffect(() => {
     fetchCardsData();
@@ -420,20 +420,8 @@ const handleRestrictedSwipe = (direction) => {
   };
 
   const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => {
-      if (!isTelegram) {
-        setShowCommunityPopup(true);
-        return;
-      }
-      handleSwipe('Left');
-    },
-    onSwipedRight: () => {
-      if (!isTelegram) {
-        setShowCommunityPopup(true);
-        return;
-      }
-      handleSwipe('Right');
-    },
+    onSwipedLeft: () => handleRestrictedSwipe('Left'),
+    onSwipedRight: () => handleRestrictedSwipe('Right'),
     preventScrollOnSwipe: true,
     trackMouse: true,
   });
@@ -613,13 +601,7 @@ const handleRestrictedSwipe = (direction) => {
             <div className="card-actions-row">
               <button
                 className="circle-btn dislike"
-                onClick={() => {
-                  if (!isTelegram) {
-                    setShowCommunityPopup(true);
-                    return;
-                  }
-                  handleSwipe('Left');
-                }}
+                onClick={() => handleRestrictedSwipe('Left')}
               >
                 ✖
               </button>
@@ -628,13 +610,7 @@ const handleRestrictedSwipe = (direction) => {
               </button>*/}
               <button
                 className="circle-btn like"
-                onClick={() => {
-                  if (!isTelegram) {
-                    setShowCommunityPopup(true);
-                    return;
-                  }
-                  handleSwipe('Right');
-                }}
+                onClick={() => handleRestrictedSwipe('Right')}
               >
                 ❤️
               </button>
@@ -808,6 +784,7 @@ const handleRestrictedSwipe = (direction) => {
         <CommunityPopup
           isOpen={showCommunityPopup}
           onClose={() => setShowCommunityPopup(false)}
+          swipesUsed={swipeCount}
         />
       )}
       <DatingNavbar />
