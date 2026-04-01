@@ -13,9 +13,9 @@ const FactPins = () => {
   const [notificationAllowed, setNotificationAllowed] = useState(false);
   const [checkingPermission, setCheckingPermission] = useState(true);
   const [facts, setFacts] = useState([]);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [currentFact, setCurrentFact] = useState(null);
-
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [userCountry, setUserCountry] = useState(null);
   const [showSwipeGuide, setShowSwipeGuide] = useState(
     localStorage.getItem('hasSeenSwipeGuide') !== 'true'
   );
@@ -24,6 +24,9 @@ const FactPins = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [factTime, setFactTime] = useState('09:00');
   const [guestId, setGuestId] = useState(null);
+  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     let id = localStorage.getItem('guest_id');
@@ -33,7 +36,7 @@ const FactPins = () => {
     }
     setGuestId(id);
   }, []);
-  const navigate = useNavigate();
+
   useEffect(() => {
     if (!guestId) return;
 
@@ -56,6 +59,94 @@ const FactPins = () => {
 
     loadUnviewedFacts();
   }, [guestId]);
+
+  useEffect(() => {
+    const hasSeen = localStorage.getItem('hasSeenFeedbackPopup');
+
+    if (!hasSeen) {
+      const timer = setTimeout(() => {
+        setShowFeedbackPopup(true);
+        localStorage.setItem('hasSeenFeedbackPopup', 'true');
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchCountry = async () => {
+      try {
+        // Try primary API
+        let res = await fetch('https://ipapi.co/json/');
+        let data = await res.json();
+
+        if (data && data.country_name) {
+          setUserCountry(data.country_name);
+          localStorage.setItem('user_country', data.country_name);
+          return;
+        }
+
+        // Fallback API
+        res = await fetch('https://ipinfo.io/json?token=YOUR_TOKEN');
+        data = await res.json();
+
+        if (data && data.country) {
+          setUserCountry(data.country); // returns "IN", "US"
+          localStorage.setItem('user_country', data.country);
+          return;
+        }
+
+        throw new Error('No country found');
+      } catch (err) {
+        console.error('Country detection failed:', err);
+        setUserCountry('Unknown');
+      }
+    };
+
+    const cached = localStorage.getItem('user_country');
+    if (cached) {
+      setUserCountry(cached);
+    } else {
+      fetchCountry();
+    }
+  }, []);
+
+  const handleSubscribe = async () => {
+    try {
+      const permission = await OneSignal.Notifications.requestPermission();
+
+      if (permission === true || Notification.permission === 'granted') {
+        await OneSignal.User.PushSubscription.optIn();
+
+        const playerId = OneSignal.User.PushSubscription.id;
+        console.log('✅ Player ID:', playerId);
+
+        setNotificationAllowed(true);
+      } else {
+        console.log('❌ Permission denied');
+        setNotificationAllowed(false);
+      }
+    } catch (err) {
+      console.error('❌ Error subscribing:', err);
+      setNotificationAllowed(false);
+    }
+  };
+
+  const saveFeedback = async (choice) => {
+    try {
+      await supabase.from('user_feedback').insert([
+        {
+          user_id: guestId,
+          choice: choice,
+          country: userCountry,
+        },
+      ]);
+      handleSubscribe();
+    } catch (err) {
+      console.error('Error saving feedback:', err);
+    }
+  };
+
   // When showing next fact:
   const markFactAsViewed = async (index) => {
     await supabase
@@ -124,26 +215,6 @@ const FactPins = () => {
     checkPermission();
   }, []);
 
-  const handleSubscribe = async () => {
-    try {
-      const permission = await OneSignal.Notifications.requestPermission();
-
-      if (permission === true || Notification.permission === 'granted') {
-        await OneSignal.User.PushSubscription.optIn();
-
-        const playerId = OneSignal.User.PushSubscription.id;
-        console.log('✅ Player ID:', playerId);
-
-        setNotificationAllowed(true);
-      } else {
-        console.log('❌ Permission denied');
-        setNotificationAllowed(false);
-      }
-    } catch (err) {
-      console.error('❌ Error subscribing:', err);
-      setNotificationAllowed(false);
-    }
-  };
   return (
     <div
       className="bg-fact"
@@ -157,7 +228,7 @@ const FactPins = () => {
       />
 
       {/* Image Card */}
-      <div className="fact-image-card">
+      <div className="fact-image-cardd">
         {!imageLoaded && <div className="image-shimmer"></div>}
         {showSwipeGuide && (
           <div className="swipe-guide-animation">
@@ -197,7 +268,7 @@ const FactPins = () => {
         {/* notebook text area */}
         <p className="fact-text">{currentFact?.fact}</p>
       </div>
-      
+
       {showNotifyPopup && (
         <div className="notify-overlay">
           <div className="notify-popup">
@@ -275,17 +346,47 @@ const FactPins = () => {
           </div>
         </div>
       )}
+      {showFeedbackPopup && (
+        <div className="feedback-overlay">
+          <div className="feedback-popup">
+            <h2>💬 Quick Feedback</h2>
+            <p>Tell us how you feel about FactPins</p>
+
+            <button
+              className="feedback-btn positive"
+              onClick={async () => {
+                await saveFeedback('love_facts_download_later');
+                setShowFeedbackPopup(false);
+              }}
+            >
+              ❤️ I love reading facts <br />
+              <small>I’d love to get notification</small>
+            </button>
+
+            <button
+              className="feedback-btn negative"
+              onClick={async () => {
+                await saveFeedback('dont_like_never_download');
+                setShowFeedbackPopup(false);
+              }}
+            >
+              😕 I don’t like reading facts <br />
+              <small>I don't want to get notification</small>
+            </button>
+          </div>
+        </div>
+      )}
       {/* Bottom Navigation */}
       <div className="bottom-nav">
         <button className="tab-btn">
-          🏠<span>Home</span>
+          🏠 <span>Home</span>
         </button>
-        <button className="tab-btn" onClick={() => setShowNotifyPopup(true)}>
-          🔔<span>Notify</span>
-        </button>
-        {/*<button className="tab-btn">
-          🪙<span>Coins</span>
+        {/* <button className="tab-btn" onClick={() => navigate('/fact-videos')}>
+          🔥 <span>Roast</span>
         </button>*/}
+        <button className="tab-btn" onClick={() => navigate('/group-chat')}>
+          💬 <span>Group Chat</span>
+        </button>
         <button className="tab-btn" onClick={() => navigate('/fact-profile')}>
           ⚙️ <span>Settings</span>
         </button>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Header from '../Components/Header';
+import AdultHeader from '../Components/AdultHeader';
 import Footer from '../Components/Footer';
 import '../Styles/Home.css';
 import SketchyAlert from '../Components/SketchyAlert';
@@ -191,7 +191,7 @@ const Home = () => {
   return (
     <div className="background-animated">
       <div className={showAlert || showBuildModal ? 'blurred' : ''}>
-        <Header />
+        <AdultHeader />
         {/* 1. Native Ad: No negative margins, just simple padding */}
         <div className="ad-wrapper-native-protected">
           <div className="ad-container-inner-protected">
@@ -219,7 +219,7 @@ const Home = () => {
                     fontWeight: 'bold',
                   }}
                 >
-                  <span className="loading-label">Loading instaviewer...</span>
+                  <span className="loading-label">Loading Content...</span>
                 </div>
               ) : (
                 /* SHOW THIS AFTER 3 SECONDS */
@@ -234,12 +234,12 @@ const Home = () => {
                     cursor: 'pointer',
                   }}
                 >
-                  <img
+                  {/*<img
                     src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg"
                     alt="Instagram"
                     style={{ width: '25px', height: '25px' }}
-                  />
-                  <span>Insta Account Viewer</span>
+                  />*/}
+                  <span>🎥 Watch Videos</span>
                 </div>
               )}
             </div>
@@ -259,7 +259,7 @@ const Home = () => {
           </div>
         </main>
 
-        <Footer />
+      {/*  <Footer />*/}
       </div>
 
       {showBuildModal && (

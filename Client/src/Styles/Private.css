@@ -768,8 +768,8 @@ color: #555;
 .dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; margin-right: 10px; }
 
 .tab-nav { display: flex; background: #f0f0f0; padding: 4px; border-radius: 12px; margin-bottom: 25px; }
-.tab-btn { flex: 1; padding: 10px; border: none; background: transparent; font-size: 0.8rem; font-weight: 700; color: #888; cursor: pointer; border-radius: 10px; }
-.tab-btn.active { background: #fff; color: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.tab-btn-priv { flex: 1; padding: 10px; border: none; background: transparent; font-size: 0.8rem; font-weight: 700; color: #888; cursor: pointer; border-radius: 10px; }
+.tab-btn-priv.active { background: #fff; color: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
 .blur-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .blur-item { aspect-ratio: 1/1; background-size: cover; border-radius: 8px; filter: blur(12px); position: relative; }
@@ -1076,4 +1076,28 @@ label {
   font-weight: 700;
   font-size: 0.8rem;
   cursor: pointer;
+}
+
+.chat-btn {
+  display: inline-block;
+  width: 320px;           /* longer width */
+  height: 50px;           /* taller button */
+  margin-bottom: 1%;
+  background: linear-gradient(90deg, #FF5F6D, #FFC371); /* modern gradient */
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  border: none;           /* no border */
+  border-radius: 5px;       /* no rounding */
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.chat-btn:hover {
+  transform: translateY(-3px); /* subtle lift */
+  box-shadow: 0 8px 12px rgba(0,0,0,0.25);
+  background: linear-gradient(90deg, #FF7E5F, #FDBB2D); /* hover gradient */
 }

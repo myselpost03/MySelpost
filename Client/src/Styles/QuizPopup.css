@@ -1,0 +1,209 @@
+.quiz-container {
+  max-width: 400px;
+  margin: 20px auto;
+  padding: 25px;
+  border-radius: 24px;
+  text-align: center;
+  color: #ffffff;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Glassmorphism Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
+  transition: width 0.3s ease;
+}
+
+.step-counter {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.question-text {
+  font-size: 1.4rem;
+  margin: 20px 0;
+  font-weight: 600;
+}
+
+.options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.option-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 14px;
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+}
+
+.option-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.option-btn.selected {
+  background: #3a7bd5;
+  border-color: #00d2ff;
+  transform: scale(1.02);
+}
+
+.next-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 15px;
+  border: none;
+  background: #ffffff;
+  color: #000;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.next-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.next-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}/* QuizPopup.css */
+:root {
+  --primary-glow: #ff2e63; /* Neon Pink/Red */
+  --secondary-glow: #08d9d6; /* Neon Cyan */
+  --bg-dark: #0a0a0c;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+
+
+.quiz-container.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 2.5rem;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.progress-bar-container {
+  background: rgba(255, 255, 255, 0.1);
+  height: 8px;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, var(--secondary-glow), var(--primary-glow));
+  height: 100%;
+  transition: width 0.4s ease-out;
+  box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.step-counter {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #888;
+}
+
+.question-text {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 1.5rem 0 2rem;
+  line-height: 1.4;
+}
+
+.options-grid {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 2rem;
+}
+
+.option-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  color: #fff;
+  padding: 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.option-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--secondary-glow);
+}
+
+.option-btn.selected {
+  background: var(--primary-glow);
+  border-color: var(--primary-glow);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(255, 46, 99, 0.4);
+}
+
+.next-btn {
+  width: 100%;
+  background: #fff;
+  color: #000;
+  border: none;
+  padding: 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s active, opacity 0.2s;
+}
+
+.next-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.next-btn:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+}
+
+/* Entrance Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.quiz-container {
+  animation: fadeIn 0.5s ease-out;
+}

@@ -26,9 +26,15 @@ const FactProfile = () => {
         <button className="tab-btn" onClick={() => navigate('/home-page')}>
           🏠<span>Home</span>
         </button>
-        <button className="tab-btn">
-          🔔<span>Notify</span>
+        {/* <button className="tab-btn" onClick={() => navigate('/fact-videos')}>
+          🎬<span>AI</span>
+        </button>*/}
+        <button className="tab-btn" onClick={() => navigate('/group-chat')}>
+          💬 <span>Group Chat</span>
         </button>
+         {/*<button className="tab-btn" onClick={() => navigate('/fact-date')}>
+          ❤️<span>Fact Date</span>
+        </button>*/}
        {/*<button className="tab-btn">
           🪙<span>Coins</span>
         </button>*/}

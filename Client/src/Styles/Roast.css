@@ -2,6 +2,82 @@
 @import url(https://fonts.googleapis.com/css?family=Concert+One:regular);
 @import url(https://fonts.googleapis.com/css?family=Schoolbell:regular);
 @import url(https://fonts.googleapis.com/css?family=RocknRoll+One:regular);
+/* Container needs perspective for 3D effects */
+.roast-card-container {
+  perspective: 1000px;
+  overflow: hidden;
+}
+
+.roast-card {
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+  transform-origin: bottom center;
+}
+
+/* Animation when swiping/clicking Left (Next Card) */
+.exit-Left {
+  transform: translateX(-150%) rotate(-20deg);
+  opacity: 0;
+}
+
+/* Animation when swiping/clicking Right (Previous Card) */
+.exit-Right {
+  transform: translateX(150%) rotate(20deg);
+  opacity: 0;
+}
+
+/* Optional: Add a slight "pop-in" for the new card */
+.animated-card {
+  animation: cardEntry 0.4s ease-out;
+}
+
+@keyframes cardEntry {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+.card-actions-row {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 0px 0;
+  background: #fff;
+}
+
+.circle-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background: white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.chat-gold {
+  border: 2.5px solid #FFD700 !important; /* Gold border for chat */
+  width: 60px;
+  height: 60px;
+}
+
+.coin-tag {
+  position: absolute;
+  bottom: -5px;
+  background: #FFD700;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  color: #000;
+  font-weight: bold;
+}
 
 .roast-banner{
    width: 100%;
@@ -206,7 +282,7 @@ background: radial-gradient(circle at 20% 30%, #ff9a9e 0%, transparent 50%),
 /* FAB buttons */
 .fab-upload {
   position: fixed;
-  bottom: 24px;
+  bottom: 100px;
   right: 24px;
   background: #fff;
   border-radius: 50%;

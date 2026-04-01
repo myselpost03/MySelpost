@@ -15,7 +15,14 @@ import { supabase } from '../Utils/supabaseClient';
 import { isWebView } from '../Utils/isWebView';
 import '../Styles/ChatHeader.css';
 
-const ChatHeader = ({ title, onBack, onBlockToggle, isBlocked }) => {
+const ChatHeader = ({
+  title,
+  onBack,
+  onBlockToggle,
+  isBlocked,
+  showBlock = true,
+  showVideo = true,
+}) => {
   const [subscribed, setSubscribed] = useState(false);
   const showButton = !isWebView();
   const [showPremiumPopup, setShowPremiumPopup] = useState(false);
@@ -166,22 +173,33 @@ const ChatHeader = ({ title, onBack, onBlockToggle, isBlocked }) => {
 
       <div className="chat-header-actions">
         {/* Block button - just calls the function passed from parent */}
-        <button
-          onClick={onBlockToggle}
-          aria-label={isBlocked ? 'Unblock user' : 'Block user'}
-          title={isBlocked ? 'Unblock user' : 'Block user'}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: 0,
-            cursor: 'pointer',
-            color: isBlocked ? '#ff6f61' : '#fff',
-            fontSize: '1.2rem',
-          }}
-        >
-          <FaBan />
-        </button>
-
+        {showBlock && (
+          <button
+            onClick={onBlockToggle}
+            aria-label={isBlocked ? 'Unblock user' : 'Block user'}
+            title={isBlocked ? 'Unblock user' : 'Block user'}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              color: isBlocked ? '#ff6f61' : '#fff',
+              fontSize: '1.2rem',
+            }}
+          >
+            <FaBan />
+          </button>
+        )}
+        {showVideo && (
+          <button
+            className="video-call-icon"
+            onClick={() =>
+              (window.location.href = 'https://rapid-links.com/s?QzH2N7V2')
+            }
+          >
+            <FaVideo size={20} />
+          </button>
+        )}
         {/* Notification bell 
        {showButton && (
       <button
@@ -197,15 +215,6 @@ const ChatHeader = ({ title, onBack, onBlockToggle, isBlocked }) => {
         )}
       </button>
     )}*/}
-        
-        <button
-          className="video-call-icon"
-          onClick={() =>
-            (window.location.href = 'https://rapid-links.com/s?QzH2N7V2')
-          }
-        >
-          <FaVideo size={20} />
-        </button>
       </div>
       {showPremiumPopup && (
         <div className="video-premium-overlay">

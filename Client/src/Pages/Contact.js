@@ -1,23 +1,23 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import SketchyHeader from "../Components/SketchyHeader";
-import "../Styles/Contact.css";
-import i18n from "../i18n";
-import { supabase } from "../Utils/supabaseClient";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import SketchyHeader from '../Components/SketchyHeader';
+import '../Styles/Contact.css';
+import i18n from '../i18n';
+import { supabase } from '../Utils/supabaseClient';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
+    name: '',
+    email: '',
+    message: '',
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const isFormValid =
-    formData.name.trim() !== "" &&
-    formData.email.trim() !== "" &&
-    formData.message.trim() !== "";
+    formData.name.trim() !== '' &&
+    formData.email.trim() !== '' &&
+    formData.message.trim() !== '';
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -29,12 +29,12 @@ const Contact = () => {
 
     setLoading(true);
 
-    const { error } = await supabase.from("contact_us").insert([formData]);
+    const { error } = await supabase.from('contact_us').insert([formData]);
 
     setLoading(false);
 
     if (error) {
-      alert("Failed to submit: " + error.message);
+      alert('Failed to submit: ' + error.message);
     } else {
       setSubmitted(true);
     }
@@ -46,13 +46,13 @@ const Contact = () => {
 
   return (
     <div className="contact-page">
-      <SketchyHeader title={i18n.t("contact")} onBack={handleBack} />
+      <SketchyHeader title={i18n.t('contact')} onBack={handleBack} />
       <div className="contact-wrapper">
         <div className="contact-box">
           {!submitted ? (
             <form className="contact-form" onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>{i18n.t("name")}</label>
+                <label>{i18n.t('name')}</label>
                 <input
                   type="text"
                   name="name"
@@ -63,7 +63,7 @@ const Contact = () => {
               </div>
 
               <div className="form-group">
-                <label>{i18n.t("email")}</label>
+                <label>{i18n.t('email')}</label>
                 <input
                   type="email"
                   name="email"
@@ -74,12 +74,12 @@ const Contact = () => {
               </div>
 
               <div className="form-group">
-                <label>{i18n.t("message")}</label>
+                <label>{i18n.t('message')}</label>
                 <textarea
                   name="message"
                   rows="5"
                   required
-                  placeholder={i18n.t("haveIdea")}
+                  placeholder={i18n.t('haveIdea')}
                   value={formData.message}
                   onChange={handleChange}
                 ></textarea>
@@ -90,30 +90,16 @@ const Contact = () => {
                 className="submit-btn"
                 disabled={!isFormValid || loading}
               >
-                {loading ? i18n.t("sending") : `${i18n.t("sendMessage")} ✉️`}
+                {loading ? i18n.t('sending') : `${i18n.t('sendMessage')} ✉️`}
               </button>
             </form>
           ) : (
             <div className="thank-you">
-              <h2>{i18n.t("thanksFeedback")}</h2>
-              <p>{i18n.t("responseTime")}</p>
+              <h2>{i18n.t('thanksFeedback')}</h2>
+              <p>{i18n.t('responseTime')}</p>
             </div>
           )}
         </div>
-      </div>
-        <div className="bottom-nav">
-        <button className="tab-btn" onClick={() => navigate('/demo')}>
-          🏠<span>Home</span>
-        </button>
-        <button className="tab-btn">
-          🔔<span>Notify</span>
-        </button>
-       {/*<button className="tab-btn">
-          🪙<span>Coins</span>
-        </button>*/}
-        <button className="tab-btn" onClick={() => navigate('/fact-profile')}>
-          ⚙️ <span>Settings</span>
-        </button>
       </div>
     </div>
   );

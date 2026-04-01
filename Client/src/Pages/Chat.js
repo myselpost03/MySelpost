@@ -1536,6 +1536,7 @@ const CONTENT_LOCKER_URL = 'https://rapid-links.com/s?QzH2N7V2'
         onBack={handleBack}
         onBlockToggle={handleBlockToggle}
         isBlocked={isBlocked}
+          showVideo={false}
       ></ChatHeader>
 
       {/*<div

@@ -1,37 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../Utils/supabaseClient';
 import Header from '../Components/Header';
 import ReactCountryFlag from 'react-country-flag';
-import Tip from './Tip';
-import AdultPopup from '../Components/AdultPopup';
-import '../Styles/Russian.css';
+import QuizPopup from '../Components/QuizPopup';
+import CommunityPopup from '../Components/CommunityPopup';
+import AdsterraNativeBanner from '../Components/AdsterraNativeBanner';
+import { isTelegram } from '../Utils/useIsTelegram';
+import '../Styles/Adult.css';
 
-const Russian = () => {
+const Adult = () => {
   const [comments, setComments] = useState({});
-  const [showPopup, setShowPopup] = useState(false);
-  const [countryCode, setCountryCode] = useState('US'); // Default to US
- const handleClick = () => {
-    window.open(
-      "https://motorsnag.com/gkkasj8p?key=265fe969263955e511014d3ae8e8f17f",
-      "_blank"
-    );
+  const [showPopup, setShowPopup] = useState(false); // For Web (CommunityPopup)
+  const [isQuizOpen, setIsQuizOpen] = useState(false); // For Telegram (QuizPopup)
+  const [countryCode, setCountryCode] = useState('US');
+  const [isAdLoading, setIsAdLoading] = useState(false);
+  const adShowRef = useRef(null);
+
+const handlePopup = () => {
+  if (isTelegram) {
+    setIsQuizOpen(true);   // Telegram
+  } else {
+    setShowPopup(true);   // Browser
+  }
+};
+
+  // Restoration: Scroll/Wheel Trigger for Community Popup (Web Only)
+  const handleCommentScroll = (e) => {
+    if (!isTelegram && e.target.scrollTop > 5) {
+      setShowPopup(true);
+      e.target.scrollTop = 0;
+    }
   };
-  // Fetch user location on mount
+
   useEffect(() => {
     const detectLocation = async () => {
       try {
         const res = await fetch('https://ipapi.co/json/');
         const ipData = await res.json();
-        if (ipData && ipData.country) {
-          setCountryCode(ipData.country);
-        }
+        if (ipData && ipData.country) setCountryCode(ipData.country);
       } catch (e) {
-        console.warn(
-          'Geo location detection failed, defaulting to International.'
-        );
+        console.warn('Geo location detection failed.');
       }
     };
     detectLocation();
+    fetchComments();
+  }, []);
+
+  // Ad SDK Init
+  useEffect(() => {
+    if (window.initCdTma) {
+      window
+        .initCdTma({ id: '433423' })
+        .then((show) => {
+          adShowRef.current = show;
+        })
+        .catch((e) => console.error('Ad Init Error:', e));
+    }
   }, []);
 
   const images = [
@@ -59,60 +83,9 @@ const Russian = () => {
       likes: '22k',
       time: '12h ago',
     },
-    {
-      id: 4,
-      url: '/Games/4.jpg',
-      title: 'Laughter',
-      views: '110k',
-      likes: '85k',
-      time: '1d ago',
-    },
-    {
-      id: 5,
-      url: '/Games/5.jpg',
-      title: 'The Promise',
-      views: '320k',
-      likes: '190k',
-      time: '2d ago',
-    },
-    {
-      id: 6,
-      url: '/Games/6.jpg',
-      title: 'Rainy Days',
-      views: '742k',
-      likes: '530k',
-      time: '3d ago',
-    },
-    {
-      id: 7,
-      url: '/Games/7.jpg',
-      title: 'Cozy Mornings',
-      views: '150k',
-      likes: '45k',
-      time: '4d ago',
-    },
-    {
-      id: 8,
-      url: '/Games/8.jpg',
-      title: 'Adventure',
-      views: '210k',
-      likes: '112k',
-      time: '1w ago',
-    },
-    {
-      id: 9,
-      url: '/Games/9.jpg',
-      title: 'Fun',
-      views: '943k',
-      likes: '890k',
-      time: '1w ago',
-    },
   ];
 
-  // UPDATED ORDER: American (Images 7-9), Indian (Images 1-3), Russian (Images 4-6)
-  const countryGroups = [
-  { label: 'Indian', data: images.slice(0, 3) },
-];
+  const countryGroups = [{ label: 'Indian', data: images }];
 
   const fetchComments = async () => {
     const { data, error } = await supabase.from('comments').select('*');
@@ -128,22 +101,46 @@ const Russian = () => {
     setComments(grouped);
   };
 
-  const handlePopup = () => setShowPopup(true);
-
-  const handleCommentScroll = (e) => {
-    if (e.target.scrollTop > 5) {
-      handlePopup();
-      e.target.scrollTop = 0;
-    }
-  };
-
-  useEffect(() => {
-    fetchComments();
-  }, []);
-
   return (
     <div className="love-page-wrapper">
       <Header />
+
+      {/* Telegram-specific Terms/Quiz Overlay */}
+      {isQuizOpen && (
+        <div
+          className="modal-overlay"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0,0,0,0.9)',
+            zIndex: 10000,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <QuizPopup />
+          <button
+            onClick={() => setIsQuizOpen(false)}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              color: 'white',
+              background: 'none',
+              border: 'none',
+              fontSize: '30px',
+              cursor: 'pointer',
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <main className="content-container">
         <div
           className="fake-nav-container"
@@ -164,18 +161,6 @@ const Russian = () => {
             </svg>
           </div>
           <div className="fake-search-bar">
-            <svg
-              className="search-svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
             <input
               type="text"
               placeholder="Search videos..."
@@ -184,7 +169,11 @@ const Russian = () => {
             />
           </div>
         </div>
-
+        <div className="ad-wrapper-native-protected">
+          <div className="ad-container-inner-protected">
+            <AdsterraNativeBanner />
+          </div>
+        </div>
         {countryGroups.map((group, groupIndex) => (
           <div key={groupIndex} className="country-section">
             <h2
@@ -205,53 +194,6 @@ const Russian = () => {
                       src={process.env.PUBLIC_URL + img.url}
                       alt={img.title}
                     />
-                    <div className="fake-stats-overlay">
-                      <div className="stats-left">
-                        <div
-                          className="view-count"
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                          }}
-                        >
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                          </svg>
-                          <span>{img.views}</span>
-                        </div>
-                        <div
-                          className="like-count"
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            marginLeft: '10px',
-                          }}
-                        >
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="#ff4d6d"
-                            stroke="#ff4d6d"
-                            strokeWidth="2"
-                          >
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                          </svg>
-                          <span>{img.likes}</span>
-                        </div>
-                      </div>
-                      <span className="upload-time">Top Videos</span>
-                    </div>
                     <button
                       className="overlay-download-btn"
                       onClick={handlePopup}
@@ -261,14 +203,16 @@ const Russian = () => {
                   </div>
                   <div className="love-card-body">
                     <div className="comment-area">
+                      {/* Restoration: onWheel, onTouch, onScroll triggers */}
                       <div
                         className="comment-display no-scrollbar"
                         onClick={handlePopup}
                         onWheel={handlePopup}
                         onTouchStart={handlePopup}
+                        onScroll={handleCommentScroll}
                         style={{
                           height: '75px',
-                          overflow: 'hidden',
+                          overflowY: 'auto',
                           cursor: 'pointer',
                         }}
                       >
@@ -298,6 +242,8 @@ const Russian = () => {
                 </div>
               ))}
             </div>
+
+            {/* Restoration: Load More Button */}
             <div
               className="load-more-container"
               style={{ textAlign: 'center', margin: '30px 0 60px 0' }}
@@ -321,15 +267,16 @@ const Russian = () => {
           </div>
         ))}
 
-        {/* CONDITIONAL POPUP RENDERING */}
-        {countryCode === 'IN' ? (
-          <AdultPopup isOpen={showPopup} onClose={() => setShowPopup(false)} />
-        ) : (
-          <AdultPopup isOpen={showPopup} onClose={() => setShowPopup(false)} />
+        {/* Web-specific Community Popup */}
+        {!isTelegram && (
+          <CommunityPopup
+            isOpen={showPopup}
+            onClose={() => setShowPopup(false)}
+          />
         )}
       </main>
     </div>
   );
 };
 
-export default Russian;
+export default Adult;

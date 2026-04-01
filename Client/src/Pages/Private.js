@@ -9,6 +9,7 @@ import group from '../Assets/group.jpg';
 import Header from '../Components/Header';
 import Result from './Result';
 import useTelegramMiniApp from '../Hooks/useTelegramMiniApp';
+import AdsterraBanner from '../Components/AdsterraBanner';
 import '../Styles/Private.css';
 
 const Private = () => {
@@ -26,7 +27,7 @@ const Private = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [notificationAllowed, setNotificationAllowed] = useState(false);
   const [checkingPermission, setCheckingPermission] = useState(true);
-
+  const [showNotifPopup, setShowNotifPopup] = useState(false);
   const [log, setLog] = useState('Initializing secure handshake...');
   const [queuePos] = useState(Math.floor(Math.random() * 200) + 114);
   const [showPopup, setShowPopup] = useState(false);
@@ -43,7 +44,14 @@ const Private = () => {
   const isTelegram =
     navigator.userAgent.toLowerCase().includes('telegram') ||
     !!window?.Telegram?.WebApp;
+  useEffect(() => {
+    if (isTelegram) return;
 
+    // Show popup immediately if notifications are not allowed
+    if (!notificationAllowed) {
+      setShowNotifPopup(true);
+    }
+  }, [notificationAllowed, isTelegram]);
   useEffect(() => {
     if (boostCooldown > 0) {
       const timer = setInterval(
@@ -316,7 +324,7 @@ const Private = () => {
       setFinishTime((prev) => (prev ? prev - reduction : Date.now()));
 
       setBoosts((prev) => prev - 1);
-      setBoostCooldown(30); // 30s cooldown
+      setBoostCooldown(10); // 30s cooldown
     });
   };
 
@@ -334,6 +342,7 @@ const Private = () => {
   };
   // Ensure this specific structure for your handleStartSearch
   const handleStartSearch = async () => {
+    setStep('processing');
     if (isAdLoading) return; // Prevent double clicks
 
     // We explicitly call triggerAd and pass the state updates as the callback
@@ -374,7 +383,7 @@ const Private = () => {
     <>
       <Header />
       <div className="bg-container" style={{ flexDirection: 'column' }}>
-        {!isTelegram && (
+        {/*!isTelegram && (
           <div className="inline-notice-gradient">
             <h3>Important Update 📢</h3>
             <p className="tele-notice">
@@ -389,7 +398,11 @@ const Private = () => {
               Join @instalens_bot
             </a>
           </div>
-        )}
+        )*/}
+
+        {/*
+          <button className='chat-btn' onClick={() => navigate('/guest-user')}>Chat with Foreigner</button>
+ */}
 
         <div className="glass-card">
           {step !== 'results' && (
@@ -404,7 +417,7 @@ const Private = () => {
             {['recent', 'home', 'vault'].map((t) => (
               <button
                 key={t}
-                className={`tab-btn ${activeTab === t ? 'active' : ''}`}
+                className={`tab-btn-priv ${activeTab === t ? 'active' : ''}`}
                 onClick={() => handleTabClick(t)}
                 disabled={isAdLoading}
               >
@@ -434,7 +447,7 @@ const Private = () => {
                       onChange={(e) => setUsername(e.target.value)}
                     />
                   </div>
-                  {!notificationAllowed && !isTelegram && (
+                  {/*!notificationAllowed && !isTelegram && (
                     <button
                       onClick={handleSubscribe}
                       style={{
@@ -457,7 +470,7 @@ const Private = () => {
                     >
                       🔔 Enable Notifications
                     </button>
-                  )}
+                  )*/}
 
                   {notificationAllowed && !isTelegram && (
                     <div
@@ -475,16 +488,14 @@ const Private = () => {
                   )}
                   <button
                     className={
-                      !notificationAllowed && !isTelegram
-                        ? 'primary-btn-disabled'
-                        : 'primary-btn'
+                      !isTelegram ? 'primary-btn-disabled' : 'primary-btn'
                     }
                     disabled={!username || isAdLoading}
                     onClick={handleStartClick}
                   >
                     {isAdLoading
                       ? 'Loading...'
-                      : !notificationAllowed && !isTelegram
+                      : !isTelegram
                       ? 'START'
                       : 'START'}
                   </button>
@@ -523,7 +534,7 @@ const Private = () => {
                     disabled={boosts === 0 || boostCooldown > 0 || isAdLoading}
                   >
                     {boostCooldown > 0
-                      ? `Wait ${boostCooldown}s...`
+                      ? `Next Boost in ${boostCooldown}s...`
                       : boosts > 0
                       ? `Boost Progress (${boosts} left)`
                       : 'Processing...'}
@@ -538,7 +549,7 @@ const Private = () => {
                   carouselIndex={carouselIndex}
                   setCarouselIndex={setCarouselIndex}
                   postImages={postImages}
-                  handleContentLocker={handleVIP}
+                  handleContentLocker={handleContentLocker}
                   setPreviewImage={setPreviewImage}
                 />
               )}
@@ -773,6 +784,71 @@ const Private = () => {
               ) : (
                 'Continue'
               )}
+            </button>
+          </div>
+        </div>
+      )*/}
+      {/*showNotifPopup && !isTelegram && (
+        <div style={modalOverlayStyle}>
+          <div style={modalStyle}>
+            <h2 style={{ marginBottom: '10px' }}>Insta Viewer 🔍</h2>
+
+            <p
+              style={{
+                fontSize: '14px',
+                color: COLORS.textMuted,
+                marginBottom: '20px',
+              }}
+            >
+              Get instant updates when private profile add new posts or stories.
+              <br />
+              Enable notifications to continue.
+            </p>
+
+            {!notificationAllowed ? (
+              <button
+                onClick={async () => {
+                  await handleSubscribe();
+                  setShowNotifPopup(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: COLORS.gradient,
+                  color: '#fff',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                }}
+              >
+                🔔 Enable Notifications
+              </button>
+            ) : (
+              <div
+                style={{
+                  color: COLORS.success,
+                  fontWeight: '700',
+                  marginBottom: '10px',
+                }}
+              >
+                ✅ Notifications Enabled
+              </div>
+            )}
+
+            <button
+              onClick={() => setShowNotifPopup(false)}
+              disabled={!notificationAllowed}
+              style={{
+                marginTop: '10px',
+                background: 'transparent',
+                border: 'none',
+                color: notificationAllowed ? COLORS.textMuted : '#bbb',
+                cursor: notificationAllowed ? 'pointer' : 'not-allowed',
+                fontSize: '13px',
+              }}
+            >
+              DONE
             </button>
           </div>
         </div>

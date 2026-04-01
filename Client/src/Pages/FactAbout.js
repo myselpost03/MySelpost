@@ -39,9 +39,9 @@ const navigate = useNavigate();
         <button className="tab-btn" onClick={() => navigate('/home-page')}>
           🏠<span>Home</span>
         </button>
-        <button className="tab-btn">
-          🔔<span>Notify</span>
-        </button>
+        <button className="tab-btn" onClick={() => navigate('/group-chat')}>
+              💬 <span>Group Chat</span>
+            </button>
        {/*<button className="tab-btn">
           🪙<span>Coins</span>
         </button>*/}

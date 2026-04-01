@@ -5,18 +5,26 @@ import {
   Routes,
   Route,
   useLocation,
+  matchPath,
 } from 'react-router-dom';
 import ProtectedRoute from './Utils/ProtectedRoute';
 import {
   Home,
   Register,
   Login,
+  ChatRoom,
   Private,
+  Lifehacks,
   FactAbout,
   FactTerms,
+  GuestProfiles,
+  GuestChat,
   FactPrivacy,
   FactPins,
+  FactDate,
   FactProfile,
+  GroupChat,
+  FactVideos,
   ResetPassword,
   Sketch,
   AppSketch,
@@ -31,7 +39,7 @@ import {
   Prompt,
   Pricing,
   Secret,
-  Russian,
+  Adult,
   MissScratch,
   Settings,
   Roast,
@@ -61,6 +69,10 @@ import { isRunningAsPWA } from './CheckPWA';
 import { trackEvent } from './Utils/analytics';
 import i18n from './i18n';
 import { isWebView } from './Utils/isWebView';
+import { isTelegram } from './Utils/useIsTelegram';
+import DatingNavbar from './Components/DatingNavbar';
+
+const HomeComponent = isTelegram ? GuestUser : Adult;
 
 const protectedRoutes = [
   { path: '/notifications', component: Notifications },
@@ -68,52 +80,66 @@ const protectedRoutes = [
   { path: '/profile/:id', component: Profile },
   { path: '/settings', component: Settings },
   {
-    /* path: '/prompt', component: Prompt },
+    /*
+  { path: '/prompt', component: Prompt },
   { path: '/app-doodle', component: AppDoodle },
   { path: '/payments/:id', component: PaymentPage },
   { path: '/web-doodle', component: WebDoodle },
-  { path: '/coins/:id', component: Coins */
+  { path: '/coins/:id', component: Coins 
+  */
   },
 ];
 
 const publicRoutes = [
-  { path: '/', component: FactPins }, // Private, Home, Sketch
-  { path: '/demo', component: Demo },
-  { path: '/viewer', component: Private },
-  { path: '/fact-pins', component: FactPins },
-  
-  { path: '/fact-profile', component: FactProfile },
-  { path: '/fact-about', component: FactAbout },
-  { path: '/fact-terms', component: FactTerms },
-  { path: '/fact-privacy', component: FactPrivacy },
-  
-  { path: '/results', component: Results },
-  { path: '/refund', component: Refund },
-  { path: '/chat-entrance', component: ChatEntrance },
-  { path: '/register', component: Register },
-  { path: '/media', component: Media },
+  { path: '/', component: GuestProfiles }, // FactPins, Home, Sketch
+  { path: '/home-page', component: GuestProfiles },
   { path: '/login', component: Login },
+  { path: '/register', component: Register },
+  { path: '/community', component: Adult },
+
+  { path: '/chat-room', component: ChatRoom },
+  { path: '/group-chat', component: GroupChat },
+  { path: '/guest-profiles', component: GuestProfiles },
+  { path: '/guest-chat/:receiverId', component: GuestChat },
   { path: '/guest-user', component: GuestUser },
   { path: '/chat-list', component: ChatList },
+
   { path: '/roast', component: Roast },
+
   { path: '/about', component: About },
   { path: '/terms', component: Terms },
   { path: '/privacy-policy', component: Privacy },
   { path: '/updates', component: Updates },
   { path: '/contact-us', component: Contact },
+
   { path: '/reset-password', component: ResetPassword },
 
-  { path: '/home-page', component: FactPins }, //Private, Viewer
+  { path: '/demo', component: Demo },
+
   {
-    /*
-  { path: '/viewer', component: EnterPage },
+    /* 
+  { path: '/viewer', component: Private },
+  { path: '/fact-pins', component: FactPins },
+  { path: '/fact-videos', component: FactVideos },
+  { path: '/private', component: Private },
+  { path: '/fact-profile', component: FactProfile },
+  { path: '/fact-about', component: FactAbout },
+  { path: '/fact-terms', component: FactTerms },
+  { path: '/fact-privacy', component: FactPrivacy },
+  { path: '/results', component: Results },
+  { path: '/refund', component: Refund },
+  { path: '/chat-entrance', component: ChatEntrance },
+  { path: '/media', component: Media },
+  { path: '/fact-date', component: FactDate }, 
+  { path: '/life-hacks', component: Lifehacks },
   { path: '/live-support', component: LiveSupport },
   { path: '/options', component: OptionsPage },
   { path: '/pricing', component: Pricing },
   { path: '/app-sketch', component: AppSketch },
   { path: '/web-sketch', component: WebSketch },
   { path: '/share-secret', component: Secret },
-  { path: '/miss-scratch', component: MissScratch */
+  { path: '/miss-scratch', component: MissScratch 
+  */
   },
 ];
 
@@ -390,7 +416,7 @@ function AppContent() {
         navigate('/home-page', { replace: true }); //guest-user
         return;
       } else {
-        navigate('/home-page', { replace: true }); //chat-list
+        navigate('/chat-list', { replace: true }); //chat-list
         return;
       }
     }
@@ -408,7 +434,11 @@ function AppContent() {
 
     setReady(true); // safe to render routes
   }, [navigate, location.pathname]);
+  const hideNavbarRoutes = ['/chat/:id', '/guest-chat/:receiverId', '/chat-room'];
 
+  const shouldHideNavbar = hideNavbarRoutes.some((pattern) =>
+    matchPath(pattern, location.pathname)
+  );
   if (!ready && isMobileDevice() && location.pathname === '/') {
     // Prevent flicker — show nothing or a loader until redirect happens
     return <LoadingSpinner />; // could be <LoadingSpinner /> if you want
@@ -435,6 +465,8 @@ function AppContent() {
         ))}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      {!shouldHideNavbar && <DatingNavbar />}
+
       <InternetStatusAlert />
       {/*showInstallBanner && <InstallBanner />*/}
       {alertMessage && (
@@ -444,12 +476,12 @@ function AppContent() {
           onClose={() => setAlertMessage(null)}
         />
       )}
-      {showFeedback && (
+      {/*showFeedback && (
         <FeedbackPopup
           onSubmitSuccess={handleSubmitSuccess}
           onClose={() => setShowFeedback(false)}
         />
-      )}
+      )*/}
     </>
   );
 }

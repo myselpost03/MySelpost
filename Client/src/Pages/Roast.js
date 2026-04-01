@@ -15,7 +15,7 @@ import {
 import imageCompression from 'browser-image-compression';
 import bannedWords from '../JSON/bannedWords.json';
 import toast, { Toaster } from 'react-hot-toast';
-import Demo from "./Demo";
+import Demo from './Demo';
 import {
   saveRoastImages,
   getRoastImages,
@@ -24,7 +24,9 @@ import {
   getRoastLastSync,
 } from '../Utils/db';
 import i18n from '../i18n';
-import AdsterraBanner from "../Components/AdsterraBanner";
+import AdsterraBanner from '../Components/AdsterraBanner';
+import DatingNavbar from '../Components/DatingNavbar';
+import CommunityPopup from '../Components/CommunityPopup';
 
 const timeAgo = (date) => {
   const inputDate = new Date(date + 'Z'); // 👈 Ensures it's treated as UTC
@@ -52,8 +54,16 @@ function Roast() {
   const [cards, setCards] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
- const [showPopup, setShowPopup] = useState(false);
-  
+  const [showPopup, setShowPopup] = useState(false);
+  const [showCommunityPopup, setShowCommunityPopup] = useState(false);
+const [swipeCount, setSwipeCount] = useState(() => {
+  return parseInt(localStorage.getItem('freeSwipeCount') || '0', 10);
+});
+ 
+  const isTelegram =
+    typeof window !== 'undefined' &&
+    window.Telegram?.WebApp &&
+    window.Telegram.WebApp.initData !== '';
   const [showSwipeGuide, setShowSwipeGuide] = useState(
     localStorage.getItem('hasSeenSwipeGuide') !== 'true'
   );
@@ -69,7 +79,6 @@ function Roast() {
   );
   const currentUser = JSON.parse(localStorage.getItem('user'));
 
-
   const toggleFAB = () => {
     if (currentUser) {
       setFabOpen((prev) => !prev);
@@ -79,7 +88,7 @@ function Roast() {
         text: i18n.t('loginRequired'),
         withButton: true,
       });
-    } 
+    }
   };
 
   const handleShare = () => {
@@ -210,6 +219,28 @@ function Roast() {
       setLoading(false);
     }
   };
+
+  const canSwipe = () => {
+  if (isTelegram) return true; // Telegram users have no limit
+  if (swipeCount < 10) return true; // Web users get 10 free
+  return false;
+};
+
+const handleRestrictedSwipe = (direction) => {
+  if (canSwipe()) {
+    // If not Telegram, increment the counter
+    if (!isTelegram) {
+      setSwipeCount((prev) => prev + 1);
+    }
+    handleSwipe(direction);
+  } else {
+    setShowCommunityPopup(true);
+  }
+};
+
+  useEffect(() => {
+  localStorage.setItem('freeSwipeCount', swipeCount.toString());
+}, [swipeCount]);
 
   useEffect(() => {
     fetchCardsData();
@@ -364,22 +395,45 @@ function Roast() {
 
   const handleBack = () => navigate('/');
 
+  const [exitDirection, setExitDirection] = useState(null);
+
   const handleSwipe = (direction) => {
     if (showSwipeGuide) {
       setShowSwipeGuide(false);
       localStorage.setItem('hasSeenSwipeGuide', 'true');
     }
 
-    if (direction === 'Left' && currentIndex < cards.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else if (direction === 'Right' && currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
+    // Set the direction to trigger CSS animation
+    setExitDirection(direction);
+
+    // Wait for animation to finish (e.g., 300ms) before changing the card
+    setTimeout(() => {
+      if (direction === 'Left' && currentIndex < cards.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+      } else if (direction === 'Right' && currentIndex < cards.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+      }
+      // Reset the animation state for the next card
+      setExitDirection(null);
+      setImageLoaded(false); // Reset image loader for next card
+    }, 300);
   };
 
   const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => handleSwipe('Left'),
-    onSwipedRight: () => handleSwipe('Right'),
+    onSwipedLeft: () => {
+      if (!isTelegram) {
+        setShowCommunityPopup(true);
+        return;
+      }
+      handleSwipe('Left');
+    },
+    onSwipedRight: () => {
+      if (!isTelegram) {
+        setShowCommunityPopup(true);
+        return;
+      }
+      handleSwipe('Right');
+    },
     preventScrollOnSwipe: true,
     trackMouse: true,
   });
@@ -525,7 +579,7 @@ function Roast() {
   return (
     <>
       <SketchyHeader title={i18n.t('roast')} onBack={handleBack} />
- 
+
       <div className="roast-page" {...swipeHandlers}>
         <div className="roast-card-container">
           {showSwipeGuide && (
@@ -536,7 +590,11 @@ function Roast() {
             </div>
           )}
 
-          <div className={`roast-card animated-card`}>
+          <div
+            className={`roast-card animated-card ${
+              exitDirection ? `exit-${exitDirection}` : ''
+            }`}
+          >
             <div className="roast-image-container">
               {!imageLoaded && <div className="shimmer-overlay"></div>}
 
@@ -552,8 +610,36 @@ function Roast() {
                 {timeAgo(cards[currentIndex].created_at)}
               </div>
             </div>
-
-            {/* Sketchy Share Buttons */}
+            <div className="card-actions-row">
+              <button
+                className="circle-btn dislike"
+                onClick={() => {
+                  if (!isTelegram) {
+                    setShowCommunityPopup(true);
+                    return;
+                  }
+                  handleSwipe('Left');
+                }}
+              >
+                ✖
+              </button>
+              {/*<button className="circle-btn chat-gold">
+                💬 <span className="coin-tag">💰 5</span>
+              </button>*/}
+              <button
+                className="circle-btn like"
+                onClick={() => {
+                  if (!isTelegram) {
+                    setShowCommunityPopup(true);
+                    return;
+                  }
+                  handleSwipe('Right');
+                }}
+              >
+                ❤️
+              </button>
+            </div>
+            {/* Sketchy Share Buttons 
             <div className="sketchy-share-buttons">
               <FacebookShareButton
                 url={window.location.href}
@@ -591,7 +677,7 @@ function Roast() {
                   )}
                 </button>
               </WhatsappShareButton>
-            </div>
+            </div>*/}
 
             <ul className="roast-list">
               {cards[currentIndex].roasts
@@ -611,6 +697,7 @@ function Roast() {
                   </li>
                 ))}
             </ul>
+
             <div className="input-row">
               <input
                 type="text"
@@ -639,7 +726,6 @@ function Roast() {
             </div>
           </div>
         </div>
-        
       </div>
       <input
         type="file"
@@ -647,7 +733,8 @@ function Roast() {
         id="upload-input"
         style={{ display: 'none' }}
         onChange={handleImageUpload}
-      />{/*
+      />
+      {/*
    <div className="roast-banner">
           <AdsterraBanner />
         </div>*/}
@@ -700,7 +787,7 @@ function Roast() {
               className="top-roast-popup-image"
             />
             <p className="popup-roast-text">{topRoastData.text}</p>
-            <span className="popup-roast-votes">🔥 {topRoastData.votes}</span>
+            {/*<span className="popup-roast-votes">🔥 {topRoastData.votes}</span>*/}
           </div>
         </div>
       )}
@@ -711,13 +798,19 @@ function Roast() {
           onClose={() => setAlertMessage(null)}
         />
       )*/}
-      
+
       {fullImage && (
         <div className="full-image-overlay" onClick={() => setFullImage(null)}>
           <img src={fullImage} alt="Full Roast" className="full-image-popup" />
         </div>
       )}
-
+      {!isTelegram && (
+        <CommunityPopup
+          isOpen={showCommunityPopup}
+          onClose={() => setShowCommunityPopup(false)}
+        />
+      )}
+      <DatingNavbar />
       <Toaster />
     </>
   );

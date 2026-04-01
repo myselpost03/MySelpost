@@ -371,13 +371,42 @@ const Register = () => {
     }
   };
 
-  useEffect(() => {
-    fetch('https://ipwho.is/?fields=country_code')
-      .then((res) => res.json())
-      .then((response) => {
-        setCountry(response.country_code || 'Hidden');
-      })
-      .catch(() => setCountry('Hidden'));
+useEffect(() => {
+    const fetchCountry = async () => {
+      try {
+        // Try primary API
+        let res = await fetch('https://ipapi.co/json/');
+        let data = await res.json();
+
+        if (data && data.country_code) {
+          setCountry(data.country_code);
+          localStorage.setItem('user_country', data.country_name);
+          return;
+        }
+
+        // Fallback API
+        res = await fetch('https://ipwho.is/?fields=country_code');
+        data = await res.json();
+
+        if (data && data.country_code) {
+          setCountry(data.country_code); // returns "IN", "US"
+          localStorage.setItem('user_country', data.country);
+          return;
+        }
+
+        throw new Error('No country found');
+      } catch (err) {
+        console.error('Country detection failed:', err);
+        setCountry('Hidden');
+      }
+    };
+
+    const cached = localStorage.getItem('user_country');
+    if (cached) {
+      setCountry('Hidden');
+    } else {
+      fetchCountry();
+    }
   }, []);
 
   useEffect(() => {

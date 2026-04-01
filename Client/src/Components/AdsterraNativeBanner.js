@@ -7,7 +7,7 @@ export default function AdsterraNativeBanner() {
     script.async = true;
     script.setAttribute("data-cfasync", "false");
     script.src =
-      "https://pl27196664.effectivegatecpm.com/61abb6ea6099c52057a640165e20675a/invoke.js";
+      "https://pl27196664.profitablecpmratenetwork.com/61abb6ea6099c52057a640165e20675a/invoke.js";
 
     document.body.appendChild(script);
 

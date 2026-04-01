@@ -8,6 +8,8 @@ import { trackEvent } from '../Utils/analytics';
 import { useTranslation } from 'react-i18next';
 import AdultPopup from '../Components/AdultPopup';
 import Tip from '../Pages/Tip';
+import CommunityPopup from './CommunityPopup';
+
 const Header = () => {
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -27,6 +29,13 @@ const Header = () => {
 
   const [adVisible, setAdVisible] = useState(false);
   const [closeAdCountdown, setCloseAdCountdown] = useState(5); // 5 seconds countdown
+   const [showCommunityPopup, setShowCommunityPopup] = useState(false);
+ 
+   const isTelegram =
+     typeof window !== 'undefined' &&
+     window.Telegram?.WebApp &&
+     window.Telegram.WebApp.initData !== '';
+ 
   // Fetch user location on mount
   useEffect(() => {
     const detectLocation = async () => {
@@ -208,7 +217,11 @@ const Header = () => {
   };
 
   const handleChat = () => {
-    navigate('/register');
+    if (isTelegram){
+      navigate('/register')
+    } else {
+      setShowCommunityPopup(true);
+    }
   };
 
   const handleRoast = () => {
@@ -221,11 +234,15 @@ const Header = () => {
   };
 
   const handleMobileRedirect = (path) => {
-    if (isMobile) navigate(path);
+   if (isTelegram){
+     if (isMobile) navigate(path);
+   } else {
+    setShowCommunityPopup(true)
+   }
   };
 
   return (
-    <header className="header">
+    <header className="header-my">
       <div className="logo-container">
         <Link to="/" className="logo-header">
           MySelpost
@@ -319,9 +336,9 @@ const Header = () => {
       ) : (
         <div className="nav-logged-in">
           <div className="roast-button-container">
-            <button onClick={handleRoast} className="profile-button">
+            {/*<button onClick={() => navigate('/roast')} className="profile-button">
               Roast
-            </button>
+            </button>*/}
             {/*<span className="new-badge">New</span>*/}
           </div>
 
@@ -409,6 +426,12 @@ const Header = () => {
       ) : (
         <AdultPopup isOpen={showPopup} onClose={() => setShowPopup(false)} />
       )}
+       {!isTelegram && (
+              <CommunityPopup
+                isOpen={showCommunityPopup}
+                onClose={() => setShowCommunityPopup(false)}
+              />
+            )}
     </header>
   );
 };

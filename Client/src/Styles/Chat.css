@@ -1,6 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Caveat&display=swap');
 @import url('https://fonts.googleapis.com/css?family=Patrick+Hand:regular');
 @import url(https://fonts.googleapis.com/css?family=Signika:regular,500,600,700);
+
+.chat-room-input-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.chat-room-input-form input {
+  flex: 1; /* takes remaining space */
+  min-width: 0; /* prevents overflow */
+}
+
+.chat-room-input-form button {
+  flex-shrink: 0; /* prevents shrinking */
+}
+
 .reveal-number {
   position: fixed;
   margin-top: 20%;

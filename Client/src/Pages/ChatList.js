@@ -17,7 +17,7 @@ import {
   FaComments,
   FaSearch,
   FaFilter,
-  FaMapMarkerAlt,
+  FaThumbtack,
   FaHeart,
   FaBolt,
   FaUsers,
@@ -37,6 +37,7 @@ import LoadingSpinner from '../Components/LoadingSpinner';
 import Maps from '../Components/Maps';
 import toast, { Toaster } from 'react-hot-toast';
 import i18n from '../i18n';
+import DatingNavbar from '../Components/DatingNavbar';
 
 const countryNameToCode = {
   AF: 'AF',
@@ -247,6 +248,8 @@ const ChatList = () => {
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem('activeTab') || 'all';
   });
+  const [isAdLoading, setIsAdLoading] = useState(false);
+  const adShowRef = useRef(null);
   const [clickedUserId, setClickedUserId] = useState(null);
   const [firstLoad, setFirstLoad] = useState(true);
   const [loading, setLoading] = useState(true); // tab/filter loading
@@ -934,10 +937,10 @@ const ChatList = () => {
 
     // 4. Optimization: Functional state update
     setUsers((prevUsers) =>
-    prevUsers.map((u) =>
-      u.id === targetUser.id ? { ...u, pinned: true } : u
-    )
-  );
+      prevUsers.map((u) =>
+        u.id === targetUser.id ? { ...u, pinned: true } : u
+      )
+    );
 
     // 5. Final navigation
     navigate(path, { state: { targetUser } });
@@ -945,11 +948,19 @@ const ChatList = () => {
 
   // ------------------- filteredUsers logic -------------------
   const filteredUsers = useMemo(() => {
-    // 1. Pre-calculate search term once to avoid O(n) calls to toLowerCase()
+    // 1. Pre-calculate search term once
     const lowerSearch = searchTerm.toLowerCase().trim();
 
     // 2. Single-pass Filter
     let filtered = users.filter((user) => {
+      // --- GENDER ENFORCEMENT BY TAB ---
+      // "all" tab now strictly shows females
+      if (activeTab === 'all' && user.gender !== 'female') return false;
+
+      // "male" tab strictly shows males
+      if (activeTab === 'male' && user.gender !== 'male') return false;
+      // ---------------------------------
+
       if (genderFilter !== 'all' && user.gender !== genderFilter) return false;
       if (countryFilter !== 'all' && user.country !== countryFilter)
         return false;
@@ -962,7 +973,8 @@ const ChatList = () => {
       const hasUnread = (unreadCounts[user.id] || 0) > 0;
       if (activeTab === 'pinned' && !user.pinned) return false;
       if (activeTab === 'inbox' && !hasUnread) return false;
-      // Original logic: if not inbox/pinned, exclude those with unread counts
+
+      // Logic: if not inbox/pinned, exclude those with unread counts
       if (activeTab !== 'pinned' && activeTab !== 'inbox' && hasUnread)
         return false;
 
@@ -971,7 +983,7 @@ const ChatList = () => {
       return true;
     });
 
-    // 3. Priority Sorting (Optimized with a pre-defined map or fixed values)
+    // 3. Priority Sorting
     filtered.sort((a, b) => {
       const bUnread = unreadCounts[b.id] || 0;
       const aUnread = unreadCounts[a.id] || 0;
@@ -981,22 +993,20 @@ const ChatList = () => {
       const aHasPic = a.avatar !== empty ? 1 : 0;
       if (bHasPic !== aHasPic) return bHasPic - aHasPic;
 
-      // Optimized priority logic (avoiding function declaration inside sort)
       const pB = (b.verified ? 3000 : 1000) + (b.pinned ? 1000 : 0);
       const pA = (a.verified ? 3000 : 1000) + (a.pinned ? 1000 : 0);
       return pB - pA;
     });
 
-    // 4. Tab-Specific Formatting
-    if (activeTab === 'all') {
-      // Optimized Round-Robin: Group and Sort in one pass where possible
+    // 4. Tab-Specific Formatting (Round-Robin for 'all' and 'male')
+    // We apply round-robin to both 'all' (females) and 'male' (males) for country diversity
+    if (activeTab === 'all' || activeTab === 'male') {
       const groups = new Map();
       filtered.forEach((u) => {
         if (!groups.has(u.country)) groups.set(u.country, []);
         groups.get(u.country).push(u);
       });
 
-      // Sort subgroups by date (pre-convert to number for faster comparison)
       groups.forEach((list) =>
         list.sort(
           (a, b) =>
@@ -1015,7 +1025,7 @@ const ChatList = () => {
       }
       filtered = roundRobin;
     } else if (activeTab === 'online') {
-      // Optimized Alternating Genders
+      // Keep your existing alternating logic for the Online tab
       const females = [],
         males = [],
         others = [];
@@ -1070,10 +1080,61 @@ const ChatList = () => {
     },
     [loadingMore, hasMore]
   ); // Only recreate if these change
+  const togglePin = async (targetUserId) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (!user) return;
+
+    const alreadyPinned = users.find((u) => u.id === targetUserId && u.pinned);
+
+    if (alreadyPinned) {
+      // Unpin
+      const { error } = await supabase
+        .from('pinned_users')
+        .delete()
+        .match({ user_id: user.id, pinned_user_id: targetUserId });
+
+      if (!error) {
+        setUsers((prevUsers) =>
+          prevUsers.map((u) =>
+            u.id === targetUserId ? { ...u, pinned: false } : u
+          )
+        );
+      } else {
+        console.error('Error unpinning:', error.message);
+      }
+    } else {
+      // Pin
+      const { error } = await supabase
+        .from('pinned_users')
+        .insert([{ user_id: user.id, pinned_user_id: targetUserId }]);
+
+      if (!error) {
+        setUsers((prevUsers) =>
+          prevUsers.map((u) =>
+            u.id === targetUserId ? { ...u, pinned: true } : u
+          )
+        );
+      } else {
+        console.error('Error pinning:', error.message);
+      }
+    }
+  };
 
   const hasPinnedNotification = users.some(
     (u) => u.pinned && unreadCounts[u.id] > 0
   );
+
+  const handlePinToggle = (e, userId) => {
+    e.preventDefault(); // Stop navigation
+    e.stopPropagation(); // Prevent click bubbling
+
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === userId ? { ...user, pinned: !user.pinned } : user
+      )
+    );
+  };
 
   const handleSearchSubmit = async () => {
     trackEvent({
@@ -1235,6 +1296,74 @@ const ChatList = () => {
       // Optional: Revert UI count if essential, but usually not needed for 'seen' status
     }
   };
+
+useEffect(() => {
+    if (window.initCdTma) {
+      window
+        .initCdTma({ id: '6115107' }) // Using your specific ID
+        .then((show) => {
+          adShowRef.current = show;
+        })
+        .catch((e) => console.error('Ad Init Error:', e));
+    }
+  }, []);
+
+  // 2. The trigger function to handle the ad flow
+  const handleProfileClick = async (e, userId) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // If the ad function isn't ready, just navigate
+    if (typeof adShowRef.current !== 'function') {
+      navigate(`/profile/${userId}`);
+      return;
+    }
+
+    setIsAdLoading(true);
+    try {
+      // Show the video ad
+      await adShowRef.current();
+      // After ad finishes, navigate
+      navigate(`/profile/${userId}`);
+    } catch (e) {
+      console.error('Ad error:', e);
+      navigate(`/profile/${userId}`); // Navigate anyway on error
+    } finally {
+      setIsAdLoading(false);
+    }
+  };  
+
+  const checkChatLimit = (targetUser) => {
+    if (targetUser.gender !== 'female') return true;
+
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000;
+
+    // Get stored limit data
+    const limitData = JSON.parse(localStorage.getItem('chat_limit_data')) || {
+      startTime: now,
+      contactedIds: [],
+    };
+
+    // Reset if the hour has passed
+    if (now - limitData.startTime > oneHour) {
+      limitData.startTime = now;
+      limitData.contactedIds = [];
+    }
+
+    // If already chatted with this specific girl, allow it
+    if (limitData.contactedIds.includes(targetUser.id)) return true;
+
+    // Check if limit is reached for NEW girls
+    if (limitData.contactedIds.length >= 10) {
+      return false;
+    }
+
+    // Record new contact and save
+    limitData.contactedIds.push(targetUser.id);
+    localStorage.setItem('chat_limit_data', JSON.stringify(limitData));
+    return true;
+  };
   // 👉 searchLoading can be used inside your list UI
   {
     searchLoading && (
@@ -1249,6 +1378,15 @@ const ChatList = () => {
 
   return (
     <>
+    {isAdLoading && (
+        <div className="glass-modal-overlay">
+          <div className="glass-modal-card">
+            <LoadingSpinner />
+            <h3 style={{ marginTop: '15px' }}>Unlocking Profile...</h3>
+            <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>Video ad is loading</p>
+          </div>
+        </div>
+      )}
       <Header />
       <div className="chatlist-container">
         <h2 className="chatlist-title">🖋️ Your Circles</h2>
@@ -1334,7 +1472,7 @@ const ChatList = () => {
 
           <div className="tab-bar">
             <button
-              className={`sketchy-tab ${activeTab === 'all' ? 'active' : ''}`}
+              className={`sketchy-tab`}
               onClick={() => {
                 setActiveTab('all');
                 localStorage.setItem('activeTab', 'all');
@@ -1342,8 +1480,42 @@ const ChatList = () => {
             >
               {i18n.t('all')}
             </button>
-          
-           {/* <button
+            <button
+              className={`sketchy-tab ${activeTab === 'male' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('male');
+                localStorage.setItem('activeTab', 'male');
+              }}
+            >
+              Male
+            </button>
+            <button
+              className={`sketchy-tab ${
+                activeTab === 'pinned' ? 'active' : ''
+              }`}
+              onClick={() => setActiveTab('pinned')}
+              style={{ position: 'relative' }}
+            >
+              📌 Pinned
+              {hasPinnedNotification && (
+                <span
+                  className="sketchy-badge pinned-tab-badge"
+                  style={{
+                    position: 'absolute',
+                    top: '-6px',
+                    right: '-6px',
+                    fontSize: '0.7rem',
+                    backgroundColor: '#e53935',
+                    padding: '2px 6px',
+                    borderRadius: '12px',
+                  }}
+                >
+                  !
+                </span>
+              )}
+            </button>
+
+            {/* <button
               className={`sketchy-tab ${
                 activeTab === 'pinned' ? 'active' : ''
               }`}
@@ -1419,25 +1591,26 @@ const ChatList = () => {
                   <FaCheck size={20} color="white" />
                 </button>
               )}
+        
 
-            <button
+            {/*  <button
               className={`sketchy-tab ${
                 activeTab === 'online' ? 'active' : ''
               }`}
-              /** 
+           
   onClick={() => {
     const newTab = activeTab === 'online' ? 'all' : 'online';
     setActiveTab(newTab);
     setAllFilter(newTab === 'online' ? 'online' : 'all');
     localStorage.setItem('activeTab', newTab);
   }} 
-  */
+  
               onClick={handleRoast}
             >
               {i18n.t('online')}
-            </button>
+            </button>*/}
 
-            <button
+            {/* <button
               className={`sketchy-tab ${activeTab === 'maps' ? 'active' : ''}`}
               onClick={() => {
                 const newTab = activeTab === 'maps' ? 'all' : 'maps';
@@ -1450,10 +1623,9 @@ const ChatList = () => {
             </button>
 
             <button className="sketchy-tab" onClick={handleRoast}>
-              {' '}
-              {/* handleFilterClick */}
+             
               <FaFilter style={{ marginRight: '6px' }} />
-            </button>
+            </button>*/}
 
             {activeTab === 'all' && (
               <>
@@ -1505,24 +1677,36 @@ const ChatList = () => {
                         user.notifications > 0 ? 'has-notification' : ''
                       }`}
                       onClick={(e) => {
+                        // Check limit before navigating
+                        const canChat = checkChatLimit(user);
+
+                        if (!canChat) {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          // Trigger your "Cool Popup" here
+                          setAlertMessage(
+                            'Limit reached! You can chat with 10 girls per hour. Try again in a bit! ⏳'
+                          );
+
+                          return;
+                        }
+
                         handleUserClick(user.id);
                         handleProtectedNavigation(e, `/chat/${user.id}`, user);
                       }}
                     >
                       <div className="user-avatar-wrapper">
-                        <Link
-                          to={`/profile/${user.id}`}
-                          onClick={(e) => {
-                            e.stopPropagation(); // 👈 prevent parent click
-                          }}
-                        >
-                          <img
-                            src={user.avatar}
-                            alt="avatar"
-                            onContextMenu={handleContextMenu}
-                            className="user-avatar"
-                          />
-                        </Link>
+                       <Link
+  to={`/profile/${user.id}`}
+  onClick={(e) => handleProfileClick(e, user.id)}
+>
+  <img
+    src={user.avatar}
+    alt="avatar"
+    onContextMenu={handleContextMenu}
+    className="user-avatar"
+  />
+</Link>
 
                         {unreadCounts[user.id] > 0 && (
                           <span className="sketchy-badge">
@@ -1619,13 +1803,15 @@ const ChatList = () => {
                           </span>
 
                           <div className="spacer" />
-                          {/*<FaThumbtack
-                          className={`pin-icon ${user.pinned ? "pinned" : ""}`}
-                          onClick={(e) => {
-                            handlePinToggle(e, user.id);
-                            togglePin(user.id);
-                          }}
-                        />*/}
+                          <FaThumbtack
+                            className={`pin-icon ${
+                              user.pinned ? 'pinned' : ''
+                            }`}
+                            onClick={(e) => {
+                              handlePinToggle(e, user.id);
+                              togglePin(user.id);
+                            }}
+                          />
                           <FaEnvelope
                             className="dm-envelope"
                             onClick={(e) =>
@@ -1869,7 +2055,7 @@ const ChatList = () => {
           </div>
         )*/}
       </div>
-
+<DatingNavbar />
       <Toaster />
     </>
   );

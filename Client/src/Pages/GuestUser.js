@@ -7,24 +7,23 @@ import {
   FaMars,
   FaFire,
   FaVenus,
+  FaTimes,
   FaEnvelope,
-  FaThumbtack,
-  FaMagic,
   FaSearch,
   FaMapMarkerAlt,
   FaFilter,
 } from 'react-icons/fa';
-import AdsterraBanner from "../Components/AdsterraBanner";
 import empty from '../Assets/empty.png';
 import { supabase } from '../Utils/supabaseClient';
 import LoadingSpinner from '../Components/LoadingSpinner';
 import ReactCountryFlag from 'react-country-flag';
 import SketchyAlert from '../Components/SketchyAlert';
+import QuizPopup from '../Components/QuizPopup';
+import WelcomePopup from '../Components/WelcomePopup';
+import CommunityPopup from '../Components/CommunityPopup';
+import DatingNavbar from '../Components/DatingNavbar';
 import i18n from '../i18n';
-import Demo from './Demo';
-import TermsPopup from '../Components/TermsPopup';
-import AdVignette from '../Components/AdVignette';
-import { FaTimes } from 'react-icons/fa';
+
 const countryNameToCode = {
   AF: 'AF',
   AL: 'AL',
@@ -234,10 +233,13 @@ const GuestUser = () => {
   const [activeTab, setActiveTab] = useState(() => {
     return localStorage.getItem('activeTab') || 'all';
   });
-  const [searchLoading, setSearchLoading] = useState(false); // dedicated search loader
+  const [username, setUsername] = useState(
+    'Anon' + Math.floor(Math.random() * 1000)
+  );
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [isQuizOpen, setIsQuizOpen] = useState(false); // For Telegram (QuizPopup)
 
   const [alertMessage, setAlertMessage] = useState(null);
-  const [showTerms, setShowTerms] = useState(false);
 
   const [page, setPage] = useState(0); // pagination page
   const [hasMore, setHasMore] = useState(true); // track if more users exist
@@ -245,30 +247,96 @@ const GuestUser = () => {
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
-  const handleNavigate = () => {
-    navigate('/roast');
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [showCommunityPopup, setShowCommunityPopup] = useState(false);
+
+  const [tempUsername, setTempUsername] = useState('');
+  const [showModal, setShowModal] = useState(true); // Show popup on entry
+
+  const isTelegram =
+    typeof window !== 'undefined' &&
+    window.Telegram?.WebApp &&
+    window.Telegram.WebApp.initData !== '';
+
+  const handleActionClick = (e) => {
+    if (e) e.stopPropagation();
+    if (isTelegram) {
+      // Trigger handleAlert logic (SketchyAlert)
+      setAlertMessage({
+        text: i18n.t('loginForChat'),
+        withButton: true,
+      });
+    } else {
+      // Trigger CommunityPopup
+      setShowCommunityPopup(true);
+    }
   };
+
+  {
+    /*useEffect(() => {
+    // Check if the user has ever seen the welcome theme before
+    const hasSeenWelcome = localStorage.getItem('welcomeThemeShown');
+
+    if (!hasSeenWelcome) {
+      // If not, show the popup and mark it as shown in localStorage
+      setShowWelcome(true);
+      localStorage.setItem('welcomeThemeShown', 'true');
+    }
+  }, []);
+
+  // Handler to close the popup
+  const handleCloseWelcome = () => {
+    setShowWelcome(false);
+  };*/
+  }
+  {
+    /*
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('quizShown');
+
+    if (!hasVisited && isTelegram) {
+      setIsQuizOpen(true);
+      localStorage.setItem('quizShown', 'true');
+    }
+  }, []);*/
+  }
+
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
-      const { data, error } = await supabase
+
+      // 1. Start the query
+      let query = supabase
         .from('users')
         .select(
           'id, name, gender, age, country, status, decency_rating, profile_pic, google_login, created_at'
         )
-        .neq('country', 'IN')
-        .order('google_login', { ascending: true }) // false (0) comes first, true (1) comes later
-        .order('created_at', { ascending: false }) // newest first within each group
+        .neq('country', 'IN');
+
+      // 2. ONLY fetch females if the active tab is 'all'
+      if (activeTab === 'all') {
+        query = query.eq('gender', 'female');
+      } else if (activeTab === 'male') {
+        query = query.eq('gender', 'male');
+      }
+
+      // 3. Apply sorting and pagination
+      const { data, error } = await query
+        .order('google_login', { ascending: true })
+        .order('created_at', { ascending: false })
         .range(page * 10, page * 10 + 9);
 
       if (error) {
         console.error('Error fetching users:', error);
       } else {
-        if (data.length < 10) {
-          setHasMore(false); // No more data to load
-        }
+        if (data.length < 10) setHasMore(false);
+
         setUsers((prev) => {
-          const existingIds = new Set(prev.map((u) => u.id)); // assuming each user has a unique `id`
+          // If we are on page 0, it means we switched tabs or refreshed.
+          // We should replace the list, not add to it.
+          if (page === 0) return data;
+
+          const existingIds = new Set(prev.map((u) => u.id));
           const newUniqueUsers = data.filter((u) => !existingIds.has(u.id));
           return [...prev, ...newUniqueUsers];
         });
@@ -279,7 +347,10 @@ const GuestUser = () => {
     };
 
     fetchUsers();
-  }, [page]);
+  }, [page, activeTab]); // <--- CRITICAL: Add activeTab here
+  const handleNavigate = () => {
+    navigate('/roast');
+  };
 
   const handleAlert = () => {
     setAlertMessage({
@@ -288,71 +359,36 @@ const GuestUser = () => {
     });
     setShowPopup(true);
   };
+
   const filteredGuestUsers = useMemo(() => {
-    // Step 1: Filter based on gender, country, and search
-    let filtered = users.filter((user) => {
-      const genderMatch =
-        genderFilter === 'all' || user.gender === genderFilter;
-      const countryMatch =
-        countryFilter === 'all' || user.country === countryFilter;
+    return users.filter((user) => {
+      // 1. Search filter (keep this)
       const nameMatch = user.name
         ?.toLowerCase()
         .includes(searchTerm.toLowerCase());
-      return genderMatch && countryMatch && nameMatch;
-    });
+      if (!nameMatch) return false;
 
-    // Step 2: SORT BY GENDER FIRST, then by newest first
-    // Assuming gender values are 'female' and 'male'
-    filtered.sort((a, b) => {
-      // 1. Primary Sort: Gender (Female first)
-      if (a.gender === 'female' && b.gender !== 'female') return -1;
-      if (a.gender !== 'female' && b.gender === 'female') return 1;
-
-      // 2. Secondary Sort: Newest first (created_at)
-      return new Date(b.created_at) - new Date(a.created_at);
-    });
-
-    // Step 3: Show one user per country (round-robin style)
-    // Note: This logic will naturally prioritize women because they
-    // are now at the front of each country's array.
-    const countryGroups = filtered.reduce((acc, user) => {
-      if (!acc[user.country]) acc[user.country] = [];
-      acc[user.country].push(user);
-      return acc;
-    }, {});
-
-    let roundRobin = [];
-    let index = 0;
-    let added = true;
-    while (added) {
-      added = false;
-      for (const country in countryGroups) {
-        if (countryGroups[country][index]) {
-          roundRobin.push(countryGroups[country][index]);
-          added = true;
-        }
+      // 2. Tab Logic Fix
+      if (activeTab === 'all') {
+        // If you want "All" to show ONLY females:
+        return user.gender === 'female';
       }
-      index++;
-    }
 
-    // Final Step: If you want to strictly force ALL females to the top
-    // regardless of the round-robin country mixing, sort one last time:
-    roundRobin.sort((a, b) => {
-      if (a.gender === 'female' && b.gender !== 'female') return -1;
-      if (a.gender !== 'female' && b.gender === 'female') return 1;
-      return 0;
+      if (activeTab === 'male') {
+        return user.gender === 'male';
+      }
+
+      if (activeTab === 'female') {
+        return user.gender === 'female';
+      }
+
+      return true;
     });
+  }, [users, activeTab, searchTerm]);
 
-    const pageSize = 10;
-    const end = (page + 1) * pageSize;
-
-    return roundRobin.slice(0, end);
-  }, [users, genderFilter, countryFilter, searchTerm, page]);
   const handleUserClick = () => {
     handleAlert();
   };
-
-
 
   const handleSearchSubmit = async () => {
     if (searchTerm.trim() === '') {
@@ -391,7 +427,6 @@ const GuestUser = () => {
         <LoadingSpinner />
       ) : (
         <>
-     
           {/* <div className="page-wrapper">
               <AdsterraBanner />
             {/*showBanner && (
@@ -489,32 +524,58 @@ const GuestUser = () => {
             </div>
 
             {/* Search icon outside input */}
-            <button className="search-button" onClick={handleUserClick}>
+            <button className="search-button" onClick={handleActionClick}>
               <FaSearch />
             </button>
           </div>
 
           <div className="tab-bar">
-            <button className={`sketchy-tab`}>{i18n.t('all')}</button>
             <button
+              className={`sketchy-tab `}
+              onClick={() => {
+                navigate('/guest-profiles');
+              }}
+            >
+              Guest Users
+            </button>
+
+            <button
+              className={`sketchy-tab ${activeTab === 'all' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('all');
+                localStorage.setItem('activeTab', 'all');
+              }}
+            >
+              Female
+            </button>
+            <button
+              className={`sketchy-tab ${activeTab === 'male' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('male');
+                localStorage.setItem('activeTab', 'male');
+              }}
+            >
+              Male
+            </button>
+            {/* <button
               className={`sketchy-tab`}
-              onClick={handleUserClick}
+              onClick={() => navigate('/chat-room')}
               style={{ position: 'relative' }}
             >
-              {i18n.t('chats')}
-            </button>
+              Chat Room (No Login)
+            </button>*/}
 
             <button
               className="sketchy-tab"
               onClick={() => {
                 setShowGenderTabs(true);
                 setShowCountryTabs(false);
-                handleAlert();
+                handleActionClick();
               }}
             >
               {i18n.t('inbox')}
             </button>
-            <button
+            {/* <button
               className="sketchy-tab"
               onClick={() => {
                 setShowCountryTabs(true);
@@ -523,16 +584,6 @@ const GuestUser = () => {
               }}
             >
               {i18n.t('online')}
-            </button>
-            <button
-              className="sketchy-tab"
-              onClick={() => {
-                setShowCountryTabs(true);
-                setShowGenderTabs(false);
-                handleAlert();
-              }}
-            >
-              <FaMapMarkerAlt />
             </button>
 
             <button
@@ -544,20 +595,20 @@ const GuestUser = () => {
               }}
             >
               <FaFilter />
-            </button>
+            </button>*/}
           </div>
           <div className="sketchy-list-scrollable">
             {filteredGuestUsers.length > 0 ? (
               <>
                 {filteredGuestUsers.map((user) => (
                   <>
-                    <div className="user-card" onClick={handleUserClick}>
+                    <div className="user-card" onClick={handleActionClick}>
                       <div className="user-avatar-wrapper">
                         <img
                           src={user.profile_pic || empty}
                           alt="avatar"
                           className="user-avatar"
-                          onClick={handleAlert}
+                          onClick={handleActionClick}
                         />
                       </div>
 
@@ -644,16 +695,9 @@ const GuestUser = () => {
                             <FaCircle />
                           </span>
 
-                          {/* <div className="spacer" />
-                          <FaThumbtack
-                            className={`pin-icon ${
-                              user.pinned ? "pinned" : ""
-                            }`}
-                            onClick={handleAlert}
-                          />*/}
                           <FaEnvelope
                             className="dm-envelope"
-                            onClick={handleAlert}
+                            onClick={handleActionClick}
                           />
                         </div>
                       </div>
@@ -662,7 +706,10 @@ const GuestUser = () => {
                 ))}
                 {hasMore && (
                   <div style={{ textAlign: 'center', margin: '-10px 0' }}>
-                    <button className="sketchy-load-more" onClick={handleAlert}>
+                    <button
+                      className="sketchy-load-more"
+                      onClick={handleActionClick}
+                    >
                       {loadingMore ? 'Loading...' : `🌀 ${i18n.t('loadMore')} `}
                     </button>
                   </div>
@@ -714,16 +761,36 @@ const GuestUser = () => {
           onClose={() => setAlertMessage(null)}
         />
       )}
-      {/*
-        <Demo 
-        isOpen={showPopup} 
-        onClose={() => setShowPopup(false)} 
-      />
-     */}
-      <button onClick={handleNavigate} className="fab-roast-btn" title="Roast">
+
+      {/* <button onClick={handleNavigate} className="fab-roast-btn" title="Roast">
         <FaFire />
-      </button>
-      {/*showTerms && <TermsPopup onDone={handleTermsDone} />*/}
+      </button>*/}
+      {/*isQuizOpen && (
+        <div
+          className="modal-overlay"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0,0,0,0.9)',
+            zIndex: 10000,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <QuizPopup onClose={() => setIsQuizOpen(false)} />
+        </div>
+      )*/}
+      {/*showWelcome && <WelcomePopup onClose={handleCloseWelcome} />*/}
+      {!isTelegram && (
+        <CommunityPopup
+          isOpen={showCommunityPopup}
+          onClose={() => setShowCommunityPopup(false)}
+        />
+      )}
     </div>
   );
 };
