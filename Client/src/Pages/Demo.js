@@ -638,7 +638,7 @@ function CloudSystem() {
 function Player() {
   const group = useRef();
   const swipeProcessed = useRef(false);
-  
+
   // 1. Load Assets
   const runFbx = useLoader(FBXLoader, '/models/Running.fbx');
   const jumpFbx = useLoader(FBXLoader, '/models/jump.fbx');
@@ -666,27 +666,27 @@ function Player() {
   };
 
   const triggerSlide = () => {
-  // REMOVE the "!isSliding" check to allow "re-sliding"
-  if (group.current.position.y <= 0.51) {
-    setIsSliding(true);
-    
-    // Stop other actions immediately
-    actions.current.run?.fadeOut(0.05);
-    actions.current.jump?.stop();
-    
-    // Reset and play slide from the beginning
-    actions.current.slide?.reset().fadeIn(0.05).play();
-    
-    // Clear any existing timer so they don't stack
-    if (window.slideTimer) clearTimeout(window.slideTimer);
+    // REMOVE the "!isSliding" check to allow "re-sliding"
+    if (group.current.position.y <= 0.51) {
+      setIsSliding(true);
 
-    window.slideTimer = setTimeout(() => {
-      setIsSliding(false);
-      actions.current.slide?.fadeOut(0.2);
-      actions.current.run?.reset().fadeIn(0.2).play();
-    }, 800); 
-  }
-};
+      // Stop other actions immediately
+      actions.current.run?.fadeOut(0.05);
+      actions.current.jump?.stop();
+
+      // Reset and play slide from the beginning
+      actions.current.slide?.reset().fadeIn(0.05).play();
+
+      // Clear any existing timer so they don't stack
+      if (window.slideTimer) clearTimeout(window.slideTimer);
+
+      window.slideTimer = setTimeout(() => {
+        setIsSliding(false);
+        actions.current.slide?.fadeOut(0.2);
+        actions.current.run?.reset().fadeIn(0.2).play();
+      }, 800);
+    }
+  };
 
   // 3. Animation Setup
   useEffect(() => {
@@ -695,7 +695,7 @@ function Player() {
     const setupAction = (fbx, name, loop = true) => {
       if (fbx.animations.length > 0) {
         const clip = fbx.animations[0];
-        clip.tracks = clip.tracks.filter(t => !t.name.includes('position'));
+        clip.tracks = clip.tracks.filter((t) => !t.name.includes('position'));
         actions.current[name] = mixer.current.clipAction(clip);
         if (!loop) {
           actions.current[name].setLoop(THREE.LoopOnce);
@@ -714,8 +714,10 @@ function Player() {
   // 4. Input Listeners
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.code === 'ArrowLeft' || e.code === 'KeyA') setLane(prev => Math.max(prev - 1, -1));
-      if (e.code === 'ArrowRight' || e.code === 'KeyD') setLane(prev => Math.min(prev + 1, 1));
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA')
+        setLane((prev) => Math.max(prev - 1, -1));
+      if (e.code === 'ArrowRight' || e.code === 'KeyD')
+        setLane((prev) => Math.min(prev + 1, 1));
       if (e.code === 'Space' || e.code === 'ArrowUp') triggerJump();
       if (e.code === 'ArrowDown' || e.code === 'KeyS') triggerSlide();
     };
@@ -731,7 +733,9 @@ function Player() {
       const dy = e.touches[0].clientY - touchStart.current.y;
 
       if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
-        setLane(prev => dx > 0 ? Math.min(prev + 1, 1) : Math.max(prev - 1, -1));
+        setLane((prev) =>
+          dx > 0 ? Math.min(prev + 1, 1) : Math.max(prev - 1, -1)
+        );
         swipeProcessed.current = true;
       } else if (Math.abs(dy) > 30) {
         if (dy < -30) triggerJump();
@@ -755,7 +759,11 @@ function Player() {
     if (!group.current) return;
     mixer.current?.update(delta);
 
-    group.current.position.x = THREE.MathUtils.lerp(group.current.position.x, lane * laneWidth, 0.15);
+    group.current.position.x = THREE.MathUtils.lerp(
+      group.current.position.x,
+      lane * laneWidth,
+      0.15
+    );
 
     velocity.current += SETTINGS.gravity;
     group.current.position.y += velocity.current;
@@ -774,18 +782,24 @@ function Player() {
   return (
     <group ref={group} name="playerGroup" position={[0, 0.5, -2]}>
       <group position={[0, isSliding ? -0.2 : 0, 0]}>
-        <primitive object={runFbx} scale={0.01} rotation={[0, Math.PI, 0]} castShadow />
+        <primitive
+          object={runFbx}
+          scale={0.01}
+          rotation={[0, Math.PI, 0]}
+          castShadow
+        />
       </group>
     </group>
   );
 }
 
-
 const redWhiteStripMat = (() => {
   const canvas = document.createElement('canvas');
-  canvas.width = 256; canvas.height = 128;
+  canvas.width = 256;
+  canvas.height = 128;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 256, 128);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, 256, 128);
   ctx.fillStyle = '#e74c3c'; // Red
   for (let i = 0; i < 256; i += 64) {
     ctx.fillRect(i, 0, 32, 128);
@@ -799,15 +813,18 @@ const redWhiteStripMat = (() => {
 // 2. Yellow & Black Striped Texture (for the edge accents)
 const yellowBlackStripMat = (() => {
   const canvas = document.createElement('canvas');
-  canvas.width = 256; canvas.height = 128;
+  canvas.width = 256;
+  canvas.height = 128;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#f1c40f'; // Yellow
   ctx.fillRect(0, 0, 256, 128);
   ctx.fillStyle = '#111'; // Black
   for (let i = 0; i < 256; i += 64) {
     ctx.beginPath();
-    ctx.moveTo(i, 0); ctx.lineTo(i + 32, 0);
-    ctx.lineTo(i + 64, 128); ctx.lineTo(i + 32, 128);
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i + 32, 0);
+    ctx.lineTo(i + 64, 128);
+    ctx.lineTo(i + 32, 128);
     ctx.fill();
   }
   const tex = new THREE.CanvasTexture(canvas);
@@ -822,25 +839,32 @@ function Barricade({ initialZ, lane = 0 }) {
   useFrame((state, delta) => {
     if (!mesh.current) return;
     mesh.current.position.z += SETTINGS.speed * (delta * 160);
-    if (mesh.current.position.z > 25) mesh.current.position.z = -SETTINGS.worldLength;
+    if (mesh.current.position.z > 25)
+      mesh.current.position.z = -SETTINGS.worldLength;
 
     // Blinking lights on the cones
     if (lightRef.current) {
       const pulse = (Math.sin(state.clock.getElapsedTime() * 12) + 1) / 2;
-      lightRef.current.children.forEach(l => l.material.emissiveIntensity = pulse * 4);
+      lightRef.current.children.forEach(
+        (l) => (l.material.emissiveIntensity = pulse * 4)
+      );
     }
 
     // Collision (Must jump!)
     const player = state.scene.getObjectByName('playerGroup');
-    if (player && Math.abs(player.position.z - mesh.current.position.z) < 0.8 && Math.abs(player.position.x - mesh.current.position.x) < 1.5) {
-      if (player.position.y < 1.4) console.log("CRASHED!"); 
+    if (
+      player &&
+      Math.abs(player.position.z - mesh.current.position.z) < 0.8 &&
+      Math.abs(player.position.x - mesh.current.position.x) < 1.5
+    ) {
+      if (player.position.y < 1.4) console.log('CRASHED!');
     }
   });
 
   return (
     <group ref={mesh} position={[lane * 2.5, 0, initialZ]}>
       {/* 1. THE CONES (Left & Right) */}
-      {[ -1.4, 1.4 ].map((x, i) => (
+      {[-1.4, 1.4].map((x, i) => (
         <group key={i} position={[x, 0, 0]}>
           {/* Orange Cone Body */}
           <mesh position={[0, 0.4, 0]} castShadow>
@@ -850,7 +874,11 @@ function Barricade({ initialZ, lane = 0 }) {
           {/* White Reflective Stripe on Cone */}
           <mesh position={[0, 0.45, 0]}>
             <cylinderGeometry args={[0.21, 0.25, 0.2, 16]} />
-            <meshStandardMaterial color="#eee" emissive="#fff" emissiveIntensity={0.2} />
+            <meshStandardMaterial
+              color="#eee"
+              emissive="#fff"
+              emissiveIntensity={0.2}
+            />
           </mesh>
           {/* Cone Base */}
           <mesh position={[0, 0.025, 0]}>
@@ -885,20 +913,192 @@ function Barricade({ initialZ, lane = 0 }) {
   );
 }
 
+const bombGeometry = new THREE.SphereGeometry(0.6, 20, 20); // Lower segments for performance
+const beltGeometry = new THREE.CylinderGeometry(0.61, 0.61, 0.25, 20, 1, true);
+const capGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.1, 12);
+
+const bombMat = new THREE.MeshStandardMaterial({
+  color: '#111',
+  roughness: 0.8,
+});
+const capMat = new THREE.MeshStandardMaterial({ color: '#444', metalness: 1 });
+
+// Create the Hazard Texture once
+const hazardTexture = (() => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffcc00';
+  ctx.fillRect(0, 0, 128, 128);
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 20;
+  for (let i = -128; i < 256; i += 40) {
+    ctx.beginPath();
+    ctx.moveTo(i, 0);
+    ctx.lineTo(i + 128, 128);
+    ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.repeat.set(2, 1);
+  return tex;
+})();
+
+const hazardMat = new THREE.MeshStandardMaterial({ map: hazardTexture });
+
+export function Explosive({ position }) {
+  const ref = useRef();
+  const fuseRef = useRef();
+
+  useFrame((state, delta) => {
+    if (!ref.current) return;
+
+    // Movement
+    ref.current.position.z += SETTINGS.speed * (delta * 160);
+    // Inside Explosive component's useFrame
+    if (ref.current.position.z > 20) {
+      // 1. Send it back to the end of the world
+      ref.current.position.z = -SETTINGS.worldLength;
+
+      // 2. Re-randomize the lane (Crucial!)
+      const lanes = [-2.5, 0, 2.5];
+      ref.current.position.x = lanes[Math.floor(Math.random() * 3)];
+
+      // 3. Optional: Add a tiny random Z offset so they don't all
+      // spawn at the exact same millisecond
+      ref.current.position.z -= Math.random() * 10;
+    }
+
+    // Flicker Spark (Cheap math)
+    if (fuseRef.current) {
+      const s = Math.sin(state.clock.elapsedTime * 25);
+      fuseRef.current.material.emissiveIntensity = s > 0 ? 15 : 5;
+    }
+
+    // Collision (Keep this lightweight)
+    const player = state.scene.getObjectByName('playerGroup');
+    if (player && Math.abs(player.position.z - ref.current.position.z) < 0.8) {
+      if (
+        Math.abs(player.position.x - ref.current.position.x) < 0.8 &&
+        player.position.y < 1.5
+      ) {
+        // Trigger Game Over or Effect
+      }
+    }
+  });
+
+  return (
+    <group ref={ref} position={position}>
+      {/* Bomb Body */}
+      <mesh
+        geometry={bombGeometry}
+        material={bombMat}
+        castShadow
+        position={[0, 0.6, 0]}
+      />
+
+      {/* Hazard Stripes */}
+      <mesh
+        geometry={beltGeometry}
+        material={hazardMat}
+        position={[0, 0.6, 0]}
+      />
+
+      {/* Metal Cap */}
+      <mesh geometry={capGeometry} material={capMat} position={[0, 1.1, 0]} />
+
+      {/* The Spark */}
+      <mesh ref={fuseRef} position={[0, 1.2, 0]}>
+        <sphereGeometry args={[0.1, 8, 8]} />
+        <meshStandardMaterial
+          color="white"
+          emissive="#00ffff"
+          emissiveIntensity={10}
+        />
+      </mesh>
+    </group>
+  );
+}
+// Pre-define these outside the component to save memory
+// Keep these outside the component to save memory
+const balloonGeo = new THREE.DodecahedronGeometry(2, 0);
+const basketGeo = new THREE.BoxGeometry(0.8, 0.7, 0.8);
+const ropeGeo = new THREE.CylinderGeometry(0.01, 0.01, 1.5, 3);
+
+function HotAirBalloon({ initialPos, color, speedOffset }) {
+  const mesh = useRef();
+
+  // We increase the "Live Zone" so they don't disappear quickly
+  const spawnDistance = -400; // Start way back in the fog
+  const deleteDistance = 50; // Only disappear well after passing the player
+
+  useFrame((state, delta) => {
+    if (!mesh.current) return;
+
+    // Slow, steady movement
+    mesh.current.position.z +=
+      (SETTINGS.speed * 0.3 + speedOffset) * (delta * 60);
+
+    // Gentle swaying
+    const t = state.clock.getElapsedTime() + initialPos[0] * 0.5;
+    mesh.current.position.y = initialPos[1] + Math.sin(t * 0.3) * 2;
+    mesh.current.rotation.z = Math.sin(t * 0.2) * 0.05;
+
+    // Recycle Logic: If it passes the player, send it far back
+    if (mesh.current.position.z > deleteDistance) {
+      mesh.current.position.z = spawnDistance;
+      // Slightly shift X so the pattern changes
+      mesh.current.position.x = (Math.random() - 0.5) * 60;
+    }
+  });
+
+  return (
+    <group ref={mesh} position={initialPos}>
+      <mesh geometry={balloonGeo}>
+        <meshStandardMaterial color={color} flatShading />
+      </mesh>
+      <mesh geometry={ropeGeo} position={[0, -1.5, 0]}>
+        <meshStandardMaterial color="#555" />
+      </mesh>
+      <mesh geometry={basketGeo} position={[0, -2.2, 0]}>
+        <meshStandardMaterial color="#8B4513" />
+      </mesh>
+    </group>
+  );
+}
 
 export default function Demo() {
   const [score, setScore] = useState(0);
 
-  // Generate a set of coin positions
-  // Inside export default function Demo()
-  const coinPositions = useMemo(() => {
-    const lanes = [-2.5, 0, 2.5]; // Must match (lane * laneWidth)
-    return Array.from({ length: 40 }).map((_, i) => [
-      lanes[Math.floor(Math.random() * 3)], // Pick a real lane X
-      1, // Height
-      -20 - i * 10, // Z spacing
-    ]);
+  const items = useMemo(() => {
+    const lanes = [-2.5, 0, 2.5];
+    let lastExplosiveZ = 0; // Keep track of the last explosive's position
+    const minExplosiveGap = 50; // Minimum distance (in Z units) between explosives
+
+    return Array.from({ length: 40 }).map((_, i) => {
+      const zPos = -20 - i * 10;
+
+      // Check if we are allowed to spawn an explosive:
+      // 1. Random chance is low (e.g., 10%)
+      // 2. We haven't spawned one too recently (gap check)
+      const canSpawnExplosive =
+        Math.random() > 0.98 &&
+        Math.abs(zPos - lastExplosiveZ) > minExplosiveGap;
+
+      let type = 'coin';
+      if (canSpawnExplosive) {
+        type = 'explosive';
+        lastExplosiveZ = zPos;
+      }
+
+      return {
+        type,
+        position: [lanes[Math.floor(Math.random() * 3)], 0.8, zPos],
+      };
+    });
   }, []);
+
   return (
     <div
       style={{
@@ -916,19 +1116,46 @@ export default function Demo() {
         <ambientLight intensity={0.6} />
         <directionalLight position={[10, 20, 10]} intensity={1.5} castShadow />
         <fog attach="fog" args={[SETTINGS.skyColor, 30, 150]} />
-        <RacingTrack />{/* Replace Overpass calls with Barricade */}
-<Barricade initialZ={-60} lane={0} />
-<Barricade initialZ={-150} lane={-1} />
-<Barricade initialZ={-220} lane={1} />
+        <RacingTrack />
+        <Barricade initialZ={-60} lane={0} />
+        <Barricade initialZ={-150} lane={-1} />
+        <Barricade initialZ={-220} lane={1} />
         <Player />
+        {/* Inside your Canvas */}
+        {useMemo(() => {
+          const colors = [
+            '#ff4757',
+            '#2e86de',
+            '#ffa502',
+            '#2ed573',
+            '#ef5777',
+          ];
+          return Array.from({ length: 20 }).map((_, i) => (
+            <HotAirBalloon
+              key={i}
+              // Spread them wide (-30 to 30) and far (-400 to 0)
+              initialPos={[
+                (Math.random() - 0.5) * 60,
+                15 + Math.random() * 10,
+                -i * 20,
+              ]}
+              color={colors[i % colors.length]}
+              speedOffset={Math.random() * 0.02}
+            />
+          ));
+        }, [])}
         {/* Render Coins */}
-        {coinPositions.map((pos, idx) => (
-          <Coin
-            key={idx}
-            position={pos}
-            onCollect={() => setScore((s) => s + 1)}
-          />
-        ))}
+        {items.map((item, idx) =>
+          item.type === 'coin' ? (
+            <Coin
+              key={idx}
+              position={item.position}
+              onCollect={() => setScore((s) => s + 1)}
+            />
+          ) : (
+            <Explosive key={idx} position={item.position} />
+          )
+        )}
         <Bus initialZ={-80} lane={-1} />
         <Bus initialZ={-200} lane={1} />
         <Car initialZ={-40} lane={1} color="#f1c40f" /> {/* Yellow Sportscar */}
