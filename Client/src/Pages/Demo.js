@@ -5,10 +5,10 @@ import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import * as THREE from 'three';
 
 const SETTINGS = {
-  speed: 0.2,
+  speed: 0.3,
   trackWidth: 10,
-  jumpForce: 0.16, // Initial pop
-  gravity: -0.015, // Stronger pull (was -0.009)
+  jumpForce: 0.18, // Initial pop
+  gravity: -0.012, // Stronger pull (was -0.009)
   skyColor: '#e0f7ff',
   worldLength: 300,
 };
@@ -35,7 +35,7 @@ const starMat = new THREE.MeshStandardMaterial({
   metalness: 1,
 });
 
-function Coin({ position, onCollect }) {
+function Coin({ position, onCollect, isGameOver }) {
   const ref = useRef();
   const [collected, setCollected] = useState(false);
   const randomOffset = useMemo(() => Math.random() * Math.PI * 2, []);
@@ -50,12 +50,16 @@ function Coin({ position, onCollect }) {
     ref.current.position.y =
       position[1] + Math.sin(time * 2 + randomOffset) * 0.15;
 
-    // 2. World Movement
-    ref.current.position.z += SETTINGS.speed;
-    if (ref.current.position.z > 20) {
-      ref.current.position.z = -SETTINGS.worldLength;
-      setCollected(false);
+    if (!isGameOver) {
+      ref.current.position.z += SETTINGS.speed;
+      if (ref.current.position.z > 20) {
+        ref.current.position.z = -SETTINGS.worldLength;
+        setCollected(false);
+      }
     }
+
+    // 3. Collision Logic - ADDED isGameOver check here
+    if (isGameOver) return;
 
     // 3. Collision Logic
     const playerPos = state.scene.getObjectByName('playerGroup')?.position;
@@ -157,16 +161,31 @@ const glowLightMat = new THREE.MeshStandardMaterial({
   emissiveIntensity: 10,
 });
 
-function Bus({ initialZ, lane = 0, hasLight = false }) {
+function Bus({
+  initialZ,
+  lane = 0,
+  hasLight = false,
+  type,
+  position,
+  isGameOver,
+  onCollide,
+}) {
   const mesh = useRef();
 
   useFrame((state, delta) => {
-    if (!mesh.current) return;
-
+    if (isGameOver || !mesh.current) return;
     mesh.current.position.z += SETTINGS.speed * (delta * 160);
 
     if (mesh.current.position.z > 25) {
       mesh.current.position.z = -SETTINGS.worldLength;
+    }
+    const pbus = state.scene.getObjectByName('playerGroup');
+    if (pbus) {
+      const pPos = pbus.position;
+      const mPos = mesh.current.position;
+      if (Math.abs(pPos.z - mPos.z) < 1 && Math.abs(pPos.x - mPos.x) < 1.2) {
+        if (pPos.y < 1.5) onCollide(); // Crash!
+      }
     }
   });
 
@@ -261,7 +280,15 @@ const windowMat = new THREE.MeshStandardMaterial({
   roughness: 0.1,
 });
 
-function Car({ initialZ, lane = 0, color = '#e74c3c' }) {
+function Car({
+  initialZ,
+  lane = 0,
+  color = '#e74c3c',
+  type,
+  position,
+  isGameOver,
+  onCollide,
+}) {
   const mesh = useRef();
 
   // Create a unique material per car instance for different colors
@@ -276,12 +303,20 @@ function Car({ initialZ, lane = 0, color = '#e74c3c' }) {
   );
 
   useFrame((state, delta) => {
-    if (!mesh.current) return;
-    // Cars move slightly faster than buses for variety
+    if (isGameOver || !mesh.current) return; // Cars move slightly faster than buses for variety
     mesh.current.position.z += SETTINGS.speed * 1.2 * (delta * 160);
 
     if (mesh.current.position.z > 25) {
       mesh.current.position.z = -SETTINGS.worldLength;
+    }
+
+    const pcar = state.scene.getObjectByName('playerGroup');
+    if (pcar) {
+      const pPos = pcar.position;
+      const mPos = mesh.current.position;
+      if (Math.abs(pPos.z - mPos.z) < 1 && Math.abs(pPos.x - mPos.x) < 1.2) {
+        if (pPos.y < 1.5) onCollide(); // Crash!
+      }
     }
   });
 
@@ -635,7 +670,7 @@ function CloudSystem() {
   );
 }
 
-function Player() {
+function Player({ isGameOver, onCollide }) {
   const group = useRef();
   const swipeProcessed = useRef(false);
 
@@ -643,7 +678,7 @@ function Player() {
   const runFbx = useLoader(FBXLoader, '/models/Running.fbx');
   const jumpFbx = useLoader(FBXLoader, '/models/jump.fbx');
   const slideFbx = useLoader(FBXLoader, '/models/running-slide.fbx');
-
+  const deathFbx = useLoader(FBXLoader, '/models/death.fbx');
   const mixer = useRef();
   const actions = useRef({});
   const [isJumping, setIsJumping] = useState(false);
@@ -707,10 +742,17 @@ function Player() {
     setupAction(runFbx, 'run');
     setupAction(jumpFbx, 'jump', false);
     setupAction(slideFbx, 'slide', false);
-
+    setupAction(deathFbx, 'death', false);
     actions.current.run?.play();
-  }, [runFbx, jumpFbx, slideFbx]);
-
+  }, [runFbx, jumpFbx, slideFbx, deathFbx]);
+  useEffect(() => {
+    if (isGameOver) {
+      actions.current.run?.fadeOut(0.2);
+      actions.current.jump?.stop();
+      actions.current.slide?.stop();
+      actions.current.death?.reset().fadeIn(0.1).play();
+    }
+  }, [isGameOver]);
   // 4. Input Listeners
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -758,7 +800,7 @@ function Player() {
   useFrame((state, delta) => {
     if (!group.current) return;
     mixer.current?.update(delta);
-
+    if (isGameOver) return;
     group.current.position.x = THREE.MathUtils.lerp(
       group.current.position.x,
       lane * laneWidth,
@@ -832,17 +874,19 @@ const yellowBlackStripMat = (() => {
   return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.4 });
 })();
 // --- COOL, RUGGED BARRICADE ---
-function Barricade({ initialZ, lane = 0 }) {
+function Barricade({ initialZ, lane = 0, isGameOver, onCollide }) {
   const mesh = useRef();
   const lightRef = useRef();
 
   useFrame((state, delta) => {
-    if (!mesh.current) return;
+    if (isGameOver || !mesh.current) return;
+
+    // Movement logic
     mesh.current.position.z += SETTINGS.speed * (delta * 160);
     if (mesh.current.position.z > 25)
       mesh.current.position.z = -SETTINGS.worldLength;
 
-    // Blinking lights on the cones
+    // Blinking lights logic
     if (lightRef.current) {
       const pulse = (Math.sin(state.clock.getElapsedTime() * 12) + 1) / 2;
       lightRef.current.children.forEach(
@@ -850,14 +894,22 @@ function Barricade({ initialZ, lane = 0 }) {
       );
     }
 
-    // Collision (Must jump!)
+    // --- SINGLE CLEAN COLLISION CHECK ---
     const player = state.scene.getObjectByName('playerGroup');
-    if (
-      player &&
-      Math.abs(player.position.z - mesh.current.position.z) < 0.8 &&
-      Math.abs(player.position.x - mesh.current.position.x) < 1.5
-    ) {
-      if (player.position.y < 1.4) console.log('CRASHED!');
+    if (player) {
+      const pPos = player.position;
+      const mPos = mesh.current.position;
+
+      // 1. Check if we are in the same Z and X space
+      // Z depth is 0.6, X width is 1.5 to match the barricade plank width
+      if (Math.abs(pPos.z - mPos.z) < 0.6 && Math.abs(pPos.x - mPos.x) < 1.5) {
+        // 2. Height Check:
+        // The main plank is at y: 0.65.
+        // If the player's feet (y) are below 1.0, they hit the bar.
+        if (pPos.y < 1.0) {
+          onCollide();
+        }
+      }
     }
   });
 
@@ -947,13 +999,13 @@ const hazardTexture = (() => {
 
 const hazardMat = new THREE.MeshStandardMaterial({ map: hazardTexture });
 
-export function Explosive({ position }) {
+function Explosive({ position, isGameOver, onCollide }) {
   const ref = useRef();
   const fuseRef = useRef();
 
   useFrame((state, delta) => {
     if (!ref.current) return;
-
+    if (isGameOver) return;
     // Movement
     ref.current.position.z += SETTINGS.speed * (delta * 160);
     // Inside Explosive component's useFrame
@@ -978,12 +1030,16 @@ export function Explosive({ position }) {
 
     // Collision (Keep this lightweight)
     const player = state.scene.getObjectByName('playerGroup');
-    if (player && Math.abs(player.position.z - ref.current.position.z) < 0.8) {
-      if (
-        Math.abs(player.position.x - ref.current.position.x) < 0.8 &&
-        player.position.y < 1.5
-      ) {
-        // Trigger Game Over or Effect
+    if (player) {
+      const distZ = Math.abs(player.position.z - ref.current.position.z);
+      const distX = Math.abs(player.position.x - ref.current.position.x);
+
+      // Check if player is within the explosive's hit box
+      if (distZ < 0.8 && distX < 0.8) {
+        // Player must be low enough to hit it (not high in a jump)
+        if (player.position.y < 1.5) {
+          onCollide(); // <--- Triggers death.fbx and stops environment
+        }
       }
     }
   });
@@ -1067,23 +1123,169 @@ function HotAirBalloon({ initialPos, color, speedOffset }) {
     </group>
   );
 }
+// --- LANDMINE (POP-UP OBSTACLE) ---
+const mineBaseGeo = new THREE.CylinderGeometry(0.8, 1, 0.2, 16);
+const mineInnerGeo = new THREE.SphereGeometry(0.5, 12, 12);
+const redGlowMat = new THREE.MeshStandardMaterial({
+  color: '#ff0000',
+  emissive: '#ff0000',
+  emissiveIntensity: 2,
+});
+
+function Landmine({ initialZ, lane = 0, isGameOver, onCollide }) {
+  const mesh = useRef();
+  const innerRef = useRef();
+  const [isActive, setIsActive] = useState(false);
+
+  useFrame((state, delta) => {
+    if (isGameOver || !mesh.current) return;
+    // 1. Basic World Movement
+    mesh.current.position.z += SETTINGS.speed * (delta * 160);
+
+    // 2. Recycle Logic
+    if (mesh.current.position.z > 25) {
+      mesh.current.position.z = -SETTINGS.worldLength;
+      setIsActive(false); // Reset for next time
+      if (innerRef.current) innerRef.current.position.y = 0;
+    }
+    const p = state.scene.getObjectByName('playerGroup');
+    if (p) {
+      const pPos = p.position;
+      const mPos = mesh.current.position;
+      if (Math.abs(pPos.z - mPos.z) < 1 && Math.abs(pPos.x - mPos.x) < 1.2) {
+        if (pPos.y < 1.5) onCollide(); // Crash!
+      }
+    }
+
+    // 3. Trigger "Pop-up" when player is close (approx 15 units away)
+    const player = state.scene.getObjectByName('playerGroup');
+    if (player) {
+      const distZ = Math.abs(player.position.z - mesh.current.position.z);
+      if (distZ < 15 && !isActive) {
+        setIsActive(true);
+      }
+    }
+
+    // 4. Animation: Spring up if active
+    if (isActive && innerRef.current.position.y < 1.2) {
+      innerRef.current.position.y += 0.15; // Speed of the "pop"
+    }
+
+    // 5. Collision Logic
+    if (player && Math.abs(player.position.z - mesh.current.position.z) < 0.6) {
+      if (Math.abs(player.position.x - mesh.current.position.x) < 0.8) {
+        // If it's popped up and player is low, CRASH
+        if (isActive && player.position.y < 1.8) {
+          console.log('BOOM! Stepped on a mine.');
+        }
+      }
+    }
+
+    // Flicker the red light
+    if (innerRef.current) {
+      innerRef.current.material.emissiveIntensity =
+        (Math.sin(state.clock.elapsedTime * 15) + 1) * 2;
+    }
+  });
+
+  return (
+    <group ref={mesh} position={[lane * 2.5, 0.05, initialZ]}>
+      {/* Outer Plate (Flat on ground) */}
+      <mesh geometry={mineBaseGeo} castShadow>
+        <meshStandardMaterial color="#333" roughness={0.8} />
+      </mesh>
+
+      {/* The part that pops up */}
+      <mesh
+        ref={innerRef}
+        geometry={mineInnerGeo}
+        material={redGlowMat}
+        position={[0, 0, 0]}
+        castShadow
+      />
+
+      {/* Decorative metal ring */}
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.1, 0]}>
+        <torusGeometry args={[0.6, 0.05, 8, 24]} />
+        <meshStandardMaterial color="#555" metalness={1} />
+      </mesh>
+    </group>
+  );
+}
+// --- FOOD GEOMETRIES & MATERIALS ---
+// --- UPDATED BURGER GEOMETRY & MATERIALS ---
+const bunMat = new THREE.MeshStandardMaterial({ color: '#D3A36A' }); // Golden brown
+const meatMat = new THREE.MeshStandardMaterial({ color: '#4E342E' }); // Deep beef brown
+const cheeseMat = new THREE.MeshStandardMaterial({ color: '#FFD700' }); // Sharp yellow
+const lettuceMat = new THREE.MeshStandardMaterial({ color: '#4CAF50' }); // Leaf green
+
+function Burger({ position, onCollect }) {
+  const ref = useRef();
+  const [collected, setCollected] = useState(false);
+
+  useFrame((state, delta) => {
+    if (!ref.current || collected) return;
+
+    // Animation & World Movement (matches your Bus/Car logic)
+    ref.current.rotation.y += 0.05;
+    ref.current.position.z += SETTINGS.speed * (delta * 160);
+
+    if (ref.current.position.z > 20)
+      ref.current.position.z = -SETTINGS.worldLength;
+
+    // Collision Logic
+    const player = state.scene.getObjectByName('playerGroup');
+    if (player && Math.abs(player.position.z - ref.current.position.z) < 1) {
+      if (Math.abs(player.position.x - ref.current.position.x) < 1) {
+        setCollected(true);
+        if (onCollect) onCollect();
+      }
+    }
+  });
+
+  if (collected) return null;
+
+  return (
+    <group ref={ref} position={position} scale={0.8}>
+      {/* Bottom Bun */}
+      <mesh position={[0, 0.1, 0]} material={bunMat}>
+        <cylinderGeometry args={[0.5, 0.5, 0.2, 10]} />
+      </mesh>
+      {/* Meat Patty */}
+      <mesh position={[0, 0.25, 0]} material={meatMat}>
+        <cylinderGeometry args={[0.52, 0.52, 0.15, 10]} />
+      </mesh>
+      {/* Cheese Slice (Square box looks like a slice) */}
+      <mesh position={[0, 0.32, 0]} material={cheeseMat}>
+        <boxGeometry args={[0.9, 0.04, 0.9]} />
+      </mesh>
+      {/* Lettuce (Slightly larger than meat) */}
+      <mesh position={[0, 0.4, 0]} material={lettuceMat}>
+        <cylinderGeometry args={[0.55, 0.55, 0.05, 12]} />
+      </mesh>
+      {/* Top Bun (Domed) */}
+      <mesh position={[0, 0.55, 0]} material={bunMat}>
+        <sphereGeometry args={[0.5, 10, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
+      </mesh>
+    </group>
+  );
+}
 
 export default function Demo() {
   const [score, setScore] = useState(0);
+  const [isGameOver, setIsGameOver] = useState(false);
 
   const items = useMemo(() => {
     const lanes = [-2.5, 0, 2.5];
-    let lastExplosiveZ = 0; // Keep track of the last explosive's position
-    const minExplosiveGap = 50; // Minimum distance (in Z units) between explosives
+    let lastExplosiveZ = 0;
+    const minExplosiveGap = 50;
 
     return Array.from({ length: 40 }).map((_, i) => {
-      const zPos = -20 - i * 10;
+      // START AT -80: Gives a safe buffer for coins/explosives
+      const zPos = -80 - i * 10;
 
-      // Check if we are allowed to spawn an explosive:
-      // 1. Random chance is low (e.g., 10%)
-      // 2. We haven't spawned one too recently (gap check)
       const canSpawnExplosive =
-        Math.random() > 0.98 &&
+        Math.random() > 0.9 &&
         Math.abs(zPos - lastExplosiveZ) > minExplosiveGap;
 
       let type = 'coin';
@@ -1099,6 +1301,17 @@ export default function Demo() {
     });
   }, []);
 
+  const burgerPositions = useMemo(() => {
+    return Array.from({ length: 15 }).map((_, i) => ({
+      id: i,
+      // START AT -100: Burgers appear later
+      z: -100 - i * 40,
+      lane: [-2.5, 0, 2.5][Math.floor(Math.random() * 3)],
+    }));
+  }, []);
+
+  const handleCollide = () => setIsGameOver(true);
+
   return (
     <div
       style={{
@@ -1108,6 +1321,38 @@ export default function Demo() {
         position: 'relative',
       }}
     >
+      {isGameOver && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'white',
+            zIndex: 10,
+            textAlign: 'center',
+            background: 'rgba(0,0,0,0.8)',
+            padding: '20px',
+            borderRadius: '15px',
+          }}
+        >
+          <h1 style={{ fontSize: '4rem', margin: 0, color: '#ff4757' }}>
+            WASTED
+          </h1>
+          <button
+            style={{
+              padding: '10px 20px',
+              fontSize: '1.5rem',
+              cursor: 'pointer',
+              marginTop: '10px',
+            }}
+            onClick={() => window.location.reload()}
+          >
+            RETRY
+          </button>
+        </div>
+      )}
+
       <Canvas shadows>
         <PerspectiveCamera makeDefault position={[0, 6, 12]} fov={45} />
         <Sky sunPosition={[100, 20, 100]} turbidity={0.1} rayleigh={2} />
@@ -1117,11 +1362,89 @@ export default function Demo() {
         <directionalLight position={[10, 20, 10]} intensity={1.5} castShadow />
         <fog attach="fog" args={[SETTINGS.skyColor, 30, 150]} />
         <RacingTrack />
-        <Barricade initialZ={-60} lane={0} />
-        <Barricade initialZ={-150} lane={-1} />
-        <Barricade initialZ={-220} lane={1} />
-        <Player />
-        {/* Inside your Canvas */}
+
+        {/* --- OBSTACLES (Pushed further back for a smooth start) --- */}
+
+        {/* Barricades */}
+        <Barricade
+          initialZ={-70}
+          lane={0}
+          isGameOver={isGameOver}
+          onCollide={handleCollide}
+        />
+        <Barricade
+          initialZ={-180}
+          lane={-1}
+          isGameOver={isGameOver}
+          onCollide={handleCollide}
+        />
+        <Barricade
+          initialZ={-280}
+          lane={1}
+          isGameOver={isGameOver}
+          onCollide={handleCollide}
+        />
+
+        {/* Landmines (Static ones) */}
+        <Landmine
+          initialZ={-90}
+          lane={-1}
+          isGameOver={isGameOver}
+          onCollide={handleCollide}
+        />
+        <Landmine
+          initialZ={-210}
+          lane={1}
+          isGameOver={isGameOver}
+          onCollide={handleCollide}
+        />
+        <Landmine
+          initialZ={-350}
+          lane={0}
+          isGameOver={isGameOver}
+          onCollide={handleCollide}
+        />
+
+        {/* Buses */}
+        <Bus
+          initialZ={-120}
+          lane={-1}
+          isGameOver={isGameOver}
+          onCollide={handleCollide}
+        />
+        <Bus
+          initialZ={-250}
+          lane={1}
+          isGameOver={isGameOver}
+          onCollide={handleCollide}
+        />
+
+        {/* Cars */}
+        <Car
+          initialZ={-60}
+          lane={1}
+          color="#f1c40f"
+          isGameOver={isGameOver}
+          onCollide={handleCollide}
+        />
+        <Car
+          initialZ={-150}
+          lane={0}
+          color="#2ecc71"
+          isGameOver={isGameOver}
+          onCollide={handleCollide}
+        />
+        <Car
+          initialZ={-320}
+          lane={-1}
+          color="#9b59b6"
+          isGameOver={isGameOver}
+          onCollide={handleCollide}
+        />
+
+        <Player isGameOver={isGameOver} onCollide={handleCollide} />
+
+        {/* Hot Air Balloons */}
         {useMemo(() => {
           const colors = [
             '#ff4757',
@@ -1133,35 +1456,44 @@ export default function Demo() {
           return Array.from({ length: 20 }).map((_, i) => (
             <HotAirBalloon
               key={i}
-              // Spread them wide (-30 to 30) and far (-400 to 0)
               initialPos={[
                 (Math.random() - 0.5) * 60,
                 15 + Math.random() * 10,
-                -i * 20,
+                -i * 25,
               ]}
               color={colors[i % colors.length]}
               speedOffset={Math.random() * 0.02}
             />
           ));
         }, [])}
-        {/* Render Coins */}
+
+        {/* Coins & Explosives */}
         {items.map((item, idx) =>
           item.type === 'coin' ? (
             <Coin
               key={idx}
               position={item.position}
+              isGameOver={isGameOver}
               onCollect={() => setScore((s) => s + 1)}
             />
           ) : (
-            <Explosive key={idx} position={item.position} />
+            <Explosive
+              key={idx}
+              position={item.position}
+              isGameOver={isGameOver}
+              onCollide={handleCollide}
+            />
           )
         )}
-        <Bus initialZ={-80} lane={-1} />
-        <Bus initialZ={-200} lane={1} />
-        <Car initialZ={-40} lane={1} color="#f1c40f" /> {/* Yellow Sportscar */}
-        <Car initialZ={-120} lane={0} color="#2ecc71" /> {/* Green Sportscar */}
-        <Car initialZ={-250} lane={-1} color="#9b59b6" />{' '}
-        {/* Purple Sportscar */}
+
+        {/* Burgers */}
+        {burgerPositions.map((b) => (
+          <Burger
+            key={b.id}
+            position={[b.lane, 0.5, b.z]}
+            onCollect={() => setScore((s) => s + 50)}
+          />
+        ))}
       </Canvas>
 
       {/* UI Overlay */}
@@ -1176,14 +1508,21 @@ export default function Demo() {
           pointerEvents: 'none',
         }}
       >
-        <h1 style={{ fontSize: '3rem', margin: 0, textShadow: '2px 2px #fff' }}>
+        <h1
+          style={{
+            fontSize: '3.5rem',
+            margin: 0,
+            textShadow: '3px 3px #fff',
+            letterSpacing: '2px',
+          }}
+        >
           METRO TO MEADOW
         </h1>
         <h2
           style={{
-            fontSize: '2rem',
+            fontSize: '2.2rem',
             color: '#ffd700',
-            textShadow: '1px 1px #000',
+            textShadow: '2px 2px #000',
           }}
         >
           COINS: {score}
