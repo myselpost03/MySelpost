@@ -24,6 +24,7 @@ import {
   FactDate,
   FactProfile,
   GroupChat,
+  Videos,
   FactVideos,
   ResetPassword,
   Sketch,
@@ -103,6 +104,7 @@ const publicRoutes = [
   { path: '/guest-chat/:receiverId', component: GuestChat },
   { path: '/guest-user', component: GuestUser },
   { path: '/chat-list', component: ChatList },
+  { path: '/videos', component: Videos },
 
   { path: '/roast', component: Roast },
 
@@ -434,7 +436,11 @@ function AppContent() {
 
     setReady(true); // safe to render routes
   }, [navigate, location.pathname]);
-  const hideNavbarRoutes = ['/chat/:id', '/guest-chat/:receiverId', '/chat-room'];
+  const hideNavbarRoutes = [
+    '/chat/:id',
+    '/guest-chat/:receiverId',
+    '/chat-room',
+  ];
 
   const shouldHideNavbar = hideNavbarRoutes.some((pattern) =>
     matchPath(pattern, location.pathname)
@@ -465,7 +471,7 @@ function AppContent() {
         ))}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {!shouldHideNavbar && <DatingNavbar />}
+      {/*!shouldHideNavbar && <DatingNavbar />*/}
 
       <InternetStatusAlert />
       {/*showInstallBanner && <InstallBanner />*/}

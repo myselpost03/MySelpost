@@ -48,3 +48,4 @@ export { default as GroupChat } from "./GroupChat";
 export { default as ChatRoom } from "./ChatRoom";
 export { default as GuestProfiles } from "./GuestProfiles";
 export { default as GuestChat } from "./GuestChat";
+export { default as Videos } from "./Videos";

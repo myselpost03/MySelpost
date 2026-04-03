@@ -73,7 +73,7 @@ const DatingNavbar = () => {
     { id: 'home', icon: '🏠', label: 'Home', path: '/' }, // Replaced Matches with Home
     { id: 'roast', icon: '🔥', label: 'Roast', path: '/roast' },
     { id: 'messages', icon: '💬', label: 'Group Chat', path: '/chat-room' },
-    { id: 'videos', icon: '🎥', label: 'Videos', path: '/demo' },
+    { id: 'videos', icon: '🎥', label: 'Videos', path: '/videos' },
   ];
 
   const handleTabClick = (tabId, path) => {
