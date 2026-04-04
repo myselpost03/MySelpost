@@ -347,15 +347,16 @@ function OilBarrel({ initialPos, isGameOver, score, speedMultiplier }) {
 //--- COIN COMPONENT ---
 function Coin({ position, onCollect, isGameOver, speedMultiplier }) {
   const ref = useRef();
-  const [collected, setCollected] = useState(false);
+  // Use a ref for 'collected' to avoid re-renders during the game loop
+  const collectedRef = useRef(false);
   const randomOffset = useMemo(() => Math.random() * Math.PI * 2, []);
 
   useFrame((state) => {
-    if (!ref.current) return; // Don't return if collected!
+    if (!ref.current) return;
 
     const time = state.clock.getElapsedTime();
 
-    // 1. Animation: Rotation & Floating
+    // 1. Animation: Always rotate/float even if invisible (keep logic simple)
     ref.current.rotation.y += 0.06;
     ref.current.position.y =
       position[1] + Math.sin(time * 2 + randomOffset) * 0.15;
@@ -363,26 +364,31 @@ function Coin({ position, onCollect, isGameOver, speedMultiplier }) {
     if (!isGameOver) {
       ref.current.position.z += SETTINGS.speed * speedMultiplier * 2;
 
-      // Respawn logic
+      // Respawn logic - Direct DOM-like manipulation
       if (ref.current.position.z > 20) {
         ref.current.position.z = -SETTINGS.worldLength;
-        setCollected(false); // This brings it back to visibility
+        collectedRef.current = false; // Reset internal flag
+        ref.current.visible = true; // Reset visibility directly
       }
     }
 
-    if (isGameOver || collected) return; // Stop collision/movement logic if collected
+    // Stop collision logic if already collected or game over
+    if (isGameOver || collectedRef.current) return;
 
     // 2. Collision Logic
     const playerPos = state.scene.getObjectByName('playerGroup')?.position;
     if (playerPos && Math.abs(ref.current.position.z - playerPos.z) < 1) {
       if (ref.current.position.distanceTo(playerPos) < 2) {
-        setCollected(true);
-        onCollect();
+        collectedRef.current = true; // Mark as collected
+        ref.current.visible = false; // Hide immediately without re-render
+        onCollect(); // Notify parent (e.g., score update)
       }
     }
   });
+
   return (
-    <group ref={ref} position={position} visible={!collected}>
+    <group ref={ref} position={position}>
+      {/* Visual meshes here - Removed visible={!collected} to avoid state dependency */}
       <mesh
         geometry={coinGeom}
         material={goldMat}
@@ -421,7 +427,6 @@ function Coin({ position, onCollect, isGameOver, speedMultiplier }) {
     </group>
   );
 }
-
 const balloonGeo = new THREE.DodecahedronGeometry(2, 0);
 const basketGeo = new THREE.BoxGeometry(0.8, 0.7, 0.8);
 const ropeGeo = new THREE.CylinderGeometry(0.01, 0.01, 1.5, 3);
@@ -473,7 +478,29 @@ function Player({ isGameOver, onCollide }) {
   const group = useRef();
   const swipeProcessed = useRef(false);
 
-  // 1. Load Assets
+  // --- ROBUST INVULNERABILITY ---
+  const [isInvulnerable, setIsInvulnerable] = useState(false);
+  const blinkRef = useRef(0);
+  const lastGameOverState = useRef(isGameOver);
+
+  // Detect the EXACT moment of revival
+  useEffect(() => {
+    // If it WAS game over, and now it is NOT (Revived)
+    if (lastGameOverState.current === true && isGameOver === false) {
+      setIsInvulnerable(true);
+      blinkRef.current = 0;
+
+      const timer = setTimeout(() => {
+        setIsInvulnerable(false);
+        if (group.current) group.current.visible = true;
+      }, 3000); // Increased to 3s to give the player time to move past the obstacle
+
+      return () => clearTimeout(timer);
+    }
+    lastGameOverState.current = isGameOver;
+  }, [isGameOver]);
+
+  // --- Assets & Actions ---
   const runFbx = useLoader(FBXLoader, '/models/Running.fbx');
   const jumpFbx = useLoader(FBXLoader, '/models/jump.fbx');
   const slideFbx = useLoader(FBXLoader, '/models/running-slide.fbx');
@@ -487,7 +514,6 @@ function Player({ isGameOver, onCollide }) {
   const laneWidth = 2.5;
   const velocity = useRef(0);
   const touchStart = useRef({ x: 0, y: 0 });
-
   // 2. Define Actions (Outside useEffect so they are accessible)
   const triggerJump = () => {
     // Check if on ground and not already sliding/jumping
@@ -532,10 +558,8 @@ function Player({ isGameOver, onCollide }) {
     }
   };
 
-  // 3. Animation Setup
   useEffect(() => {
     mixer.current = new THREE.AnimationMixer(runFbx);
-
     const setupAction = (fbx, name, loop = true) => {
       if (fbx.animations.length > 0) {
         const clip = fbx.animations[0];
@@ -547,19 +571,20 @@ function Player({ isGameOver, onCollide }) {
         }
       }
     };
-
     setupAction(runFbx, 'run');
     setupAction(jumpFbx, 'jump', false);
     setupAction(slideFbx, 'slide', false);
     setupAction(deathFbx, 'death', false);
     actions.current.run?.play();
   }, [runFbx, jumpFbx, slideFbx, deathFbx]);
+
   useEffect(() => {
     if (isGameOver) {
       actions.current.run?.fadeOut(0.2);
-      actions.current.jump?.stop();
-      actions.current.slide?.stop();
       actions.current.death?.reset().fadeIn(0.1).play();
+    } else {
+      actions.current.death?.fadeOut(0.2);
+      actions.current.run?.reset().fadeIn(0.2).play();
     }
   }, [isGameOver]);
   // 4. Input Listeners
@@ -608,49 +633,47 @@ function Player({ isGameOver, onCollide }) {
   // 5. Physics & Frame Loop
   useFrame((state, delta) => {
     if (!group.current) return;
-
     mixer.current?.update(delta);
+
+    // --- Visual Blinking Logic ---
+    if (isInvulnerable) {
+      blinkRef.current += delta * 15; // Faster blink for better feedback
+      group.current.visible = Math.floor(blinkRef.current) % 2 === 0;
+    } else {
+      if (!isGameOver) group.current.visible = true;
+    }
+
     if (isGameOver) return;
 
     const player = group.current;
 
-    // 1. Lane movement
+    // 1. Movement
     player.position.x = THREE.MathUtils.lerp(
       player.position.x,
       lane * laneWidth,
       0.15
     );
-
-    // 2. Gravity & Physics
     velocity.current += SETTINGS.gravity;
     player.position.y += velocity.current;
 
-    // GROUND CHECK
     if (player.position.y <= 0.5) {
       player.position.y = 0.5;
       velocity.current = 0;
-
-      // ONLY land if we were actually jumping
       if (isJumping) {
         setIsJumping(false);
-        // Landed! Immediately switch back to run
         actions.current.jump?.fadeOut(0.1);
         actions.current.run?.reset().fadeIn(0.1).play();
       }
     }
 
-    // 3. 🚨 REFINED COLLISION DETECTION
-    const obstacles = [];
+    // 2. COLLISION DETECTION
+    // STAGE 1: Check invulnerability first
+    if (isInvulnerable) return;
 
-    // We only collect objects that are explicitly marked as deadly
+    // STAGE 2: If not invulnerable, run collision
+    const obstacles = [];
     state.scene.traverse((obj) => {
-      const type = obj.userData?.type;
-      if (
-        type === 'bus' ||
-        type === 'car' ||
-        type === 'cone' ||
-        type === 'barrel'
-      ) {
+      if (['bus', 'car', 'cone', 'barrel'].includes(obj.userData?.type)) {
         obstacles.push(obj);
       }
     });
@@ -659,24 +682,18 @@ function Player({ isGameOver, onCollide }) {
       const dz = Math.abs(player.position.z - obs.position.z);
       const dx = Math.abs(player.position.x - obs.position.x);
 
-      // Hitbox check
-      if (dz < 1.5 && dx < 1.5) {
+      // Wider detection for heavy vehicles, tighter for cones
+      if (dz < 1.5 && dx < 1.4) {
         const type = obs.userData.type;
 
-        // 🚍 BUS & 🚗 CAR -> Instant Death
         if (type === 'bus' || type === 'car') {
           onCollide();
           break;
         }
 
-        // 🚧 CONE -> Safe if player is high enough (Jumping)
-        if (dz < 1.0 && dx < 1.2) {
-          // Made hitboxes slightly tighter
-          if (type === 'cone' || type === 'barrel') {
-            // If we are jumping OR high enough, we pass
-            if (isJumping || player.position.y > 1.0) {
-              continue;
-            }
+        if (type === 'cone' || type === 'barrel') {
+          // If we aren't high enough or jumping, we die
+          if (!(isJumping || player.position.y > 1.1)) {
             onCollide();
             break;
           }
@@ -684,7 +701,6 @@ function Player({ isGameOver, onCollide }) {
       }
     }
   });
-
   return (
     <group ref={group} name="playerGroup" position={[0, 0.5, -2]}>
       <group position={[0, isSliding ? -0.2 : 0, 0]}>
@@ -1081,8 +1097,7 @@ export default function Demo() {
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isGameOver, setIsGameOver] = useState(false);
-  const [gameStarted, setGameStarted] = useState(false);
-
+  const [reviveCount, setReviveCount] = useState(3);
   const [distance, setDistance] = useState(0);
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
   const [energy, setEnergy] = useState(100); // max 100
@@ -1207,6 +1222,42 @@ export default function Demo() {
   const handleCollect = () => {
     setScore((prev) => prev + 10);
   };
+  const handleRevive = () => {
+    if (reviveCount > 0) {
+      // 1. Deduct a life
+      setReviveCount((prev) => prev - 1);
+
+      // 2. Hide the death screens
+      setIsGameOver(false);
+      setShowGameOverScreen(false);
+
+      // 3. Reset survival resources
+      setEnergy(100);
+      energyBoostRef.current = 2; // Give 2 seconds of invulnerability/no drain
+
+      // NOTE: We do NOT call setScore(0) or setDistance(0) here.
+      // This ensures the player stays at the same "wp" (world position).
+    }
+  };
+
+  // 2. Handle Full Restart (Try Again)
+  const handleRestart = () => {
+    setScore(0);
+    setDistance(0);
+    setEnergy(100);
+    setReviveCount(3);
+    setIsGameOver(false);
+    setShowGameOverScreen(false);
+  };
+
+  useEffect(() => {
+    if (isGameOver) {
+      const timer = setTimeout(() => {
+        setShowGameOverScreen(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isGameOver]);
 
   return (
     <div
@@ -1217,9 +1268,21 @@ export default function Demo() {
       {showGameOverScreen && (
         <div className="game-over-container">
           <h1 className="wasted-text">WASTED</h1>
-
+          <p style={{ color: 'white', marginBottom: '10px' }}>
+            Revives Left: {reviveCount}
+          </p>
           <div className="button-row">
             <button className="btn-funky try-again">TRY AGAIN</button>
+            <button
+              className={`btn-funky revive ${
+                reviveCount === 0 ? 'disabled' : ''
+              }`}
+              onClick={handleRevive}
+              disabled={reviveCount === 0}
+              style={{ opacity: reviveCount === 0 ? 0.5 : 1 }}
+            >
+              {reviveCount > 0 ? `REVIVE (-1)` : 'NO REVIVES'}
+            </button>
             <button className="btn-funky home">HOME</button>
             <button className="btn-funky shop">SHOP</button>
           </div>
@@ -1275,17 +1338,6 @@ export default function Demo() {
           />
         ))}
 
-        {burgerPositions.map((pos, i) => (
-          <Burger
-            key={i}
-            position={pos}
-            onCollect={handleBurgerCollect}
-            isGameOver={isGameOver}
-            energy={energy}
-            score={score}
-            speedMultiplier={speedMultiplier}
-          />
-        ))}
         {carPositions.map((z, i) => (
           <MovingCar
             key={`car-${i}`}
@@ -1311,6 +1363,17 @@ export default function Demo() {
           score={score}
           speedMultiplier={speedMultiplier}
         />
+        {burgerPositions.map((pos, i) => (
+          <Burger
+            key={i}
+            position={pos}
+            onCollect={handleBurgerCollect}
+            isGameOver={isGameOver}
+            energy={energy}
+            score={score}
+            speedMultiplier={speedMultiplier}
+          />
+        ))}
         {/* Render Coins */}
         {coinPositions.map((pos, idx) => (
           <Coin
