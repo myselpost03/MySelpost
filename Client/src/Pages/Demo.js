@@ -14,8 +14,8 @@ import * as THREE from 'three';
 const SETTINGS = {
   speed: 0.5,
   trackWidth: 10,
-  jumpForce: 0.18,
-  gravity: -0.012,
+  jumpForce: 0.19,
+  gravity: -0.03,
   worldLength: 300,
   skyColor: '#e0f7ff', // Added this to prevent fog error
 };
@@ -320,7 +320,7 @@ function OilBarrel({ initialPos, isGameOver, score, speedMultiplier }) {
   });
 
   return (
-    <group ref={ref} position={initialPos} userData={{ type: 'obstacle' }}>
+    <group ref={ref} position={initialPos} userData={{ type: 'barrel' }}>
       <mesh position={[0, 0.75, 0]} castShadow>
         <cylinderGeometry args={[0.5, 0.5, 1.5, 12]} />
         <meshStandardMaterial color="#d32f2f" />
@@ -490,26 +490,21 @@ function Player({ isGameOver, onCollide }) {
 
   // 2. Define Actions (Outside useEffect so they are accessible)
   const triggerJump = () => {
+    // Check if on ground and not already sliding/jumping
     if (group.current.position.y <= 0.51 && !isSliding && !isJumping) {
       velocity.current = SETTINGS.jumpForce;
       setIsJumping(true);
 
-      actions.current.run?.fadeOut(0.1);
+      // Snappy transition: stop slide immediately, fade out run quickly
+      actions.current.run?.fadeOut(0.05);
       actions.current.slide?.stop();
 
+      // Play jump immediately
       const jumpAction = actions.current.jump;
-      jumpAction?.reset().fadeIn(0.1).play();
-
-      // Stop jump automatically after animation length
-      if (jumpAction?.getClip) {
-        const duration = jumpAction.getClip().duration;
-        setTimeout(() => {
-          if (isJumping) {
-            setIsJumping(false);
-            jumpAction?.fadeOut(0.1);
-            actions.current.run?.reset().fadeIn(0.1).play();
-          }
-        }, duration * 1000);
+      if (jumpAction) {
+        jumpAction.reset().setEffectiveTimeScale(1.2).fadeIn(0.05).play();
+        // Note: setEffectiveTimeScale(1.2) makes the animation 20% faster
+        // to match the "force" of a quick jump.
       }
     }
   };
@@ -630,14 +625,17 @@ function Player({ isGameOver, onCollide }) {
     velocity.current += SETTINGS.gravity;
     player.position.y += velocity.current;
 
-    if (player.position.y < 0.5) {
+    // GROUND CHECK
+    if (player.position.y <= 0.5) {
       player.position.y = 0.5;
       velocity.current = 0;
 
+      // ONLY land if we were actually jumping
       if (isJumping) {
         setIsJumping(false);
-        actions.current.jump?.fadeOut(0.2);
-        actions.current.run?.reset().fadeIn(0.2).play();
+        // Landed! Immediately switch back to run
+        actions.current.jump?.fadeOut(0.1);
+        actions.current.run?.reset().fadeIn(0.1).play();
       }
     }
 
@@ -651,7 +649,7 @@ function Player({ isGameOver, onCollide }) {
         type === 'bus' ||
         type === 'car' ||
         type === 'cone' ||
-        type === 'obstacle'
+        type === 'barrel'
       ) {
         obstacles.push(obj);
       }
@@ -666,17 +664,20 @@ function Player({ isGameOver, onCollide }) {
         const type = obs.userData.type;
 
         // 🚍 BUS & 🚗 CAR -> Instant Death
-        if (type === 'bus' || type === 'car' || type === 'obstacle') {
+        if (type === 'bus' || type === 'car') {
           onCollide();
           break;
         }
 
         // 🚧 CONE -> Safe if player is high enough (Jumping)
-        if (type === 'cone') {
-          if (player.position.y > 1.2) {
-            continue; // Player jumped over it successfully
-          } else {
-            onCollide(); // Hit the cone on the ground
+        if (dz < 1.0 && dx < 1.2) {
+          // Made hitboxes slightly tighter
+          if (type === 'cone' || type === 'barrel') {
+            // If we are jumping OR high enough, we pass
+            if (isJumping || player.position.y > 1.0) {
+              continue;
+            }
+            onCollide();
             break;
           }
         }
@@ -1273,6 +1274,7 @@ export default function Demo() {
             speedMultiplier={speedMultiplier}
           />
         ))}
+
         {burgerPositions.map((pos, i) => (
           <Burger
             key={i}
@@ -1290,13 +1292,17 @@ export default function Demo() {
             initialZ={z}
             color={i % 2 === 0 ? '#ff2222' : '#33ff33'}
             isGameOver={isGameOver}
+            speedMultiplier={speedMultiplier} // Add this!
           />
         ))}
+
+        {/* Fix for Cones */}
         {conePositions.map((pos, idx) => (
           <TrafficCone
             key={`cone-${idx}`}
             initialPos={pos}
             isGameOver={isGameOver}
+            speedMultiplier={speedMultiplier} // Add this!
           />
         ))}
         <OilBarrel
