@@ -3,7 +3,215 @@
 @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
 
 @import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
-/* THE OVERLAY: Solid centering, no overflow */
+.char-preview-img.grayscale {
+  filter: grayscale(1) brightness(0.5);
+}
+
+.coming-soon-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  background: #ff4757;
+  color: white;
+  padding: 10px 20px;
+  font-weight: bold;
+  border-radius: 5px;
+  border: 2px solid white;
+}
+
+.btn-locked {
+  background: #2f3542 !important;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.shop-carousel-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 70vh;
+  position: relative;
+}
+
+.canvas-wrapper {
+  width: 300px; /* Big enough for mobile */
+  height: 400px;
+  margin: 0 auto;
+}
+
+.nav-arrow {
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.char-name {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px #000;
+}
+
+.dots-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: gray;
+}
+
+.dot.active {
+  background: #ffcc00;
+  transform: scale(1.2);
+}
+/* FULL SCREEN OVERLAY */
+.subway-shop-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, #00c3ff 0%, #0066ff 100%);
+  z-index: 10000;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Luckiest Guy', cursive;
+  overflow-y: auto;
+}
+
+/* TOP NAV */
+.subway-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.subway-back-btn {
+  background: #ff4757;
+  border: 4px solid #fff;
+  border-radius: 15px;
+  color: white;
+  padding: 10px 20px;
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1.5rem;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+
+.subway-coin-pill {
+  background: rgba(0, 0, 0, 0.5);
+  color: #ffcc00;
+  padding: 10px 25px;
+  border-radius: 50px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  font-size: 1.8rem;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.subway-title {
+  text-align: center;
+  color: white;
+  font-size: 3rem;
+  text-shadow: 0 6px 0 rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+}
+
+/* THE GRID */
+.subway-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 20px;
+  padding-bottom: 40px;
+}
+
+/* THE CARD */
+.subway-card {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 30px;
+  border: 4px solid rgba(255, 255, 255, 0.4);
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.subway-card.is-active {
+  background: #fff;
+  transform: scale(1.05);
+  border-color: #00ff88;
+}
+
+.subway-card.is-active h3 { color: #333; }
+
+/* CHARACTER ICON */
+.subway-char-circle {
+  width: 100px;
+  height: 100px;
+  background: white;
+  border-radius: 50%;
+  margin: 0 auto 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  border: 4px solid #00d2ff;
+}
+
+.subway-card h3 {
+  color: white;
+  margin: 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* BUTTONS */
+.subway-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 15px;
+  border: none;
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: 0.1s;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+}
+
+.btn-buy { background: #ffcc00; color: #000; }
+.btn-select { background: #00d2ff; color: #fff; }
+.btn-equipped { background: #00ff88; color: #fff; cursor: default; box-shadow: none; transform: translateY(4px); }
+
+.subway-btn:active:not(.btn-equipped) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+/* BADGE */
+.owned-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #5eff00;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  transform: rotate(-10deg);
+  border: 2px solid #000;
+}
 .game-loading-overlay {
   position: fixed;
   inset: 0;

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, Suspense, useRef, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import {
   PerspectiveCamera,
@@ -19,6 +19,243 @@ const SETTINGS = {
   worldLength: 300,
   skyColor: '#e0f7ff', // Added this to prevent fog error
 };
+
+const CHARACTER_MODELS = {
+  'cigar-man': {
+    id: 'cigar-man',
+    name: 'Cigar Man',
+    path: '/models/Cigar-man.fbx',
+    image: '/Characters/Cigar-man.png',
+    price: 0,
+  },
+  'jenny': {
+    id: 'jenny',
+    name: 'Jenny',
+    path: '/models/Jenny.fbx',
+    image: '/Characters/Jenny.png',
+    price: 0,
+  },
+  'remy': {
+    id: 'remy',
+    name: 'Remy',
+    path: '/models/Remy.fbx',
+    image: '/Characters/Remy.png',
+    price: 600,
+  },
+  'big-vegus': {
+    id: 'big-vegus',
+    name: 'Big Vegus',
+    path: '/models/Big-vegus.fbx',
+    image: '/Characters/Big-vegus.png',
+    price: 300,
+  },
+  'vanguard': {
+    id: 'vanguard',
+    name: 'Vanguard',
+    path: '/models/Vanguard.fbx',
+    image: '/Characters/Vanguard.png',
+    price: 1000,
+  },
+  'kachujin': {
+    id: 'kachujin',
+    name: 'Kachujin',
+    path: '/models/Kachujin.fbx',
+    image: '/Characters/Kachujin.png',
+    price: 1200,
+  },
+  'swat-guy': {
+    id: 'swat-guy',
+    name: 'Swat Guy',
+    path: '/models/Swat-guy.fbx',
+    image: '/Characters/Swat-guy.png',
+    price: 1500,
+  },
+  'rabbit': {
+    id: 'rabbit',
+    name: 'Rabbit',
+    path: '/models/Rabbit.fbx',
+    image: '/Characters/Rabbit.png',
+    price: 2000,
+  },
+  'mutant': {
+    id: 'mutant',
+    name: 'Mutant',
+    path: '/models/Mutant.fbx',
+    image: '/Characters/Mutant.png',
+    price: 2500,
+  },
+  'zombie': {
+    id: 'zombie',
+    name: 'Zombie',
+    path: '/models/Zombie.fbx',
+    image: '/Characters/Zombie.png',
+    price: 3000,
+  },
+  // Coming Soon Section
+  'elon': {
+    id: 'elon',
+    name: 'Elon',
+    path: null,
+    image: '/Characters/Elon.png',
+    price: 99999,
+    comingSoon: true,
+  },
+  'trump': {
+    id: 'trump',
+    name: 'Trump',
+    path: null,
+    image: '/Characters/Trump.png',
+    price: 99999,
+    comingSoon: true,
+  },
+  'putin': {
+    id: 'putin',
+    name: 'Putin',
+    path: null,
+    image: '/Characters/Putin.png',
+    price: 99999,
+    comingSoon: true,
+  },
+  'xi-jinping': {
+    id: 'xi-jinping',
+    name: 'Xi Jinping',
+    path: null,
+    image: '/Characters/Xi-jinping.png',
+    price: 99999,
+    comingSoon: true,
+  },
+};
+// Key for LocalStorage
+const STORAGE_KEYS = {
+  COINS: 'morning_sprint_total_coins',
+  UNLOCKED: 'morning_sprint_unlocked_chars',
+  SELECTED: 'morning_sprint_selected_char',
+};
+
+function Shop({ totalCoins, onPurchase, onSelect, selectedId, onClose }) {
+  const characters = Object.values(CHARACTER_MODELS);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [unlocked, setUnlocked] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.UNLOCKED);
+    // Use 'cigar-man' as the default starting ID
+    return saved ? JSON.parse(saved) : ['cigar-man'];
+  });
+
+  const currentChar = characters[currentIndex];
+  const isUnlocked = unlocked.includes(currentChar.id);
+  const isEquipped = selectedId === currentChar.id;
+  const isComingSoon = currentChar.comingSoon;
+
+  const nextChar = () =>
+    setCurrentIndex((prev) => (prev + 1) % characters.length);
+  const prevChar = () =>
+    setCurrentIndex(
+      (prev) => (prev - 1 + characters.length) % characters.length
+    );
+
+  const handleAction = () => {
+    if (isComingSoon) return; // Do nothing for locked political figures
+
+    if (isUnlocked) {
+      onSelect(currentChar.id);
+    } else if (totalCoins >= currentChar.price) {
+      const newUnlocked = [...unlocked, currentChar.id];
+      setUnlocked(newUnlocked);
+      localStorage.setItem(STORAGE_KEYS.UNLOCKED, JSON.stringify(newUnlocked));
+      onPurchase(currentChar.price, currentChar.id);
+    } else {
+      alert('NOT ENOUGH COINS!');
+    }
+  };
+
+  return (
+    <div className="subway-shop-overlay">
+      <div className="subway-header">
+        <button className="subway-back-btn" onClick={onClose}>
+          ◀
+        </button>
+        <div className="subway-coin-pill">🟡 {totalCoins}</div>
+      </div>
+
+      <div className="shop-carousel-container">
+        <button className="nav-arrow left" onClick={prevChar}>
+          ◀
+        </button>
+
+        <div className="main-preview-area">
+          <h2 className="char-name">{currentChar.name}</h2>
+
+          <div
+            className="canvas-wrapper"
+            style={{
+              height: '400px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            {/* FAST LOADING IMAGE INSTEAD OF 3D CANVAS */}
+            <img
+              src={currentChar.image}
+              alt={currentChar.name}
+              className={`char-preview-img ${isComingSoon ? 'grayscale' : ''}`}
+              style={{
+                maxHeight: '100%',
+                maxWidth: '100%',
+                objectFit: 'contain',
+                display: 'block',
+                margin: '0 auto', // Forces horizontal centering
+              }}
+            />
+            {isComingSoon && (
+              <div className="coming-soon-badge">COMING SOON</div>
+            )}
+          </div>
+
+          <div className="shop-controls">
+            <button
+              disabled={isComingSoon}
+              className={`subway-btn ${
+                isComingSoon
+                  ? 'btn-locked'
+                  : isEquipped
+                  ? 'btn-equipped'
+                  : isUnlocked
+                  ? 'btn-select'
+                  : 'btn-buy'
+              }`}
+              onClick={handleAction}
+            >
+              {isComingSoon
+                ? 'LOCKED'
+                : isEquipped
+                ? 'SELECTED'
+                : isUnlocked
+                ? 'SELECT'
+                : `BUY: ${currentChar.price} 🟡`}
+            </button>
+          </div>
+        </div>
+
+        <button className="nav-arrow right" onClick={nextChar}>
+          ▶
+        </button>
+      </div>
+
+      <div className="dots-indicator">
+        {characters.map((_, i) => (
+          <div
+            key={i}
+            className={`dot ${i === currentIndex ? 'active' : ''}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Loader({ onLoaded }) {
   const { progress } = useProgress();
 
@@ -474,7 +711,7 @@ function HotAirBalloon({ initialPos, color, speedOffset }) {
 }
 
 // --- PLAYER COMPONENT (Added name="playerGroup") ---
-function Player({ isGameOver, onCollide }) {
+function Player({ isGameOver, onCollide, selectedCharacter }) {
   const group = useRef();
   const swipeProcessed = useRef(false);
 
@@ -499,9 +736,14 @@ function Player({ isGameOver, onCollide }) {
     }
     lastGameOverState.current = isGameOver;
   }, [isGameOver]);
-
-  // --- Assets & Actions ---
-  const runFbx = useLoader(FBXLoader, '/models/Running.fbx');
+  // Inside Player component
+  const modelPath =
+    selectedCharacter && CHARACTER_MODELS[selectedCharacter]
+      ? CHARACTER_MODELS[selectedCharacter].path
+      : CHARACTER_MODELS['cigar-man'].path; // Use 'cigar-man' as the specific fallback key
+  const animationSource = useLoader(FBXLoader, '/models/Cigar-man.fbx');
+  const runAnimation = animationSource.animations[0];
+  const runFbx = useLoader(FBXLoader, modelPath);
   const jumpFbx = useLoader(FBXLoader, '/models/jump.fbx');
   const slideFbx = useLoader(FBXLoader, '/models/running-slide.fbx');
   const deathFbx = useLoader(FBXLoader, '/models/death.fbx');
@@ -571,7 +813,13 @@ function Player({ isGameOver, onCollide }) {
         }
       }
     };
-    setupAction(runFbx, 'run');
+    const clip = runAnimation.clone();
+
+    // remove root motion (good you already do this)
+    clip.tracks = clip.tracks.filter((t) => !t.name.includes('position'));
+
+    actions.current.run = mixer.current.clipAction(clip);
+    actions.current.run.play();
     setupAction(jumpFbx, 'jump', false);
     setupAction(slideFbx, 'slide', false);
     setupAction(deathFbx, 'death', false);
@@ -705,6 +953,7 @@ function Player({ isGameOver, onCollide }) {
     <group ref={group} name="playerGroup" position={[0, 0.5, -2]}>
       <group position={[0, isSliding ? -0.2 : 0, 0]}>
         <primitive
+          key={modelPath}
           object={runFbx}
           scale={0.01}
           rotation={[0, Math.PI, 0]}
@@ -1100,9 +1349,41 @@ export default function Demo() {
   const [reviveCount, setReviveCount] = useState(3);
   const [distance, setDistance] = useState(0);
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
+
   const [energy, setEnergy] = useState(100); // max 100
   const energyBoostRef = useRef(0);
   const [showGameOverScreen, setShowGameOverScreen] = useState(false);
+  const [totalCoins, setTotalCoins] = useState(
+    () => parseInt(localStorage.getItem(STORAGE_KEYS.COINS)) || 0
+  );
+  const [selectedCharacter, setSelectedCharacter] = useState(
+    () => localStorage.getItem(STORAGE_KEYS.SELECTED) || 'default'
+  );
+  const [isShopOpen, setIsShopOpen] = useState(false);
+
+  // Update Persistent Coins when Game Over occurs
+  useEffect(() => {
+    if (isGameOver) {
+      const newTotal = totalCoins + score;
+      setTotalCoins(newTotal);
+      localStorage.setItem(STORAGE_KEYS.COINS, newTotal);
+      // Reset session score if you want, or keep it for the "Wasted" screen
+    }
+  }, [isGameOver]);
+
+  const handlePurchase = (price, charId) => {
+    const newBalance = totalCoins - price;
+    setTotalCoins(newBalance);
+    localStorage.setItem(STORAGE_KEYS.COINS, newBalance);
+    setSelectedCharacter(charId);
+    localStorage.setItem(STORAGE_KEYS.SELECTED, charId);
+  };
+
+  const handleSelect = (charId) => {
+    setSelectedCharacter(charId);
+    localStorage.setItem(STORAGE_KEYS.SELECTED, charId);
+  };
+
   useEffect(() => {
     if (isGameOver) {
       const timer = setTimeout(() => {
@@ -1241,14 +1522,6 @@ export default function Demo() {
   };
 
   // 2. Handle Full Restart (Try Again)
-  const handleRestart = () => {
-    setScore(0);
-    setDistance(0);
-    setEnergy(100);
-    setReviveCount(3);
-    setIsGameOver(false);
-    setShowGameOverScreen(false);
-  };
 
   useEffect(() => {
     if (isGameOver) {
@@ -1264,7 +1537,18 @@ export default function Demo() {
       style={{ width: '100vw', height: '100vh', background: SETTINGS.skyColor }}
     >
       {isLoading && <Loader onLoaded={() => setIsLoading(false)} />}
-
+      {isShopOpen && (
+        <Shop
+          totalCoins={totalCoins}
+          selectedId={selectedCharacter}
+          onPurchase={handlePurchase}
+          onSelect={handleSelect}
+          onClose={() => {
+            setIsShopOpen(false);
+            setShowGameOverScreen(true);
+          }}
+        />
+      )}
       {showGameOverScreen && (
         <div className="game-over-container">
           <h1 className="wasted-text">WASTED</h1>
@@ -1284,7 +1568,15 @@ export default function Demo() {
               {reviveCount > 0 ? `REVIVE (-1)` : 'NO REVIVES'}
             </button>
             <button className="btn-funky home">HOME</button>
-            <button className="btn-funky shop">SHOP</button>
+            <button
+              className="btn-funky shop"
+              onClick={() => {
+                setShowGameOverScreen(false); // Hide Game Over screen
+                setIsShopOpen(true); // Open Shop overlay
+              }}
+            >
+              SHOP
+            </button>{' '}
           </div>
         </div>
       )}
@@ -1328,7 +1620,11 @@ export default function Demo() {
           isGameOver={isGameOver}
           speedMultiplier={speedMultiplier}
         />
-        <Player isGameOver={isGameOver} onCollide={() => setIsGameOver(true)} />
+        <Player
+          isGameOver={isGameOver}
+          onCollide={() => setIsGameOver(true)}
+          selectedCharacter={selectedCharacter}
+        />
         {busPositions.map((z, i) => (
           <MovingBus
             key={`bus-${i}`}
