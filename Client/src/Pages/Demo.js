@@ -1,24 +1,28 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { PerspectiveCamera, Sky, Clouds, Cloud } from '@react-three/drei';
+import { PerspectiveCamera, Sky, Clouds, Cloud, useGLTF, Environment } from '@react-three/drei';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import * as THREE from 'three';
 
 const SETTINGS = {
   speed: 0.3,
   trackWidth: 10,
-  jumpForce: 0.18, // Initial pop
-  gravity: -0.012, // Stronger pull (was -0.009)
-  skyColor: '#e0f7ff',
+  jumpForce: 0.18,
+  gravity: -0.012,
   worldLength: 300,
+  skyColor: '#e0f7ff', // Added this to prevent fog error
 };
 
-// --- COIN COMPONENT ---
-// --- PRE-DEFINED GEOMETRIES FOR PERFORMANCE ---
+// --- GEOMETRIES & MATERIALS (Pre-defined for performance) ---
 const coinGeom = new THREE.CylinderGeometry(0.5, 0.5, 0.12, 24);
 const edgeGeom = new THREE.TorusGeometry(0.5, 0.05, 12, 32);
-const starGeom = new THREE.OctahedronGeometry(0.3, 0); // Octahedron looks like a sharp 3D star/diamond
+const starGeom = new THREE.OctahedronGeometry(0.3, 0);
 const rimGeom = new THREE.TorusGeometry(0.42, 0.02, 8, 32);
+
+// Cone Geometries
+const coneBaseGeom = new THREE.BoxGeometry(0.8, 0.1, 0.8);
+const coneBodyGeom = new THREE.CylinderGeometry(0.1, 0.4, 1.2, 16);
+const coneStripGeom = new THREE.CylinderGeometry(0.22, 0.28, 0.3, 16);
 
 const goldMat = new THREE.MeshStandardMaterial({
   color: '#FFD700',
@@ -34,7 +38,200 @@ const starMat = new THREE.MeshStandardMaterial({
   emissiveIntensity: 1,
   metalness: 1,
 });
+const orangeMat = new THREE.MeshStandardMaterial({
+  color: '#ff4500',
+  roughness: 0.5,
+});
+const whiteMat = new THREE.MeshStandardMaterial({
+  color: '#ffffff',
+  emissive: '#ffffff',
+  emissiveIntensity: 0.2,
+});
 
+// --- BUS COMPONENT ---
+function MovingBus({ initialZ, isGameOver }) {
+  const ref = useRef();
+
+  const fbx = useLoader(FBXLoader, 'models/scene.fbx');
+  const busModel = useMemo(() => fbx.clone(), [fbx]);
+
+  const lanes = [-2.5, 0, 2.5];
+  const [currentLane] = useState(lanes[Math.floor(Math.random() * 3)]);
+
+  // 👉 FIX: compute bounding box height
+  const [yOffset, setYOffset] = useState(0);
+
+  useEffect(() => {
+    const box = new THREE.Box3().setFromObject(busModel);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+
+    // Half height so bottom sits on road
+    setYOffset(size.y / 2);
+  }, [busModel]);
+
+  useFrame((state) => {
+    if (!ref.current || isGameOver) return;
+
+    ref.current.position.z += SETTINGS.speed * 3;
+
+    if (ref.current.position.z > 20) {
+      ref.current.position.z = -150 - Math.random() * 100;
+      ref.current.position.x = lanes[Math.floor(Math.random() * lanes.length)];
+    }
+
+    // 👉 use computed offset instead of hardcoded 1.6
+    ref.current.position.y = yOffset;
+  });
+
+  return (
+    <group
+      ref={ref}
+      position={[currentLane, yOffset, initialZ]}
+      userData={{ type: 'bus' }}
+    >
+      <primitive
+        object={busModel}
+        scale={0.7} // 🔥 increased from 0.03 → 0.3 (10x bigger)
+       rotation={[-Math.PI / 2, 0, 0]} castShadow
+      />
+    </group>
+  );
+}
+
+
+
+const carBaseGeom = new THREE.BoxGeometry(1.5, 0.5, 3.5);
+const carTopGeom = new THREE.BoxGeometry(1.2, 0.4, 1.8);
+const carWheelGeom = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 16);
+const carWindowGeom = new THREE.BoxGeometry(1.25, 0.35, 1.5);
+// A simple plane that will look like a glowing beam in front of the car
+const beamGeom = new THREE.PlaneGeometry(1, 4);
+// A small circle for the light source "bulb"
+const bulbGeom = new THREE.PlaneGeometry(0.4, 0.2);
+function MovingCar({ initialZ, color = '#ff2222', isGameOver }) {
+  const ref = useRef();
+  const lanes = [-2.5, 0, 2.5];
+  const currentLane = useMemo(() => lanes[Math.floor(Math.random() * 3)], []);
+
+  useFrame((state) => {
+    if (!ref.current || isGameOver) return;
+    ref.current.position.z += SETTINGS.speed * 2.5;
+
+    // Respawn logic
+    if (ref.current.position.z > 20) {
+      ref.current.position.z = -200 - Math.random() * 100;
+      ref.current.position.x = lanes[Math.floor(Math.random() * lanes.length)];
+    }
+  });
+
+  return (
+    <group
+      ref={ref}
+      position={[currentLane, 0.4, initialZ]}
+      userData={{ type: 'car' }}
+    >
+      {' '}
+      {/* Car Body - Standard material is okay for the body itself */}
+      <mesh geometry={carBaseGeom}>
+        <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
+      </mesh>
+      <mesh geometry={carTopGeom} position={[0, 0.4, -0.2]}>
+        <meshStandardMaterial color={color} />
+      </mesh>
+      {/* --- FAKE HEADLIGHTS (Zero Lag) --- */}
+      <group position={[0, 0, 1.76]}>
+        {/* Left Bulb */}
+        <mesh position={[-0.5, 0, 0]} geometry={bulbGeom}>
+          <meshBasicMaterial color="#ffffff" />
+        </mesh>
+        {/* Right Bulb */}
+        <mesh position={[0.5, 0, 0]} geometry={bulbGeom}>
+          <meshBasicMaterial color="#ffffff" />
+        </mesh>
+
+        {/* FAKE BEAM: A flat plane floating slightly above the road */}
+        {/* It has no shadow and does not affect the road texture */}
+        <mesh
+          position={[0, -0.38, 2]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          geometry={beamGeom}
+        >
+          <meshBasicMaterial
+            color="#ffffff"
+            transparent
+            opacity={0.2}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false} // Prevents "z-fighting" flickering with the road
+          />
+        </mesh>
+      </group>
+      {/* Tail Lights */}
+      <mesh position={[-0.5, 0, -1.8]} geometry={bulbGeom}>
+        <meshBasicMaterial color="#ff0000" />
+      </mesh>
+      <mesh position={[0.5, 0, -1.8]} geometry={bulbGeom}>
+        <meshBasicMaterial color="#ff0000" />
+      </mesh>
+      {/* Wheels - Using BasicMaterial for maximum FPS */}
+      {[
+        [-0.7, -0.2, 1],
+        [0.7, -0.2, 1],
+        [-0.7, -0.2, -1],
+        [0.7, -0.2, -1],
+      ].map((pos, i) => (
+        <mesh
+          key={i}
+          position={pos}
+          rotation={[0, 0, Math.PI / 2]}
+          geometry={carWheelGeom}
+        >
+          <meshBasicMaterial color="#111" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+// --- TRAFFIC CONE COMPONENT ---
+function TrafficCone({ initialPos, isGameOver }) {
+  const ref = useRef();
+  const lanes = [-3, 0, 3]; // Left, Center, Right
+
+  useFrame(() => {
+    if (!ref.current || isGameOver) return;
+    ref.current.position.z += SETTINGS.speed;
+
+    if (ref.current.position.z > 20) {
+      ref.current.position.z = -150 - Math.random() * 50;
+      ref.current.position.x = lanes[Math.floor(Math.random() * lanes.length)];
+    }
+  });
+
+  return (
+    <group ref={ref} position={initialPos} userData={{ type: 'cone' }}>
+      {' '}
+      {/* Black base */}
+      <mesh geometry={coneBaseGeom} position={[0, 0.05, 0]} castShadow>
+        <meshStandardMaterial color="#111" />
+      </mesh>
+      {/* Orange Body */}
+      <mesh
+        geometry={coneBodyGeom}
+        position={[0, 0.6, 0]}
+        material={orangeMat}
+        castShadow
+      />
+      {/* Reflective Strip */}
+      <mesh
+        geometry={coneStripGeom}
+        position={[0, 0.7, 0]}
+        material={whiteMat}
+      />
+    </group>
+  );
+}
+// --- COIN COMPONENT ---
 function Coin({ position, onCollect, isGameOver }) {
   const ref = useRef();
   const [collected, setCollected] = useState(false);
@@ -52,16 +249,17 @@ function Coin({ position, onCollect, isGameOver }) {
 
     if (!isGameOver) {
       ref.current.position.z += SETTINGS.speed;
+      // Respawn logic
       if (ref.current.position.z > 20) {
         ref.current.position.z = -SETTINGS.worldLength;
         setCollected(false);
       }
     }
 
-    // 3. Collision Logic - ADDED isGameOver check here
     if (isGameOver) return;
 
-    // 3. Collision Logic
+    // 2. Collision Logic
+    // Important: Player must have name='playerGroup' in its component
     const playerPos = state.scene.getObjectByName('playerGroup')?.position;
     if (playerPos && Math.abs(ref.current.position.z - playerPos.z) < 1) {
       if (ref.current.position.distanceTo(playerPos) < 1.6) {
@@ -75,22 +273,17 @@ function Coin({ position, onCollect, isGameOver }) {
 
   return (
     <group ref={ref} position={position}>
-      {/* Main Coin Body */}
       <mesh
         geometry={coinGeom}
         material={goldMat}
         rotation={[0, 0, Math.PI / 2]}
         castShadow
       />
-
-      {/* Rounded Outer Edge */}
       <mesh
         geometry={edgeGeom}
         material={goldMat}
         rotation={[0, Math.PI / 2, 0]}
       />
-
-      {/* Decorative Rims on faces */}
       <mesh
         geometry={rimGeom}
         material={goldMat}
@@ -103,16 +296,12 @@ function Coin({ position, onCollect, isGameOver }) {
         position={[-0.07, 0, 0]}
         rotation={[0, Math.PI / 2, 0]}
       />
-
-      {/* The "Star" - Front Side */}
       <mesh
         geometry={starGeom}
         material={starMat}
         position={[0.08, 0, 0]}
         scale={[0.3, 1, 1]}
       />
-
-      {/* The "Star" - Back Side */}
       <mesh
         geometry={starGeom}
         material={starMat}
@@ -122,554 +311,53 @@ function Coin({ position, onCollect, isGameOver }) {
     </group>
   );
 }
+const balloonGeo = new THREE.DodecahedronGeometry(2, 0);
+const basketGeo = new THREE.BoxGeometry(0.8, 0.7, 0.8);
+const ropeGeo = new THREE.CylinderGeometry(0.01, 0.01, 1.5, 3);
 
-// --- GEOMETRIES (reused for performance) ---
-const busBodyGeo = new THREE.BoxGeometry(2.8, 2.2, 8);
-const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 12);
-const bumperGeo = new THREE.BoxGeometry(2.9, 0.3, 0.5);
-const sideWindowGeo = new THREE.BoxGeometry(2.85, 0.7, 7.5);
-const frontWindshieldGeo = new THREE.BoxGeometry(2.5, 0.9, 0.5);
-const headLightGeo = new THREE.SphereGeometry(0.2, 8, 8);
-
-// --- MATERIALS ---
-const busMat = new THREE.MeshStandardMaterial({
-  color: '#c0392b',
-  metalness: 0.6,
-  roughness: 0.2,
-});
-
-const tireMat = new THREE.MeshStandardMaterial({ color: '#111' });
-
-const sideGlassMat = new THREE.MeshStandardMaterial({
-  color: '#a5d6e7',
-  transparent: true,
-  opacity: 0.6,
-});
-
-const frontGlassMat = new THREE.MeshStandardMaterial({
-  color: '#00ffff',
-  emissive: '#00ffff',
-  emissiveIntensity: 0.5,
-  transparent: true,
-  opacity: 0.7,
-});
-
-// 🔥 Fake glow (VERY CHEAP)
-const glowLightMat = new THREE.MeshStandardMaterial({
-  color: 'white',
-  emissive: 'white',
-  emissiveIntensity: 10,
-});
-
-function Bus({
-  initialZ,
-  lane = 0,
-  hasLight = false,
-  type,
-  position,
-  isGameOver,
-  onCollide,
-}) {
+function HotAirBalloon({ initialPos, color, speedOffset }) {
   const mesh = useRef();
 
-  useFrame((state, delta) => {
-    if (isGameOver || !mesh.current) return;
-    mesh.current.position.z += SETTINGS.speed * (delta * 160);
+  // We increase the "Live Zone" so they don't disappear quickly
+  const spawnDistance = -400; // Start way back in the fog
+  const deleteDistance = 50; // Only disappear well after passing the player
 
-    if (mesh.current.position.z > 25) {
-      mesh.current.position.z = -SETTINGS.worldLength;
-    }
-    const pbus = state.scene.getObjectByName('playerGroup');
-    if (pbus) {
-      const pPos = pbus.position;
-      const mPos = mesh.current.position;
-      if (Math.abs(pPos.z - mPos.z) < 1 && Math.abs(pPos.x - mPos.x) < 1.2) {
-        if (pPos.y < 1.5) onCollide(); // Crash!
-      }
+  useFrame((state, delta) => {
+    if (!mesh.current) return;
+
+    // Slow, steady movement
+    mesh.current.position.z +=
+      (SETTINGS.speed * 0.3 + speedOffset) * (delta * 60);
+
+    // Gentle swaying
+    const t = state.clock.getElapsedTime() + initialPos[0] * 0.5;
+    mesh.current.position.y = initialPos[1] + Math.sin(t * 0.3) * 2;
+    mesh.current.rotation.z = Math.sin(t * 0.2) * 0.05;
+
+    // Recycle Logic: If it passes the player, send it far back
+    if (mesh.current.position.z > deleteDistance) {
+      mesh.current.position.z = spawnDistance;
+      // Slightly shift X so the pattern changes
+      mesh.current.position.x = (Math.random() - 0.5) * 60;
     }
   });
 
   return (
-    <group ref={mesh} position={[lane * 3.5, 0, initialZ]}>
-      {/* MAIN BODY */}
-      <mesh
-        geometry={busBodyGeo}
-        material={busMat}
-        position={[0, 1.4, 0]}
-        castShadow
-      />
-
-      {/* WINDOW STRIP */}
-      <mesh
-        geometry={sideWindowGeo}
-        material={sideGlassMat}
-        position={[0, 1.8, 0]}
-      />
-
-      {/* FRONT WINDSHIELD */}
-      <mesh
-        geometry={frontWindshieldGeo}
-        material={frontGlassMat}
-        position={[0, 1.8, 3.8]}
-      />
-
-      {/* WHEELS */}
-      {[
-        [-1.2, 0.5, 2.5],
-        [1.2, 0.5, 2.5],
-        [-1.2, 0.5, -2.5],
-        [1.2, 0.5, -2.5],
-      ].map((pos, i) => (
-        <mesh
-          key={i}
-          position={pos}
-          rotation={[0, 0, Math.PI / 2]}
-          geometry={wheelGeo}
-          material={tireMat}
-        />
-      ))}
-
-      {/* BUMPERS */}
-      <mesh position={[0, 0.6, 4]} geometry={bumperGeo} material={tireMat} />
-      <mesh position={[0, 0.6, -4]} geometry={bumperGeo} material={tireMat} />
-
-      {/* HEADLIGHTS (FAKE GLOW) */}
-      <mesh
-        position={[0.9, 1, 4.01]}
-        geometry={headLightGeo}
-        material={glowLightMat}
-      />
-      <mesh
-        position={[-0.9, 1, 4.01]}
-        geometry={headLightGeo}
-        material={glowLightMat}
-      />
-
-      {/* REAL LIGHTS (ONLY FOR ONE BUS) */}
-      {hasLight && (
-        <>
-          <pointLight
-            position={[0.8, 1, 4.5]}
-            intensity={2}
-            distance={8}
-            color="white"
-          />
-          <pointLight
-            position={[-0.8, 1, 4.5]}
-            intensity={2}
-            distance={8}
-            color="white"
-          />
-        </>
-      )}
-    </group>
-  );
-}
-
-// --- CAR GEOMETRIES ---
-const carBaseGeo = new THREE.BoxGeometry(1.8, 0.5, 4);
-const carTopGeo = new THREE.BoxGeometry(1.6, 0.5, 2);
-const carWheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.3, 16);
-const spoilerGeo = new THREE.BoxGeometry(1.8, 0.1, 0.4);
-const spoilerLegGeo = new THREE.BoxGeometry(0.1, 0.3, 0.1);
-
-// --- CAR MATERIALS ---
-const windowMat = new THREE.MeshStandardMaterial({
-  color: '#222',
-  metalness: 1,
-  roughness: 0.1,
-});
-
-function Car({
-  initialZ,
-  lane = 0,
-  color = '#e74c3c',
-  type,
-  position,
-  isGameOver,
-  onCollide,
-}) {
-  const mesh = useRef();
-
-  // Create a unique material per car instance for different colors
-  const carMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: color,
-        metalness: 0.7,
-        roughness: 0.2,
-      }),
-    [color]
-  );
-
-  useFrame((state, delta) => {
-    if (isGameOver || !mesh.current) return; // Cars move slightly faster than buses for variety
-    mesh.current.position.z += SETTINGS.speed * 1.2 * (delta * 160);
-
-    if (mesh.current.position.z > 25) {
-      mesh.current.position.z = -SETTINGS.worldLength;
-    }
-
-    const pcar = state.scene.getObjectByName('playerGroup');
-    if (pcar) {
-      const pPos = pcar.position;
-      const mPos = mesh.current.position;
-      if (Math.abs(pPos.z - mPos.z) < 1 && Math.abs(pPos.x - mPos.x) < 1.2) {
-        if (pPos.y < 1.5) onCollide(); // Crash!
-      }
-    }
-  });
-
-  return (
-    <group ref={mesh} position={[lane * 2.5, 0, initialZ]}>
-      {/* Lower Body */}
-      <mesh
-        geometry={carBaseGeo}
-        material={carMat}
-        position={[0, 0.6, 0]}
-        castShadow
-      />
-
-      {/* Cabin/Top */}
-      <mesh
-        geometry={carTopGeo}
-        material={windowMat}
-        position={[0, 1.1, -0.2]}
-        castShadow
-      />
-
-      {/* Wheels */}
-      {[
-        [-0.8, 0.35, 1.2],
-        [0.8, 0.35, 1.2],
-        [-0.8, 0.35, -1.2],
-        [0.8, 0.35, -1.2],
-      ].map((pos, i) => (
-        <mesh
-          key={i}
-          position={pos}
-          rotation={[0, 0, Math.PI / 2]}
-          geometry={carWheelGeo}
-          material={tireMat}
-        />
-      ))}
-
-      {/* Spoiler */}
-      <group position={[0, 0.85, -1.7]}>
-        <mesh geometry={spoilerGeo} material={carMat} position={[0, 0.3, 0]} />
-        <mesh
-          geometry={spoilerLegGeo}
-          material={tireMat}
-          position={[-0.7, 0.15, 0]}
-        />
-        <mesh
-          geometry={spoilerLegGeo}
-          material={tireMat}
-          position={[0.7, 0.15, 0]}
-        />
-      </group>
-
-      {/* Headlights */}
-      <mesh
-        position={[0.6, 0.7, 2.01]}
-        geometry={headLightGeo}
-        material={glowLightMat}
-        scale={0.6}
-      />
-      <mesh
-        position={[-0.6, 0.7, 2.01]}
-        geometry={headLightGeo}
-        material={glowLightMat}
-        scale={0.6}
-      />
-
-      {/* Tail Lights */}
-      <mesh
-        position={[0.6, 0.7, -2.01]}
-        geometry={headLightGeo}
-        material={
-          new THREE.MeshStandardMaterial({ color: 'red', emissive: 'red' })
-        }
-        scale={0.4}
-      />
-      <mesh
-        position={[-0.6, 0.7, -2.01]}
-        geometry={headLightGeo}
-        material={
-          new THREE.MeshStandardMaterial({ color: 'red', emissive: 'red' })
-        }
-        scale={0.4}
-      />
-    </group>
-  );
-}
-// --- RURAL COMPONENTS ---
-function Hut({ initialZ, side = 1 }) {
-  const mesh = useRef();
-  // Update this in Building, Hut, FarmPlot, and Coin
-  useFrame((state, delta) => {
-    if (mesh.current) {
-      // Multiply by 60 to keep the '0.2' feeling like your original speed
-      // but using delta ensures it matches the road's timing
-      mesh.current.position.z += SETTINGS.speed * (delta * 60);
-
-      if (mesh.current.position.z > 20) {
-        mesh.current.position.z = -SETTINGS.worldLength + 20;
-      }
-    }
-  });
-  return (
-    <group ref={mesh} position={[side * 10, 0, initialZ]}>
-      <mesh position={[0, 1.5, 0]} castShadow>
-        <boxGeometry args={[4, 3, 4]} />
+    <group ref={mesh} position={initialPos}>
+      <mesh geometry={balloonGeo}>
+        <meshStandardMaterial color={color} flatShading />
+      </mesh>
+      <mesh geometry={ropeGeo} position={[0, -1.5, 0]}>
+        <meshStandardMaterial color="#555" />
+      </mesh>
+      <mesh geometry={basketGeo} position={[0, -2.2, 0]}>
         <meshStandardMaterial color="#8B4513" />
       </mesh>
-      <mesh position={[0, 4, 0]} castShadow>
-        <coneGeometry args={[3.5, 2, 4]} />
-        <meshStandardMaterial color="#C2B280" />
-      </mesh>
     </group>
   );
 }
 
-function FarmPlot({ initialZ, side = 1 }) {
-  const mesh = useRef();
-  useFrame(() => {
-    if (mesh.current) {
-      mesh.current.position.z += SETTINGS.speed;
-      if (mesh.current.position.z > 20)
-        mesh.current.position.z = -SETTINGS.worldLength + 20;
-    }
-  });
-  return (
-    <mesh
-      ref={mesh}
-      position={[side * 15, 0.05, initialZ]}
-      rotation={[-Math.PI / 2, 0, 0]}
-      receiveShadow
-    >
-      <planeGeometry args={[10, 10]} />
-      <meshStandardMaterial color="#355E3B" />
-    </mesh>
-  );
-}
-
-// --- URBAN BUILDING ---
-function Building({ initialZ, side = 1 }) {
-  const mesh = useRef();
-  const { height, width, depth, color, windows } = useMemo(() => {
-    const h = 12 + Math.random() * 25;
-    const w = 5 + Math.random() * 4;
-    const d = 5 + Math.random() * 4;
-    const urbanColors = ['#2c3e50', '#4a4a4a', '#7f8c8d', '#5d4037', '#232b2b'];
-    const pickedColor =
-      urbanColors[Math.floor(Math.random() * urbanColors.length)];
-    const canvas = document.createElement('canvas');
-    canvas.width = 128;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, 128, 256);
-    for (let y = 10; y < 240; y += 24) {
-      for (let x = 15; x < 110; x += 30) {
-        if (Math.random() > 0.4) {
-          ctx.fillStyle = Math.random() > 0.5 ? '#ffd27d' : '#82ccdd';
-          ctx.fillRect(x, y, 18, 16);
-        }
-      }
-    }
-    return {
-      height: h,
-      width: w,
-      depth: d,
-      color: pickedColor,
-      windows: new THREE.CanvasTexture(canvas),
-    };
-  }, []);
-
-  // Update this in Building, Hut, FarmPlot, and Coin
-  useFrame((state, delta) => {
-    if (mesh.current) {
-      // Multiply by 60 to keep the '0.2' feeling like your original speed
-      // but using delta ensures it matches the road's timing
-      mesh.current.position.z += SETTINGS.speed * (delta * 60);
-
-      if (mesh.current.position.z > 20) {
-        mesh.current.position.z = -SETTINGS.worldLength + 20;
-      }
-    }
-  });
-
-  return (
-    // Inside Building component
-    // Change the '2' to '0.5' to bring them right up to the sidewalk
-    <group
-      ref={mesh}
-      position={[
-        side * (SETTINGS.trackWidth / 2 + width / 2 + 0.5),
-        0,
-        initialZ,
-      ]}
-    >
-      {' '}
-      <mesh position={[0, height / 2, 0]} castShadow>
-        <boxGeometry args={[width, height, depth]} />
-        <meshStandardMaterial
-          color={color}
-          emissiveMap={windows}
-          emissiveIntensity={1.2}
-          emissive="#fff"
-        />
-      </mesh>
-    </group>
-  );
-}
-
-function World() {
-  return (
-    <>
-      {Array.from({ length: 10 }).map((_, i) => (
-        <React.Fragment key={`city-${i}`}>
-          <Building initialZ={i * -15} side={-1} />
-          <Building initialZ={i * -15} side={1} />
-        </React.Fragment>
-      ))}
-      {Array.from({ length: 10 }).map((_, i) => {
-        const zPos = -150 + i * -15;
-        return (
-          <React.Fragment key={`farm-${i}`}>
-            <Hut initialZ={zPos} side={-1} />
-            <FarmPlot initialZ={zPos} side={1} />
-          </React.Fragment>
-        );
-      })}
-    </>
-  );
-}
-
-function RacingTrack() {
-  const trackWidth = 10;
-  const sidewalkWidth = 2;
-
-  const trackTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 1024;
-    const ctx = canvas.getContext('2d');
-
-    // 1. Base Asphalt Color
-    ctx.fillStyle = '#222222';
-    ctx.fillRect(0, 0, 512, 1024);
-
-    // 2. Add "Grain/Noise" for realism
-    for (let i = 0; i < 5000; i++) {
-      const x = Math.random() * 512;
-      const y = Math.random() * 1024;
-      const opacity = Math.random() * 0.05;
-      ctx.fillStyle = `rgba(255,255,255,${opacity})`;
-      ctx.fillRect(x, y, 1, 1);
-    }
-
-    // 3. Lane Markings (Dash)
-    ctx.setLineDash([120, 180]);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.lineWidth = 6;
-
-    // Left Lane divider
-    ctx.beginPath();
-    ctx.moveTo(170, 0);
-    ctx.lineTo(170, 1024);
-    ctx.stroke();
-    // Right Lane divider
-    ctx.beginPath();
-    ctx.moveTo(342, 0);
-    ctx.lineTo(342, 1024);
-    ctx.stroke();
-
-    // 4. Solid Yellow Shoulder Lines
-    ctx.setLineDash([]);
-    ctx.strokeStyle = '#f1c40f';
-    ctx.lineWidth = 10;
-    ctx.beginPath();
-    ctx.moveTo(10, 0);
-    ctx.lineTo(10, 1024);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(502, 0);
-    ctx.lineTo(502, 1024);
-    ctx.stroke();
-
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(1, 20); // Repeat over the long plane
-    tex.anisotropy = 16; // Keeps texture sharp at distance
-    return tex;
-  }, []);
-
-  // Move the texture offset for the "scrolling" effect
-  // Inside RacingTrack
-  useFrame((state, delta) => {
-    // Increase '10' to '20' or '30' for a high-speed blur effect
-    const worldUnitsPerSecond = SETTINGS.speed * (delta * 60);
-    trackTexture.offset.y -= worldUnitsPerSecond * (20 / 1000);
-  });
-
-  return (
-    <group>
-      {/* Main Road */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, 0]}>
-        <planeGeometry args={[trackWidth, 1000]} />
-        <meshStandardMaterial
-          map={trackTexture}
-          roughness={0.8}
-          metalness={0.1}
-        />
-      </mesh>
-
-      {/* Sidewalks / Curbs (Static) */}
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[-(trackWidth / 2 + sidewalkWidth / 2), 0.05, 0]}
-        receiveShadow
-      >
-        <planeGeometry args={[sidewalkWidth, 1000]} />
-        <meshStandardMaterial color="#555" roughness={1} />
-      </mesh>
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[trackWidth / 2 + sidewalkWidth / 2, 0.05, 0]}
-        receiveShadow
-      >
-        <planeGeometry args={[sidewalkWidth, 1000]} />
-        <meshStandardMaterial color="#555" roughness={1} />
-      </mesh>
-    </group>
-  );
-}
-
-function CloudSystem() {
-  const group = useRef();
-  useFrame(() => {
-    if (group.current) {
-      group.current.position.z += SETTINGS.speed * 0.4;
-      if (group.current.position.z > 50) group.current.position.z = -150;
-    }
-  });
-  return (
-    <group ref={group}>
-      <Clouds material={THREE.MeshLambertMaterial}>
-        <Cloud
-          segments={20}
-          bounds={[10, 2, 2]}
-          volume={6}
-          color="#ffffff"
-          position={[0, 20, -100]}
-        />
-      </Clouds>
-    </group>
-  );
-}
-
+// --- PLAYER COMPONENT (Added name="playerGroup") ---
 function Player({ isGameOver, onCollide }) {
   const group = useRef();
   const swipeProcessed = useRef(false);
@@ -799,24 +487,59 @@ function Player({ isGameOver, onCollide }) {
   // 5. Physics & Frame Loop
   useFrame((state, delta) => {
     if (!group.current) return;
+
     mixer.current?.update(delta);
     if (isGameOver) return;
-    group.current.position.x = THREE.MathUtils.lerp(
-      group.current.position.x,
+
+    const player = group.current;
+
+    // Lane movement
+    player.position.x = THREE.MathUtils.lerp(
+      player.position.x,
       lane * laneWidth,
       0.15
     );
 
+    // Gravity
     velocity.current += SETTINGS.gravity;
-    group.current.position.y += velocity.current;
+    player.position.y += velocity.current;
 
-    if (group.current.position.y < 0.5) {
-      group.current.position.y = 0.5;
+    if (player.position.y < 0.5) {
+      player.position.y = 0.5;
       velocity.current = 0;
+
       if (isJumping) {
         setIsJumping(false);
         actions.current.jump?.fadeOut(0.2);
         actions.current.run?.reset().fadeIn(0.2).play();
+      }
+    }
+
+    // 🚨 COLLISION DETECTION (NEW)
+    const obstacles = [];
+
+    state.scene.traverse((obj) => {
+      if (
+        obj.type === 'Group' &&
+        (obj.userData.type === 'bus' ||
+          obj.userData.type === 'car' ||
+          obj.userData.type === 'cone')
+      ) {
+        obstacles.push(obj);
+      }
+    });
+
+    for (let obs of obstacles) {
+      const dz = Math.abs(player.position.z - obs.position.z);
+      const dx = Math.abs(player.position.x - obs.position.x);
+
+      // 🎯 collision zone
+      if (dz < 1.5 && dx < 1.5) {
+        // ❌ IMPORTANT: ignore if jumping high enough
+        if (player.position.y > 1.2) continue;
+
+        onCollide(); // 💥 GAME OVER
+        break;
       }
     }
   });
@@ -835,383 +558,211 @@ function Player({ isGameOver, onCollide }) {
   );
 }
 
-const redWhiteStripMat = (() => {
-  const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 128;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, 256, 128);
-  ctx.fillStyle = '#e74c3c'; // Red
-  for (let i = 0; i < 256; i += 64) {
-    ctx.fillRect(i, 0, 32, 128);
-  }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.repeat.set(2, 1);
-  return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.4 });
-})();
+// --- OTHER COMPONENTS (CloudSystem, StreetWall, etc. remain the same as your code) ---
+function CloudSystem({ isGameOver }) {
+  const group = useRef();
+  useFrame(() => {
+    if (!group.current || isGameOver) return;
 
-// 2. Yellow & Black Striped Texture (for the edge accents)
-const yellowBlackStripMat = (() => {
-  const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 128;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#f1c40f'; // Yellow
-  ctx.fillRect(0, 0, 256, 128);
-  ctx.fillStyle = '#111'; // Black
-  for (let i = 0; i < 256; i += 64) {
-    ctx.beginPath();
-    ctx.moveTo(i, 0);
-    ctx.lineTo(i + 32, 0);
-    ctx.lineTo(i + 64, 128);
-    ctx.lineTo(i + 32, 128);
-    ctx.fill();
-  }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.4 });
-})();
-// --- COOL, RUGGED BARRICADE ---
-function Barricade({ initialZ, lane = 0, isGameOver, onCollide }) {
-  const mesh = useRef();
-  const lightRef = useRef();
-
-  useFrame((state, delta) => {
-    if (isGameOver || !mesh.current) return;
-
-    // Movement logic
-    mesh.current.position.z += SETTINGS.speed * (delta * 160);
-    if (mesh.current.position.z > 25)
-      mesh.current.position.z = -SETTINGS.worldLength;
-
-    // Blinking lights logic
-    if (lightRef.current) {
-      const pulse = (Math.sin(state.clock.getElapsedTime() * 12) + 1) / 2;
-      lightRef.current.children.forEach(
-        (l) => (l.material.emissiveIntensity = pulse * 4)
-      );
-    }
-
-    // --- SINGLE CLEAN COLLISION CHECK ---
-    const player = state.scene.getObjectByName('playerGroup');
-    if (player) {
-      const pPos = player.position;
-      const mPos = mesh.current.position;
-
-      // 1. Check if we are in the same Z and X space
-      // Z depth is 0.6, X width is 1.5 to match the barricade plank width
-      if (Math.abs(pPos.z - mPos.z) < 0.6 && Math.abs(pPos.x - mPos.x) < 1.5) {
-        // 2. Height Check:
-        // The main plank is at y: 0.65.
-        // If the player's feet (y) are below 1.0, they hit the bar.
-        if (pPos.y < 1.0) {
-          onCollide();
-        }
-      }
-    }
+    group.current.position.z += SETTINGS.speed * 0.4;
+    if (group.current.position.z > 50) group.current.position.z = -150;
   });
-
   return (
-    <group ref={mesh} position={[lane * 2.5, 0, initialZ]}>
-      {/* 1. THE CONES (Left & Right) */}
-      {[-1.4, 1.4].map((x, i) => (
-        <group key={i} position={[x, 0, 0]}>
-          {/* Orange Cone Body */}
-          <mesh position={[0, 0.4, 0]} castShadow>
-            <coneGeometry args={[0.4, 0.8, 16]} />
-            <meshStandardMaterial color="#ff6600" roughness={0.3} />
-          </mesh>
-          {/* White Reflective Stripe on Cone */}
-          <mesh position={[0, 0.45, 0]}>
-            <cylinderGeometry args={[0.21, 0.25, 0.2, 16]} />
-            <meshStandardMaterial
-              color="#eee"
-              emissive="#fff"
-              emissiveIntensity={0.2}
-            />
-          </mesh>
-          {/* Cone Base */}
-          <mesh position={[0, 0.025, 0]}>
-            <boxGeometry args={[0.6, 0.05, 0.6]} />
-            <meshStandardMaterial color="#222" />
-          </mesh>
-        </group>
-      ))}
-
-      {/* 2. THE MAIN PLANK (Red/White Stripes) */}
-      <mesh position={[0, 0.65, 0]} castShadow material={redWhiteStripMat}>
-        <boxGeometry args={[3.2, 0.35, 0.1]} />
-      </mesh>
-
-      {/* 3. ACCENT RAIL (Yellow/Black Stripes) */}
-      <mesh position={[0, 0.4, 0]} castShadow material={yellowBlackStripMat}>
-        <boxGeometry args={[2.8, 0.15, 0.08]} />
-      </mesh>
-
-      {/* 4. FLASHING HAZARD LIGHTS */}
-      <group ref={lightRef}>
-        <mesh position={[-1.4, 0.85, 0]}>
-          <sphereGeometry args={[0.08, 8, 8]} />
-          <meshStandardMaterial color="yellow" emissive="yellow" />
-        </mesh>
-        <mesh position={[1.4, 0.85, 0]}>
-          <sphereGeometry args={[0.08, 8, 8]} />
-          <meshStandardMaterial color="yellow" emissive="yellow" />
-        </mesh>
-      </group>
+    <group ref={group}>
+      <Clouds material={THREE.MeshLambertMaterial}>
+        <Cloud
+          segments={20}
+          bounds={[10, 2, 2]}
+          volume={6}
+          color="#ffffff"
+          position={[0, 20, -100]}
+        />
+        <Cloud
+          segments={20}
+          bounds={[10, 2, 2]}
+          volume={6}
+          color="#f0f0f0"
+          position={[40, 25, -150]}
+        />
+        <Cloud
+          segments={20}
+          bounds={[10, 2, 2]}
+          volume={6}
+          color="#ffffff"
+          position={[-40, 22, -120]}
+        />
+      </Clouds>
     </group>
   );
 }
 
-const bombGeometry = new THREE.SphereGeometry(0.6, 20, 20); // Lower segments for performance
-const beltGeometry = new THREE.CylinderGeometry(0.61, 0.61, 0.25, 20, 1, true);
-const capGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.1, 12);
+function StreetWall({ side = 1, isGameOver }) {
+  const wallTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
 
-const bombMat = new THREE.MeshStandardMaterial({
-  color: '#111',
-  roughness: 0.8,
-});
-const capMat = new THREE.MeshStandardMaterial({ color: '#444', metalness: 1 });
-
-// Create the Hazard Texture once
-const hazardTexture = (() => {
-  const canvas = document.createElement('canvas');
-  canvas.width = 128;
-  canvas.height = 128;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#ffcc00';
-  ctx.fillRect(0, 0, 128, 128);
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 20;
-  for (let i = -128; i < 256; i += 40) {
-    ctx.beginPath();
-    ctx.moveTo(i, 0);
-    ctx.lineTo(i + 128, 128);
-    ctx.stroke();
-  }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.repeat.set(2, 1);
-  return tex;
-})();
-
-const hazardMat = new THREE.MeshStandardMaterial({ map: hazardTexture });
-
-function Explosive({ position, isGameOver, onCollide }) {
-  const ref = useRef();
-  const fuseRef = useRef();
-
-  useFrame((state, delta) => {
-    if (!ref.current) return;
-    if (isGameOver) return;
-    // Movement
-    ref.current.position.z += SETTINGS.speed * (delta * 160);
-    // Inside Explosive component's useFrame
-    if (ref.current.position.z > 20) {
-      // 1. Send it back to the end of the world
-      ref.current.position.z = -SETTINGS.worldLength;
-
-      // 2. Re-randomize the lane (Crucial!)
-      const lanes = [-2.5, 0, 2.5];
-      ref.current.position.x = lanes[Math.floor(Math.random() * 3)];
-
-      // 3. Optional: Add a tiny random Z offset so they don't all
-      // spawn at the exact same millisecond
-      ref.current.position.z -= Math.random() * 10;
+    // 1. Create a Gritty Base (Mortar)
+    ctx.fillStyle = '#2a2a2a';
+    ctx.fillRect(0, 0, 512, 512);
+    
+    // Add "grit" to mortar
+    for(let i = 0; i < 2000; i++) {
+        ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.5})`;
+        ctx.fillRect(Math.random() * 512, Math.random() * 512, 1, 1);
     }
 
-    // Flicker Spark (Cheap math)
-    if (fuseRef.current) {
-      const s = Math.sin(state.clock.elapsedTime * 25);
-      fuseRef.current.material.emissiveIntensity = s > 0 ? 15 : 5;
-    }
+    const rows = 10;
+    const rowHeight = 512 / rows;
 
-    // Collision (Keep this lightweight)
-    const player = state.scene.getObjectByName('playerGroup');
-    if (player) {
-      const distZ = Math.abs(player.position.z - ref.current.position.z);
-      const distX = Math.abs(player.position.x - ref.current.position.x);
+    for (let r = 0; r < rows; r++) {
+      const stonesInRow = 4;
+      const colWidth = 512 / stonesInRow;
+      
+      for (let c = 0; c < stonesInRow; c++) {
+        // Stagger rows and add random jitter to stone widths
+        const xOffset = (r % 2) * (colWidth / 2);
+        const jitter = (Math.random() - 0.5) * 20;
+        const x = (c * colWidth) + xOffset - (colWidth / 2) + jitter;
+        const y = r * rowHeight;
 
-      // Check if player is within the explosive's hit box
-      if (distZ < 0.8 && distX < 0.8) {
-        // Player must be low enough to hit it (not high in a jump)
-        if (player.position.y < 1.5) {
-          onCollide(); // <--- Triggers death.fbx and stops environment
-        }
+        // 2. Realistic Stone Shading
+        // Mix of greys, browns, and dark blues for "cold stone"
+        const baseHue = 20 + Math.random() * 20; // Earthy tones
+        const lightness = 25 + Math.random() * 15;
+        const grad = ctx.createLinearGradient(x, y, x + colWidth, y + rowHeight);
+        grad.addColorStop(0, `hsl(${baseHue}, 5%, ${lightness + 10}%)`);
+        grad.addColorStop(1, `hsl(${baseHue}, 5%, ${lightness - 10}%)`);
+        
+        ctx.fillStyle = grad;
+        
+        // Draw stone with irregular "hand-cut" edges
+        ctx.beginPath();
+        ctx.moveTo(x + 5, y + 5);
+        ctx.lineTo(x + colWidth - 5, y + 2);
+        ctx.lineTo(x + colWidth - 2, y + rowHeight - 5);
+        ctx.lineTo(x + 8, y + rowHeight - 2);
+        ctx.closePath();
+        ctx.fill();
+
+        // 3. Add Highlights/Cracks
+        ctx.strokeStyle = `rgba(255,255,255,0.05)`;
+        ctx.strokeRect(x + 6, y + 6, colWidth - 12, rowHeight - 12);
       }
     }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(1, 8); // Scale the texture so stones look heavy
+    tex.anisotropy = 16; // Keeps it sharp at a distance
+    return tex;
+  }, []);
+
+  useFrame((state, delta) => {
+    if (isGameOver) return;
+    wallTexture.offset.y -= SETTINGS.speed * delta * 0.8;
   });
-
+const WALL_HEIGHT = 2.5;
   return (
-    <group ref={ref} position={position}>
-      {/* Bomb Body */}
-      <mesh
-        geometry={bombGeometry}
-        material={bombMat}
-        castShadow
-        position={[0, 0.6, 0]}
-      />
-
-      {/* Hazard Stripes */}
-      <mesh
-        geometry={beltGeometry}
-        material={hazardMat}
-        position={[0, 0.6, 0]}
-      />
-
-      {/* Metal Cap */}
-      <mesh geometry={capGeometry} material={capMat} position={[0, 1.1, 0]} />
-
-      {/* The Spark */}
-      <mesh ref={fuseRef} position={[0, 1.2, 0]}>
-        <sphereGeometry args={[0.1, 8, 8]} />
-        <meshStandardMaterial
-          color="white"
-          emissive="#00ffff"
-          emissiveIntensity={10}
+   <group position={[side * (SETTINGS.trackWidth / 2 + 0.6), WALL_HEIGHT / 2, 0]}>   {/* The Main Wall */}
+      <mesh>
+       <boxGeometry args={[1.2, WALL_HEIGHT, 300]} /> <meshStandardMaterial 
+          map={wallTexture} 
+          roughness={1} 
+          metalness={0} 
+          bumpScale={0.05} // Subtle depth
         />
       </mesh>
-    </group>
-  );
-}
-// Pre-define these outside the component to save memory
-// Keep these outside the component to save memory
-const balloonGeo = new THREE.DodecahedronGeometry(2, 0);
-const basketGeo = new THREE.BoxGeometry(0.8, 0.7, 0.8);
-const ropeGeo = new THREE.CylinderGeometry(0.01, 0.01, 1.5, 3);
-
-function HotAirBalloon({ initialPos, color, speedOffset }) {
-  const mesh = useRef();
-
-  // We increase the "Live Zone" so they don't disappear quickly
-  const spawnDistance = -400; // Start way back in the fog
-  const deleteDistance = 50; // Only disappear well after passing the player
-
-  useFrame((state, delta) => {
-    if (!mesh.current) return;
-
-    // Slow, steady movement
-    mesh.current.position.z +=
-      (SETTINGS.speed * 0.3 + speedOffset) * (delta * 60);
-
-    // Gentle swaying
-    const t = state.clock.getElapsedTime() + initialPos[0] * 0.5;
-    mesh.current.position.y = initialPos[1] + Math.sin(t * 0.3) * 2;
-    mesh.current.rotation.z = Math.sin(t * 0.2) * 0.05;
-
-    // Recycle Logic: If it passes the player, send it far back
-    if (mesh.current.position.z > deleteDistance) {
-      mesh.current.position.z = spawnDistance;
-      // Slightly shift X so the pattern changes
-      mesh.current.position.x = (Math.random() - 0.5) * 60;
-    }
-  });
-
-  return (
-    <group ref={mesh} position={initialPos}>
-      <mesh geometry={balloonGeo}>
-        <meshStandardMaterial color={color} flatShading />
-      </mesh>
-      <mesh geometry={ropeGeo} position={[0, -1.5, 0]}>
-        <meshStandardMaterial color="#555" />
-      </mesh>
-      <mesh geometry={basketGeo} position={[0, -2.2, 0]}>
-        <meshStandardMaterial color="#8B4513" />
+      
+      {/* Optional: Add a "Coping Stone" (Top ledge) for extra realism */}
+      <mesh position={[0, (WALL_HEIGHT / 2) + 0.1, 0]}>  <boxGeometry args={[1.5, 0.3, 300]} />
+        <meshStandardMaterial color="#333" roughness={1} />
       </mesh>
     </group>
   );
 }
-// --- LANDMINE (POP-UP OBSTACLE) ---
-const mineBaseGeo = new THREE.CylinderGeometry(0.8, 1, 0.2, 16);
-const mineInnerGeo = new THREE.SphereGeometry(0.5, 12, 12);
-const redGlowMat = new THREE.MeshStandardMaterial({
-  color: '#ff0000',
-  emissive: '#ff0000',
-  emissiveIntensity: 2,
-});
 
-function Landmine({ initialZ, lane = 0, isGameOver, onCollide }) {
-  const mesh = useRef();
-  const innerRef = useRef();
-  const [isActive, setIsActive] = useState(false);
+function StreetLight({ initialZ, side = 1, isGameOver }) {
+  const group = useRef();
+  const fbx = useLoader(FBXLoader, '/models/Lamp.fbx');
+  const modelClone = useMemo(() => fbx.clone(), [fbx]);
+  useFrame(() => {
+      if (isGameOver) return;
 
-  useFrame((state, delta) => {
-    if (isGameOver || !mesh.current) return;
-    // 1. Basic World Movement
-    mesh.current.position.z += SETTINGS.speed * (delta * 160);
-
-    // 2. Recycle Logic
-    if (mesh.current.position.z > 25) {
-      mesh.current.position.z = -SETTINGS.worldLength;
-      setIsActive(false); // Reset for next time
-      if (innerRef.current) innerRef.current.position.y = 0;
-    }
-    const p = state.scene.getObjectByName('playerGroup');
-    if (p) {
-      const pPos = p.position;
-      const mPos = mesh.current.position;
-      if (Math.abs(pPos.z - mPos.z) < 1 && Math.abs(pPos.x - mPos.x) < 1.2) {
-        if (pPos.y < 1.5) onCollide(); // Crash!
-      }
-    }
-
-    // 3. Trigger "Pop-up" when player is close (approx 15 units away)
-    const player = state.scene.getObjectByName('playerGroup');
-    if (player) {
-      const distZ = Math.abs(player.position.z - mesh.current.position.z);
-      if (distZ < 15 && !isActive) {
-        setIsActive(true);
-      }
-    }
-
-    // 4. Animation: Spring up if active
-    if (isActive && innerRef.current.position.y < 1.2) {
-      innerRef.current.position.y += 0.15; // Speed of the "pop"
-    }
-
-    // 5. Collision Logic
-    if (player && Math.abs(player.position.z - mesh.current.position.z) < 0.6) {
-      if (Math.abs(player.position.x - mesh.current.position.x) < 0.8) {
-        // If it's popped up and player is low, CRASH
-        if (isActive && player.position.y < 1.8) {
-          console.log('BOOM! Stepped on a mine.');
-        }
-      }
-    }
-
-    // Flicker the red light
-    if (innerRef.current) {
-      innerRef.current.material.emissiveIntensity =
-        (Math.sin(state.clock.elapsedTime * 15) + 1) * 2;
+    if (group.current) {
+      group.current.position.z += SETTINGS.speed;
+      if (group.current.position.z > 20) group.current.position.z = -100;
     }
   });
-
   return (
-    <group ref={mesh} position={[lane * 2.5, 0.05, initialZ]}>
-      {/* Outer Plate (Flat on ground) */}
-      <mesh geometry={mineBaseGeo} castShadow>
-        <meshStandardMaterial color="#333" roughness={0.8} />
-      </mesh>
-
-      {/* The part that pops up */}
-      <mesh
-        ref={innerRef}
-        geometry={mineInnerGeo}
-        material={redGlowMat}
-        position={[0, 0, 0]}
+    <group ref={group} position={[side * 5.5, 0, initialZ]}>
+      <primitive
+        object={modelClone}
+        scale={0.01}
+        rotation={[0, side === 1 ? 0 : Math.PI, 0]}
         castShadow
       />
-
-      {/* Decorative metal ring */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.1, 0]}>
-        <torusGeometry args={[0.6, 0.05, 8, 24]} />
-        <meshStandardMaterial color="#555" metalness={1} />
-      </mesh>
     </group>
   );
 }
+
+function RacingTrack({isGameOver}) {
+  const trackTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+
+    // 1. Asphalt Base
+    ctx.fillStyle = '#333333';
+    ctx.fillRect(0, 0, 512, 1024);
+
+    // 2. White Side Lines
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 15, 1024); // Left edge
+    ctx.fillRect(497, 0, 15, 1024); // Right edge
+
+    // 3. Yellow Dashed Center Line
+    ctx.strokeStyle = '#ffcc00';
+    ctx.lineWidth = 20;
+    ctx.setLineDash([80, 80]); // 80px line, 80px gap
+    ctx.lineDashOffset = 0;
+    ctx.beginPath();
+    ctx.moveTo(256, 0);
+    ctx.lineTo(256, 1024);
+    ctx.stroke();
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    // We repeat it 10 times over the 200 unit length for high detail
+    tex.repeat.set(1, 10);
+    return tex;
+  }, []);
+
+  useFrame((state, delta) => {
+     if (isGameOver) return;
+
+    // Scroll the texture based on speed
+    // Higher multiplier (e.g., 2) makes the dashes move faster
+    trackTexture.offset.y -= SETTINGS.speed * delta * 2;
+  });
+
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, -50]}>
+      {/* Increased length to 300 to match SETTINGS.worldLength 
+         so the road doesn't end abruptly 
+      */}
+      <planeGeometry args={[SETTINGS.trackWidth, 300]} />
+      <meshStandardMaterial
+        map={trackTexture}
+        roughness={0.8}
+        metalness={0.1}
+      />
+    </mesh>
+  );
+}
+
 // --- FOOD GEOMETRIES & MATERIALS ---
 // --- UPDATED BURGER GEOMETRY & MATERIALS ---
 const bunMat = new THREE.MeshStandardMaterial({ color: '#D3A36A' }); // Golden brown
@@ -1271,229 +822,143 @@ function Burger({ position, onCollect }) {
   );
 }
 
+// --- MAIN DEMO COMPONENT ---
 export default function Demo() {
   const [score, setScore] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
 
-  const items = useMemo(() => {
-    const lanes = [-2.5, 0, 2.5];
-    let lastExplosiveZ = 0;
-    const minExplosiveGap = 50;
+  const balloons = useMemo(() => {
+    const colors = [
+      '#ff6b6b',
+      '#4ecdc4',
+      '#ffe66d',
+      '#ff9f43',
+      '#a29bfe',
+      '#fd79a8',
+    ];
+    const count = 15; // More balloons for a denser sky
 
-    return Array.from({ length: 40 }).map((_, i) => {
-      // START AT -80: Gives a safe buffer for coins/explosives
-      const zPos = -80 - i * 10;
+    return Array.from({ length: count }).map((_, i) => {
+      // Wave grouping: 5 balloons per cluster
+      const waveIndex = Math.floor(i / 5);
 
-      const canSpawnExplosive =
-        Math.random() > 0.9 &&
-        Math.abs(zPos - lastExplosiveZ) > minExplosiveGap;
-
-      let type = 'coin';
-      if (canSpawnExplosive) {
-        type = 'explosive';
-        lastExplosiveZ = zPos;
-      }
+      // START POSITIONS:
+      // We start them closer (Z: -30 to -150) so they are immediately visible
+      const zBase = -30 - waveIndex * 60;
 
       return {
-        type,
-        position: [lanes[Math.floor(Math.random() * 3)], 0.8, zPos],
+        id: i,
+        initialPos: [
+          (Math.random() - 0.5) * 60, // Wide X range (-30 to 30) includes the center!
+          12 + Math.random() * 15, // Varying heights (12m to 27m)
+          zBase + Math.random() * 30, // Random depth within the wave
+        ],
+        color: colors[i % colors.length],
+        speedOffset: Math.random() * 0.02,
       };
     });
   }, []);
-
-  const burgerPositions = useMemo(() => {
-    return Array.from({ length: 15 }).map((_, i) => ({
-      id: i,
-      // START AT -100: Burgers appear later
-      z: -100 - i * 40,
-      lane: [-2.5, 0, 2.5][Math.floor(Math.random() * 3)],
-    }));
+  const carPositions = useMemo(() => [-50, -150, -200], []);
+  const conePositions = useMemo(
+    () => [
+      [-3, 0, -30],
+      [0, 0, -60],
+      [3, 0, -90],
+      [-3, 0, -120],
+    ],
+    []
+  );
+  const busPositions = useMemo(() => [-80, -160, -240], []);
+  // Generate initial coin positions
+  const coinPositions = useMemo(() => {
+    return [
+      [0, 1, -20],
+      [2, 1, -40],
+      [-2, 1, -60],
+      [0, 2.5, -80], // High coin requires jump
+      [3, 1, -100],
+    ];
   }, []);
 
-  const handleCollide = () => setIsGameOver(true);
+  const handleCollect = () => {
+    setScore((prev) => prev + 10);
+  };
 
   return (
     <div
-      style={{
-        width: '100vw',
-        height: '100vh',
-        background: SETTINGS.skyColor,
-        position: 'relative',
-      }}
+      style={{ width: '100vw', height: '100vh', background: SETTINGS.skyColor }}
     >
-      {isGameOver && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            color: 'white',
-            zIndex: 10,
-            textAlign: 'center',
-            background: 'rgba(0,0,0,0.8)',
-            padding: '20px',
-            borderRadius: '15px',
-          }}
-        >
-          <h1 style={{ fontSize: '4rem', margin: 0, color: '#ff4757' }}>
-            WASTED
-          </h1>
-          <button
-            style={{
-              padding: '10px 20px',
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-              marginTop: '10px',
-            }}
-            onClick={() => window.location.reload()}
-          >
-            RETRY
-          </button>
-        </div>
-      )}
-
       <Canvas shadows>
         <PerspectiveCamera makeDefault position={[0, 6, 12]} fov={45} />
-        <Sky sunPosition={[100, 20, 100]} turbidity={0.1} rayleigh={2} />
+        <Environment preset="city" />
+        <Sky
+          sunPosition={[100, 20, 100]}
+          turbidity={0.1}
+          rayleigh={2}
+          mieCoefficient={0.005}
+          mieDirectionalG={0.8}
+        />
+
         <CloudSystem />
-        <World />
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[10, 20, 10]} intensity={1.5} castShadow />
-        <fog attach="fog" args={[SETTINGS.skyColor, 30, 150]} />
-        <RacingTrack />
 
-        {/* --- OBSTACLES (Pushed further back for a smooth start) --- */}
-
-        {/* Barricades */}
-        <Barricade
-          initialZ={-70}
-          lane={0}
-          isGameOver={isGameOver}
-          onCollide={handleCollide}
-        />
-        <Barricade
-          initialZ={-180}
-          lane={-1}
-          isGameOver={isGameOver}
-          onCollide={handleCollide}
-        />
-        <Barricade
-          initialZ={-280}
-          lane={1}
-          isGameOver={isGameOver}
-          onCollide={handleCollide}
-        />
-
-        {/* Landmines (Static ones) */}
-        <Landmine
-          initialZ={-90}
-          lane={-1}
-          isGameOver={isGameOver}
-          onCollide={handleCollide}
-        />
-        <Landmine
-          initialZ={-210}
-          lane={1}
-          isGameOver={isGameOver}
-          onCollide={handleCollide}
-        />
-        <Landmine
-          initialZ={-350}
-          lane={0}
-          isGameOver={isGameOver}
-          onCollide={handleCollide}
-        />
-
-        {/* Buses */}
-        <Bus
-          initialZ={-120}
-          lane={-1}
-          isGameOver={isGameOver}
-          onCollide={handleCollide}
-        />
-        <Bus
-          initialZ={-250}
-          lane={1}
-          isGameOver={isGameOver}
-          onCollide={handleCollide}
-        />
-
-        {/* Cars */}
-        <Car
-          initialZ={-60}
-          lane={1}
-          color="#f1c40f"
-          isGameOver={isGameOver}
-          onCollide={handleCollide}
-        />
-        <Car
-          initialZ={-150}
-          lane={0}
-          color="#2ecc71"
-          isGameOver={isGameOver}
-          onCollide={handleCollide}
-        />
-        <Car
-          initialZ={-320}
-          lane={-1}
-          color="#9b59b6"
-          isGameOver={isGameOver}
-          onCollide={handleCollide}
-        />
-
-        <Player isGameOver={isGameOver} onCollide={handleCollide} />
-
-        {/* Hot Air Balloons */}
-        {useMemo(() => {
-          const colors = [
-            '#ff4757',
-            '#2e86de',
-            '#ffa502',
-            '#2ed573',
-            '#ef5777',
-          ];
-          return Array.from({ length: 20 }).map((_, i) => (
-            <HotAirBalloon
-              key={i}
-              initialPos={[
-                (Math.random() - 0.5) * 60,
-                15 + Math.random() * 10,
-                -i * 25,
-              ]}
-              color={colors[i % colors.length]}
-              speedOffset={Math.random() * 0.02}
-            />
-          ));
-        }, [])}
-
-        {/* Coins & Explosives */}
-        {items.map((item, idx) =>
-          item.type === 'coin' ? (
-            <Coin
-              key={idx}
-              position={item.position}
-              isGameOver={isGameOver}
-              onCollect={() => setScore((s) => s + 1)}
-            />
-          ) : (
-            <Explosive
-              key={idx}
-              position={item.position}
-              isGameOver={isGameOver}
-              onCollide={handleCollide}
-            />
-          )
-        )}
-
-        {/* Burgers */}
-        {burgerPositions.map((b) => (
-          <Burger
+        {balloons.map((b) => (
+          <HotAirBalloon
             key={b.id}
-            position={[b.lane, 0.5, b.z]}
-            onCollect={() => setScore((s) => s + 50)}
+            initialPos={b.initialPos}
+            color={b.color}
+            speedOffset={b.speedOffset}
           />
         ))}
+        <ambientLight intensity={1.5} color="#ffffff" />
+        <directionalLight
+          position={[10, 20, 10]}
+          intensity={2}
+          castShadow
+          shadow-mapSize={[2048, 2048]}
+        />
+        <hemisphereLight
+          intensity={0.5}
+          color="#ffffff"
+          groundColor="#7ec0ee"
+        />
+        <fog attach="fog" args={[SETTINGS.skyColor, 30, 130]} />
+
+        <RacingTrack isGameOver={isGameOver}/>
+        <Player isGameOver={isGameOver} onCollide={() => setIsGameOver(true)} />
+        {busPositions.map((z, i) => (
+          <MovingBus key={`bus-${i}`} initialZ={z} isGameOver={isGameOver} />
+        ))}
+        {carPositions.map((z, i) => (
+          <MovingCar
+            key={`car-${i}`}
+            initialZ={z}
+            color={i % 2 === 0 ? '#ff2222' : '#33ff33'}
+            isGameOver={isGameOver}
+          />
+        ))}
+        {conePositions.map((pos, idx) => (
+          <TrafficCone
+            key={`cone-${idx}`}
+            initialPos={pos}
+            isGameOver={isGameOver}
+          />
+        ))}
+        {/* Render Coins */}
+        {coinPositions.map((pos, idx) => (
+          <Coin
+            key={idx}
+            position={pos}
+            onCollect={handleCollect}
+            isGameOver={isGameOver}
+          />
+        ))}
+
+        <StreetWall side={1} isGameOver={isGameOver}/>
+        <StreetWall side={-1} isGameOver={isGameOver}/>
+        <StreetLight initialZ={0} side={1} />
+        <StreetLight initialZ={-25} side={-1} />
+        <StreetLight initialZ={-50} side={1} />
+        <StreetLight initialZ={-75} side={-1} />
       </Canvas>
 
       {/* UI Overlay */}
@@ -1503,29 +968,20 @@ export default function Demo() {
           top: '5%',
           width: '100%',
           textAlign: 'center',
-          color: '#222',
+          color: '#333',
           fontFamily: 'Impact',
           pointerEvents: 'none',
         }}
       >
-        <h1
-          style={{
-            fontSize: '3.5rem',
-            margin: 0,
-            textShadow: '3px 3px #fff',
-            letterSpacing: '2px',
-          }}
-        >
-          METRO TO MEADOW
-        </h1>
+        <h1 style={{ fontSize: '3rem', margin: 0 }}>MORNING SPRINT</h1>
         <h2
           style={{
-            fontSize: '2.2rem',
-            color: '#ffd700',
+            fontSize: '2rem',
+            color: '#FFD700',
             textShadow: '2px 2px #000',
           }}
         >
-          COINS: {score}
+          SCORE: {score}
         </h2>
       </div>
     </div>
