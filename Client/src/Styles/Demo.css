@@ -3,7 +3,230 @@
 @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
 
 @import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
+/* THE OVERLAY: Solid centering, no overflow */
+.game-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85); /* Darker to match your game-over style */
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  overflow: hidden;
+}
 
+.loading-content {
+  width: 100%;
+  max-width: 350px; /* Constrained width so it doesn't go off-screen */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+/* SPRINT TITLE: Slightly smaller to fit mobile */
+.loading-title-funky {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 2.8rem; /* Scaled down from 4.5rem */
+  color: #FF5733; /* Matches your game-title-sprint orange */
+  text-transform: uppercase;
+  margin-bottom: 30px;
+  text-shadow: 
+    -2px -2px 0 #fff,  
+     2px -2px 0 #fff,
+    -2px  2px 0 #fff,
+     2px  2px 0 #fff,
+     6px  6px 0 #000;
+  animation: squash 1.2s ease-in-out infinite;
+}
+
+/* THE BAR: Scaled for the center container */
+.loader-energy-bar-container {
+  position: relative;
+  width: 100%;
+  height: 30px;
+  background: #2c3e50;
+  border: 4px solid #000;
+  border-radius: 20px;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.4);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.loader-energy-bar-fill {
+  height: 100%;
+  background: #00ff88;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+  transition: width 0.3s ease-out;
+}
+
+/* Candy Stripes matching your original CSS */
+.loader-energy-bar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.2) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.2) 75%,
+    transparent 75%
+  );
+  background-size: 30px 30px;
+  animation: move-stripes 1.5s linear infinite;
+}
+
+/* SPRINT ICON: Overhanging effect */
+.sprint-icon {
+  position: absolute;
+  left: -20px;
+  font-size: 35px;
+  filter: drop-shadow(3px 3px 0px #000);
+  z-index: 10;
+  animation: runner-bounce 0.4s ease-in-out infinite alternate;
+}
+
+/* PERCENTAGE: Match coin display style */
+.loading-percentage {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1.8rem;
+  margin-top: 25px;
+  background: linear-gradient(to bottom, #fff600 20%, #ffaa00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(2px 2px 0px #814e00);
+}
+
+/* ANIMATIONS */
+@keyframes runner-bounce {
+  from { transform: translateY(0) rotate(-5deg); }
+  to { transform: translateY(-5px) rotate(10deg); }
+}
+
+@keyframes squash {
+  0%, 100% { transform: rotate(-3deg) scale(1); }
+  50% { transform: rotate(1deg) scale(1.05, 0.95); }
+}
+
+@keyframes move-stripes {
+  from { background-position: 0 0; }
+  to { background-position: 60px 0; }
+}
+
+/* Container: Pinned but tucked away */
+.distance-container {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 50; 
+}
+
+.distance-display {
+  /* Use the funky font but smaller */
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1.1rem; /* Reduced from 1.5rem */
+  
+  background-color: #ffde03; 
+  color: #222;
+  text-transform: uppercase;
+  
+  /* Slimmer Cartoon Border */
+  border: 3px solid #000;
+  border-radius: 8px; /* Slightly tighter corners */
+  
+  /* Smaller offset for the shadow */
+  box-shadow: 4px 4px 0px #000;
+  
+  /* Tighter padding for a "button" feel */
+  padding: 6px 14px;
+  display: inline-block;
+  text-align: center;
+  
+  /* Slight rotation for personality */
+  transform: rotate(2deg);
+  user-select: none;
+  
+  /* Subtle text pop */
+  text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.5);
+  
+  /* Smooth transition for interactions */
+  transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Make it slightly more subtle on hover/active */
+.distance-display:hover {
+  transform: rotate(0deg) scale(1.05);
+  background-color: #f1c40f;
+}
+/* The container of the bar */
+.energy-bar-container {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 35px; /* Thicker for a chunky feel */
+  background: #2c3e50;
+  border: 4px solid #000; /* Bold cartoon outline */
+  border-radius: 20px;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2); /* Bottom shadow for depth */
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+/* The actual filling bar */
+.energy-bar-fill {
+  height: 100%;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3); /* Inner shine */
+  transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy transition */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Candy stripe effect for movement */
+.energy-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.2) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.2) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 30px 30px;
+  animation: move-stripes 2s linear infinite;
+}
+
+@keyframes move-stripes {
+  from { background-position: 0 0; }
+  to { background-position: 60px 0; }
+}
+
+/* The Burger Icon Styling */
+.burger-icon {
+  position: absolute;
+  left: -25px; /* Overhangs the bar */
+  font-size: 40px;
+  filter: drop-shadow(3px 3px 0px #000); /* Sticker look */
+  z-index: 10;
+  transform: rotate(-10deg);
+}
 /* THE OVERLAY: Forces everything into the dead center of the screen */
 .game-over-container {
   position: fixed;
@@ -124,34 +347,33 @@
   50% { transform: rotate(-3deg) scale(1.15, 0.95); }
 }
 .funky-coin-display {
-  /* Use a bubbly, thick font for that cartoon feel */
   font-family: 'Luckiest Guy', cursive;
-  font-size: 3rem;
+  /* Smaller font size */
+  font-size: 1.8rem; 
   
-  /* Gradient text */
   background: linear-gradient(to bottom, #fff600 20%, #ffaa00 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   
-  /* The "Cartoon Secret": Multiple shadows to create a thick outer border */
-  filter: drop-shadow(3px 3px 0px #814e00) 
+  /* Scaled down shadows for smaller text */
+  filter: drop-shadow(2px 2px 0px #814e00) 
           drop-shadow(-1px -1px 0px #814e00)
           drop-shadow(1px -1px 0px #814e00)
           drop-shadow(-1px 1px 0px #814e00)
-          drop-shadow(5px 5px 10px rgba(0,0,0,0.4));
+          drop-shadow(3px 3px 6px rgba(0,0,0,0.4));
 
-  /* Add a slight tilt to make it feel energetic */
   display: inline-block;
+  /* Keeping the tilt but making it subtle */
   transform: rotate(-3deg);
   
-  /* Subtle animation to make it bounce */
   animation: cartoon-bounce 2s ease-in-out infinite;
-  
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   user-select: none;
+  /* Add a little margin so the shadow doesn't get cut off by the parent */
+  margin: 10px; 
 }
 
 @keyframes cartoon-bounce {
   0%, 100% { transform: rotate(-3deg) scale(1); }
-  50% { transform: rotate(1deg) scale(1.05); }
+  50% { transform: rotate(-1deg) scale(1.08); }
 }
