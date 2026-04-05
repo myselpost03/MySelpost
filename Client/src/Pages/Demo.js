@@ -132,7 +132,14 @@ const STORAGE_KEYS = {
   SELECTED: 'morning_sprint_selected_char',
 };
 
-function Shop({ totalCoins, onPurchase, onSelect, selectedId, onClose }) {
+function Shop({
+  totalCoins,
+  onPurchase,
+  onSelect,
+  selectedId,
+  onClose,
+  sound,
+}) {
   const characters = Object.values(CHARACTER_MODELS);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [unlocked, setUnlocked] = useState(() => {
@@ -146,121 +153,183 @@ function Shop({ totalCoins, onPurchase, onSelect, selectedId, onClose }) {
   const isEquipped = selectedId === currentChar.id;
   const isComingSoon = currentChar.comingSoon;
 
-  const nextChar = () =>
+  const nextChar = () => {
+    sound.play('click');
     setCurrentIndex((prev) => (prev + 1) % characters.length);
-  const prevChar = () =>
+  };
+
+  const prevChar = () => {
+    sound.play('click');
     setCurrentIndex(
       (prev) => (prev - 1 + characters.length) % characters.length
     );
+  };
+  const [showAlert, setShowAlert] = useState(false);
 
   const handleAction = () => {
-    if (isComingSoon) return; // Do nothing for locked political figures
+    if (isComingSoon) return;
 
     if (isUnlocked) {
+      sound.play('click');
       onSelect(currentChar.id);
     } else if (totalCoins >= currentChar.price) {
+      sound.play('purchase');
       const newUnlocked = [...unlocked, currentChar.id];
       setUnlocked(newUnlocked);
       localStorage.setItem(STORAGE_KEYS.UNLOCKED, JSON.stringify(newUnlocked));
       onPurchase(currentChar.price, currentChar.id);
     } else {
-      alert('NOT ENOUGH COINS!');
+      //sound.play('error'); // Maybe add a "buzz" or "fail" sound!
+      setShowAlert(true); // Trigger our funky CSS modal
+
+      // Auto-hide after 2 seconds
+      if (window.alertTimeout) clearTimeout(window.alertTimeout);
+
+      window.alertTimeout = setTimeout(() => {
+        setShowAlert(false);
+      }, 2000);
     }
   };
 
   return (
-    <div className="subway-shop-overlay">
-      <div className="subway-header">
-        <button className="subway-back-btn" onClick={onClose}>
-          ◀
-        </button>
-        <div className="subway-coin-pill">🟡 {totalCoins}</div>
-      </div>
-
-      <div className="shop-carousel-container">
-        <button className="nav-arrow left" onClick={prevChar}>
-          ◀
-        </button>
-
-        <div className="main-preview-area">
-          <h2 className="char-name">{currentChar.name}</h2>
-
-          <div
-            className="canvas-wrapper"
-            style={{
-              height: '400px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-              overflow: 'hidden',
+    <>
+      <div className="subway-shop-overlay">
+        <div className="subway-header">
+          <button
+            className="subway-back-btn"
+            onClick={() => {
+              sound.play('click');
+              onClose();
             }}
           >
-            {/* FAST LOADING IMAGE INSTEAD OF 3D CANVAS */}
-            <img
-              src={currentChar.image}
-              alt={currentChar.name}
-              className={`char-preview-img ${isComingSoon ? 'grayscale' : ''}`}
+            ◀
+          </button>
+          <div className="subway-coin-pill">
+            <div className="coin-wrapper">
+              <span className="realistic-coin"></span>
+            </div>
+            <span className="coin-count">{totalCoins}</span>
+          </div>{' '}
+        </div>
+
+        <div className="shop-carousel-container">
+          <button className="nav-arrow left" onClick={prevChar}>
+            ◀
+          </button>
+
+          <div className="main-preview-area">
+            <h2 className="char-name">{currentChar.name}</h2>
+
+            <div
+              className="canvas-wrapper"
               style={{
-                maxHeight: '100%',
-                maxWidth: '100%',
-                objectFit: 'contain',
-                display: 'block',
-                margin: '0 auto', // Forces horizontal centering
+                height: '400px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                overflow: 'hidden',
               }}
-            />
-            {isComingSoon && (
-              <div className="coming-soon-badge">COMING SOON</div>
-            )}
+            >
+              {/* FAST LOADING IMAGE INSTEAD OF 3D CANVAS */}
+              <img
+                src={currentChar.image}
+                alt={currentChar.name}
+                className={`char-preview-img ${
+                  isComingSoon ? 'grayscale' : ''
+                }`}
+                style={{
+                  maxHeight: '100%',
+                  maxWidth: '100%',
+                  objectFit: 'contain',
+                  display: 'block',
+                  margin: '0 auto', // Forces horizontal centering
+                }}
+              />
+              {isComingSoon && (
+                <div className="coming-soon-badge">COMING SOON</div>
+              )}
+            </div>
+
+            <div className="shop-controls">
+              <button
+                disabled={isComingSoon}
+                className={`subway-btn ${
+                  isComingSoon
+                    ? 'btn-locked'
+                    : isEquipped
+                    ? 'btn-equipped'
+                    : isUnlocked
+                    ? 'btn-select'
+                    : 'btn-buy'
+                }`}
+                onClick={handleAction}
+              >
+                {isComingSoon
+                  ? 'LOCKED'
+                  : isEquipped
+                  ? 'SELECTED'
+                  : isUnlocked
+                  ? 'SELECT'
+                  : `BUY: ${currentChar.price} 🟡`}
+              </button>
+            </div>
           </div>
 
-          <div className="shop-controls">
+          <button className="nav-arrow right" onClick={nextChar}>
+            ▶
+          </button>
+        </div>
+
+        <div className="dots-indicator">
+          {characters.map((_, i) => (
+            <div
+              key={i}
+              className={`dot ${i === currentIndex ? 'active' : ''}`}
+            />
+          ))}
+        </div>
+      </div>
+      {showAlert && (
+        <div className="coin-alert-overlay">
+          <div className="coin-alert-card">
+            <h2 className="alert-title" data-text="NOT ENOUGH!">
+              NOT ENOUGH!
+            </h2>
+            <p className="alert-msg">
+              Go run some more to get{' '}
+              <span className="needed-coins">
+                {currentChar.price - totalCoins}
+              </span>{' '}
+              more coins!
+            </p>
             <button
-              disabled={isComingSoon}
-              className={`subway-btn ${
-                isComingSoon
-                  ? 'btn-locked'
-                  : isEquipped
-                  ? 'btn-equipped'
-                  : isUnlocked
-                  ? 'btn-select'
-                  : 'btn-buy'
-              }`}
-              onClick={handleAction}
+              className="btn-funky btn-grab-coins"
+              onClick={() => setShowAlert(false)}
             >
-              {isComingSoon
-                ? 'LOCKED'
-                : isEquipped
-                ? 'SELECTED'
-                : isUnlocked
-                ? 'SELECT'
-                : `BUY: ${currentChar.price} 🟡`}
+              Got it!
             </button>
           </div>
         </div>
-
-        <button className="nav-arrow right" onClick={nextChar}>
-          ▶
-        </button>
-      </div>
-
-      <div className="dots-indicator">
-        {characters.map((_, i) => (
-          <div
-            key={i}
-            className={`dot ${i === currentIndex ? 'active' : ''}`}
-          />
-        ))}
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 
 function Loader({ onLoaded }) {
   const { progress } = useProgress();
+  const sound = useRef(null);
+
+  useEffect(() => {
+    sound.current = new Audio('/Sounds/Loading.mp3');
+    sound.current.loop = true;
+    sound.current.play().catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (progress === 100) {
+      sound.current.pause();
+
       setTimeout(() => onLoaded(), 500);
     }
   }, [progress, onLoaded]);
@@ -1341,48 +1410,152 @@ function Burger({
   );
 }
 
+// --- SOUND SYSTEM ---
+const useSoundManager = () => {
+  const sounds = useRef({});
+
+  useEffect(() => {
+    sounds.current = {
+      bg: new Audio('/Sounds/Background.mp3'),
+      gameOverBg: new Audio('/Sounds/Game-over.mp3'),
+      shopBg: new Audio('/Sounds/shop-background.mp3'),
+
+      coin: new Audio('/Sounds/coin.mp3'),
+      burger: new Audio('/Sounds/Burger.mp3'),
+      collision: new Audio('/Sounds/Collision.mp3'),
+      dead: new Audio('/Sounds/Dead.mp3'),
+
+      click: new Audio('/Sounds/Button-click.mp3'),
+      purchase: new Audio('/Sounds/Purchase.mp3'),
+      loading: new Audio('/Sounds/Loading.mp3'),
+    };
+
+    // Loop background music
+    sounds.current.bg.loop = true;
+    sounds.current.gameOverBg.loop = false;
+    sounds.current.shopBg.loop = true;
+
+    // Volume tuning
+    sounds.current.bg.volume = 0.4;
+    sounds.current.shopBg.volume = 0.4;
+    sounds.current.gameOverBg.volume = 0.5;
+
+    Object.values(sounds.current).forEach((audio) => {
+      audio.preload = 'auto';
+    });
+  }, []);
+
+  const play = (name) => {
+    const sound = sounds.current[name];
+    if (!sound) return;
+
+    if (!sound.paused) sound.currentTime = 0;
+    sound.play().catch(() => {});
+  };
+  const loop = (name) => {
+    const sound = sounds.current[name];
+    if (!sound) return;
+    sound.play().catch(() => {});
+  };
+
+  const stop = (name) => {
+    const sound = sounds.current[name];
+    if (!sound) return;
+    sound.pause();
+    sound.currentTime = 0;
+  };
+
+  const stopAll = () => {
+    Object.values(sounds.current).forEach((s) => {
+      s.pause();
+      s.currentTime = 0;
+    });
+  };
+
+  return { play, loop, stop, stopAll };
+};
+
 // --- MAIN DEMO COMPONENT ---
 export default function Demo() {
-  const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [isShopOpen, setIsShopOpen] = useState(false);
+  const [showGameOverScreen, setShowGameOverScreen] = useState(false);
+
+  const [score, setScore] = useState(0);
   const [reviveCount, setReviveCount] = useState(3);
   const [distance, setDistance] = useState(0);
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
-
-  const [energy, setEnergy] = useState(100); // max 100
+  const [energy, setEnergy] = useState(100);
   const energyBoostRef = useRef(0);
-  const [showGameOverScreen, setShowGameOverScreen] = useState(false);
+
   const [totalCoins, setTotalCoins] = useState(
     () => parseInt(localStorage.getItem(STORAGE_KEYS.COINS)) || 0
   );
   const [selectedCharacter, setSelectedCharacter] = useState(
     () => localStorage.getItem(STORAGE_KEYS.SELECTED) || 'default'
   );
-  const [isShopOpen, setIsShopOpen] = useState(false);
 
-  // Update Persistent Coins when Game Over occurs
+  const sound = useSoundManager();
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // 🔇 App is minimized / switched
+        sound.stopAll();
+      } else {
+        // 🔊 App is back
+        if (!isGameOver && !isShopOpen) {
+          sound.loop('bg');
+        } else if (isGameOver) {
+          sound.play('gameOverBg');
+        } else if (isShopOpen) {
+          sound.loop('shopBg');
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isGameOver, isShopOpen]);
+
   useEffect(() => {
     if (isGameOver) {
       const newTotal = totalCoins + score;
       setTotalCoins(newTotal);
       localStorage.setItem(STORAGE_KEYS.COINS, newTotal);
-      // Reset session score if you want, or keep it for the "Wasted" screen
+      // Reset session score if want, or keep it for the "Wasted" screen
     }
   }, [isGameOver]);
 
-  const handlePurchase = (price, charId) => {
-    const newBalance = totalCoins - price;
-    setTotalCoins(newBalance);
-    localStorage.setItem(STORAGE_KEYS.COINS, newBalance);
-    setSelectedCharacter(charId);
-    localStorage.setItem(STORAGE_KEYS.SELECTED, charId);
-  };
+  // Start game music
+  useEffect(() => {
+    if (!isLoading && !isGameOver && !isShopOpen) {
+      sound.stopAll();
+      sound.loop('bg');
+    }
+  }, [isLoading, isGameOver, isShopOpen]);
 
-  const handleSelect = (charId) => {
-    setSelectedCharacter(charId);
-    localStorage.setItem(STORAGE_KEYS.SELECTED, charId);
-  };
+  // Game Over music
+  useEffect(() => {
+    if (isGameOver) {
+      sound.stopAll();
+
+      sound.play('dead');
+      sound.loop('gameOverBg');
+    }
+  }, [isGameOver]);
+
+  // Shop music
+  useEffect(() => {
+    if (isShopOpen) {
+      sound.stopAll();
+      sound.loop('shopBg');
+    }
+  }, [isShopOpen]);
 
   useEffect(() => {
     if (isGameOver) {
@@ -1393,10 +1566,7 @@ export default function Demo() {
       return () => clearTimeout(timer);
     }
   }, [isGameOver]);
-  const handleBurgerCollect = () => {
-    setEnergy((prev) => Math.min(100, prev + 25));
-    energyBoostRef.current = 2; // 2 seconds no drain
-  };
+
   useEffect(() => {
     if (isGameOver) return;
 
@@ -1421,13 +1591,80 @@ export default function Demo() {
 
     return () => clearInterval(interval);
   }, [speedMultiplier, isGameOver]);
+
   // Increase speed as score increases
   useEffect(() => {
     const newMultiplier = 1 + Math.floor(score / 150) * 0.2; // +20% speed every 150 points
     setSpeedMultiplier(newMultiplier);
   }, [score]);
 
-  // Pass this speedMultiplier to all components (Player, RacingTrack, MovingCar, etc.)
+  useEffect(() => {
+    if (isGameOver) return;
+
+    const interval = setInterval(() => {
+      setDistance((prev) => {
+        // base increment per 100ms (tweak for pacing)
+        const increment = 1 * speedMultiplier; // 1 meter per tick times speed multiplier
+        return prev + increment;
+      });
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [speedMultiplier, isGameOver]);
+
+  useEffect(() => {
+    if (isGameOver) {
+      const timer = setTimeout(() => {
+        setShowGameOverScreen(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isGameOver]);
+
+  const handlePurchase = (price, charId) => {
+    sound.play('purchase');
+
+    const newBalance = totalCoins - price;
+    setTotalCoins(newBalance);
+    localStorage.setItem(STORAGE_KEYS.COINS, newBalance);
+    setSelectedCharacter(charId);
+    localStorage.setItem(STORAGE_KEYS.SELECTED, charId);
+  };
+
+  const handleSelect = (charId) => {
+    setSelectedCharacter(charId);
+    localStorage.setItem(STORAGE_KEYS.SELECTED, charId);
+  };
+
+  const handleBurgerCollect = () => {
+    sound.play('burger');
+    setEnergy((prev) => Math.min(100, prev + 25));
+    energyBoostRef.current = 2;
+  };
+
+  const handleCollect = () => {
+    sound.play('coin');
+    setScore((prev) => prev + 10);
+  };
+
+  const handleRevive = () => {
+    if (reviveCount > 0) {
+      // 1. Deduct a life
+      setReviveCount((prev) => prev - 1);
+
+      // 2. Hide the death screens
+      setIsGameOver(false);
+      setShowGameOverScreen(false);
+
+      // 3. Reset survival resources
+      setEnergy(100);
+      energyBoostRef.current = 2; // Give 2 seconds of invulnerability/no drain
+
+      // NOTE: We do NOT call setScore(0) or setDistance(0) here.
+      // This ensures the player stays at the same "wp" (world position).
+    }
+  };
+
   const balloons = useMemo(() => {
     const colors = [
       '#ff6b6b',
@@ -1487,50 +1724,6 @@ export default function Demo() {
       [3, 1, -100],
     ];
   }, []);
-  useEffect(() => {
-    if (isGameOver) return;
-
-    const interval = setInterval(() => {
-      setDistance((prev) => {
-        // base increment per 100ms (tweak for pacing)
-        const increment = 1 * speedMultiplier; // 1 meter per tick times speed multiplier
-        return prev + increment;
-      });
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, [speedMultiplier, isGameOver]);
-  const handleCollect = () => {
-    setScore((prev) => prev + 10);
-  };
-  const handleRevive = () => {
-    if (reviveCount > 0) {
-      // 1. Deduct a life
-      setReviveCount((prev) => prev - 1);
-
-      // 2. Hide the death screens
-      setIsGameOver(false);
-      setShowGameOverScreen(false);
-
-      // 3. Reset survival resources
-      setEnergy(100);
-      energyBoostRef.current = 2; // Give 2 seconds of invulnerability/no drain
-
-      // NOTE: We do NOT call setScore(0) or setDistance(0) here.
-      // This ensures the player stays at the same "wp" (world position).
-    }
-  };
-
-  // 2. Handle Full Restart (Try Again)
-
-  useEffect(() => {
-    if (isGameOver) {
-      const timer = setTimeout(() => {
-        setShowGameOverScreen(true);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [isGameOver]);
 
   return (
     <div
@@ -1547,21 +1740,26 @@ export default function Demo() {
             setIsShopOpen(false);
             setShowGameOverScreen(true);
           }}
+          sound={sound}
         />
       )}
       {showGameOverScreen && (
         <div className="game-over-container">
           <h1 className="wasted-text">WASTED</h1>
-          <p style={{ color: 'white', marginBottom: '10px' }}>
-            Revives Left: {reviveCount}
-          </p>
+          <div className="revive-counter">
+            <span className="revive-icon">❤️</span>
+            <span>Revives Left: {reviveCount}</span>
+          </div>
           <div className="button-row">
             <button className="btn-funky try-again">TRY AGAIN</button>
             <button
               className={`btn-funky revive ${
                 reviveCount === 0 ? 'disabled' : ''
               }`}
-              onClick={handleRevive}
+              onClick={() => {
+                sound.play('click');
+                handleRevive();
+              }}
               disabled={reviveCount === 0}
               style={{ opacity: reviveCount === 0 ? 0.5 : 1 }}
             >
@@ -1622,7 +1820,10 @@ export default function Demo() {
         />
         <Player
           isGameOver={isGameOver}
-          onCollide={() => setIsGameOver(true)}
+          onCollide={() => {
+            sound.play('collision');
+            setIsGameOver(true);
+          }}
           selectedCharacter={selectedCharacter}
         />
         {busPositions.map((z, i) => (

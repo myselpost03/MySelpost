@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, Suspense, useRef, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import {
   PerspectiveCamera,
@@ -6,21 +6,315 @@ import {
   Clouds,
   Cloud,
   Environment,
+  useProgress,
 } from '@react-three/drei';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import * as THREE from 'three';
 
 const SETTINGS = {
-  speed: 0.3,
+  speed: 0.5,
   trackWidth: 10,
-  jumpForce: 0.18,
-  gravity: -0.012,
+  jumpForce: 0.19,
+  gravity: -0.03,
   worldLength: 300,
   skyColor: '#e0f7ff', // Added this to prevent fog error
 };
 
+const CHARACTER_MODELS = {
+  'cigar-man': {
+    id: 'cigar-man',
+    name: 'Cigar Man',
+    path: '/models/Cigar-man.fbx',
+    image: '/Characters/Cigar-man.png',
+    price: 0,
+  },
+  'jenny': {
+    id: 'jenny',
+    name: 'Jenny',
+    path: '/models/Jenny.fbx',
+    image: '/Characters/Jenny.png',
+    price: 0,
+  },
+  'remy': {
+    id: 'remy',
+    name: 'Remy',
+    path: '/models/Remy.fbx',
+    image: '/Characters/Remy.png',
+    price: 600,
+  },
+  'big-vegus': {
+    id: 'big-vegus',
+    name: 'Big Vegus',
+    path: '/models/Big-vegus.fbx',
+    image: '/Characters/Big-vegus.png',
+    price: 300,
+  },
+  'vanguard': {
+    id: 'vanguard',
+    name: 'Vanguard',
+    path: '/models/Vanguard.fbx',
+    image: '/Characters/Vanguard.png',
+    price: 1000,
+  },
+  'kachujin': {
+    id: 'kachujin',
+    name: 'Kachujin',
+    path: '/models/Kachujin.fbx',
+    image: '/Characters/Kachujin.png',
+    price: 1200,
+  },
+  'swat-guy': {
+    id: 'swat-guy',
+    name: 'Swat Guy',
+    path: '/models/Swat-guy.fbx',
+    image: '/Characters/Swat-guy.png',
+    price: 1500,
+  },
+  'rabbit': {
+    id: 'rabbit',
+    name: 'Rabbit',
+    path: '/models/Rabbit.fbx',
+    image: '/Characters/Rabbit.png',
+    price: 2000,
+  },
+  'mutant': {
+    id: 'mutant',
+    name: 'Mutant',
+    path: '/models/Mutant.fbx',
+    image: '/Characters/Mutant.png',
+    price: 2500,
+  },
+  'zombie': {
+    id: 'zombie',
+    name: 'Zombie',
+    path: '/models/Zombie.fbx',
+    image: '/Characters/Zombie.png',
+    price: 3000,
+  },
+  // Coming Soon Section
+  'elon': {
+    id: 'elon',
+    name: 'Elon',
+    path: null,
+    image: '/Characters/Elon.png',
+    price: 99999,
+    comingSoon: true,
+  },
+  'trump': {
+    id: 'trump',
+    name: 'Trump',
+    path: null,
+    image: '/Characters/Trump.png',
+    price: 99999,
+    comingSoon: true,
+  },
+  'putin': {
+    id: 'putin',
+    name: 'Putin',
+    path: null,
+    image: '/Characters/Putin.png',
+    price: 99999,
+    comingSoon: true,
+  },
+  'xi-jinping': {
+    id: 'xi-jinping',
+    name: 'Xi Jinping',
+    path: null,
+    image: '/Characters/Xi-jinping.png',
+    price: 99999,
+    comingSoon: true,
+  },
+};
+// Key for LocalStorage
+const STORAGE_KEYS = {
+  COINS: 'morning_sprint_total_coins',
+  UNLOCKED: 'morning_sprint_unlocked_chars',
+  SELECTED: 'morning_sprint_selected_char',
+};
+
+function Shop({ totalCoins, onPurchase, onSelect, selectedId, onClose }) {
+  const characters = Object.values(CHARACTER_MODELS);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [unlocked, setUnlocked] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.UNLOCKED);
+    // Use 'cigar-man' as the default starting ID
+    return saved ? JSON.parse(saved) : ['cigar-man'];
+  });
+
+  const currentChar = characters[currentIndex];
+  const isUnlocked = unlocked.includes(currentChar.id);
+  const isEquipped = selectedId === currentChar.id;
+  const isComingSoon = currentChar.comingSoon;
+
+  const nextChar = () =>
+    setCurrentIndex((prev) => (prev + 1) % characters.length);
+  const prevChar = () =>
+    setCurrentIndex(
+      (prev) => (prev - 1 + characters.length) % characters.length
+    );
+
+  const handleAction = () => {
+    if (isComingSoon) return; // Do nothing for locked political figures
+
+    if (isUnlocked) {
+      onSelect(currentChar.id);
+    } else if (totalCoins >= currentChar.price) {
+      const newUnlocked = [...unlocked, currentChar.id];
+      setUnlocked(newUnlocked);
+      localStorage.setItem(STORAGE_KEYS.UNLOCKED, JSON.stringify(newUnlocked));
+      onPurchase(currentChar.price, currentChar.id);
+    } else {
+      alert('NOT ENOUGH COINS!');
+    }
+  };
+
+  return (
+    <div className="subway-shop-overlay">
+      <div className="subway-header">
+        <button className="subway-back-btn" onClick={onClose}>
+          ◀
+        </button>
+        <div className="subway-coin-pill">🟡 {totalCoins}</div>
+      </div>
+
+      <div className="shop-carousel-container">
+        <button className="nav-arrow left" onClick={prevChar}>
+          ◀
+        </button>
+
+        <div className="main-preview-area">
+          <h2 className="char-name">{currentChar.name}</h2>
+
+          <div
+            className="canvas-wrapper"
+            style={{
+              height: '400px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            {/* FAST LOADING IMAGE INSTEAD OF 3D CANVAS */}
+            <img
+              src={currentChar.image}
+              alt={currentChar.name}
+              className={`char-preview-img ${isComingSoon ? 'grayscale' : ''}`}
+              style={{
+                maxHeight: '100%',
+                maxWidth: '100%',
+                objectFit: 'contain',
+                display: 'block',
+                margin: '0 auto', // Forces horizontal centering
+              }}
+            />
+            {isComingSoon && (
+              <div className="coming-soon-badge">COMING SOON</div>
+            )}
+          </div>
+
+          <div className="shop-controls">
+            <button
+              disabled={isComingSoon}
+              className={`subway-btn ${
+                isComingSoon
+                  ? 'btn-locked'
+                  : isEquipped
+                  ? 'btn-equipped'
+                  : isUnlocked
+                  ? 'btn-select'
+                  : 'btn-buy'
+              }`}
+              onClick={handleAction}
+            >
+              {isComingSoon
+                ? 'LOCKED'
+                : isEquipped
+                ? 'SELECTED'
+                : isUnlocked
+                ? 'SELECT'
+                : `BUY: ${currentChar.price} 🟡`}
+            </button>
+          </div>
+        </div>
+
+        <button className="nav-arrow right" onClick={nextChar}>
+          ▶
+        </button>
+      </div>
+
+      <div className="dots-indicator">
+        {characters.map((_, i) => (
+          <div
+            key={i}
+            className={`dot ${i === currentIndex ? 'active' : ''}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Loader({ onLoaded }) {
+  const { progress } = useProgress();
+
+  useEffect(() => {
+    if (progress === 100) {
+      setTimeout(() => onLoaded(), 500);
+    }
+  }, [progress, onLoaded]);
+
+  return (
+    <div className="game-loading-overlay">
+      <div className="loading-content">
+        {/* Sprint Title */}
+        <h1 className="loading-title-funky">MORNING SPRINT...</h1>
+
+        <div className="loader-energy-bar-container">
+          {/* Replaced Burger with Sprint Icon */}
+          <div className="sprint-icon">🏃‍♂️</div>
+          <div
+            className="loader-energy-bar-fill"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        <div className="loading-percentage">{Math.round(progress)}%</div>
+      </div>
+    </div>
+  );
+}
+
+const EnergyBar = ({ energy }) => {
+  // Funky color palette
+  const getBarColor = () => {
+    if (energy > 60) return '#2ecc71'; // Neon Green
+    if (energy > 30) return '#f1c40f'; // Bright Yellow
+    return '#e74c3c'; // Tomato Red
+  };
+
+  return (
+    <div className="energy-bar-container">
+      {/* The Food Icon */}
+      <div className="burger-icon">🍔</div>
+
+      {/* The Progress Bar */}
+      <div
+        className="energy-bar-fill"
+        style={{
+          width: `${energy}%`,
+          backgroundColor: getBarColor(),
+        }}
+      />
+
+      {/* Optional: Glow effect for low health */}
+      {energy <= 30 && <div className="low-energy-pulse" />}
+    </div>
+  );
+};
 // --- GEOMETRIES & MATERIALS (Pre-defined for performance) ---
-const coinGeom = new THREE.CylinderGeometry(0.5, 0.5, 0.12, 12);
+const coinGeom = new THREE.CylinderGeometry(0.5, 0.5, 0.12, 24);
 const edgeGeom = new THREE.TorusGeometry(0.5, 0.05, 12, 32);
 const starGeom = new THREE.OctahedronGeometry(0.3, 0);
 const rimGeom = new THREE.TorusGeometry(0.42, 0.02, 8, 32);
@@ -55,7 +349,7 @@ const whiteMat = new THREE.MeshStandardMaterial({
 });
 
 // --- BUS COMPONENT ---
-function MovingBus({ initialZ, isGameOver, speed }) {
+function MovingBus({ initialZ, isGameOver, speedMultiplier }) {
   const ref = useRef();
 
   const fbx = useLoader(FBXLoader, 'models/scene.fbx');
@@ -79,7 +373,7 @@ function MovingBus({ initialZ, isGameOver, speed }) {
   useFrame((state) => {
     if (!ref.current || isGameOver) return;
 
-    ref.current.position.z += speed * 3;
+    ref.current.position.z += SETTINGS.speed * speedMultiplier * 3;
 
     if (ref.current.position.z > 20) {
       ref.current.position.z = -150 - Math.random() * 100;
@@ -113,14 +407,19 @@ const carWheelGeom = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 16);
 const beamGeom = new THREE.PlaneGeometry(1, 4);
 // A small circle for the light source "bulb"
 const bulbGeom = new THREE.PlaneGeometry(0.4, 0.2);
-function MovingCar({ initialZ, color = '#ff2222', isGameOver, speed }) {
+function MovingCar({
+  initialZ,
+  color = '#ff2222',
+  isGameOver,
+  speedMultiplier,
+}) {
   const ref = useRef();
   const lanes = [-2.5, 0, 2.5];
   const currentLane = useMemo(() => lanes[Math.floor(Math.random() * 3)], []);
 
   useFrame((state) => {
     if (!ref.current || isGameOver) return;
-    ref.current.position.z += speed * 2.5;
+    ref.current.position.z += SETTINGS.speed * speedMultiplier * 2.5;
 
     // Respawn logic
     if (ref.current.position.z > 20) {
@@ -198,13 +497,13 @@ function MovingCar({ initialZ, color = '#ff2222', isGameOver, speed }) {
 }
 
 // --- TRAFFIC CONE COMPONENT ---
-function TrafficCone({ initialPos, isGameOver, speed }) {
+function TrafficCone({ initialPos, isGameOver, speedMultiplier }) {
   const ref = useRef();
   const lanes = [-3, 0, 3]; // Left, Center, Right
 
   useFrame(() => {
     if (!ref.current || isGameOver) return;
-   ref.current.position.z += speed * 2;
+    ref.current.position.z += SETTINGS.speed * speedMultiplier * 2.5;
     if (ref.current.position.z > 20) {
       ref.current.position.z = -150 - Math.random() * 50;
       ref.current.position.x = lanes[Math.floor(Math.random() * lanes.length)];
@@ -234,14 +533,15 @@ function TrafficCone({ initialPos, isGameOver, speed }) {
     </group>
   );
 }
-function OilBarrel({ initialPos, isGameOver, score, speed }) {
+function OilBarrel({ initialPos, isGameOver, score, speedMultiplier }) {
   const ref = useRef();
   const lanes = [-3, 0, 3];
 
   useFrame(() => {
     if (!ref.current || isGameOver) return;
 
-    ref.current.position.z += speed * (2 + score / 2000);
+    ref.current.position.z += SETTINGS.speed * speedMultiplier * 2;
+
     if (ref.current.position.z > 20) {
       const spawnChance = 0.2 + score / 5000;
       if (Math.random() < spawnChance) {
@@ -257,7 +557,7 @@ function OilBarrel({ initialPos, isGameOver, score, speed }) {
   });
 
   return (
-    <group ref={ref} position={initialPos} userData={{ type: 'obstacle' }}>
+    <group ref={ref} position={initialPos} userData={{ type: 'barrel' }}>
       <mesh position={[0, 0.75, 0]} castShadow>
         <cylinderGeometry args={[0.5, 0.5, 1.5, 12]} />
         <meshStandardMaterial color="#d32f2f" />
@@ -280,47 +580,52 @@ function OilBarrel({ initialPos, isGameOver, score, speed }) {
     </group>
   );
 }
+
 //--- COIN COMPONENT ---
-function Coin({ position, onCollect, isGameOver, speed }) {
+function Coin({ position, onCollect, isGameOver, speedMultiplier }) {
   const ref = useRef();
-  const [collected, setCollected] = useState(false);
+  // Use a ref for 'collected' to avoid re-renders during the game loop
+  const collectedRef = useRef(false);
   const randomOffset = useMemo(() => Math.random() * Math.PI * 2, []);
 
   useFrame((state) => {
-    if (!ref.current || collected) return;
+    if (!ref.current) return;
 
     const time = state.clock.getElapsedTime();
 
-    // 1. Animation: Rotation & Floating
+    // 1. Animation: Always rotate/float even if invisible (keep logic simple)
     ref.current.rotation.y += 0.06;
     ref.current.position.y =
       position[1] + Math.sin(time * 2 + randomOffset) * 0.15;
 
     if (!isGameOver) {
-     ref.current.position.z += speed * 2;// Respawn logic
+      ref.current.position.z += SETTINGS.speed * speedMultiplier * 2;
+
+      // Respawn logic - Direct DOM-like manipulation
       if (ref.current.position.z > 20) {
         ref.current.position.z = -SETTINGS.worldLength;
-        setCollected(false);
+        collectedRef.current = false; // Reset internal flag
+        ref.current.visible = true; // Reset visibility directly
       }
     }
 
-    if (isGameOver) return;
+    // Stop collision logic if already collected or game over
+    if (isGameOver || collectedRef.current) return;
 
     // 2. Collision Logic
-    // Important: Player must have name='playerGroup' in its component
     const playerPos = state.scene.getObjectByName('playerGroup')?.position;
     if (playerPos && Math.abs(ref.current.position.z - playerPos.z) < 1) {
       if (ref.current.position.distanceTo(playerPos) < 2) {
-        setCollected(true);
-        onCollect();
+        collectedRef.current = true; // Mark as collected
+        ref.current.visible = false; // Hide immediately without re-render
+        onCollect(); // Notify parent (e.g., score update)
       }
     }
   });
 
-  if (collected) return null;
-
   return (
     <group ref={ref} position={position}>
+      {/* Visual meshes here - Removed visible={!collected} to avoid state dependency */}
       <mesh
         geometry={coinGeom}
         material={goldMat}
@@ -363,7 +668,7 @@ const balloonGeo = new THREE.DodecahedronGeometry(2, 0);
 const basketGeo = new THREE.BoxGeometry(0.8, 0.7, 0.8);
 const ropeGeo = new THREE.CylinderGeometry(0.01, 0.01, 1.5, 3);
 
-function HotAirBalloon({ initialPos, color, speedOffset, speed }) {
+function HotAirBalloon({ initialPos, color, speedOffset }) {
   const mesh = useRef();
 
   // We increase the "Live Zone" so they don't disappear quickly
@@ -374,7 +679,9 @@ function HotAirBalloon({ initialPos, color, speedOffset, speed }) {
     if (!mesh.current) return;
 
     // Slow, steady movement
-   mesh.current.position.z += (speed * 0.3 + speedOffset) * (delta * 60);
+    mesh.current.position.z +=
+      (SETTINGS.speed * 0.3 + speedOffset) * (delta * 60);
+
     // Gentle swaying
     const t = state.clock.getElapsedTime() + initialPos[0] * 0.5;
     mesh.current.position.y = initialPos[1] + Math.sin(t * 0.3) * 2;
@@ -404,137 +711,159 @@ function HotAirBalloon({ initialPos, color, speedOffset, speed }) {
 }
 
 // --- PLAYER COMPONENT (Added name="playerGroup") ---
-function Player({ isGameOver, onCollide, speed }) {
+function Player({ isGameOver, onCollide, selectedCharacter }) {
   const group = useRef();
   const swipeProcessed = useRef(false);
 
-  // Assets
-  const runFbx = useLoader(FBXLoader, '/models/Running.fbx');
+  // --- ROBUST INVULNERABILITY ---
+  const [isInvulnerable, setIsInvulnerable] = useState(false);
+  const blinkRef = useRef(0);
+  const lastGameOverState = useRef(isGameOver);
+
+  // Detect the EXACT moment of revival
+  useEffect(() => {
+    // If it WAS game over, and now it is NOT (Revived)
+    if (lastGameOverState.current === true && isGameOver === false) {
+      setIsInvulnerable(true);
+      blinkRef.current = 0;
+
+      const timer = setTimeout(() => {
+        setIsInvulnerable(false);
+        if (group.current) group.current.visible = true;
+      }, 3000); // Increased to 3s to give the player time to move past the obstacle
+
+      return () => clearTimeout(timer);
+    }
+    lastGameOverState.current = isGameOver;
+  }, [isGameOver]);
+  // Inside Player component
+  const modelPath =
+    selectedCharacter && CHARACTER_MODELS[selectedCharacter]
+      ? CHARACTER_MODELS[selectedCharacter].path
+      : CHARACTER_MODELS['cigar-man'].path; // Use 'cigar-man' as the specific fallback key
+  const animationSource = useLoader(FBXLoader, '/models/Cigar-man.fbx');
+  const runAnimation = animationSource.animations[0];
+  const runFbx = useLoader(FBXLoader, modelPath);
   const jumpFbx = useLoader(FBXLoader, '/models/jump.fbx');
   const slideFbx = useLoader(FBXLoader, '/models/running-slide.fbx');
   const deathFbx = useLoader(FBXLoader, '/models/death.fbx');
-
   const mixer = useRef();
   const actions = useRef({});
-
   const [isJumping, setIsJumping] = useState(false);
   const [isSliding, setIsSliding] = useState(false);
 
   const [lane, setLane] = useState(0);
   const laneWidth = 2.5;
-
   const velocity = useRef(0);
   const touchStart = useRef({ x: 0, y: 0 });
-
-  // ----------------------------
-  // ACTIONS
-  // ----------------------------
+  // 2. Define Actions (Outside useEffect so they are accessible)
   const triggerJump = () => {
-    if (group.current.position.y <= 0.51 && !isSliding) {
-      velocity.current = SETTINGS.jumpForce * (1 + speed * 0.25);
-
+    // Check if on ground and not already sliding/jumping
+    if (group.current.position.y <= 0.51 && !isSliding && !isJumping) {
+      velocity.current = SETTINGS.jumpForce;
       setIsJumping(true);
 
-      actions.current.run?.fadeOut(0.15);
+      // Snappy transition: stop slide immediately, fade out run quickly
+      actions.current.run?.fadeOut(0.05);
       actions.current.slide?.stop();
-      actions.current.jump?.reset().fadeIn(0.15).play();
+
+      // Play jump immediately
+      const jumpAction = actions.current.jump;
+      if (jumpAction) {
+        jumpAction.reset().setEffectiveTimeScale(1.2).fadeIn(0.05).play();
+        // Note: setEffectiveTimeScale(1.2) makes the animation 20% faster
+        // to match the "force" of a quick jump.
+      }
     }
   };
 
   const triggerSlide = () => {
+    // REMOVE the "!isSliding" check to allow "re-sliding"
     if (group.current.position.y <= 0.51) {
       setIsSliding(true);
 
+      // Stop other actions immediately
       actions.current.run?.fadeOut(0.05);
       actions.current.jump?.stop();
 
+      // Reset and play slide from the beginning
       actions.current.slide?.reset().fadeIn(0.05).play();
 
+      // Clear any existing timer so they don't stack
       if (window.slideTimer) clearTimeout(window.slideTimer);
 
       window.slideTimer = setTimeout(() => {
         setIsSliding(false);
-        actions.current.slide?.fadeOut(0.15);
-        actions.current.run?.reset().fadeIn(0.15).play();
-      }, 700); // slightly faster
+        actions.current.slide?.fadeOut(0.2);
+        actions.current.run?.reset().fadeIn(0.2).play();
+      }, 800);
     }
   };
 
-  // ----------------------------
-  // ANIMATION SETUP
-  // ----------------------------
   useEffect(() => {
     mixer.current = new THREE.AnimationMixer(runFbx);
-
-    const setup = (fbx, name, loop = true) => {
-      if (!fbx.animations.length) return;
-
-      const clip = fbx.animations[0];
-      clip.tracks = clip.tracks.filter((t) => !t.name.includes('position'));
-
-      const action = mixer.current.clipAction(clip);
-
-      if (!loop) {
-        action.setLoop(THREE.LoopOnce);
-        action.clampWhenFinished = true;
+    const setupAction = (fbx, name, loop = true) => {
+      if (fbx.animations.length > 0) {
+        const clip = fbx.animations[0];
+        clip.tracks = clip.tracks.filter((t) => !t.name.includes('position'));
+        actions.current[name] = mixer.current.clipAction(clip);
+        if (!loop) {
+          actions.current[name].setLoop(THREE.LoopOnce);
+          actions.current[name].clampWhenFinished = true;
+        }
       }
-
-      actions.current[name] = action;
     };
+    const clip = runAnimation.clone();
 
-    setup(runFbx, 'run');
-    setup(jumpFbx, 'jump', false);
-    setup(slideFbx, 'slide', false);
-    setup(deathFbx, 'death', false);
+    // remove root motion (good you already do this)
+    clip.tracks = clip.tracks.filter((t) => !t.name.includes('position'));
 
+    actions.current.run = mixer.current.clipAction(clip);
+    actions.current.run.play();
+    setupAction(jumpFbx, 'jump', false);
+    setupAction(slideFbx, 'slide', false);
+    setupAction(deathFbx, 'death', false);
     actions.current.run?.play();
-  }, []);
+  }, [runFbx, jumpFbx, slideFbx, deathFbx]);
 
   useEffect(() => {
     if (isGameOver) {
       actions.current.run?.fadeOut(0.2);
-      actions.current.jump?.stop();
-      actions.current.slide?.stop();
       actions.current.death?.reset().fadeIn(0.1).play();
+    } else {
+      actions.current.death?.fadeOut(0.2);
+      actions.current.run?.reset().fadeIn(0.2).play();
     }
   }, [isGameOver]);
-
-  // ----------------------------
-  // INPUT
-  // ----------------------------
+  // 4. Input Listeners
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.code === 'ArrowLeft' || e.code === 'KeyA')
-        setLane((p) => Math.max(p - 1, -1));
-
+        setLane((prev) => Math.max(prev - 1, -1));
       if (e.code === 'ArrowRight' || e.code === 'KeyD')
-        setLane((p) => Math.min(p + 1, 1));
-
+        setLane((prev) => Math.min(prev + 1, 1));
       if (e.code === 'Space' || e.code === 'ArrowUp') triggerJump();
       if (e.code === 'ArrowDown' || e.code === 'KeyS') triggerSlide();
     };
 
     const handleTouchStart = (e) => {
-      touchStart.current = {
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY,
-      };
+      touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       swipeProcessed.current = false;
     };
 
     const handleTouchMove = (e) => {
       if (swipeProcessed.current) return;
-
       const dx = e.touches[0].clientX - touchStart.current.x;
       const dy = e.touches[0].clientY - touchStart.current.y;
 
       if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
-        setLane((p) =>
-          dx > 0 ? Math.min(p + 1, 1) : Math.max(p - 1, -1)
+        setLane((prev) =>
+          dx > 0 ? Math.min(prev + 1, 1) : Math.max(prev - 1, -1)
         );
         swipeProcessed.current = true;
       } else if (Math.abs(dy) > 30) {
-        dy < 0 ? triggerJump() : triggerSlide();
+        if (dy < -30) triggerJump();
+        else if (dy > 30) triggerSlide();
         swipeProcessed.current = true;
       }
     };
@@ -542,79 +871,89 @@ function Player({ isGameOver, onCollide, speed }) {
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('touchstart', handleTouchStart);
     window.addEventListener('touchmove', handleTouchMove);
-
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [isSliding, isJumping]);
+  }, [isSliding, isJumping]); // Dependencies ensure latest state for triggers
 
-  // ----------------------------
-  // FRAME LOOP
-  // ----------------------------
+  // 5. Physics & Frame Loop
   useFrame((state, delta) => {
     if (!group.current) return;
+    mixer.current?.update(delta);
 
-    // 🎬 Animation speed scales with game speed
-    mixer.current?.update(delta * (1 + speed * 0.6));
+    // --- Visual Blinking Logic ---
+    if (isInvulnerable) {
+      blinkRef.current += delta * 15; // Faster blink for better feedback
+      group.current.visible = Math.floor(blinkRef.current) % 2 === 0;
+    } else {
+      if (!isGameOver) group.current.visible = true;
+    }
 
     if (isGameOver) return;
 
     const player = group.current;
 
-    // 🚀 Smooth lane switching (speed responsive)
-    const lerpSpeed = 0.12 + Math.min(speed * 0.08, 0.35);
-
+    // 1. Movement
     player.position.x = THREE.MathUtils.lerp(
       player.position.x,
       lane * laneWidth,
-      lerpSpeed
+      0.15
     );
+    velocity.current += SETTINGS.gravity;
+    player.position.y += velocity.current;
 
-    // 🌍 Gravity scaling
-    const gravityScale = 1 + speed * 0.4;
-
-    velocity.current += SETTINGS.gravity * gravityScale;
-    player.position.y += velocity.current * (1 + speed * 0.3);
-
-    // Ground clamp
-    if (player.position.y < 0.5) {
+    if (player.position.y <= 0.5) {
       player.position.y = 0.5;
       velocity.current = 0;
-
       if (isJumping) {
         setIsJumping(false);
-        actions.current.jump?.fadeOut(0.15);
-        actions.current.run?.reset().fadeIn(0.15).play();
+        actions.current.jump?.fadeOut(0.1);
+        actions.current.run?.reset().fadeIn(0.1).play();
       }
     }
 
-    // ----------------------------
-    // COLLISION (optimized)
-    // ----------------------------
+    // 2. COLLISION DETECTION
+    // STAGE 1: Check invulnerability first
+    if (isInvulnerable) return;
+
+    // STAGE 2: If not invulnerable, run collision
+    const obstacles = [];
     state.scene.traverse((obj) => {
-      if (
-        obj.type !== 'Group' ||
-        !['bus', 'car', 'cone'].includes(obj.userData.type)
-      )
-        return;
-
-      const dz = Math.abs(player.position.z - obj.position.z);
-      const dx = Math.abs(player.position.x - obj.position.x);
-
-      if (dz < 1.5 && dx < 1.5) {
-        if (obj.userData.type === 'cone' && player.position.y > 1.2) return;
-
-        onCollide();
+      if (['bus', 'car', 'cone', 'barrel'].includes(obj.userData?.type)) {
+        obstacles.push(obj);
       }
     });
-  });
 
+    for (let obs of obstacles) {
+      const dz = Math.abs(player.position.z - obs.position.z);
+      const dx = Math.abs(player.position.x - obs.position.x);
+
+      // Wider detection for heavy vehicles, tighter for cones
+      if (dz < 1.5 && dx < 1.4) {
+        const type = obs.userData.type;
+
+        if (type === 'bus' || type === 'car') {
+          onCollide();
+          break;
+        }
+
+        if (type === 'cone' || type === 'barrel') {
+          // If we aren't high enough or jumping, we die
+          if (!(isJumping || player.position.y > 1.1)) {
+            onCollide();
+            break;
+          }
+        }
+      }
+    }
+  });
   return (
     <group ref={group} name="playerGroup" position={[0, 0.5, -2]}>
-      <group position={[0, isSliding ? -0.25 : 0, 0]}>
+      <group position={[0, isSliding ? -0.2 : 0, 0]}>
         <primitive
+          key={modelPath}
           object={runFbx}
           scale={0.01}
           rotation={[0, Math.PI, 0]}
@@ -663,7 +1002,7 @@ function CloudSystem({ isGameOver }) {
   );
 }
 
-function StreetWall({ side = 1, isGameOver }) {
+function StreetWall({ side = 1, isGameOver, speedMultiplier }) {
   const wallTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
@@ -761,7 +1100,7 @@ function StreetWall({ side = 1, isGameOver }) {
   );
 }
 
-function StreetLight({ initialZ, side = 1, isGameOver, speed }) {
+function StreetLight({ initialZ, side = 1, isGameOver, speedMultiplier }) {
   const group = useRef();
   const fbx = useLoader(FBXLoader, '/models/Lamp.fbx');
   const modelClone = useMemo(() => fbx.clone(), [fbx]);
@@ -769,7 +1108,7 @@ function StreetLight({ initialZ, side = 1, isGameOver, speed }) {
     if (isGameOver) return;
 
     if (group.current) {
-      group.current.position.z += speed;
+      group.current.position.z += SETTINGS.speed * speedMultiplier;
       if (group.current.position.z > 20) group.current.position.z = -100;
     }
   });
@@ -785,7 +1124,7 @@ function StreetLight({ initialZ, side = 1, isGameOver, speed }) {
   );
 }
 
-function RacingTrack({ isGameOver, speed }) {
+function RacingTrack({ isGameOver, speedMultiplier }) {
   const trackTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
@@ -823,7 +1162,7 @@ function RacingTrack({ isGameOver, speed }) {
 
     // Scroll the texture based on speed
     // Higher multiplier (e.g., 2) makes the dashes move faster
-    trackTexture.offset.y -= speed * delta * 2;
+    trackTexture.offset.y -= SETTINGS.speed * speedMultiplier * delta * 2;
   });
 
   return (
@@ -863,7 +1202,14 @@ const bunMat = new THREE.MeshStandardMaterial({
 const meatMat = new THREE.MeshStandardMaterial({ color: '#4E342E' });
 const lettuceMat = new THREE.MeshStandardMaterial({ color: '#4CAF50' });
 
-function Burger({ position, onCollect, isGameOver, energy, score, speed }) {
+function Burger({
+  position,
+  onCollect,
+  isGameOver,
+  energy,
+  score,
+  speedMultiplier,
+}) {
   const ref = useRef();
   const floatOffset = useRef(Math.random() * Math.PI * 2);
   const respawnCooldown = useRef(0);
@@ -873,36 +1219,49 @@ function Burger({ position, onCollect, isGameOver, energy, score, speed }) {
     if (!ref.current) return;
 
     ref.current.visible = !collected;
-
     if (isGameOver) return;
 
-    // ⏱ time for animation
     floatOffset.current += delta;
 
-    // ✨ GLOW PULSE (ADD HERE ✅)
+    // ✨ GLOW PULSE
     const pulse = (Math.sin(floatOffset.current * 3) + 1) / 2;
-
     ref.current.children.forEach((child) => {
       if (child.material && child.material.emissiveIntensity !== undefined) {
         child.material.emissiveIntensity = 0.2 + pulse * 0.6;
       }
     });
 
-    // ❗ movement (only when active)
     if (!collected) {
-      // forward movement
-     ref.current.position.z += speed * (delta * 160);
-      // 🔥 FLOATING EFFECT
+      // 1. Synchronized forward movement
+      // Use the same multiplier as obstacles (2.5) to keep it consistent
+      const moveStep = SETTINGS.speed * speedMultiplier * 2.5;
+      const previousZ = ref.current.position.z;
+      ref.current.position.z += moveStep;
+
+      // 2. Animation
       ref.current.position.y =
         position[1] + Math.sin(floatOffset.current * 2) * 0.3;
-
-      // 🔥 ROTATION
       ref.current.rotation.y += 0.05;
-      ref.current.rotation.x = Math.sin(floatOffset.current) * 0.1;
+
+      // 3. 🎯 IMPROVED COLLISION
+      const player = state.scene.getObjectByName('playerGroup');
+      if (player) {
+        const dx = Math.abs(player.position.x - ref.current.position.x);
+
+        // We check if the burger is currently overlapping OR if it just jumped over the player
+        // Player is at Z: -2. We check a small window around that.
+        const isCurrentlyOverlapping =
+          Math.abs(player.position.z - ref.current.position.z) < 1.5;
+        const didJustPassPlayer = previousZ < -2 && ref.current.position.z > -2;
+
+        if (dx < 1.2 && (isCurrentlyOverlapping || didJustPassPlayer)) {
+          setCollected(true);
+          if (onCollect) onCollect();
+        }
+      }
     }
 
     respawnCooldown.current -= delta;
-
     // respawn logic
     if (ref.current.position.z > 20 || collected) {
       if (respawnCooldown.current > 0) return;
@@ -942,7 +1301,12 @@ function Burger({ position, onCollect, isGameOver, energy, score, speed }) {
   });
 
   return (
-    <group ref={ref} position={position} scale={0.8}>
+    <group
+      ref={ref}
+      position={position}
+      scale={0.8}
+      userData={{ type: 'pickup' }}
+    >
       {/* Bottom Bun - Using pre-defined geometry */}
       <mesh position={[0, 0.1, 0]} geometry={lowPolyBunGeo} material={bunMat} />
 
@@ -980,13 +1344,55 @@ function Burger({ position, onCollect, isGameOver, energy, score, speed }) {
 // --- MAIN DEMO COMPONENT ---
 export default function Demo() {
   const [score, setScore] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const [isGameOver, setIsGameOver] = useState(false);
-  // Inside your Demo component
+  const [reviveCount, setReviveCount] = useState(3);
+  const [distance, setDistance] = useState(0);
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
+
   const [energy, setEnergy] = useState(100); // max 100
   const energyBoostRef = useRef(0);
-const baseSpeed = SETTINGS.speed;
-const gameSpeed = baseSpeed * speedMultiplier;
+  const [showGameOverScreen, setShowGameOverScreen] = useState(false);
+  const [totalCoins, setTotalCoins] = useState(
+    () => parseInt(localStorage.getItem(STORAGE_KEYS.COINS)) || 0
+  );
+  const [selectedCharacter, setSelectedCharacter] = useState(
+    () => localStorage.getItem(STORAGE_KEYS.SELECTED) || 'default'
+  );
+  const [isShopOpen, setIsShopOpen] = useState(false);
+
+  // Update Persistent Coins when Game Over occurs
+  useEffect(() => {
+    if (isGameOver) {
+      const newTotal = totalCoins + score;
+      setTotalCoins(newTotal);
+      localStorage.setItem(STORAGE_KEYS.COINS, newTotal);
+      // Reset session score if you want, or keep it for the "Wasted" screen
+    }
+  }, [isGameOver]);
+
+  const handlePurchase = (price, charId) => {
+    const newBalance = totalCoins - price;
+    setTotalCoins(newBalance);
+    localStorage.setItem(STORAGE_KEYS.COINS, newBalance);
+    setSelectedCharacter(charId);
+    localStorage.setItem(STORAGE_KEYS.SELECTED, charId);
+  };
+
+  const handleSelect = (charId) => {
+    setSelectedCharacter(charId);
+    localStorage.setItem(STORAGE_KEYS.SELECTED, charId);
+  };
+
+  useEffect(() => {
+    if (isGameOver) {
+      const timer = setTimeout(() => {
+        setShowGameOverScreen(true);
+      }, 1500); // ⏱ match your death animation duration
+
+      return () => clearTimeout(timer);
+    }
+  }, [isGameOver]);
   const handleBurgerCollect = () => {
     setEnergy((prev) => Math.min(100, prev + 25));
     energyBoostRef.current = 2; // 2 seconds no drain
@@ -1073,58 +1479,107 @@ const gameSpeed = baseSpeed * speedMultiplier;
   const busPositions = useMemo(() => [-80, -160, -240], []);
   // Generate initial coin positions
   const coinPositions = useMemo(() => {
-  const lanes = [-2.5, 0, 2.5];
-  const coins = [];
+    return [
+      [0, 1, -20],
+      [2, 1, -40],
+      [-2, 1, -60],
+      [0, 2.5, -80], // High coin requires jump
+      [3, 1, -100],
+    ];
+  }, []);
+  useEffect(() => {
+    if (isGameOver) return;
 
-  let z = -20;
+    const interval = setInterval(() => {
+      setDistance((prev) => {
+        // base increment per 100ms (tweak for pacing)
+        const increment = 1 * speedMultiplier; // 1 meter per tick times speed multiplier
+        return prev + increment;
+      });
+    }, 100);
 
- for (let i = 0; i < 25; i++){
-    const patternType = Math.random();
-
-    // 1️⃣ Straight line coins
-    if (patternType < 0.4) {
-      const lane = lanes[Math.floor(Math.random() * 3)];
-      for (let j = 0; j < 6; j++) {
-        coins.push([lane, 1, z]);
-        z -= 6;
-      }
-    }
-
-    // 2️⃣ Zig-zag (lane switching)
-    else if (patternType < 0.7) {
-      for (let j = 0; j < 6; j++) {
-        const lane = lanes[j % 3];
-        coins.push([lane, 1, z]);
-        z -= 6;
-      }
-    }
-
-    // 3️⃣ Jump arc (curve)
-    else {
-      for (let j = 0; j < 6; j++) {
-        coins.push([
-          0,
-          1 + Math.sin(j / 5 * Math.PI) * 2, // arc
-          z,
-        ]);
-        z -= 6;
-      }
-    }
-
-    z -= 10; // gap between patterns
-  }
-
-  return coins;
-}, []);
-
+    return () => clearInterval(interval);
+  }, [speedMultiplier, isGameOver]);
   const handleCollect = () => {
     setScore((prev) => prev + 10);
   };
+  const handleRevive = () => {
+    if (reviveCount > 0) {
+      // 1. Deduct a life
+      setReviveCount((prev) => prev - 1);
+
+      // 2. Hide the death screens
+      setIsGameOver(false);
+      setShowGameOverScreen(false);
+
+      // 3. Reset survival resources
+      setEnergy(100);
+      energyBoostRef.current = 2; // Give 2 seconds of invulnerability/no drain
+
+      // NOTE: We do NOT call setScore(0) or setDistance(0) here.
+      // This ensures the player stays at the same "wp" (world position).
+    }
+  };
+
+  // 2. Handle Full Restart (Try Again)
+
+  useEffect(() => {
+    if (isGameOver) {
+      const timer = setTimeout(() => {
+        setShowGameOverScreen(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isGameOver]);
 
   return (
     <div
       style={{ width: '100vw', height: '100vh', background: SETTINGS.skyColor }}
     >
+      {isLoading && <Loader onLoaded={() => setIsLoading(false)} />}
+      {isShopOpen && (
+        <Shop
+          totalCoins={totalCoins}
+          selectedId={selectedCharacter}
+          onPurchase={handlePurchase}
+          onSelect={handleSelect}
+          onClose={() => {
+            setIsShopOpen(false);
+            setShowGameOverScreen(true);
+          }}
+        />
+      )}
+      {showGameOverScreen && (
+        <div className="game-over-container">
+          <h1 className="wasted-text">WASTED</h1>
+          <p style={{ color: 'white', marginBottom: '10px' }}>
+            Revives Left: {reviveCount}
+          </p>
+          <div className="button-row">
+            <button className="btn-funky try-again">TRY AGAIN</button>
+            <button
+              className={`btn-funky revive ${
+                reviveCount === 0 ? 'disabled' : ''
+              }`}
+              onClick={handleRevive}
+              disabled={reviveCount === 0}
+              style={{ opacity: reviveCount === 0 ? 0.5 : 1 }}
+            >
+              {reviveCount > 0 ? `REVIVE (-1)` : 'NO REVIVES'}
+            </button>
+            <button className="btn-funky home">HOME</button>
+            <button
+              className="btn-funky shop"
+              onClick={() => {
+                setShowGameOverScreen(false); // Hide Game Over screen
+                setIsShopOpen(true); // Open Shop overlay
+              }}
+            >
+              SHOP
+            </button>{' '}
+          </div>
+        </div>
+      )}
       <Canvas shadows>
         <PerspectiveCamera makeDefault position={[0, 6, 12]} fov={45} />
         <Environment preset="city" />
@@ -1144,7 +1599,6 @@ const gameSpeed = baseSpeed * speedMultiplier;
             initialPos={b.initialPos}
             color={b.color}
             speedOffset={b.speedOffset}
-            speed={gameSpeed}
           />
         ))}
 
@@ -1162,11 +1616,49 @@ const gameSpeed = baseSpeed * speedMultiplier;
         />
         <fog attach="fog" args={[SETTINGS.skyColor, 30, 130]} />
 
-        <RacingTrack isGameOver={isGameOver}  speed={gameSpeed}/>
-        <Player isGameOver={isGameOver} onCollide={() => setIsGameOver(true)}  speed={gameSpeed} />
+        <RacingTrack
+          isGameOver={isGameOver}
+          speedMultiplier={speedMultiplier}
+        />
+        <Player
+          isGameOver={isGameOver}
+          onCollide={() => setIsGameOver(true)}
+          selectedCharacter={selectedCharacter}
+        />
         {busPositions.map((z, i) => (
-          <MovingBus key={`bus-${i}`} initialZ={z} isGameOver={isGameOver}  speed={gameSpeed}/>
+          <MovingBus
+            key={`bus-${i}`}
+            initialZ={z}
+            isGameOver={isGameOver}
+            speedMultiplier={speedMultiplier}
+          />
         ))}
+
+        {carPositions.map((z, i) => (
+          <MovingCar
+            key={`car-${i}`}
+            initialZ={z}
+            color={i % 2 === 0 ? '#ff2222' : '#33ff33'}
+            isGameOver={isGameOver}
+            speedMultiplier={speedMultiplier} // Add this!
+          />
+        ))}
+
+        {/* Fix for Cones */}
+        {conePositions.map((pos, idx) => (
+          <TrafficCone
+            key={`cone-${idx}`}
+            initialPos={pos}
+            isGameOver={isGameOver}
+            speedMultiplier={speedMultiplier} // Add this!
+          />
+        ))}
+        <OilBarrel
+          initialPos={[0, 0, -120]}
+          isGameOver={isGameOver}
+          score={score}
+          speedMultiplier={speedMultiplier}
+        />
         {burgerPositions.map((pos, i) => (
           <Burger
             key={i}
@@ -1175,32 +1667,9 @@ const gameSpeed = baseSpeed * speedMultiplier;
             isGameOver={isGameOver}
             energy={energy}
             score={score}
-             speed={gameSpeed}
+            speedMultiplier={speedMultiplier}
           />
         ))}
-        {carPositions.map((z, i) => (
-          <MovingCar
-            key={`car-${i}`}
-            initialZ={z}
-            color={i % 2 === 0 ? '#ff2222' : '#33ff33'}
-            isGameOver={isGameOver}
-             speed={gameSpeed}
-          />
-        ))}
-        {conePositions.map((pos, idx) => (
-          <TrafficCone
-            key={`cone-${idx}`}
-            initialPos={pos}
-            isGameOver={isGameOver}
-             speed={gameSpeed}
-          />
-        ))}
-        <OilBarrel
-          initialPos={[0, 0, -120]}
-          isGameOver={isGameOver}
-          score={score}
-           speed={gameSpeed}
-        />
         {/* Render Coins */}
         {coinPositions.map((pos, idx) => (
           <Coin
@@ -1208,64 +1677,55 @@ const gameSpeed = baseSpeed * speedMultiplier;
             position={pos}
             onCollect={handleCollect}
             isGameOver={isGameOver}
-             speed={gameSpeed}
+            speedMultiplier={speedMultiplier}
           />
         ))}
-        <StreetWall side={1} isGameOver={isGameOver}  speed={gameSpeed}/>
-        <StreetWall side={-1} isGameOver={isGameOver}  speed={gameSpeed}/>
-        <StreetLight initialZ={0} side={1}  speed={gameSpeed}/>
-        <StreetLight initialZ={-25} side={-1}  speed={gameSpeed}/>
-        <StreetLight initialZ={-50} side={1}  speed={gameSpeed}/>
-        <StreetLight initialZ={-75} side={-1}  speed={gameSpeed}/>
-        
+        <StreetWall side={1} isGameOver={isGameOver} />
+        <StreetWall side={-1} isGameOver={isGameOver} />
+        <StreetLight initialZ={0} side={1} speedMultiplier={speedMultiplier} />
+        <StreetLight
+          initialZ={-25}
+          side={-1}
+          speedMultiplier={speedMultiplier}
+        />
+        <StreetLight
+          initialZ={-50}
+          side={1}
+          speedMultiplier={speedMultiplier}
+        />
+        <StreetLight
+          initialZ={-75}
+          side={-1}
+          speedMultiplier={speedMultiplier}
+        />
       </Canvas>
 
-      {/* UI Overlay */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '5%',
-          width: '100%',
-          textAlign: 'center',
-          color: '#333',
-          fontFamily: 'Impact',
-          pointerEvents: 'none',
-        }}
-      >
-        <h1 style={{ fontSize: '3rem', margin: 0 }}>MORNING SPRINT</h1>
-        <h2
-          style={{
-            fontSize: '2rem',
-            color: '#FFD700',
-            textShadow: '2px 2px #000',
-          }}
-        >
-          Coins: {score}
-        </h2>
-        <div
-          style={{
-            position: 'absolute',
-            top: '15%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '300px',
-            height: '20px',
-            background: '#333',
-            borderRadius: '10px',
-            overflow: 'hidden',
-          }}
-        >
+      {!isLoading && (
+        <>
+          <EnergyBar energy={energy} />
+
           <div
             style={{
-              width: `${energy}%`,
-              height: '100%',
-              background:
-                energy > 60 ? '#4CAF50' : energy > 30 ? '#FFC107' : '#F44336',
-              transition: 'width 0.2s',
+              position: 'absolute',
+              top: '15px',
+              left: '20px',
+              zIndex: 100,
+              pointerEvents: 'none',
             }}
-          />
-        </div>
-      </div>
+          >
+            <h2 className="funky-coin-display">COINS: {score}</h2>
+          </div>
+
+          <div className="distance-container">
+            <div className="distance-display">
+              Distance:{' '}
+              {distance < 1000
+                ? `${Math.floor(distance)} m`
+                : `${(distance / 1000).toFixed(1)} km`}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
