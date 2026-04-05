@@ -8,6 +8,11 @@
 # testing
 /coverage
 
+# models, sounds
+/models
+/Sounds
+/Characters
+
 # production
 /build
 
