@@ -1,13 +1,6 @@
 import React, { useState, Suspense, useRef, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import {
-  PerspectiveCamera,
-  Sky,
-  Clouds,
-  Cloud,
-  Environment,
-  useProgress,
-} from '@react-three/drei';
+import { PerspectiveCamera, Sky, useFBX, useProgress } from '@react-three/drei';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import * as THREE from 'three';
 
@@ -33,63 +26,63 @@ const CHARACTER_MODELS = {
     name: 'Jenny',
     path: '/models/Jenny.fbx',
     image: '/Characters/Jenny.png',
-    price: 0,
+    price: 5000,
   },
   'remy': {
     id: 'remy',
     name: 'Remy',
     path: '/models/Remy.fbx',
     image: '/Characters/Remy.png',
-    price: 600,
+    price: 18000,
   },
   'big-vegus': {
     id: 'big-vegus',
     name: 'Big Vegus',
     path: '/models/Big-vegus.fbx',
     image: '/Characters/Big-vegus.png',
-    price: 300,
+    price: 25000,
   },
   'vanguard': {
     id: 'vanguard',
     name: 'Vanguard',
     path: '/models/Vanguard.fbx',
     image: '/Characters/Vanguard.png',
-    price: 1000,
+    price: 50000,
   },
   'kachujin': {
     id: 'kachujin',
     name: 'Kachujin',
     path: '/models/Kachujin.fbx',
     image: '/Characters/Kachujin.png',
-    price: 1200,
+    price: 12000,
   },
   'swat-guy': {
     id: 'swat-guy',
     name: 'Swat Guy',
     path: '/models/Swat-guy.fbx',
     image: '/Characters/Swat-guy.png',
-    price: 1500,
+    price: 150000,
   },
   'rabbit': {
     id: 'rabbit',
     name: 'Rabbit',
     path: '/models/Rabbit.fbx',
     image: '/Characters/Rabbit.png',
-    price: 2000,
+    price: 200000,
   },
   'mutant': {
     id: 'mutant',
     name: 'Mutant',
     path: '/models/Mutant.fbx',
     image: '/Characters/Mutant.png',
-    price: 2500,
+    price: 500000,
   },
   'zombie': {
     id: 'zombie',
     name: 'Zombie',
     path: '/models/Zombie.fbx',
     image: '/Characters/Zombie.png',
-    price: 3000,
+    price: 550000,
   },
   // Coming Soon Section
   'elon': {
@@ -131,6 +124,198 @@ const STORAGE_KEYS = {
   UNLOCKED: 'morning_sprint_unlocked_chars',
   SELECTED: 'morning_sprint_selected_char',
 };
+
+// --- THEMES SYSTEM ---
+const THEME_STORAGE_KEY = 'morning_sprint_unlocked_themes';
+
+function getThemes() {
+  return {
+    road: {
+      id: 'road',
+      name: 'Road',
+      skyColor: '#e0f7ff',
+      fog: '#e0f7ff',
+      price: 0,
+      image: '/Themes/road.png',
+      unlocked: true,
+    },
+
+    night: {
+      id: 'night',
+      name: 'Night',
+      skyColor: '#0b0f2a',
+      fog: '#0b0f2a',
+      price: 5000,
+      image: '/Themes/night.png',
+    },
+
+    monsoon: {
+      id: 'monsoon',
+      name: 'Monsoon',
+      skyColor: '#5f6f7a',
+      fog: '#5f6f7a',
+      price: 8000,
+      image: '/Themes/monsoon.png',
+    },
+
+    desert: {
+      id: 'desert',
+      name: 'Desert',
+      skyColor: '#f7c873',
+      fog: '#f7c873',
+      price: 12000,
+      image: '/Themes/desert.png',
+    },
+
+    snow: {
+      id: 'snow',
+      name: 'Snow',
+      skyColor: '#f7c873',
+      fog: '#f7c873',
+      price: 12000,
+      image: '/Themes/snow.png',
+    },
+
+    lava: {
+      id: 'lava',
+      name: 'Lava',
+      skyColor: '#f7c873',
+      fog: '#f7c873',
+      price: 12000,
+      image: '/Themes/lava.png',
+    },
+
+    space: {
+      id: 'space',
+      name: 'Space',
+      skyColor: '#f7c873',
+      fog: '#f7c873',
+      price: 12000,
+      image: '/Themes/space.png',
+    },
+
+    candy: {
+      id: 'candy',
+      name: 'Candy',
+      skyColor: '#f7c873',
+      fog: '#f7c873',
+      price: 12000,
+      image: '/Themes/candy.png',
+    },
+
+    forest: {
+      id: 'forest',
+      name: 'Forest',
+      skyColor: '#f7c873',
+      fog: '#f7c873',
+      price: 12000,
+      image: '/Themes/forest.png',
+    },
+
+    underwater: {
+      id: 'underwater',
+      name: 'Underwater',
+      skyColor: '#f7c873',
+      fog: '#f7c873',
+      price: 12000,
+      image: '/Themes/underwater.png',
+    },
+
+    fantasy: {
+      id: 'fantasy',
+      name: 'Fantasy',
+      skyColor: '#f7c873',
+      fog: '#f7c873',
+      price: 12000,
+      image: '/Themes/fantasy.png',
+    },
+  };
+}
+
+function ThemeShop({
+  totalCoins,
+  onPurchase,
+  selectedTheme,
+  onSelect,
+  unlockedThemes,
+  setUnlockedThemes,
+  onClose,
+  sound,
+}) {
+  const themes = Object.values(getThemes());
+  const [index, setIndex] = useState(0);
+
+  const current = themes[index];
+
+  const isComingSoon = current.id !== 'road';
+  const isUnlocked = unlockedThemes.includes(current.id);
+
+  const handleBuy = () => {
+    if (isComingSoon) return; // block interaction
+
+    if (isUnlocked) {
+      onSelect(current.id);
+    } else if (totalCoins >= current.price) {
+      const updated = [...unlockedThemes, current.id];
+      setUnlockedThemes(updated);
+      sound.play('purchase');
+      localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(updated));
+      onPurchase(current.price);
+    }
+  };
+
+  return (
+    <div className="theme-shop">
+      <button onClick={onClose}>❌</button>
+
+      <h2>{current.name}</h2>
+
+      <div className="theme-preview">
+        <img src={current.image} alt={current.name} />
+
+        {!isUnlocked && (
+          <div className="locked-overlay">
+            🔒 LOCKED <br />
+            {current.price} coins
+          </div>
+        )}
+      </div>
+
+      <button
+        onClick={handleBuy}
+        className={isComingSoon ? 'coming-soon-btn' : ''}
+        disabled={isComingSoon}
+      >
+        {isComingSoon
+          ? 'UPCOMING'
+          : isUnlocked
+          ? selectedTheme === current.id
+            ? 'SELECTED'
+            : 'SELECT'
+          : `BUY ${current.price}`}
+      </button>
+
+      <div>
+        <button
+          onClick={() => {
+            setIndex((i) => (i - 1 + themes.length) % themes.length);
+            sound.play('click');
+          }}
+        >
+          ◀
+        </button>
+        <button
+          onClick={() => {
+            setIndex((i) => (i + 1) % themes.length);
+            sound.play('click');
+          }}
+        >
+          ▶
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function Shop({
   totalCoins,
@@ -334,6 +519,8 @@ function Loader({ onLoaded }) {
     }
   }, [progress, onLoaded]);
 
+  
+
   return (
     <div className="game-loading-overlay">
       <div className="loading-content">
@@ -355,70 +542,42 @@ function Loader({ onLoaded }) {
   );
 }
 
-const EnergyBar = ({ energy }) => {
-  // Funky color palette
-  const getBarColor = () => {
-    if (energy > 60) return '#2ecc71'; // Neon Green
-    if (energy > 30) return '#f1c40f'; // Bright Yellow
-    return '#e74c3c'; // Tomato Red
-  };
+const EnergyBar = React.memo(({ energy, isPaused }) => {
+  // ✅ Memoized color
 
+  const barColor = useMemo(() => {
+    if (energy > 60) return '#2ecc71';
+    if (energy > 30) return '#f1c40f';
+    return '#e74c3c';
+  }, [energy]);
+
+  // ✅ Memoized style object
+  const barStyle = useMemo(() => {
+    return {
+      width: `${energy}%`,
+      backgroundColor: barColor,
+    };
+  }, [energy, barColor]);
+  if (isPaused) return;
   return (
     <div className="energy-bar-container">
-      {/* The Food Icon */}
       <div className="burger-icon">🍔</div>
 
-      {/* The Progress Bar */}
-      <div
-        className="energy-bar-fill"
-        style={{
-          width: `${energy}%`,
-          backgroundColor: getBarColor(),
-        }}
-      />
+      <div className="energy-bar-fill" style={barStyle} />
 
-      {/* Optional: Glow effect for low health */}
       {energy <= 30 && <div className="low-energy-pulse" />}
     </div>
   );
-};
-// --- GEOMETRIES & MATERIALS (Pre-defined for performance) ---
-const coinGeom = new THREE.CylinderGeometry(0.5, 0.5, 0.12, 24);
-const edgeGeom = new THREE.TorusGeometry(0.5, 0.05, 12, 32);
-const starGeom = new THREE.OctahedronGeometry(0.3, 0);
-const rimGeom = new THREE.TorusGeometry(0.42, 0.02, 8, 32);
-
-// Cone Geometries
-const coneBaseGeom = new THREE.BoxGeometry(0.8, 0.1, 0.8);
-const coneBodyGeom = new THREE.CylinderGeometry(0.1, 0.4, 1.2, 16);
-const coneStripGeom = new THREE.CylinderGeometry(0.22, 0.28, 0.3, 16);
-
-const goldMat = new THREE.MeshStandardMaterial({
-  color: '#FFD700',
-  metalness: 1,
-  roughness: 0.2,
-  emissive: '#FF8C00',
-  emissiveIntensity: 0.4,
-});
-
-const starMat = new THREE.MeshStandardMaterial({
-  color: '#FFFFFF',
-  emissive: '#FFF',
-  emissiveIntensity: 1,
-  metalness: 1,
-});
-const orangeMat = new THREE.MeshStandardMaterial({
-  color: '#ff4500',
-  roughness: 0.5,
-});
-const whiteMat = new THREE.MeshStandardMaterial({
-  color: '#ffffff',
-  emissive: '#ffffff',
-  emissiveIntensity: 0.2,
 });
 
 // --- BUS COMPONENT ---
-function MovingBus({ initialZ, isGameOver, speedMultiplier }) {
+function MovingBus({
+  initialZ,
+  isGameOver,
+  speedMultiplier,
+  register,
+  isPaused,
+}) {
   const ref = useRef();
 
   const fbx = useLoader(FBXLoader, 'models/scene.fbx');
@@ -429,7 +588,11 @@ function MovingBus({ initialZ, isGameOver, speedMultiplier }) {
 
   // 👉 FIX: compute bounding box height
   const [yOffset, setYOffset] = useState(0);
-
+  useEffect(() => {
+    if (ref.current) {
+      register(ref.current);
+    }
+  }, []);
   useEffect(() => {
     const box = new THREE.Box3().setFromObject(busModel);
     const size = new THREE.Vector3();
@@ -440,7 +603,7 @@ function MovingBus({ initialZ, isGameOver, speedMultiplier }) {
   }, [busModel]);
 
   useFrame((state) => {
-    if (!ref.current || isGameOver) return;
+    if (!ref.current || isGameOver || isPaused) return;
 
     ref.current.position.z += SETTINGS.speed * speedMultiplier * 3;
 
@@ -469,26 +632,35 @@ function MovingBus({ initialZ, isGameOver, speedMultiplier }) {
   );
 }
 
-const carBaseGeom = new THREE.BoxGeometry(1.5, 0.5, 3.5);
-const carTopGeom = new THREE.BoxGeometry(1.2, 0.4, 1.8);
-const carWheelGeom = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 16);
-// A simple plane that will look like a glowing beam in front of the car
-const beamGeom = new THREE.PlaneGeometry(1, 4);
-// A small circle for the light source "bulb"
-const bulbGeom = new THREE.PlaneGeometry(0.4, 0.2);
 function MovingCar({
   initialZ,
-  color = '#ff2222',
   isGameOver,
   speedMultiplier,
+  register,
+  isPaused,
 }) {
   const ref = useRef();
+
+  // 1. Load the FBX model instead of GLTF
+  const fbx = useFBX('/models/Car.fbx');
+
+  // 2. Clone the model so each instance of MovingCar has its own geometry
+  const modelCopy = useMemo(() => fbx.clone(), [fbx]);
+
   const lanes = [-2.5, 0, 2.5];
   const currentLane = useMemo(() => lanes[Math.floor(Math.random() * 3)], []);
 
-  useFrame((state) => {
-    if (!ref.current || isGameOver) return;
-    ref.current.position.z += SETTINGS.speed * speedMultiplier * 2.5;
+  useEffect(() => {
+    if (ref.current) {
+      register(ref.current);
+    }
+  }, [register]);
+
+  useFrame(() => {
+    if (!ref.current || isGameOver || isPaused) return;
+
+    // Movement logic
+    ref.current.position.z += SETTINGS.speed * speedMultiplier * 5;
 
     // Respawn logic
     if (ref.current.position.z > 20) {
@@ -498,241 +670,181 @@ function MovingCar({
   });
 
   return (
-    <group
+    <primitive
       ref={ref}
+      object={modelCopy} // Use the cloned FBX object
       position={[currentLane, 0.4, initialZ]}
+      scale={[0.009, 0.009, 0.009]} // FBX models are often 100x larger than GLB/GLTF
       userData={{ type: 'car' }}
-    >
-      {' '}
-      {/* Car Body - Standard material is okay for the body itself */}
-      <mesh geometry={carBaseGeom}>
-        <meshStandardMaterial color={color} metalness={0.5} roughness={0.5} />
-      </mesh>
-      <mesh geometry={carTopGeom} position={[0, 0.4, -0.2]}>
-        <meshStandardMaterial color={color} />
-      </mesh>
-      {/* --- FAKE HEADLIGHTS (Zero Lag) --- */}
-      <group position={[0, 0, 1.76]}>
-        {/* Left Bulb */}
-        <mesh position={[-0.5, 0, 0]} geometry={bulbGeom}>
-          <meshBasicMaterial color="#ffffff" />
-        </mesh>
-        {/* Right Bulb */}
-        <mesh position={[0.5, 0, 0]} geometry={bulbGeom}>
-          <meshBasicMaterial color="#ffffff" />
-        </mesh>
-
-        {/* FAKE BEAM: A flat plane floating slightly above the road */}
-        {/* It has no shadow and does not affect the road texture */}
-        <mesh
-          position={[0, -0.38, 2]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          geometry={beamGeom}
-        >
-          <meshBasicMaterial
-            color="#ffffff"
-            transparent
-            opacity={0.2}
-            blending={THREE.AdditiveBlending}
-            depthWrite={false} // Prevents "z-fighting" flickering with the road
-          />
-        </mesh>
-      </group>
-      {/* Tail Lights */}
-      <mesh position={[-0.5, 0, -1.8]} geometry={bulbGeom}>
-        <meshBasicMaterial color="#ff0000" />
-      </mesh>
-      <mesh position={[0.5, 0, -1.8]} geometry={bulbGeom}>
-        <meshBasicMaterial color="#ff0000" />
-      </mesh>
-      {/* Wheels - Using BasicMaterial for maximum FPS */}
-      {[
-        [-0.7, -0.2, 1],
-        [0.7, -0.2, 1],
-        [-0.7, -0.2, -1],
-        [0.7, -0.2, -1],
-      ].map((pos, i) => (
-        <mesh
-          key={i}
-          position={pos}
-          rotation={[0, 0, Math.PI / 2]}
-          geometry={carWheelGeom}
-        >
-          <meshBasicMaterial color="#111" />
-        </mesh>
-      ))}
-    </group>
+    />
   );
 }
-
 // --- TRAFFIC CONE COMPONENT ---
-function TrafficCone({ initialPos, isGameOver, speedMultiplier }) {
+function TrafficCone({
+  initialPos,
+  isGameOver,
+  speedMultiplier,
+  register,
+  isPaused,
+}) {
   const ref = useRef();
-  const lanes = [-3, 0, 3]; // Left, Center, Right
+  const lanes = [-3, 0, 3];
 
-  useFrame(() => {
-    if (!ref.current || isGameOver) return;
+  // Load the cone texture
+  const texture = useLoader(THREE.TextureLoader, '/Sprites/cone.png');
+  useEffect(() => {
+    if (ref.current) {
+      register(ref.current);
+    }
+  }, []);
+  useFrame((state) => {
+    if (!ref.current || isGameOver || isPaused) return;
+    // 1. Billboard effect: Make the cone always face the camera
+    ref.current.lookAt(state.camera.position);
+
+    // 2. Movement logic
     ref.current.position.z += SETTINGS.speed * speedMultiplier * 2.5;
+
+    // 3. Respawn logic
     if (ref.current.position.z > 20) {
       ref.current.position.z = -150 - Math.random() * 50;
       ref.current.position.x = lanes[Math.floor(Math.random() * lanes.length)];
     }
   });
-
+  const coneHeight = 2.5;
   return (
-    <group ref={ref} position={initialPos} userData={{ type: 'cone' }}>
-      {' '}
-      {/* Black base */}
-      <mesh geometry={coneBaseGeom} position={[0, 0.05, 0]} castShadow>
-        <meshStandardMaterial color="#111" />
-      </mesh>
-      {/* Orange Body */}
-      <mesh
-        geometry={coneBodyGeom}
-        position={[0, 0.6, 0]}
-        material={orangeMat}
-        castShadow
+    <mesh
+      ref={ref}
+      position={[initialPos[0], coneHeight / 2, initialPos[2]]}
+      userData={{ type: 'cone' }}
+    >
+      {/* Using PlaneGeometry for the sprite. 
+          Adjust args [width, height] to match your cone's aspect ratio. 
+      */}
+      <planeGeometry args={[2, coneHeight]} />
+      <meshBasicMaterial
+        map={texture}
+        transparent={true}
+        alphaTest={0.5} // Helps with edge clipping/transparency artifacts
+        side={THREE.DoubleSide}
       />
-      {/* Reflective Strip */}
-      <mesh
-        geometry={coneStripGeom}
-        position={[0, 0.7, 0]}
-        material={whiteMat}
-      />
-    </group>
+    </mesh>
   );
 }
-function OilBarrel({ initialPos, isGameOver, score, speedMultiplier }) {
+
+function OilBarrel({
+  initialPos,
+  isGameOver,
+  score,
+  speedMultiplier,
+  register,
+  isPaused,
+}) {
   const ref = useRef();
   const lanes = [-3, 0, 3];
 
-  useFrame(() => {
-    if (!ref.current || isGameOver) return;
+  // 1. Set Barrel dimensions (A bit wider/taller than the cone)
+  const barrelWidth = 1.8;
+  const barrelHeight = 2;
+
+  const texture = useLoader(THREE.TextureLoader, '/Sprites/oil-barrel.png');
+  useEffect(() => {
+    if (ref.current) {
+      register(ref.current);
+    }
+  }, []);
+  useFrame((state) => {
+    if (!ref.current || isGameOver || isPaused) return;
+    // Billboard effect: Keep the sprite facing the player
+    ref.current.lookAt(state.camera.position);
 
     ref.current.position.z += SETTINGS.speed * speedMultiplier * 2;
 
+    // Respawn & Difficulty logic
     if (ref.current.position.z > 20) {
       const spawnChance = 0.2 + score / 5000;
       if (Math.random() < spawnChance) {
-        // ✅ Spawn barrel
         ref.current.position.z = -150 - Math.random() * 100;
         ref.current.position.x =
           lanes[Math.floor(Math.random() * lanes.length)];
+        // Ensure Y stays at the grounded offset
+        ref.current.position.y = barrelHeight / 2;
       } else {
-        // ❌ Skip spawn (push it far away)
         ref.current.position.z = -300 - Math.random() * 200;
       }
     }
   });
 
   return (
-    <group ref={ref} position={initialPos} userData={{ type: 'barrel' }}>
-      <mesh position={[0, 0.75, 0]} castShadow>
-        <cylinderGeometry args={[0.5, 0.5, 1.5, 12]} />
-        <meshStandardMaterial color="#d32f2f" />
-      </mesh>
-
-      <mesh position={[0, 1.1, 0]}>
-        <cylinderGeometry args={[0.51, 0.51, 0.2, 12]} />
-        <meshStandardMaterial color="#ffffff" />
-      </mesh>
-
-      <mesh position={[0, 0.4, 0]}>
-        <cylinderGeometry args={[0.51, 0.51, 0.2, 12]} />
-        <meshStandardMaterial color="#ffffff" />
-      </mesh>
-
-      <mesh position={[0, 1.5, 0]}>
-        <cylinderGeometry args={[0.52, 0.52, 0.05, 12]} />
-        <meshStandardMaterial color="#333" />
-      </mesh>
-    </group>
+    <mesh
+      ref={ref}
+      // Lift by half height to keep it on the ground
+      position={[initialPos[0], barrelHeight / 2, initialPos[2]]}
+      userData={{ type: 'barrel' }}
+    >
+      <planeGeometry args={[barrelWidth, barrelHeight]} />
+      <meshBasicMaterial map={texture} transparent={true} alphaTest={0.5} />
+    </mesh>
   );
 }
 
 //--- COIN COMPONENT ---
-function Coin({ position, onCollect, isGameOver, speedMultiplier }) {
+function Coin({ position, onCollect, isGameOver, speedMultiplier, isPaused }) {
   const ref = useRef();
-  // Use a ref for 'collected' to avoid re-renders during the game loop
-  const collectedRef = useRef(false);
-  const randomOffset = useMemo(() => Math.random() * Math.PI * 2, []);
+  const texture = useLoader(THREE.TextureLoader, '/Sprites/coin.png');
 
-  useFrame((state) => {
-    if (!ref.current) return;
+  const frames = 8; // number of frames in sprite
+  const currentFrame = useRef(0);
+  const frameTime = useRef(0);
 
-    const time = state.clock.getElapsedTime();
+  // Setup texture tiling
+  useMemo(() => {
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1 / frames, 1);
+  }, [texture]);
 
-    // 1. Animation: Always rotate/float even if invisible (keep logic simple)
-    ref.current.rotation.y += 0.06;
-    ref.current.position.y =
-      position[1] + Math.sin(time * 2 + randomOffset) * 0.15;
+  useFrame((state, delta) => {
+    if (!ref.current || isGameOver || isPaused) return;
+    ref.current.lookAt(state.camera.position);
+    // Move forward
+    ref.current.position.z += SETTINGS.speed * speedMultiplier * 2;
 
-    if (!isGameOver) {
-      ref.current.position.z += SETTINGS.speed * speedMultiplier * 2;
-
-      // Respawn logic - Direct DOM-like manipulation
-      if (ref.current.position.z > 20) {
-        ref.current.position.z = -SETTINGS.worldLength;
-        collectedRef.current = false; // Reset internal flag
-        ref.current.visible = true; // Reset visibility directly
-      }
+    // Respawn
+    if (ref.current.position.z > 20) {
+      ref.current.position.z = -SETTINGS.worldLength;
+      ref.current.visible = true;
     }
 
-    // Stop collision logic if already collected or game over
-    if (isGameOver || collectedRef.current) return;
+    // 🎞 Animate sprite
+    frameTime.current += delta;
+    if (frameTime.current > 0.08) {
+      frameTime.current = 0;
+      currentFrame.current = (currentFrame.current + 1) % frames;
 
-    // 2. Collision Logic
-    const playerPos = state.scene.getObjectByName('playerGroup')?.position;
-    if (playerPos && Math.abs(ref.current.position.z - playerPos.z) < 1) {
-      if (ref.current.position.distanceTo(playerPos) < 2) {
-        collectedRef.current = true; // Mark as collected
-        ref.current.visible = false; // Hide immediately without re-render
-        onCollect(); // Notify parent (e.g., score update)
+      texture.offset.x = currentFrame.current / frames;
+    }
+
+    // 💥 Collision
+    const player = state.scene.getObjectByName('playerGroup');
+    if (player && ref.current.visible) {
+      if (
+        Math.abs(player.position.z - ref.current.position.z) < 1 &&
+        Math.abs(player.position.x - ref.current.position.x) < 1
+      ) {
+        ref.current.visible = false;
+        onCollect();
       }
     }
   });
 
   return (
-    <group ref={ref} position={position}>
-      {/* Visual meshes here - Removed visible={!collected} to avoid state dependency */}
-      <mesh
-        geometry={coinGeom}
-        material={goldMat}
-        rotation={[0, 0, Math.PI / 2]}
-        castShadow
-      />
-      <mesh
-        geometry={edgeGeom}
-        material={goldMat}
-        rotation={[0, Math.PI / 2, 0]}
-      />
-      <mesh
-        geometry={rimGeom}
-        material={goldMat}
-        position={[0.07, 0, 0]}
-        rotation={[0, Math.PI / 2, 0]}
-      />
-      <mesh
-        geometry={rimGeom}
-        material={goldMat}
-        position={[-0.07, 0, 0]}
-        rotation={[0, Math.PI / 2, 0]}
-      />
-      <mesh
-        geometry={starGeom}
-        material={starMat}
-        position={[0.08, 0, 0]}
-        scale={[0.3, 1, 1]}
-      />
-      <mesh
-        geometry={starGeom}
-        material={starMat}
-        position={[-0.08, 0, 0]}
-        scale={[0.3, 1, 1]}
-      />
-    </group>
+    <mesh ref={ref} position={position}>
+      <planeGeometry args={[1.5, 1.5]} />
+      <meshBasicMaterial map={texture} transparent depthWrite={false} />
+    </mesh>
   );
 }
+
 const balloonGeo = new THREE.DodecahedronGeometry(2, 0);
 const basketGeo = new THREE.BoxGeometry(0.8, 0.7, 0.8);
 const ropeGeo = new THREE.CylinderGeometry(0.01, 0.01, 1.5, 3);
@@ -740,27 +852,33 @@ const ropeGeo = new THREE.CylinderGeometry(0.01, 0.01, 1.5, 3);
 function HotAirBalloon({ initialPos, color, speedOffset }) {
   const mesh = useRef();
 
-  // We increase the "Live Zone" so they don't disappear quickly
-  const spawnDistance = -400; // Start way back in the fog
-  const deleteDistance = 50; // Only disappear well after passing the player
+  const spawnDistance = -400;
+  const deleteDistance = 50;
+
+  // 🔧 Cache random X offset instead of recalculating too often
+  const randomX = useRef((Math.random() - 0.5) * 60);
 
   useFrame((state, delta) => {
     if (!mesh.current) return;
 
-    // Slow, steady movement
-    mesh.current.position.z +=
-      (SETTINGS.speed * 0.3 + speedOffset) * (delta * 60);
+    const t = state.clock.elapsedTime; // ✅ faster than getElapsedTime()
 
-    // Gentle swaying
-    const t = state.clock.getElapsedTime() + initialPos[0] * 0.5;
-    mesh.current.position.y = initialPos[1] + Math.sin(t * 0.3) * 2;
-    mesh.current.rotation.z = Math.sin(t * 0.2) * 0.05;
+    // ✅ Proper frame-independent movement
+    mesh.current.position.z += (SETTINGS.speed * 0.3 + speedOffset) * delta;
 
-    // Recycle Logic: If it passes the player, send it far back
+    // ✅ Smooth floating animation
+    mesh.current.position.y =
+      initialPos[1] + Math.sin(t * 0.3 + initialPos[0]) * 2;
+
+    mesh.current.rotation.z = Math.sin(t * 0.2 + initialPos[0]) * 0.05;
+
+    // 🔁 Recycling
     if (mesh.current.position.z > deleteDistance) {
       mesh.current.position.z = spawnDistance;
-      // Slightly shift X so the pattern changes
-      mesh.current.position.x = (Math.random() - 0.5) * 60;
+
+      // Update random X only when recycled
+      randomX.current = (Math.random() - 0.5) * 60;
+      mesh.current.position.x = randomX.current;
     }
   });
 
@@ -769,9 +887,11 @@ function HotAirBalloon({ initialPos, color, speedOffset }) {
       <mesh geometry={balloonGeo}>
         <meshStandardMaterial color={color} flatShading />
       </mesh>
+
       <mesh geometry={ropeGeo} position={[0, -1.5, 0]}>
         <meshStandardMaterial color="#555" />
       </mesh>
+
       <mesh geometry={basketGeo} position={[0, -2.2, 0]}>
         <meshStandardMaterial color="#8B4513" />
       </mesh>
@@ -780,7 +900,7 @@ function HotAirBalloon({ initialPos, color, speedOffset }) {
 }
 
 // --- PLAYER COMPONENT (Added name="playerGroup") ---
-function Player({ isGameOver, onCollide, selectedCharacter }) {
+function Player({ isGameOver, onCollide, selectedCharacter, isPaused }) {
   const group = useRef();
   const swipeProcessed = useRef(false);
 
@@ -950,8 +1070,9 @@ function Player({ isGameOver, onCollide, selectedCharacter }) {
   // 5. Physics & Frame Loop
   useFrame((state, delta) => {
     if (!group.current) return;
-    mixer.current?.update(delta);
-
+    if (!isPaused) {
+      mixer.current?.update(delta);
+    }
     // --- Visual Blinking Logic ---
     if (isInvulnerable) {
       blinkRef.current += delta * 15; // Faster blink for better feedback
@@ -960,7 +1081,7 @@ function Player({ isGameOver, onCollide, selectedCharacter }) {
       if (!isGameOver) group.current.visible = true;
     }
 
-    if (isGameOver) return;
+    if (isGameOver || isPaused) return;
 
     const player = group.current;
 
@@ -1034,61 +1155,98 @@ function Player({ isGameOver, onCollide, selectedCharacter }) {
 }
 
 // --- OTHER COMPONENTS (CloudSystem, StreetWall, etc. remain the same as your code) ---
-function CloudSystem({ isGameOver }) {
-  const group = useRef();
-  useFrame(() => {
-    if (!group.current || isGameOver) return;
+function IndividualCloud({ position, texture, scale = 1 }) {
+  const ref = useRef();
 
-    group.current.position.z += SETTINGS.speed * 0.4;
-    if (group.current.position.z > 50) group.current.position.z = -150;
+  // Clouds move slower than the ground to create parallax depth
+  useFrame((state) => {
+    if (!ref.current) return;
+
+    // Always face camera
+    ref.current.lookAt(state.camera.position);
+
+    // Parallax movement (clouds move at 40% of game speed)
+    ref.current.position.z += SETTINGS.speed * 0.4;
+
+    // Respawn logic for individual cloud
+    if (ref.current.position.z > 50) {
+      ref.current.position.z = -200 - Math.random() * 100;
+      ref.current.position.x = (Math.random() - 0.5) * 100; // Spread them out wide
+    }
   });
+
   return (
-    <group ref={group}>
-      <Clouds material={THREE.MeshLambertMaterial}>
-        <Cloud
-          segments={20}
-          bounds={[10, 2, 2]}
-          volume={6}
-          color="#ffffff"
-          position={[0, 20, -100]}
-        />
-        <Cloud
-          segments={20}
-          bounds={[10, 2, 2]}
-          volume={6}
-          color="#f0f0f0"
-          position={[40, 25, -150]}
-        />
-        <Cloud
-          segments={20}
-          bounds={[10, 2, 2]}
-          volume={6}
-          color="#ffffff"
-          position={[-40, 22, -120]}
-        />
-      </Clouds>
+    <mesh ref={ref} position={position} scale={scale}>
+      <planeGeometry args={[25, 12]} />
+      <meshBasicMaterial
+        map={texture}
+        transparent
+        opacity={0.8} // Clouds look better slightly see-through
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
+function CloudSystem({ isGameOver }) {
+  // Load one cloud texture and reuse it for all instances
+  const cloudTexture = useLoader(THREE.TextureLoader, '/Sprites/cloud.png');
+
+  if (isGameOver) return null;
+
+  return (
+    <group>
+      {/* Cloud 1 - Center High */}
+      <IndividualCloud
+        texture={cloudTexture}
+        position={[0, 20, -100]}
+        scale={1.2}
+      />
+
+      {/* Cloud 2 - Right Far */}
+      <IndividualCloud
+        texture={cloudTexture}
+        position={[40, 25, -150]}
+        scale={1.5}
+      />
+
+      {/* Cloud 3 - Left Mid */}
+      <IndividualCloud
+        texture={cloudTexture}
+        position={[-40, 22, -120]}
+        scale={1}
+      />
+
+      {/* Cloud 4 - Extra for more "Fullness" */}
+      <IndividualCloud
+        texture={cloudTexture}
+        position={[20, 18, -180]}
+        scale={0.8}
+      />
     </group>
   );
 }
 
-function StreetWall({ side = 1, isGameOver, speedMultiplier }) {
+function StreetWall({ side = 1, isGameOver, speedMultiplier, isPaused }) {
+  const materialRef = useRef();
+
   const wallTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 512;
     const ctx = canvas.getContext('2d');
 
-    // 1. Create a Gritty Base (Mortar)
+    // 1. Base
     ctx.fillStyle = '#2a2a2a';
     ctx.fillRect(0, 0, 512, 512);
 
-    // Add "grit" to mortar
-    for (let i = 0; i < 2000; i++) {
-      ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.5})`;
+    // 🔧 Reduce grit density (performance win)
+    for (let i = 0; i < 800; i++) {
+      ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.3})`;
       ctx.fillRect(Math.random() * 512, Math.random() * 512, 1, 1);
     }
 
-    const rows = 10;
+    const rows = 8; // 🔧 reduced from 10
     const rowHeight = 512 / rows;
 
     for (let r = 0; r < rows; r++) {
@@ -1096,72 +1254,73 @@ function StreetWall({ side = 1, isGameOver, speedMultiplier }) {
       const colWidth = 512 / stonesInRow;
 
       for (let c = 0; c < stonesInRow; c++) {
-        // Stagger rows and add random jitter to stone widths
         const xOffset = (r % 2) * (colWidth / 2);
-        const jitter = (Math.random() - 0.5) * 20;
+        const jitter = (Math.random() - 0.5) * 10; // 🔧 reduced jitter
         const x = c * colWidth + xOffset - colWidth / 2 + jitter;
         const y = r * rowHeight;
 
-        // 2. Realistic Stone Shading
-        // Mix of greys, browns, and dark blues for "cold stone"
-        const baseHue = 20 + Math.random() * 20; // Earthy tones
-        const lightness = 25 + Math.random() * 15;
-        const grad = ctx.createLinearGradient(
-          x,
-          y,
-          x + colWidth,
-          y + rowHeight
-        );
-        grad.addColorStop(0, `hsl(${baseHue}, 5%, ${lightness + 10}%)`);
-        grad.addColorStop(1, `hsl(${baseHue}, 5%, ${lightness - 10}%)`);
+        // 🔧 Simplified shading (remove gradient = BIG win)
+        const lightness = 25 + Math.random() * 10;
+        ctx.fillStyle = `hsl(30, 5%, ${lightness}%)`;
 
-        ctx.fillStyle = grad;
-
-        // Draw stone with irregular "hand-cut" edges
-        ctx.beginPath();
-        ctx.moveTo(x + 5, y + 5);
-        ctx.lineTo(x + colWidth - 5, y + 2);
-        ctx.lineTo(x + colWidth - 2, y + rowHeight - 5);
-        ctx.lineTo(x + 8, y + rowHeight - 2);
-        ctx.closePath();
-        ctx.fill();
-
-        // 3. Add Highlights/Cracks
-        ctx.strokeStyle = `rgba(255,255,255,0.05)`;
-        ctx.strokeRect(x + 6, y + 6, colWidth - 12, rowHeight - 12);
+        ctx.fillRect(x + 4, y + 4, colWidth - 8, rowHeight - 8);
       }
     }
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(1, 8); // Scale the texture so stones look heavy
-    tex.anisotropy = 16; // Keeps it sharp at a distance
+    tex.repeat.set(1, 8);
+
+    // 🔧 PERFORMANCE OPTIMIZATION
+    tex.generateMipmaps = false;
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+
+    // 🔥 Reduce anisotropy (huge impact)
+    tex.anisotropy = 2;
+
+    tex.needsUpdate = true;
+
     return tex;
   }, []);
 
+  // 🧹 Cleanup
+  useEffect(() => {
+    return () => {
+      wallTexture.dispose();
+    };
+  }, [wallTexture]);
+
   useFrame((state, delta) => {
-    if (isGameOver) return;
-    wallTexture.offset.y -= SETTINGS.speed * delta * 0.8;
+    if (isGameOver || !materialRef.current || isPaused) return;
+
+    const map = materialRef.current.map;
+
+    map.offset.y -= SETTINGS.speed * delta * 0.8;
+
+    // 🔒 Prevent precision lag over time
+    map.offset.y %= 1;
   });
+
   const WALL_HEIGHT = 2.5;
+
   return (
     <group
       position={[side * (SETTINGS.trackWidth / 2 + 0.6), WALL_HEIGHT / 2, 0]}
     >
-      {' '}
-      {/* The Main Wall */}
+      {/* Main Wall */}
       <mesh>
-        <boxGeometry args={[1.2, WALL_HEIGHT, 300]} />{' '}
+        <boxGeometry args={[1.2, WALL_HEIGHT, 300]} />
         <meshStandardMaterial
+          ref={materialRef}
           map={wallTexture}
           roughness={1}
           metalness={0}
-          bumpScale={0.05} // Subtle depth
         />
       </mesh>
-      {/* Optional: Add a "Coping Stone" (Top ledge) for extra realism */}
+
+      {/* Top ledge */}
       <mesh position={[0, WALL_HEIGHT / 2 + 0.1, 0]}>
-        {' '}
         <boxGeometry args={[1.5, 0.3, 300]} />
         <meshStandardMaterial color="#333" roughness={1} />
       </mesh>
@@ -1169,31 +1328,82 @@ function StreetWall({ side = 1, isGameOver, speedMultiplier }) {
   );
 }
 
-function StreetLight({ initialZ, side = 1, isGameOver, speedMultiplier }) {
+function StreetLight({
+  initialZ,
+  side = 1,
+  isGameOver,
+  speedMultiplier,
+  isPaused,
+}) {
   const group = useRef();
-  const fbx = useLoader(FBXLoader, '/models/Lamp.fbx');
-  const modelClone = useMemo(() => fbx.clone(), [fbx]);
-  useFrame(() => {
-    if (isGameOver) return;
 
-    if (group.current) {
-      group.current.position.z += SETTINGS.speed * speedMultiplier;
-      if (group.current.position.z > 20) group.current.position.z = -100;
+  const fbx = useLoader(FBXLoader, '/models/Lamp.fbx');
+
+  // 🔥 Clone ONCE and reuse efficiently
+  const modelClone = useMemo(() => {
+    const clone = fbx.clone();
+
+    // Optional: optimize meshes inside model
+    clone.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = false;
+
+        // 🔧 PERFORMANCE: simplify material
+        if (child.material) {
+          child.material = child.material.clone();
+          child.material.flatShading = true;
+        }
+      }
+    });
+
+    return clone;
+  }, [fbx]);
+
+  // 🧹 Cleanup to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      modelClone.traverse((child) => {
+        if (child.isMesh) {
+          child.geometry?.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach((m) => m.dispose());
+            } else {
+              child.material.dispose();
+            }
+          }
+        }
+      });
+    };
+  }, [modelClone]);
+
+  useFrame((state, delta) => {
+    if (isGameOver || !group.current || isPaused) return;
+
+    // ✅ Frame-rate independent movement
+    group.current.position.z += SETTINGS.speed * speedMultiplier * delta * 60;
+
+    // 🔁 Reset position efficiently
+    if (group.current.position.z > 20) {
+      group.current.position.z = -100;
     }
   });
+
   return (
     <group ref={group} position={[side * 5.5, 0, initialZ]}>
       <primitive
         object={modelClone}
         scale={0.01}
         rotation={[0, side === 1 ? 0 : Math.PI, 0]}
-        castShadow
       />
     </group>
   );
 }
 
-function RacingTrack({ isGameOver, speedMultiplier }) {
+function RacingTrack({ isGameOver, speedMultiplier, isPaused }) {
+  const textureRef = useRef();
+
   const trackTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
@@ -1212,7 +1422,7 @@ function RacingTrack({ isGameOver, speedMultiplier }) {
     // 3. Yellow Dashed Center Line
     ctx.strokeStyle = '#ffcc00';
     ctx.lineWidth = 20;
-    ctx.setLineDash([80, 80]); // 80px line, 80px gap
+    ctx.setLineDash([80, 80]);
     ctx.lineDashOffset = 0;
     ctx.beginPath();
     ctx.moveTo(256, 0);
@@ -1221,26 +1431,40 @@ function RacingTrack({ isGameOver, speedMultiplier }) {
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    // We repeat it 10 times over the 200 unit length for high detail
     tex.repeat.set(1, 10);
+
+    // 🔧 PERFORMANCE OPTIMIZATION
+    tex.generateMipmaps = false;
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.needsUpdate = true;
+
     return tex;
   }, []);
 
-  useFrame((state, delta) => {
-    if (isGameOver) return;
+  // 🧹 CLEANUP (prevents memory leaks)
+  useEffect(() => {
+    return () => {
+      trackTexture.dispose();
+    };
+  }, [trackTexture]);
 
-    // Scroll the texture based on speed
-    // Higher multiplier (e.g., 2) makes the dashes move faster
-    trackTexture.offset.y -= SETTINGS.speed * speedMultiplier * delta * 2;
+  useFrame((state, delta) => {
+    if (isGameOver || !textureRef.current || isPaused) return;
+
+    // 🚀 Smooth scrolling
+    textureRef.current.map.offset.y -=
+      SETTINGS.speed * speedMultiplier * delta * 2;
+
+    // 🔒 Prevent floating-point overflow lag
+    textureRef.current.map.offset.y %= 1;
   });
 
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow position={[0, 0, -50]}>
-      {/* Increased length to 300 to match SETTINGS.worldLength 
-         so the road doesn't end abruptly 
-      */}
       <planeGeometry args={[SETTINGS.trackWidth, 300]} />
       <meshStandardMaterial
+        ref={textureRef}
         map={trackTexture}
         roughness={0.8}
         metalness={0.1}
@@ -1249,28 +1473,6 @@ function RacingTrack({ isGameOver, speedMultiplier }) {
   );
 }
 
-// Define geometries OUTSIDE the component so they are created only ONCE in memory
-// This is the biggest performance boost!
-const lowPolyBunGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 8);
-const lowPolyMeatGeo = new THREE.CylinderGeometry(0.52, 0.52, 0.15, 8);
-const lowPolyCheeseGeo = new THREE.BoxGeometry(0.9, 0.04, 0.9);
-const lowPolyLettuceGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.05, 8);
-// Top bun as a slightly thinner cylinder instead of a sphere
-const lowPolyTopBunGeo = new THREE.CylinderGeometry(0.4, 0.5, 0.25, 8);
-const cheeseMat = new THREE.MeshStandardMaterial({
-  color: '#FFD700',
-  emissive: '#ffaa00',
-  emissiveIntensity: 0.6,
-});
-
-const bunMat = new THREE.MeshStandardMaterial({
-  color: '#D3A36A',
-  emissive: '#553300',
-  emissiveIntensity: 0.2,
-});
-const meatMat = new THREE.MeshStandardMaterial({ color: '#4E342E' });
-const lettuceMat = new THREE.MeshStandardMaterial({ color: '#4CAF50' });
-
 function Burger({
   position,
   onCollect,
@@ -1278,49 +1480,50 @@ function Burger({
   energy,
   score,
   speedMultiplier,
+  isPaused,
 }) {
   const ref = useRef();
+  const texture = useLoader(THREE.TextureLoader, '/Sprites/burger.png');
+
   const floatOffset = useRef(Math.random() * Math.PI * 2);
   const respawnCooldown = useRef(0);
   const [collected, setCollected] = useState(false);
 
   useFrame((state, delta) => {
-    if (!ref.current) return;
+    if (!ref.current || isPaused || isGameOver) return;
 
     ref.current.visible = !collected;
     if (isGameOver) return;
 
     floatOffset.current += delta;
 
-    // ✨ GLOW PULSE
+    // 🚀 Movement
+    const moveStep = SETTINGS.speed * speedMultiplier * 2.5;
+    const previousZ = ref.current.position.z;
+    ref.current.position.z += moveStep;
+
+    // ✨ Floating animation
+    ref.current.position.y =
+      position[1] + Math.sin(floatOffset.current * 2) * 0.3;
+
+    // 🎯 Always face camera (billboard)
+    ref.current.lookAt(state.camera.position);
+
+    // ✨ Fake glow pulse (scale instead of emissive)
     const pulse = (Math.sin(floatOffset.current * 3) + 1) / 2;
-    ref.current.children.forEach((child) => {
-      if (child.material && child.material.emissiveIntensity !== undefined) {
-        child.material.emissiveIntensity = 0.2 + pulse * 0.6;
-      }
-    });
+    const scale = 1 + pulse * 0.2;
+    ref.current.scale.set(scale, scale, scale);
 
+    // 🎯 Collision (your improved logic kept)
     if (!collected) {
-      // 1. Synchronized forward movement
-      // Use the same multiplier as obstacles (2.5) to keep it consistent
-      const moveStep = SETTINGS.speed * speedMultiplier * 2.5;
-      const previousZ = ref.current.position.z;
-      ref.current.position.z += moveStep;
-
-      // 2. Animation
-      ref.current.position.y =
-        position[1] + Math.sin(floatOffset.current * 2) * 0.3;
-      ref.current.rotation.y += 0.05;
-
-      // 3. 🎯 IMPROVED COLLISION
       const player = state.scene.getObjectByName('playerGroup');
+
       if (player) {
         const dx = Math.abs(player.position.x - ref.current.position.x);
 
-        // We check if the burger is currently overlapping OR if it just jumped over the player
-        // Player is at Z: -2. We check a small window around that.
         const isCurrentlyOverlapping =
           Math.abs(player.position.z - ref.current.position.z) < 1.5;
+
         const didJustPassPlayer = previousZ < -2 && ref.current.position.z > -2;
 
         if (dx < 1.2 && (isCurrentlyOverlapping || didJustPassPlayer)) {
@@ -1330,8 +1533,9 @@ function Burger({
       }
     }
 
+    // 🔁 Respawn logic (unchanged)
     respawnCooldown.current -= delta;
-    // respawn logic
+
     if (ref.current.position.z > 20 || collected) {
       if (respawnCooldown.current > 0) return;
 
@@ -1353,60 +1557,13 @@ function Burger({
         respawnCooldown.current = 2 + Math.random() * 3;
       }
     }
-
-    // collision
-    if (!collected) {
-      const player = state.scene.getObjectByName('playerGroup');
-
-      if (
-        player &&
-        Math.abs(player.position.z - ref.current.position.z) < 1 &&
-        Math.abs(player.position.x - ref.current.position.x) < 1
-      ) {
-        setCollected(true);
-        if (onCollect) onCollect();
-      }
-    }
   });
 
   return (
-    <group
-      ref={ref}
-      position={position}
-      scale={0.8}
-      userData={{ type: 'pickup' }}
-    >
-      {/* Bottom Bun - Using pre-defined geometry */}
-      <mesh position={[0, 0.1, 0]} geometry={lowPolyBunGeo} material={bunMat} />
-
-      {/* Meat Patty */}
-      <mesh
-        position={[0, 0.25, 0]}
-        geometry={lowPolyMeatGeo}
-        material={meatMat}
-      />
-
-      {/* Cheese Slice */}
-      <mesh
-        position={[0, 0.32, 0]}
-        geometry={lowPolyCheeseGeo}
-        material={cheeseMat}
-      />
-
-      {/* Lettuce */}
-      <mesh
-        position={[0, 0.4, 0]}
-        geometry={lowPolyLettuceGeo}
-        material={lettuceMat}
-      />
-
-      {/* Top Bun - Now a 8-sided cylinder (much lighter than a sphere) */}
-      <mesh
-        position={[0, 0.55, 0]}
-        geometry={lowPolyTopBunGeo}
-        material={bunMat}
-      />
-    </group>
+    <mesh ref={ref} position={position} userData={{ type: 'pickup' }}>
+      <planeGeometry args={[2, 2]} />
+      <meshBasicMaterial map={texture} transparent depthWrite={false} />
+    </mesh>
   );
 }
 
@@ -1480,14 +1637,42 @@ export default function Demo() {
   const [isLoading, setIsLoading] = useState(true);
   const [isGameOver, setIsGameOver] = useState(false);
   const [isShopOpen, setIsShopOpen] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const [showGameOverScreen, setShowGameOverScreen] = useState(false);
-
+  const [isPaused, setIsPaused] = useState(false);
   const [score, setScore] = useState(0);
+  const [isThemeShopOpen, setIsThemeShopOpen] = useState(false);
   const [reviveCount, setReviveCount] = useState(3);
   const [distance, setDistance] = useState(0);
+  const [bestDistance, setBestDistance] = useState(() => {
+  return parseFloat(localStorage.getItem('BEST_DISTANCE')) || 0;
+});
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
   const [energy, setEnergy] = useState(100);
   const energyBoostRef = useRef(0);
+  const obstaclesRef = useRef([]);
+  const THEMES = useMemo(() => getThemes(), []);
+
+  const [selectedTheme, setSelectedTheme] = useState('road');
+
+  const [unlockedThemes, setUnlockedThemes] = useState(() => {
+    const saved = localStorage.getItem(THEME_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : ['road'];
+  });
+
+  const registerObstacle = (obj, removeObj) => {
+    if (obj) {
+      if (!obstaclesRef.current.includes(obj)) {
+        obstaclesRef.current.push(obj);
+      }
+    }
+
+    if (removeObj) {
+      obstaclesRef.current = obstaclesRef.current.filter(
+        (o) => o !== removeObj
+      );
+    }
+  };
 
   const [totalCoins, setTotalCoins] = useState(
     () => parseInt(localStorage.getItem(STORAGE_KEYS.COINS)) || 0
@@ -1527,7 +1712,13 @@ export default function Demo() {
       const newTotal = totalCoins + score;
       setTotalCoins(newTotal);
       localStorage.setItem(STORAGE_KEYS.COINS, newTotal);
-      // Reset session score if want, or keep it for the "Wasted" screen
+      setBestDistance((prevBest) => {
+      if (distance > prevBest) {
+        localStorage.setItem('BEST_DISTANCE', distance);
+        return distance;
+      }
+      return prevBest;
+    });
     }
   }, [isGameOver]);
 
@@ -1568,7 +1759,7 @@ export default function Demo() {
   }, [isGameOver]);
 
   useEffect(() => {
-    if (isGameOver) return;
+    if (isGameOver || isPaused) return;
 
     const interval = setInterval(() => {
       setEnergy((prev) => {
@@ -1590,7 +1781,7 @@ export default function Demo() {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [speedMultiplier, isGameOver]);
+  }, [speedMultiplier, isGameOver, isPaused]);
 
   // Increase speed as score increases
   useEffect(() => {
@@ -1599,7 +1790,7 @@ export default function Demo() {
   }, [score]);
 
   useEffect(() => {
-    if (isGameOver) return;
+    if (isGameOver || isPaused) return;
 
     const interval = setInterval(() => {
       setDistance((prev) => {
@@ -1610,16 +1801,33 @@ export default function Demo() {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [speedMultiplier, isGameOver]);
+  }, [speedMultiplier, isGameOver, isPaused]);
 
   useEffect(() => {
-    if (isGameOver) {
-      const timer = setTimeout(() => {
-        setShowGameOverScreen(true);
-      }, 1500);
-      return () => clearTimeout(timer);
+    if (isPaused) {
+      sound.stopAll();
+    } else {
+      if (!isGameOver && !isShopOpen) {
+        sound.loop('bg');
+      }
     }
-  }, [isGameOver]);
+  }, [isPaused, isGameOver, isShopOpen]);
+
+  const handleStartGame = () => {
+    sound.play('click');
+
+    setHasStarted(true); // show loader
+    setIsLoading(true); // trigger loading screen
+
+    // Reset game before starting
+    setIsGameOver(false);
+    setShowGameOverScreen(false);
+    setScore(0);
+    setDistance(0);
+    setSpeedMultiplier(1);
+    setEnergy(100);
+    setReviveCount(3);
+  };
 
   const handlePurchase = (price, charId) => {
     sound.play('purchase');
@@ -1634,6 +1842,30 @@ export default function Demo() {
   const handleSelect = (charId) => {
     setSelectedCharacter(charId);
     localStorage.setItem(STORAGE_KEYS.SELECTED, charId);
+  };
+
+  const handleTryAgain = () => {
+    sound.play('click');
+
+    // Reset core game states
+    setIsGameOver(false);
+    setShowGameOverScreen(false);
+    setIsPaused(false);
+
+    // Reset gameplay stats
+    setScore(0);
+    setDistance(0);
+    setSpeedMultiplier(1);
+    setEnergy(100);
+
+    // Reset revive count (optional: or keep it if you want)
+    setReviveCount(3);
+
+    // Reset temporary boosts
+    energyBoostRef.current = 0;
+
+    // Clear obstacles (important to avoid instant death)
+    obstaclesRef.current = [];
   };
 
   const handleBurgerCollect = () => {
@@ -1674,7 +1906,7 @@ export default function Demo() {
       '#a29bfe',
       '#fd79a8',
     ];
-    const count = 15; // More balloons for a denser sky
+    const count = 10; // More balloons for a denser sky
 
     return Array.from({ length: count }).map((_, i) => {
       // Wave grouping: 5 balloons per cluster
@@ -1727,9 +1959,73 @@ export default function Demo() {
 
   return (
     <div
-      style={{ width: '100vw', height: '100vh', background: SETTINGS.skyColor }}
+      style={{
+        width: '100vw',
+        height: '100vh',
+        background: THEMES[selectedTheme].skyColor,
+      }}
     >
-      {isLoading && <Loader onLoaded={() => setIsLoading(false)} />}
+      {hasStarted && isLoading && (
+        <Loader onLoaded={() => setIsLoading(false)} />
+      )}
+      {isThemeShopOpen && (
+        <ThemeShop
+          totalCoins={totalCoins}
+          selectedTheme={selectedTheme}
+          unlockedThemes={unlockedThemes}
+          setUnlockedThemes={setUnlockedThemes}
+          onSelect={(id) => setSelectedTheme(id)}
+          onPurchase={(price) => {
+            setTotalCoins((prev) => prev - price);
+          }}
+          sound={sound}
+          onClose={() => {
+            setIsThemeShopOpen(false);
+            setHasStarted(false);
+            sound.play('click');
+          }}
+        />
+      )}
+      {isPaused && !isGameOver && (
+        <div className="pause-overlay">
+          <div className="pause-card">
+            <h1 className="pause-title">PAUSED</h1>
+
+            <div className="pause-buttons">
+              <button
+                className="btn-funky"
+                onClick={() => {
+                  sound.play('click');
+                  setIsPaused(false);
+                }}
+              >
+                ▶ RESUME
+              </button>
+
+              <button
+                className="btn-funky"
+                onClick={() => {
+                  sound.play('click');
+                  handleTryAgain(); // reuse your reset logic
+                }}
+              >
+                🔁 RESTART
+              </button>
+
+              <button
+                className="btn-funky"
+                onClick={() => {
+                  sound.play('click');
+                  setIsPaused(false);
+                  setHasStarted(false); // go back to start screen
+                }}
+              >
+                🏠 EXIT
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {isShopOpen && (
         <Shop
           totalCoins={totalCoins}
@@ -1751,7 +2047,15 @@ export default function Demo() {
             <span>Revives Left: {reviveCount}</span>
           </div>
           <div className="button-row">
-            <button className="btn-funky try-again">TRY AGAIN</button>
+            <button
+              className="btn-funky try-again"
+              onClick={() => {
+                handleTryAgain();
+                sound.play('click');
+              }}
+            >
+              TRY AGAIN
+            </button>
             <button
               className={`btn-funky revive ${
                 reviveCount === 0 ? 'disabled' : ''
@@ -1765,164 +2069,265 @@ export default function Demo() {
             >
               {reviveCount > 0 ? `REVIVE (-1)` : 'NO REVIVES'}
             </button>
-            <button className="btn-funky home">HOME</button>
+            <button
+              className="btn-funky home"
+              onClick={() => {
+                setHasStarted(false);
+                sound.play('click');
+              }}
+            >
+              HOME
+            </button>
             <button
               className="btn-funky shop"
               onClick={() => {
+                sound.play('click');
                 setShowGameOverScreen(false); // Hide Game Over screen
                 setIsShopOpen(true); // Open Shop overlay
               }}
             >
               SHOP
             </button>{' '}
+            <button
+              className="btn-funky"
+              onClick={() => {
+                sound.play('click');
+                setShowGameOverScreen(false); // 👈 hide game over UI
+                setIsPaused(true);
+                setIsThemeShopOpen(true);
+              }}
+            >
+              THEMES
+            </button>
           </div>
         </div>
       )}
-      <Canvas shadows>
-        <PerspectiveCamera makeDefault position={[0, 6, 12]} fov={45} />
-        <Environment preset="city" />
-        <Sky
-          sunPosition={[100, 20, 100]}
-          turbidity={0.1}
-          rayleigh={2}
-          mieCoefficient={0.005}
-          mieDirectionalG={0.8}
-        />
-
-        <CloudSystem />
-
-        {balloons.map((b) => (
-          <HotAirBalloon
-            key={b.id}
-            initialPos={b.initialPos}
-            color={b.color}
-            speedOffset={b.speedOffset}
-          />
-        ))}
-
-        <ambientLight intensity={1.5} color="#ffffff" />
-        <directionalLight
-          position={[10, 20, 10]}
-          intensity={2}
-          castShadow
-          shadow-mapSize={[2048, 2048]}
-        />
-        <hemisphereLight
-          intensity={0.5}
-          color="#ffffff"
-          groundColor="#7ec0ee"
-        />
-        <fog attach="fog" args={[SETTINGS.skyColor, 30, 130]} />
-
-        <RacingTrack
-          isGameOver={isGameOver}
-          speedMultiplier={speedMultiplier}
-        />
-        <Player
-          isGameOver={isGameOver}
-          onCollide={() => {
-            sound.play('collision');
-            setIsGameOver(true);
-          }}
-          selectedCharacter={selectedCharacter}
-        />
-        {busPositions.map((z, i) => (
-          <MovingBus
-            key={`bus-${i}`}
-            initialZ={z}
-            isGameOver={isGameOver}
-            speedMultiplier={speedMultiplier}
-          />
-        ))}
-
-        {carPositions.map((z, i) => (
-          <MovingCar
-            key={`car-${i}`}
-            initialZ={z}
-            color={i % 2 === 0 ? '#ff2222' : '#33ff33'}
-            isGameOver={isGameOver}
-            speedMultiplier={speedMultiplier} // Add this!
-          />
-        ))}
-
-        {/* Fix for Cones */}
-        {conePositions.map((pos, idx) => (
-          <TrafficCone
-            key={`cone-${idx}`}
-            initialPos={pos}
-            isGameOver={isGameOver}
-            speedMultiplier={speedMultiplier} // Add this!
-          />
-        ))}
-        <OilBarrel
-          initialPos={[0, 0, -120]}
-          isGameOver={isGameOver}
-          score={score}
-          speedMultiplier={speedMultiplier}
-        />
-        {burgerPositions.map((pos, i) => (
-          <Burger
-            key={i}
-            position={pos}
-            onCollect={handleBurgerCollect}
-            isGameOver={isGameOver}
-            energy={energy}
-            score={score}
-            speedMultiplier={speedMultiplier}
-          />
-        ))}
-        {/* Render Coins */}
-        {coinPositions.map((pos, idx) => (
-          <Coin
-            key={idx}
-            position={pos}
-            onCollect={handleCollect}
-            isGameOver={isGameOver}
-            speedMultiplier={speedMultiplier}
-          />
-        ))}
-        <StreetWall side={1} isGameOver={isGameOver} />
-        <StreetWall side={-1} isGameOver={isGameOver} />
-        <StreetLight initialZ={0} side={1} speedMultiplier={speedMultiplier} />
-        <StreetLight
-          initialZ={-25}
-          side={-1}
-          speedMultiplier={speedMultiplier}
-        />
-        <StreetLight
-          initialZ={-50}
-          side={1}
-          speedMultiplier={speedMultiplier}
-        />
-        <StreetLight
-          initialZ={-75}
-          side={-1}
-          speedMultiplier={speedMultiplier}
-        />
-      </Canvas>
-
-      {!isLoading && (
-        <>
-          <EnergyBar energy={energy} />
-
-          <div
-            style={{
-              position: 'absolute',
-              top: '15px',
-              left: '20px',
-              zIndex: 100,
-              pointerEvents: 'none',
+      {!hasStarted && (
+        <div className="start-screen">
+          {/* Back button at the top left */}
+          <button
+            className="subway-back-btn start-back"
+            onClick={() => {
+              sound.play('click');
             }}
           >
-            <h2 className="funky-coin-display">COINS: {score}</h2>
+            ‹
+          </button>
+
+          <div className="start-content">
+            <div className="title-container">
+              <h1 className="game-title" data-text="MORNING SPRINT">
+                MORNING SPRINT
+              </h1>
+              <div className="title-glow"></div>
+            </div>
+
+            <div className="start-actions">
+              <button
+                className="btn-start-massive"
+                onClick={() => {
+                  sound.play('click');
+                  handleStartGame();
+                }}
+              >
+                START GAME
+              </button>
+<p className="best-distance">
+  BEST:{" "}
+  {bestDistance < 1000
+    ? `${Math.floor(bestDistance)} m`
+    : `${(bestDistance / 1000).toFixed(1)} km`}
+</p>
+              {/* Optional: Subtle sub-text to fill space */}
+              <p className="start-subtitle">BEAT YOUR HIGH SCORE!</p>
+            </div>
           </div>
 
-          <div className="distance-container">
-            <div className="distance-display">
-              Distance:{' '}
-              {distance < 1000
-                ? `${Math.floor(distance)} m`
-                : `${(distance / 1000).toFixed(1)} km`}
+          {/* Animated background shapes */}
+          <div className="bg-blob"></div>
+          <div className="bg-blob-2"></div>
+        </div>
+      )}
+      {hasStarted && (
+        <Canvas shadows>
+          <PerspectiveCamera makeDefault position={[0, 6, 12]} fov={45} />
+          {/* <Environment preset="city" />*/}
+          <Sky
+            sunPosition={[100, 20, 100]}
+            turbidity={selectedTheme === 'night' ? 10 : 0.1}
+            rayleigh={selectedTheme === 'night' ? 0.2 : 2}
+          />
+
+          <fog attach="fog" args={[THEMES[selectedTheme].fog, 30, 130]} />
+
+          <CloudSystem />
+
+          {balloons.map((b) => (
+            <HotAirBalloon
+              key={b.id}
+              initialPos={b.initialPos}
+              color={b.color}
+              speedOffset={b.speedOffset}
+            />
+          ))}
+
+          <ambientLight intensity={1.5} color="#ffffff" />
+          <directionalLight
+            position={[10, 20, 10]}
+            intensity={2}
+            castShadow
+            shadow-mapSize={[2048, 2048]}
+          />
+          <hemisphereLight
+            intensity={0.5}
+            color="#ffffff"
+            groundColor="#7ec0ee"
+          />
+
+          <RacingTrack
+            isGameOver={isGameOver}
+            speedMultiplier={speedMultiplier}
+            isPaused={isPaused}
+          />
+          <Player
+            isGameOver={isGameOver}
+            onCollide={() => {
+              sound.play('collision');
+              setIsGameOver(true);
+            }}
+            isPaused={isPaused}
+            selectedCharacter={selectedCharacter}
+            obstaclesRef={obstaclesRef} // 👈 IMPORTANT
+          />
+
+          {busPositions.map((z, i) => (
+            <MovingBus
+              key={`bus-${i}`}
+              initialZ={z}
+              isGameOver={isGameOver}
+              speedMultiplier={speedMultiplier}
+              register={registerObstacle}
+              isPaused={isPaused}
+            />
+          ))}
+
+          {carPositions.map((z, i) => (
+            <MovingCar
+              key={`car-${i}`}
+              initialZ={z}
+              color={i % 2 === 0 ? '#ff2222' : '#33ff33'}
+              isGameOver={isGameOver}
+              speedMultiplier={speedMultiplier} // Add this!
+              register={registerObstacle}
+              isPaused={isPaused}
+            />
+          ))}
+
+          {/* Fix for Cones */}
+          {conePositions.map((pos, idx) => (
+            <TrafficCone
+              key={`cone-${idx}`}
+              initialPos={pos}
+              isGameOver={isGameOver}
+              speedMultiplier={speedMultiplier} // Add this!
+              register={registerObstacle}
+              isPaused={isPaused}
+            />
+          ))}
+
+          <OilBarrel
+            initialPos={[0, 0, -120]}
+            isGameOver={isGameOver}
+            score={score}
+            speedMultiplier={speedMultiplier}
+            register={registerObstacle}
+            isPaused={isPaused}
+          />
+          {burgerPositions.map((pos, i) => (
+            <Burger
+              key={i}
+              position={pos}
+              onCollect={handleBurgerCollect}
+              isGameOver={isGameOver}
+              energy={energy}
+              score={score}
+              speedMultiplier={speedMultiplier}
+              isPaused={isPaused}
+            />
+          ))}
+          {/* Render Coins */}
+          {coinPositions.map((pos, idx) => (
+            <Coin
+              key={idx}
+              position={pos}
+              onCollect={handleCollect}
+              isGameOver={isGameOver}
+              speedMultiplier={speedMultiplier}
+              isPaused={isPaused}
+            />
+          ))}
+          <StreetWall side={1} isGameOver={isGameOver} isPaused={isPaused} />
+          <StreetWall side={-1} isGameOver={isGameOver} isPaused={isPaused} />
+          <StreetLight
+            initialZ={0}
+            side={1}
+            speedMultiplier={speedMultiplier}
+            isPaused={isPaused}
+            isGameOver={isGameOver}
+          />
+          <StreetLight
+            initialZ={-25}
+            side={-1}
+            speedMultiplier={speedMultiplier}
+            isPaused={isPaused}
+            isGameOver={isGameOver}
+          />
+          <StreetLight
+            initialZ={-50}
+            side={1}
+            speedMultiplier={speedMultiplier}
+            isPaused={isPaused}
+            isGameOver={isGameOver}
+          />
+          <StreetLight
+            initialZ={-75}
+            side={-1}
+            speedMultiplier={speedMultiplier}
+            isPaused={isPaused}
+            isGameOver={isGameOver}
+          />
+        </Canvas>
+      )}
+      {!isLoading && (
+        <>
+          <EnergyBar energy={energy} isPaused={isPaused} />
+
+          <div className="game-stats-header">
+            {/* COINS */}
+            <div className="stat-item">
+              <h2 className="funky-coin-display">COINS: {score}</h2>
+            </div>
+
+            {/* DISTANCE */}
+            <div className="stat-item">
+              <div className="distance-display">
+                {distance < 1000
+                  ? `${Math.floor(distance)} m`
+                  : `${(distance / 1000).toFixed(1)} km`}
+              </div>
+            </div>
+
+            {/* PLAY/PAUSE */}
+            <div className="stat-item">
+              <button
+                className="btn-pause-funky"
+                onClick={() => {
+                  sound.play('click');
+                  setIsPaused(true);
+                }}
+              >
+                <span className="pause-icon">{isPaused ? '▶' : '⏸'}</span>
+              </button>
             </div>
           </div>
         </>
