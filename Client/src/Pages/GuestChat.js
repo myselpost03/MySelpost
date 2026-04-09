@@ -21,12 +21,25 @@ export default function GuestChat() {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
+  const [lastImageTimestamp, setLastImageTimestamp] = useState(0);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+
   const navigate = useNavigate();
 
   // Get current guest user from local storage
   const currentUser = JSON.parse(localStorage.getItem('guestUser'));
   const currentUserId = currentUser?.id;
-  // Inside GuestChat.js
+  
+  useEffect(() => {
+    let timer;
+    if (cooldownRemaining > 0) {
+      timer = setInterval(() => {
+        setCooldownRemaining((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [cooldownRemaining]);
+
   // 1. Check Block Status
   const checkBlockStatus = async () => {
     if (!currentUserId || !receiverId) return;
@@ -140,6 +153,13 @@ export default function GuestChat() {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || isBlocked || hasBlockedThem) return;
+    // Check Cooldown
+    const now = Date.now();
+    const secondsSinceLast = (now - lastImageTimestamp) / 1000;
+    if (secondsSinceLast < 60) {
+      alert(`Please wait ${Math.ceil(60 - secondsSinceLast)} seconds before sending another image.`);
+      return;
+    }
     setIsUploading(true);
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
@@ -167,6 +187,8 @@ export default function GuestChat() {
         status: 'sent',
       },
     ]);
+    setLastImageTimestamp(Date.now());
+    setCooldownRemaining(60);
     setIsUploading(false);
     fetchMessages();
   };
@@ -398,12 +420,19 @@ export default function GuestChat() {
             />
 
             {/* Image Icon Button */}
-            <button
+           <button
               type="button"
-              className="guest-image-upload-btn"
-              onClick={() => !isUploading && fileInputRef.current.click()}
+              className={`guest-image-upload-btn ${cooldownRemaining > 0 ? 'cooldown-active' : ''}`}
+              onClick={() => !isUploading && cooldownRemaining === 0 && fileInputRef.current.click()}
+              disabled={cooldownRemaining > 0}
             >
-              {isUploading ? <div className="mini-spinner"></div> : <FaImage />}
+              {isUploading ? (
+                <div className="mini-spinner"></div>
+              ) : cooldownRemaining > 0 ? (
+                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{cooldownRemaining}s</span>
+              ) : (
+                <FaImage />
+              )}
             </button>
             <input
               type="text"
