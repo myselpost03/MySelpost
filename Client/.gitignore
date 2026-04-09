@@ -5,6 +5,11 @@
 /.pnp
 .pnp.js
 
+# Ignore 3D model files
+*.fbx
+
+# Or ignore the whole models folder
+public/models/
 
 # testing
 /coverage
