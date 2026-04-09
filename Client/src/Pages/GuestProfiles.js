@@ -494,7 +494,7 @@ const GuestProfiles = () => {
 
     // 2. Lock the function
     setIsJoining(true);
-
+    const welcomeCoins = 0;
     const generatedProfilePic = getRandomAvatar(tempGender);
 
     try {
@@ -508,6 +508,7 @@ const GuestProfiles = () => {
             age: parseInt(tempAge),
             status: 'online',
             profile_pic: generatedProfilePic,
+            coins: welcomeCoins,
           },
         ])
         .select()
@@ -593,9 +594,7 @@ const GuestProfiles = () => {
     // 1. Start the query
     let query = supabaseChat
       .from('users')
-      .select(
-        'id, name, gender, age, country, status, decency_rating, profile_pic, google_login, created_at'
-      );
+      .select('id, name, gender, age, coins, country, status,   created_at');
     if (savedGuest?.id) {
       query = query.neq('id', savedGuest.id);
     }
@@ -623,14 +622,19 @@ const GuestProfiles = () => {
       console.error('Error fetching users:', error);
     } else {
       if (data.length < 10) setHasMore(false);
-
+      const normalizedData = data.map((u) => ({
+        ...u,
+        coins: u.coins ?? 0, // If coins is null, set it to 0
+      }));
       setUsers((prev) => {
         // If we are on page 0, it means we switched tabs or refreshed.
         // We should replace the list, not add to it.
-        if (page === 0) return data;
+        if (page === 0) return normalizedData;
 
         const existingIds = new Set(prev.map((u) => u.id));
-        const newUniqueUsers = data.filter((u) => !existingIds.has(u.id));
+        const newUniqueUsers = normalizedData.filter(
+          (u) => !existingIds.has(u.id)
+        );
         return [...prev, ...newUniqueUsers];
       });
     }
@@ -860,33 +864,14 @@ const GuestProfiles = () => {
                       <div className="user-info">
                         <div className="user-top-row">
                           <span className="user-name">{user.name}</span>
-                          {user.decency_rating !== null &&
-                            user.decency_rating !== undefined && (
-                              <div className="decency-label">
-                                <span
-                                  className={` ${
-                                    user.decency_rating >= 8
-                                      ? 'star'
-                                      : user.decency_rating >= 5
-                                      ? 'medium-rating'
-                                      : 'low-rating'
-                                  }`}
-                                >
-                                  ★
-                                </span>
-                                <span
-                                  className={` ${
-                                    user.decency_rating >= 8
-                                      ? 'star-rating'
-                                      : user.decency_rating >= 5
-                                      ? 'medium-number-rating'
-                                      : 'low-number-rating'
-                                  }`}
-                                >
-                                  {user.decency_rating}
-                                </span>
-                              </div>
-                            )}
+                          {user.coins !== null && user.coins !== undefined && (
+                            <div className="decency-label">
+                              <span className="star">★</span>
+                              <span className="star-rating">
+                                {user.coins ?? 0}
+                              </span>
+                            </div>
+                          )}
                         </div>
                         <div className="user-bottom-row">
                           <span

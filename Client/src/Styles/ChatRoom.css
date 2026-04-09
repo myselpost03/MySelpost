@@ -1,4 +1,251 @@
-/* Disappearing Animation */
+/* Overlay: Dims the background while focusing the drawer */
+.gift-palette-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end; /* Anchors content to the bottom */
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+/* The Drawer: Slides up from the bottom */
+.gift-palette-content {
+  background: #ffffff;
+  width: 100%;
+  max-width: 500px; /* Limits width on desktop, full width on mobile */
+  border-radius: 32px 32px 0 0; /* Only top corners rounded */
+  padding: 16px 24px 40px 24px;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+  position: relative;
+  animation: slideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Grabber Handle: Gives the visual cue that it can be swiped/closed */
+.gift-palette-content::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 5px;
+  background: #e0e0e0;
+  border-radius: 10px;
+}
+
+/* Header Styling */
+.gift-palette-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 24px;
+}
+
+.gift-palette-header h3 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #111;
+  margin: 0;
+}
+
+.gift-palette-header span {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ffa500;
+  background: #fff9ed;
+  padding: 6px 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Grid: Scrollable if there are many gifts */
+.gift-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 items per row for a compact look */
+  gap: 16px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+/* Gift Item */
+.gift-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.gift-item:active {
+  transform: scale(0.9); /* Haptic-like feedback on tap */
+}
+
+.gift-icon {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #f7f7f9;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  transition: background 0.2s;
+}
+
+.gift-item:hover .gift-icon {
+  background: #ededf2;
+}
+
+.gift-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #444;
+  text-align: center;
+}
+
+.gift-cost {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #999;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* Clean Scrollbar */
+.gift-grid::-webkit-scrollbar {
+  width: 4px;
+}
+.gift-grid::-webkit-scrollbar-thumb {
+  background: #eee;
+  border-radius: 10px;
+}
+
+/* Soft, tinted overlay to reduce harsh contrast */
+.coin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(40, 42, 45, 0.2); /* Muted slate tint */
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Neutral clay-style card */
+.coin-modal-content {
+  background: #f8f9fa; /* Off-white/Pearl */
+  padding: 2rem;
+  border-radius: 28px;
+  text-align: center;
+  max-width: 360px;
+  width: 90%;
+  /* Multi-layered shadow for a soft, lifted look */
+  box-shadow: 
+    0 10px 25px -5px rgba(0, 0, 0, 0.05),
+    0 8px 10px -6px rgba(0, 0, 0, 0.05),
+    inset 0 -4px 0 rgba(0, 0, 0, 0.02); 
+  border: 1px solid #ffffff;
+}
+
+.coin-modal-content h3 {
+  color: #3a3a3c;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-top: 1rem;
+}
+
+.coin-modal-content p {
+  color: #707075;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Primary Action: Watch Ad (Deep muted blue) */
+.ad-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: #4a5568; /* Slate gray-blue - less aggressive than bright blue */
+  color: #ffffff;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 10px;
+}
+
+.ad-btn:hover:not(:disabled) {
+  background: #2d3748;
+  transform: translateY(-1px);
+}
+
+.ad-btn:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+}
+
+/* Secondary Action: Buy (Ghost button) */
+.buy-coins-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1.5px solid #e2e8f0;
+  background: #ffffff;
+  color: #4a5568;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 1.2rem;
+}
+
+.buy-coins-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+/* Close Button */
+.close-limit-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-limit-btn:hover {
+  color: #64748b;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}/* Disappearing Animation */
 .message-disappearing {
   animation: telegramDisappear 0.6s ease forwards;
   pointer-events: none;
@@ -319,7 +566,7 @@
 .chat-room-input-form {
   display: flex;
   width: 100%;
-  gap: 10px;
+  gap: 0px;
 }
 
 .chat-room-input-form input {
@@ -407,5 +654,5 @@
 }
 
 .chat-room-modal-content button:hover {
-  background: #128c7e;
+  background: #111;
 }

@@ -1,9 +1,24 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaBan, FaImage, FaTimes } from 'react-icons/fa';
+import {
+  FaBan,
+  FaImage,
+  FaTimes,
+  FaCoins,
+  FaGift,
+  FaPlayCircle,
+} from 'react-icons/fa';
 import { supabaseChat } from '../Utils/supabaseGroupChat';
 import '../Styles/ChatRoom.css';
 import ChatHeader from '../Components/ChatHeader';
+
+// Mock Gift Data
+const GIFTS = [
+  { id: 'rose', name: 'Rose', cost: 5, icon: '🌹' },
+  { id: 'chocolate', name: 'Chocolate', cost: 20, icon: '🍫' },
+  { id: 'diamond', name: 'Diamond', cost: 100, icon: '💎' },
+  { id: 'car', name: 'Luxury Car', cost: 500, icon: '🏎️' },
+];
 
 export default function GuestChat() {
   const { receiverId } = useParams(); // Get ID from URL (/chat/:receiverId)
@@ -12,7 +27,6 @@ export default function GuestChat() {
   const [receiver, setReceiver] = useState(null); // To store receiver's name/info
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
-  const [messageCount, setMessageCount] = useState(0);
   const [showTelegramModal, setShowTelegramModal] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false); // Am I blocked by them?
   const [hasBlockedThem, setHasBlockedThem] = useState(false); // Did I block them?
@@ -23,13 +37,111 @@ export default function GuestChat() {
 
   const [lastImageTimestamp, setLastImageTimestamp] = useState(0);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const [userCoins, setUserCoins] = useState(0); // Track user coins
 
+  // UI State
+  const [showGiftPalette, setShowGiftPalette] = useState(false);
+  const [showCoinModal, setShowCoinModal] = useState(false);
+  const [adCooldown, setAdCooldown] = useState(0);
   const navigate = useNavigate();
 
   // Get current guest user from local storage
   const currentUser = JSON.parse(localStorage.getItem('guestUser'));
   const currentUserId = currentUser?.id;
-  
+
+  const isTelegram =
+    typeof window !== 'undefined' &&
+    window.Telegram?.WebApp &&
+    window.Telegram.WebApp.initData !== '';
+
+  const fetchUserCoins = async () => {
+    if (!currentUserId) return;
+    const { data, error } = await supabaseChat
+      .from('users')
+      .select('coins')
+      .eq('id', currentUserId)
+      .single();
+    if (!error && data) setUserCoins(data.coins || 0);
+  };
+
+  useEffect(() => {
+    fetchUserCoins();
+  }, [currentUserId]);
+
+  // Handle Ad Watch (10 coins + 30s cooldown)
+  const handleWatchAd = async () => {
+    if (adCooldown > 0) return;
+
+    // Simulate ad watching
+    alert('Watching Ad... You earned 10 coins!');
+
+    const newCoinCount = userCoins + 10;
+    const { error } = await supabaseChat
+      .from('users')
+      .update({ coins: newCoinCount })
+      .eq('id', currentUserId);
+
+    if (!error) {
+      setUserCoins(newCoinCount);
+      setAdCooldown(30); // 30 second cooldown
+    }
+  };
+
+  // Cooldown timer for Ad
+  useEffect(() => {
+    if (adCooldown > 0) {
+      const timer = setInterval(() => setAdCooldown((prev) => prev - 1), 1000);
+      return () => clearInterval(timer);
+    }
+  }, [adCooldown]);
+
+  // Send Gift Function
+  const sendGift = async (gift) => {
+    if (userCoins < gift.cost) {
+      setShowGiftPalette(false);
+      setShowCoinModal(true);
+      return;
+    }
+
+    const { error: coinError } = await supabaseChat
+      .from('users')
+      .update({ coins: userCoins - gift.cost })
+      .eq('id', currentUserId);
+
+    if (!coinError) {
+      setUserCoins((prev) => prev - gift.cost);
+
+      // Insert gift message into chat
+      await supabaseChat.from('chats').insert([
+        {
+          sender_id: currentUserId,
+          receiver_id: receiverId,
+          message: `🎁 Sent a ${gift.name} ${gift.icon}`,
+          status: 'sent',
+        },
+      ]);
+
+      setShowGiftPalette(false);
+      fetchMessages();
+    }
+  };
+
+  // Helper to check if the user is allowed to send another message
+  const checkCanSend = () => {
+    if (isTelegram) return true; // Inside Telegram? No restrictions.
+
+    // Count how many messages the current user has sent in this conversation
+    const sentCount = messages.filter(
+      (m) => m.sender_id === currentUserId
+    ).length;
+
+    if (sentCount >= 5) {
+      setShowTelegramModal(true);
+      return false;
+    }
+    return true;
+  };
+
   useEffect(() => {
     let timer;
     if (cooldownRemaining > 0) {
@@ -99,11 +211,6 @@ export default function GuestChat() {
     clearUnread();
   }, [receiverId, currentUserId, isBlocked]);
 
-  const isTelegram =
-    typeof window !== 'undefined' &&
-    window.Telegram?.WebApp &&
-    window.Telegram.WebApp.initData !== '';
-
   const handleBack = () => navigate(-1);
   const handleTelegramRedirect = () => {
     window.open('https://t.me/myselpost_bot/myselpost', '_blank');
@@ -153,11 +260,16 @@ export default function GuestChat() {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || isBlocked || hasBlockedThem) return;
+    if (!checkCanSend()) return;
     // Check Cooldown
     const now = Date.now();
     const secondsSinceLast = (now - lastImageTimestamp) / 1000;
     if (secondsSinceLast < 60) {
-      alert(`Please wait ${Math.ceil(60 - secondsSinceLast)} seconds before sending another image.`);
+      alert(
+        `Please wait ${Math.ceil(
+          60 - secondsSinceLast
+        )} seconds before sending another image.`
+      );
       return;
     }
     setIsUploading(true);
@@ -247,12 +359,7 @@ export default function GuestChat() {
     e.preventDefault();
     if (isBlocked || hasBlockedThem || !newMessage.trim() || !currentUserId)
       return;
-
-    if (!isTelegram && messageCount >= 12) {
-      setShowTelegramModal(true);
-      return;
-    }
-
+    if (!checkCanSend()) return;
     const { error } = await supabaseChat.from('chats').insert([
       {
         sender_id: currentUserId,
@@ -266,7 +373,7 @@ export default function GuestChat() {
       console.error('Error sending:', error);
     } else {
       setNewMessage('');
-      setMessageCount((prev) => prev + 1);
+
       fetchMessages(); // Refresh UI
     }
   };
@@ -280,6 +387,68 @@ export default function GuestChat() {
         showBlock={false}
         showVideo={false}
       />
+      {showGiftPalette && (
+        <div
+          className="gift-palette-overlay"
+          onClick={() => setShowGiftPalette(false)}
+        >
+          <div
+            className="gift-palette-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="gift-palette-header">
+              <h3>Send a Gift</h3>
+              <span>
+                <FaCoins color="gold" /> {userCoins}
+              </span>
+            </div>
+            <div className="gift-grid">
+              {GIFTS.map((gift) => (
+                <div
+                  key={gift.id}
+                  className="gift-item"
+                  onClick={() => sendGift(gift)}
+                >
+                  <span className="gift-icon">{gift.icon}</span>
+                  <span className="gift-name">{gift.name}</span>
+                  <span className="gift-cost">{gift.cost} Coins</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Insufficient Coins / Ad Modal */}
+      {showCoinModal && (
+        <div className="coin-modal-overlay">
+          <div className="coin-modal-content">
+            <FaCoins size={40} color="gold" />
+            <h3>Not Enough Coins!</h3>
+            <p>You need more coins to send this gift.</p>
+            <button
+              className="ad-btn"
+              onClick={handleWatchAd}
+              disabled={adCooldown > 0}
+            >
+              {adCooldown > 0 ? (
+                `Wait ${adCooldown}s`
+              ) : (
+                <>
+                  <FaPlayCircle /> Watch Ad (+10 Coins)
+                </>
+              )}
+            </button>
+            <button className="buy-coins-btn">Buy Coins with Money</button>
+            <button
+              className="close-limit-btn"
+              onClick={() => setShowCoinModal(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       {selectedImage && (
         <div
           className="fullscreen-overlay"
@@ -420,19 +589,44 @@ export default function GuestChat() {
             />
 
             {/* Image Icon Button */}
-           <button
+            <button
               type="button"
-              className={`guest-image-upload-btn ${cooldownRemaining > 0 ? 'cooldown-active' : ''}`}
-              onClick={() => !isUploading && cooldownRemaining === 0 && fileInputRef.current.click()}
+              className={`guest-image-upload-btn ${
+                cooldownRemaining > 0 ? 'cooldown-active' : ''
+              }`}
+              onClick={() =>
+                !isUploading &&
+                cooldownRemaining === 0 &&
+                fileInputRef.current.click()
+              }
               disabled={cooldownRemaining > 0}
             >
               {isUploading ? (
                 <div className="mini-spinner"></div>
               ) : cooldownRemaining > 0 ? (
-                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{cooldownRemaining}s</span>
+                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>
+                  {cooldownRemaining}s
+                </span>
               ) : (
                 <FaImage />
               )}
+            </button>
+            <button
+              type="button"
+              className="gift-trigger-btn"
+              onClick={() => setShowGiftPalette(true)}
+              style={{
+                color: '#111',
+                fontSize: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '0 5px',
+              }}
+            >
+              <FaGift />
             </button>
             <input
               type="text"
