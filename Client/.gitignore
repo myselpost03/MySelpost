@@ -5,13 +5,9 @@
 /.pnp
 .pnp.js
 
+
 # testing
 /coverage
-
-# models, sounds
-/models
-/Sounds
-/Characters
 
 # production
 /build
