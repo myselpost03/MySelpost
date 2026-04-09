@@ -7,6 +7,7 @@ import {
   FaCoins,
   FaGift,
   FaPlayCircle,
+  FaInbox,
 } from 'react-icons/fa';
 import { supabaseChat } from '../Utils/supabaseGroupChat';
 import '../Styles/ChatRoom.css';
@@ -42,6 +43,7 @@ export default function GuestChat() {
   // UI State
   const [showGiftPalette, setShowGiftPalette] = useState(false);
   const [showCoinModal, setShowCoinModal] = useState(false);
+  const [showReceivedGifts, setShowReceivedGifts] = useState(false); // New state for Gifts View
   const [adCooldown, setAdCooldown] = useState(0);
   const navigate = useNavigate();
 
@@ -72,10 +74,11 @@ export default function GuestChat() {
   const handleWatchAd = async () => {
     if (adCooldown > 0) return;
 
-    // Simulate ad watching
     alert('Watching Ad... You earned 10 coins!');
 
     const newCoinCount = userCoins + 10;
+
+    // Update Database
     const { error } = await supabaseChat
       .from('users')
       .update({ coins: newCoinCount })
@@ -83,7 +86,9 @@ export default function GuestChat() {
 
     if (!error) {
       setUserCoins(newCoinCount);
-      setAdCooldown(30); // 30 second cooldown
+      setAdCooldown(30);
+    } else {
+      console.error('Coin update failed:', error);
     }
   };
 
@@ -103,6 +108,7 @@ export default function GuestChat() {
       return;
     }
 
+    // 1. Deduct coins in DB
     const { error: coinError } = await supabaseChat
       .from('users')
       .update({ coins: userCoins - gift.cost })
@@ -111,18 +117,20 @@ export default function GuestChat() {
     if (!coinError) {
       setUserCoins((prev) => prev - gift.cost);
 
-      // Insert gift message into chat
-      await supabaseChat.from('chats').insert([
+      // 2. Send gift as a message in the chat table
+      const { error: msgError } = await supabaseChat.from('chats').insert([
         {
           sender_id: currentUserId,
           receiver_id: receiverId,
-          message: `🎁 Sent a ${gift.name} ${gift.icon}`,
+          message: `Sent a 🎁`,
           status: 'sent',
         },
       ]);
 
-      setShowGiftPalette(false);
-      fetchMessages();
+      if (!msgError) {
+        setShowGiftPalette(false);
+        fetchMessages();
+      }
     }
   };
 
@@ -378,6 +386,10 @@ export default function GuestChat() {
     }
   };
 
+  const receivedGifts = messages.filter(
+    (m) => m.receiver_id === currentUserId && m.message.includes('🎁')
+  );
+
   return (
     <div className="chat-room-app-wrapper">
       {/* Updated Header with Receiver's Name */}
@@ -387,6 +399,74 @@ export default function GuestChat() {
         showBlock={false}
         showVideo={false}
       />
+      <button
+        className="fixed-gifts-btn"
+        onClick={() => setShowReceivedGifts(true)}
+        style={{
+          position: 'fixed',
+          right: '20px',
+          top: '80px',
+          zIndex: 100,
+          backgroundColor: '#ff4757',
+          color: 'white',
+          border: 'none',
+          borderRadius: '20px',
+          padding: '10px 15px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+          cursor: 'pointer',
+        }}
+      >
+        <FaInbox /> Gifts Received
+      </button>
+      {showReceivedGifts && (
+        <div
+          className="gift-palette-overlay"
+          onClick={() => setShowReceivedGifts(false)}
+        >
+          <div
+            className="gift-palette-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="gift-palette-header">
+              <h3>My Collection</h3>
+              <button
+                onClick={() => setShowReceivedGifts(false)}
+                style={{ background: 'none', border: 'none', fontSize: '20px' }}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div
+              className="gift-grid"
+              style={{ maxHeight: '400px', overflowY: 'auto' }}
+            >
+              {receivedGifts.length > 0 ? (
+                receivedGifts.map((giftMsg) => (
+                  <div
+                    key={giftMsg.id}
+                    className="gift-item"
+                    style={{ border: '1px solid #ddd' }}
+                  >
+                    <span className="gift-icon" style={{ fontSize: '30px' }}>
+                      {giftMsg.message.split(' ').pop()}
+                    </span>
+                    <span className="gift-name" style={{ fontSize: '12px' }}>
+                      {new Date(giftMsg.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p style={{ gridColumn: '1/-1', padding: '20px' }}>
+                  No gifts received yet!
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       {showGiftPalette && (
         <div
           className="gift-palette-overlay"

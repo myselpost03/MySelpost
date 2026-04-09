@@ -1,4 +1,51 @@
-/* Overlay: Dims the background while focusing the drawer */
+/* Cool Funky Gifts Button */
+.fixed-gifts-btn {
+  position: fixed;
+  right: 20px;
+  top: 85px;
+  z-index: 100;
+  
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  
+  padding: 12px 20px;
+  font-family: 'Luckiest Guy', cursive, sans-serif; /* Your preferred font */
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #fff;
+  letter-spacing: 1px;
+  
+  /* Funky Gradient & 3D Border */
+  background: linear-gradient(180deg, #ff7f50 0%, #ff4757 100%);
+  border: 3px solid #111;
+  border-bottom-width: 6px; /* Thick bottom for 3D effect */
+  border-radius: 15px;
+  
+  cursor: pointer;
+  transition: all 0.1s ease;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Hover Effect */
+.fixed-gifts-btn:hover {
+  background: linear-gradient(180deg, #ff8c61 0%, #ff5e6c 100%);
+  transform: translateY(-2px);
+  border-bottom-width: 8px;
+}
+
+/* Click Animation */
+.fixed-gifts-btn:active {
+  transform: translateY(4px);
+  border-bottom-width: 2px;
+  box-shadow: none;
+}
+
+/* Gift Icon Bounce */
+.fixed-gifts-btn svg {
+  font-size: 18px;
+  filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.2));
+}/* Overlay: Dims the background while focusing the drawer */
 .gift-palette-overlay {
   position: fixed;
   inset: 0;
