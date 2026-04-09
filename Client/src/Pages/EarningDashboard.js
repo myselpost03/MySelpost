@@ -1,46 +1,79 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import logo from '../Assets/game-logo.png'
+import React, { useState, useEffect } from 'react';
+import logo from '../Assets/game-logo.png';
+import OneSignal from 'react-onesignal';
+import firstPoster from "../Assets/poster-1.png";
+import secondPoster from "../Assets/poster-2.png";
+import thirdPoster from "../Assets/poster-3.png";
 import '../Styles/EarningDashboard.css';
 
 const EarningDashboard = () => {
-  const [balance, setBalance] = useState(2450.50);
-  const [showPopup, setShowPopup] = useState(false);
-  const [gameStarted, setGameStarted] = useState(false);
-  
-  const navigate = useNavigate();
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [notificationAllowed, setNotificationAllowed] = useState(false);
+  const [checkingPermission, setCheckingPermission] = useState(true);
+// Carousel State
+  const [currentSlide, setCurrentSlide] = useState(0);
 
-  const WITHDRAWAL_LIMIT = 30000;
+  // Placeholder images - Replace these with your actual imported assets
+ const screenshots = [
+  { id: 1, url: firstPoster, alt: 'Gameplay Action' },
+  { id: 2, url: secondPoster, alt: 'Character Selection' },
+  { id: 3, url: thirdPoster, alt: 'Rewards Dashboard' },
+];
 
-  const handleWithdraw = () => {
-    if (balance < WITHDRAWAL_LIMIT) {
-      setShowPopup(true);
-    } else {
-      alert("Processing your withdrawal...");
-    }
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev === screenshots.length - 1 ? 0 : prev + 1));
   };
 
-  const activities = [
-    { id: 1, task: "Level 10 reached", amount: "+ ₹50", time: "2m ago", type: "game" },
-    { id: 2, task: "Daily Check-in", amount: "+ ₹10", time: "1h ago", type: "bonus" },
-    { id: 3, task: "Friend joined", amount: "+ ₹100", time: "3h ago", type: "referral" },
-  ];
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev === 0 ? screenshots.length - 1 : prev - 1));
+  };
+  const highlightStyle = {
+    color: '#4d4dff', // Matches your theme's purple/blue
+    fontWeight: 'bold',
+  };
 
-  // Screen Redirection Logic
-  if (gameStarted) {
-    return (
-      <div className="holographic-shell game-view">
-        <div className="main-content" style={{ textAlign: 'center', paddingTop: '50px' }}>
-          <button className="btn-close" style={{ marginBottom: '20px' }} onClick={() => setGameStarted(false)}>
-            ← Back to Home
-          </button>
-          <div className="game-container" style={{ background: '#1a1a2e', borderRadius: '20px', height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #4d4dff' }}>
-            <h2 style={{ color: '#fff' }}>Game Loading...</h2>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const checkPermission = async () => {
+      try {
+        // Check existing permission
+        if (Notification.permission === 'granted') {
+          setNotificationAllowed(true);
+          await OneSignal.User.PushSubscription.optIn();
+        } else {
+          setNotificationAllowed(false);
+        }
+      } catch (err) {
+        console.error(err);
+        setNotificationAllowed(false);
+      } finally {
+        setCheckingPermission(false);
+      }
+    };
+
+    checkPermission();
+  }, []);
+
+  const handleSubscribe = async () => {
+    try {
+      const permission = await OneSignal.Notifications.requestPermission();
+
+      if (permission === true || Notification.permission === 'granted') {
+        await OneSignal.User.PushSubscription.optIn();
+
+        const playerId = OneSignal.User.PushSubscription.id;
+        console.log('✅ Player ID:', playerId);
+
+        setNotificationAllowed(true);
+        setIsSubscribed(true);
+      } else {
+        console.log('❌ Permission denied');
+        setNotificationAllowed(false);
+      }
+    } catch (err) {
+      console.error('❌ Error subscribing:', err);
+      setNotificationAllowed(false);
+    }
+  };
 
   return (
     <div className="holographic-shell">
@@ -48,95 +81,200 @@ const EarningDashboard = () => {
       <div className="shape sphere-2"></div>
 
       <div className="main-content">
-        {/* Balance Card */}
-        <section className="balance-card">
-          <p>Current Balance</p>
-          <h2>₹{balance}</h2>
-          <div className="card-actions">
-            <button className="btn-primary" onClick={handleWithdraw}>Withdraw Funds</button>
+        {/* --- TESTER STATUS HEADER --- */}
+        <section
+          className="tester-status-card"
+          style={{
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(15px)',
+            borderRadius: '20px',
+            padding: '25px',
+            textAlign: 'center',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            marginBottom: '0px',
+          }}
+        >
+          <div
+            style={{
+              display: 'inline-block',
+              padding: '5px 15px',
+              borderRadius: '20px',
+              background: 'rgba(77, 77, 255, 0.2)',
+              color: '#8080ff',
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+              marginBottom: '10px',
+            }}
+          >
+            VERIFIED BETA ACCESS
           </div>
+          <h2 style={{ fontSize: '1.8rem', margin: '5px 0', color: '#111' }}>
+            Welcome, Tester
+          </h2>
+          <p style={{ color: '#111', fontSize: '0.9rem' }}>
+            We are excited to announce that we will soon be launching Morning
+            Sprint <span style={highlightStyle}>play-to-earn game</span>.
+          </p>
         </section>
 
-        {/* --- SEPARATE GAME SECTION --- */}
-        <h3 className="section-title">Play & Earn</h3>
-        <section className="game-promo-card" onClick={() => navigate('/game')} style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          borderRadius: '16px',
-          padding: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          cursor: 'pointer',
-          marginBottom: '25px',
-          boxShadow: '0 10px 20px rgba(0,0,0,0.2)'
-        }}>
-          <div className="promo-info">
-            <h4 style={{ color: '#fff', fontSize: '1.2rem', margin: 0 }}>Game</h4>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', margin: '5px 0' }}>Earn by playing Morning Sprint game.</p>
-            <button className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.8rem', marginTop: '10px' }}>Play Now</button>
+        {/* --- MAIN GAME PREVIEW --- */}
+        <section
+          className="game-promo-card"
+          style={{
+            background: 'linear-gradient(135deg, #161625 0%, #1c1c3c 100%)',
+            borderRadius: '16px',
+            padding: '30px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            border: '1px solid rgba(77, 77, 255, 0.3)',
+            marginBottom: '30px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+          }}
+        >
+          <img
+            src={logo}
+            alt="Morning Sprint Logo"
+            style={{
+              width: '100px',
+              marginBottom: '20px',
+              filter: 'drop-shadow(0 0 15px #4d4dff)',
+            }}
+          />
+          <h4
+            style={{ color: '#fff', fontSize: '1.5rem', margin: '0 0 12px 0' }}
+          >
+            Morning Sprint
+          </h4>
+          <p
+            style={{
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: '0.95rem',
+              lineHeight: '1.5',
+            }}
+          >
+            The ultimate play-to-earn endless runner game experience is almost
+            here. We're currently working to launch the game soon.
+          </p>
+
+          <button
+            className="btn-primary"
+            onClick={handleSubscribe}
+            disabled={isSubscribed}
+            style={{
+              width: '100%',
+              padding: '15px',
+              marginTop: '25px',
+              fontSize: '1rem',
+              fontWeight: 'bold',
+              background: isSubscribed ? '#10b981' : '#4d4dff',
+              transition: 'all 0.3s ease',
+            }}
+          >
+            {isSubscribed ? '✓ You are on the list' : '🔔 Notify Me When Live'}
+          </button>
+        </section>
+       <section className="carousel-container" style={carouselContainerStyle}>
+          <div style={{
+            display: 'flex',
+            transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: `translateX(-${currentSlide * 100}%)`,
+          }}>
+            {screenshots.map((img) => (
+              <img 
+                key={img.id} 
+                src={img.url} 
+                alt={img.alt} 
+                style={{ width: '100%', flexShrink: 0, objectFit: 'cover', display: 'block' }} 
+              />
+            ))}
           </div>
-          <div className="promo-image">
-             <img 
-               src={logo}
-               alt="Game Icon" 
-               style={{ width: '110px', height: '80px', filter: 'drop-shadow(2px 4px 6px black)' }} 
-             />
+          
+          {/* Controls - Separated Left and Right properly */}
+          <button onClick={prevSlide} style={leftArrowStyle}>❮</button>
+          <button onClick={nextSlide} style={rightArrowStyle}>❯</button>
+          
+          {/* Dots */}
+          <div style={dotContainerStyle}>
+            {screenshots.map((_, index) => (
+              <div 
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                style={{
+                  ...dotStyle,
+                  background: currentSlide === index ? '#4d4dff' : 'rgba(255,255,255,0.3)',
+                  width: currentSlide === index ? '20px' : '8px', // Visual cue for active slide
+                }}
+              />
+            ))}
           </div>
         </section>
-        {/* --------------------------- */}
-
-        <h3 className="section-title">Boost Your Earnings</h3>
-        <div className="action-grid">
-          <button className="action-tile telegram">
-            <span className="tile-icon">✈️</span>
-            <div className="tile-text">
-              <span className="tile-label">Join Telegram</span>
-              <span className="tile-sub">+ ₹500</span>
-            </div>
-          </button>
-
-          <button className="action-tile invite">
-            <span className="tile-icon">👋</span>
-            <div className="tile-text">
-              <span className="tile-label">Invite Friends</span>
-              <span className="tile-sub">+ ₹2,500</span>
-            </div>
-          </button>
-        </div>
-
-        <h3 className="section-title">Recent Activity</h3>
-        <div className="activity-list">
-          {activities.map(item => (
-            <div key={item.id} className="activity-item">
-              <div className={`icon-circle ${item.type}`}>
-                {item.type === 'game' ? '🎮' : '💎'}
-              </div>
-              <div className="activity-info">
-                <h4>{item.task}</h4>
-                <p>{item.time}</p>
-              </div>
-              <div className="activity-amt">{item.amount}</div>
-            </div>
-          ))}
-        </div>
       </div>
 
-      {showPopup && (
-        <div className="modal-overlay">
-          <div className="popup-card">
-            <div className="popup-icon">⚠️</div>
-            <h3>Minimum Limit Not Reached</h3>
-            <p>To ensure platform security, withdrawals can only be processed once you earn <strong>₹{WITHDRAWAL_LIMIT.toLocaleString()}</strong>.</p>
-            <div className="progress-container">
-               <div className="progress-bar" style={{ width: `${(balance / WITHDRAWAL_LIMIT) * 100}%` }}></div>
-            </div>
-            <p className="progress-text">You need ₹{(WITHDRAWAL_LIMIT - balance).toLocaleString()} more</p>
-            <button className="btn-close" onClick={() => setShowPopup(false)}>Keep Earning</button>
-          </div>
-        </div>
-      )}
+      <footer
+        style={{
+          textAlign: 'center',
+          padding: '30px',
+          opacity: 0.4,
+          fontSize: '0.7rem',
+          color: '#fff',
+        }}
+      >
+        BUILD v0.0.1-BETA | STAGE: CLOSED TESTING
+      </footer>
     </div>
   );
+};
+
+const carouselContainerStyle = {
+  position: 'relative',
+  width: '100%',
+  borderRadius: '20px',
+  overflow: 'hidden',
+  marginBottom: '30px',
+  boxShadow: '0 15px 35px rgba(0,0,0,0.6)',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+  background: '#000' // Prevents white flicker during transitions
+};
+
+const commonArrowStyle = {
+  position: 'absolute',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  background: 'rgba(255, 255, 255, 0.1)',
+  backdropFilter: 'blur(10px)',
+  color: 'white',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  borderRadius: '50%',
+  width: '40px',
+  height: '40px',
+  cursor: 'pointer',
+  zIndex: 10,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'all 0.2s ease',
+};
+
+const leftArrowStyle = { ...commonArrowStyle, left: '15px' };
+const rightArrowStyle = { ...commonArrowStyle, right: '15px' };
+
+const dotContainerStyle = {
+  position: 'absolute',
+  bottom: '15px',
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'center',
+  gap: '8px',
+  zIndex: 10
+};
+
+const dotStyle = {
+  height: '8px',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  transition: 'all 0.3s ease'
 };
 
 export default EarningDashboard;
