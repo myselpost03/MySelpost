@@ -143,7 +143,7 @@ export default function GuestChat() {
       (m) => m.sender_id === currentUserId
     ).length;
 
-    if (sentCount >= 5) {
+    if (sentCount >= 1) {
       setShowTelegramModal(true);
       return false;
     }

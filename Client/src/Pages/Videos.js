@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-// --- Sub-Component for individual Reels ---
+// --- Sub-Component for individual Reels remains the same ---
 const TelegramReel = ({ postId, onSeen }) => {
   const containerRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -14,7 +14,7 @@ const TelegramReel = ({ postId, onSeen }) => {
       ([entry]) => {
         setIsVisible(entry.isIntersecting);
         if (entry.isIntersecting && !hasBeenCounted) {
-          onSeen(postId); 
+          onSeen(postId);
           setHasBeenCounted(true);
         }
       },
@@ -53,7 +53,6 @@ const TelegramReel = ({ postId, onSeen }) => {
         ) : (
           <div style={placeholderStyle}>Loading...</div>
         )}
-
         <div style={sideBar}>
           <div style={actionItem} onClick={() => handleAction('like')}>
             <span
@@ -86,61 +85,70 @@ const TelegramReel = ({ postId, onSeen }) => {
 
 // --- Main Video Component ---
 const Videos = () => {
-  const [showCommunityPopup, setShowCommunityPopup] = useState(false);
-  const [sessionViewCount, setSessionViewCount] = useState(0);
+  const [viewCount, setViewCount] = useState(0);
   const [filteredPostIds, setFilteredPostIds] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); // Default true for geo-check
-  const [isIndian, setIsIndian] = useState(true); // Default true, will update
+  const [isLoading, setIsLoading] = useState(true);
+  const [isIndian, setIsIndian] = useState(true);
 
-  const nextIdRef = useRef(24);
+  const nextIdRef = useRef(100);
   const loaderRef = useRef(null);
 
-  const CHANNEL_NAME = 'ind_vids';
+  const CHANNEL_NAME = 'x_hams_t';
   const LOAD_BATCH_SIZE = 5;
 
+  // 1. Telegram Detection
   const isTelegram =
     typeof window !== 'undefined' &&
-    window.Telegram?.WebApp &&
-    window.Telegram.WebApp.initData !== '';
+    (window.Telegram?.WebApp?.initData !== '' ||
+      navigator.userAgent.includes('Telegram'));
 
-  // 1. Check Country on Mount
+  const VIEW_LIMIT = isTelegram ? 50 : 10;
+
+  // 2. Persistent View Counting Logic
+  useEffect(() => {
+    const today = new Date().toDateString();
+    const storedData = JSON.parse(localStorage.getItem('user_stats') || '{}');
+
+    // If it's a new day, reset the count for the user
+    if (storedData.lastDate !== today) {
+      const resetData = { count: 0, lastDate: today };
+      localStorage.setItem('user_stats', JSON.stringify(resetData));
+      setViewCount(0);
+    } else {
+      setViewCount(storedData.count || 0);
+    }
+  }, []);
+
   useEffect(() => {
     const checkCountry = async () => {
       try {
         const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
-        // Check if country is NOT India
-        if (data.country_code !== 'IN') {
-          setIsIndian(false);
-        }
+        if (data.country_code !== 'IN') setIsIndian(false);
       } catch (error) {
-        console.error("Geo-check failed, defaulting to show content", error);
+        console.error('Geo-check failed', error);
       } finally {
         setIsLoading(false);
-        loadMoreVideos(); // Load videos only after geo-check
+        loadMoreVideos();
       }
     };
-
     checkCountry();
-  }, []);
+  }, [viewCount]); // Re-run if viewCount is loaded
 
   const loadMoreVideos = () => {
-    // Don't load videos if not Indian or already loading
-    if (!isIndian || nextIdRef.current <= 0) return;
-    
+    if (!isIndian || nextIdRef.current <= 0 || viewCount >= VIEW_LIMIT) return;
+
     setIsLoading(true);
     const seenPosts = JSON.parse(localStorage.getItem('seen_vids') || '[]');
     let newBatch = [];
     let tempPointer = nextIdRef.current;
-    let safetyCounter = 0;
 
-    while (newBatch.length < LOAD_BATCH_SIZE && tempPointer > 0 && safetyCounter < 100) {
+    while (newBatch.length < LOAD_BATCH_SIZE && tempPointer > 0) {
       const postId = `${CHANNEL_NAME}/${tempPointer}`;
       if (!seenPosts.includes(postId)) {
         newBatch.push(postId);
       }
       tempPointer--;
-      safetyCounter++;
     }
 
     nextIdRef.current = tempPointer;
@@ -153,48 +161,51 @@ const Videos = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !isLoading && isIndian) {
+        if (
+          entries[0].isIntersecting &&
+          !isLoading &&
+          isIndian &&
+          viewCount < VIEW_LIMIT
+        ) {
           loadMoreVideos();
         }
       },
       { threshold: 0.1 }
     );
-
     if (loaderRef.current) observer.observe(loaderRef.current);
     return () => observer.disconnect();
-  }, [isLoading, isIndian]);
-
-  const MAX_FREE_VIEWS = 100;
+  }, [isLoading, isIndian, viewCount]);
 
   const handleReelSeen = (postId) => {
     const seenPosts = JSON.parse(localStorage.getItem('seen_vids') || '[]');
     if (!seenPosts.includes(postId)) {
+      // Update seen posts list
       const updatedSeen = [...seenPosts, postId];
       localStorage.setItem('seen_vids', JSON.stringify(updatedSeen));
-    }
 
-    setSessionViewCount((prev) => {
-      const nextCount = prev + 1;
-      if (!isTelegram && nextCount === MAX_FREE_VIEWS) setShowCommunityPopup(true);
-      return nextCount;
-    });
+      // Update and Persist View Count
+      setViewCount((prev) => {
+        const newCount = prev + 1;
+        const today = new Date().toDateString();
+        localStorage.setItem(
+          'user_stats',
+          JSON.stringify({ count: newCount, lastDate: today })
+        );
+        return newCount;
+      });
+    }
   };
 
-  const isLocked = !isTelegram && sessionViewCount >= MAX_FREE_VIEWS;
+  const isLocked = viewCount >= VIEW_LIMIT;
 
   // --- RENDERING LOGIC ---
-
-  // 2. Show Country Modal for non-Indian users
   if (!isLoading && !isIndian) {
     return (
       <div style={reelSection}>
         <div style={maintenanceModal}>
           <div style={modalIcon}>🌍</div>
           <h2 style={modalTitle}>Coming Soon</h2>
-          <p style={modalText}>
-            This feature will come soon for your country. Stay tuned!
-          </p>
-          <div style={timestampBadge}>Global Launch 2026</div>
+          <p style={modalText}>This feature will come soon for your country.</p>
         </div>
       </div>
     );
@@ -212,33 +223,32 @@ const Videos = () => {
         <TelegramReel key={id} postId={id} onSeen={handleReelSeen} />
       ))}
 
-      {/* Loading Indicator */}
       {!isLocked && nextIdRef.current > 0 && (
         <div ref={loaderRef} style={loaderContainer}>
           {isLoading && <div style={{ color: 'white' }}>Loading...</div>}
         </div>
       )}
 
-      {/* End of Feed */}
-      {!isLocked && nextIdRef.current <= 0 && isIndian && (
-        <div style={reelSection}>
-          <div style={maintenanceModal}>
-            <div style={modalIcon}>🏁</div>
-            <h2 style={modalTitle}>End of Feed</h2>
-            <p style={modalText}>You've seen all available videos!</p>
-          </div>
-        </div>
-      )}
-
-      {/* Lock Screen */}
       {isLocked && (
         <div style={lockOverlay}>
           <div style={maintenanceModal}>
-            <div style={modalIcon}>🔒</div>
-            <h2 style={modalTitle}>Limit Reached</h2>
+            <div style={modalIcon}>{isTelegram ? '⏰' : '🔒'}</div>
+            <h2 style={modalTitle}>
+              {isTelegram ? 'Daily Limit' : 'Community Required'}
+            </h2>
             <p style={modalText}>
-              Join our community to watch more than 10 videos!
+              {isTelegram
+                ? 'You crossed the daily limit, come tomorrow.'
+                : 'Join our community to watch more than 10 videos!'}
             </p>
+            {!isTelegram && (
+              <a
+                href="https://t.me/your_channel"
+                style={{ textDecoration: 'none' }}
+              >
+                <div style={timestampBadge}>Join our Telegram App</div>
+              </a>
+            )}
           </div>
         </div>
       )}
@@ -246,14 +256,13 @@ const Videos = () => {
   );
 };
 
-// --- Styles (New & Existing) ---
+// --- Styles remain exactly as you provided ---
 const loaderContainer = {
   height: '20vh',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
 };
-
 const lockOverlay = {
   width: '100%',
   height: '100vh',
@@ -266,7 +275,6 @@ const lockOverlay = {
   zIndex: 100,
   background: 'black',
 };
-
 const maintenanceModal = {
   width: '90%',
   maxWidth: '400px',
@@ -294,6 +302,7 @@ const timestampBadge = {
   fontSize: '14px',
   fontWeight: 'bold',
   color: '#00d2ff',
+  cursor: 'pointer',
 };
 const reelsContainer = {
   width: '100%',
