@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaBan } from 'react-icons/fa';
+import { FaBan, FaImage } from 'react-icons/fa';
 import { supabaseChat } from '../Utils/supabaseGroupChat';
 import '../Styles/ChatRoom.css';
 import ChatHeader from '../Components/ChatHeader';
@@ -11,10 +11,12 @@ export default function GuestChat() {
   const [newMessage, setNewMessage] = useState('');
   const [receiver, setReceiver] = useState(null); // To store receiver's name/info
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
   const [messageCount, setMessageCount] = useState(0);
   const [showTelegramModal, setShowTelegramModal] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false); // Am I blocked by them?
   const [hasBlockedThem, setHasBlockedThem] = useState(false); // Did I block them?
+  const [unblurredImages, setUnblurredImages] = useState({});
   const navigate = useNavigate();
 
   // Get current guest user from local storage
@@ -130,6 +132,44 @@ export default function GuestChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Function to handle Image Selection and Upload
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || isBlocked || hasBlockedThem) return;
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `${currentUserId}/${fileName}`;
+
+    // 1. Upload to Supabase Storage
+    const { data, error: uploadError } = await supabaseChat.storage
+      .from('chat-images')
+      .upload(filePath, file);
+
+    if (uploadError) return alert('Upload failed');
+
+    // 2. Get Public URL
+    const { data: { publicUrl } } = supabaseChat.storage
+      .from('chat-images')
+      .getPublicUrl(filePath);
+
+    // 3. Save to Chat Table
+    await supabaseChat.from('chats').insert([
+      {
+        sender_id: currentUserId,
+        receiver_id: receiverId,
+        message: 'Sent an image',
+        image_url: publicUrl,
+        status: 'sent',
+      },
+    ]);
+    fetchMessages();
+  };
+
+  const toggleBlur = (messageId) => {
+    setUnblurredImages(prev => ({ ...prev, [messageId]: !prev[messageId] }));
+  };
+
   // 3. Send Message with IDs
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -208,8 +248,11 @@ export default function GuestChat() {
             </div>
           </div>
         ) : (
-          messages.map((msg) => (
-            <div
+          messages.map((msg) => {
+            const isOwn = msg.sender_id === currentUserId;
+            const isRevealed = unblurredImages[msg.id];
+           return(
+             <div
               key={msg.id}
               // Check sender_id to determine if it's the current user's message
               className={`chat-room-message-row ${
@@ -217,12 +260,35 @@ export default function GuestChat() {
               }`}
             >
               <div className="chat-room-bubble">
-                <p className="chat-room-bubble-text" style={{ color: '#111' }}>
-                  {msg.message}
-                </p>
+                {msg.image_url ? (
+                    <div className="guest-image-message-container">
+                      {!isOwn && !isRevealed ? (
+                        <button className="guest-reveal-btn" onClick={() => toggleBlur(msg.id)}>
+                          Click to reveal image
+                        </button>
+                      ) : (
+                        <div className="guest-image-wrapper">
+                          <img 
+                            src={msg.image_url} 
+                            alt="Sent" 
+                            className={!isRevealed && !isOwn ? 'guest-blurred-img' : ''} 
+                          />
+                          {!isRevealed && !isOwn && (
+                            <button className="guest-unblur-overlay-btn" onClick={() => toggleBlur(msg.id)}>
+                              Unblur
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      
+                    </div>
+                  ) : (
+                    <p className="chat-room-bubble-text">{msg.message}</p>
+                  )}
               </div>
             </div>
-          ))
+           )
+})
         )}
         <div ref={messagesEndRef} />
       </main>
@@ -236,6 +302,19 @@ export default function GuestChat() {
               title="Block User"
             >
               <FaBan />
+            </button>
+            {/* Hidden File Input */}
+            <input 
+              type="file" 
+              accept="image/*" 
+              ref={fileInputRef} 
+              style={{ display: 'none' }} 
+              onChange={handleImageUpload} 
+            />
+            
+            {/* Image Icon Button */}
+            <button type="button" className="guest-image-upload-btn" onClick={() => fileInputRef.current.click()}>
+              <FaImage />
             </button>
             <input
               type="text"

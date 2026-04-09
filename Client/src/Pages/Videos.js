@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import CommunityPopup from '../Components/CommunityPopup';
 
 // --- Sub-Component for individual Reels ---
 const TelegramReel = ({ postId, onSeen }) => {

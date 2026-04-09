@@ -15,6 +15,8 @@ import {
   ChatRoom,
   Private,
   Lifehacks,
+  EarningDashboard,
+  MorningSprint,
   FactAbout,
   FactTerms,
   GuestProfiles,
@@ -97,7 +99,9 @@ const publicRoutes = [
   { path: '/login', component: Login },
   { path: '/register', component: Register },
   { path: '/community', component: Adult },
-
+{ path: '/dashboard', component: EarningDashboard },
+  
+  { path: '/game', component: MorningSprint },
   { path: '/chat-room', component: ChatRoom },
   { path: '/group-chat', component: GroupChat },
   { path: '/guest-profiles', component: GuestProfiles },
@@ -471,7 +475,7 @@ function AppContent() {
         ))}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {/*!shouldHideNavbar && <DatingNavbar />*/}
+      {!shouldHideNavbar && <DatingNavbar />}
 
       <InternetStatusAlert />
       {/*showInstallBanner && <InstallBanner />*/}

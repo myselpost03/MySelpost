@@ -72,7 +72,8 @@ const DatingNavbar = () => {
   const tabs = [
     { id: 'home', icon: '🏠', label: 'Home', path: '/' }, // Replaced Matches with Home
     { id: 'roast', icon: '🔥', label: 'Roast', path: '/roast' },
-    { id: 'messages', icon: '💬', label: 'Group Chat', path: '/chat-room' },
+    { id: 'earn', icon: '🎮', label: 'Earn', path: '/dashboard' },
+    { id: 'messages', icon: '💬', label: 'Chat Room', path: '/chat-room' },
     { id: 'videos', icon: '🎥', label: 'Videos', path: '/videos' },
   ];
 
@@ -80,11 +81,11 @@ const DatingNavbar = () => {
     setActiveTab(tabId);
 
     // Show Telegram modal when Profile is clicked (only if NOT Telegram)
-    if (tabId === 'videos' && !isTelegram) {
+  { /* if (tabId === 'videos' && !isTelegram) {
       console.log("🚀 ~ handleTabClick ~ videos:")
-      setShowCommunityPopup(true);
+     setShowCommunityPopup(true);
       return; // stop navigation
-    }
+    }*/}
 
     if (tabId === 'roast') {
       navigate('/roast');

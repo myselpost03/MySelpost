@@ -1,3 +1,69 @@
+/* Image Container Styles */
+.guest-image-message-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.guest-image-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.guest-image-wrapper img {
+  max-width: 200px;
+  display: block;
+  border-radius: 8px;
+  transition: filter 0.3s ease;
+}
+
+.guest-blurred-img {
+  filter: blur(15px);
+}
+
+/* Buttons */
+.guest-reveal-btn {
+  background: #111;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+  font-size: 0.8rem;
+}
+
+.guest-unblur-overlay-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: 1px solid white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.guest-image-caption {
+  font-size: 0.75rem;
+  color: #111;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Icon Spacing */
+.guest-image-upload-btn {
+  color: #111 !important;
+  font-size: 1.2rem;
+}
+
+.block-action-btn {
+  margin-right: 5px;
+}
+
 /* Reset and Base */
 .telegram-popup-content {
   text-align: center;
@@ -106,6 +172,7 @@
 .chat-room-bubble-text {
   margin: 0;
   word-wrap: break-word;
+  color: #111;
 }
 
 /* 4. Fixed Bottom Input Bar */
