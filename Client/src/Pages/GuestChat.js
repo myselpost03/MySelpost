@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaBan, FaImage } from 'react-icons/fa';
+import { FaBan, FaImage, FaTimes } from 'react-icons/fa';
 import { supabaseChat } from '../Utils/supabaseGroupChat';
 import '../Styles/ChatRoom.css';
 import ChatHeader from '../Components/ChatHeader';
@@ -17,6 +17,10 @@ export default function GuestChat() {
   const [isBlocked, setIsBlocked] = useState(false); // Am I blocked by them?
   const [hasBlockedThem, setHasBlockedThem] = useState(false); // Did I block them?
   const [unblurredImages, setUnblurredImages] = useState({});
+  const [deletingMessages, setDeletingMessages] = useState({});
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
   const navigate = useNavigate();
 
   // Get current guest user from local storage
@@ -136,7 +140,7 @@ export default function GuestChat() {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || isBlocked || hasBlockedThem) return;
-
+    setIsUploading(true);
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `${currentUserId}/${fileName}`;
@@ -149,9 +153,9 @@ export default function GuestChat() {
     if (uploadError) return alert('Upload failed');
 
     // 2. Get Public URL
-    const { data: { publicUrl } } = supabaseChat.storage
-      .from('chat-images')
-      .getPublicUrl(filePath);
+    const {
+      data: { publicUrl },
+    } = supabaseChat.storage.from('chat-images').getPublicUrl(filePath);
 
     // 3. Save to Chat Table
     await supabaseChat.from('chats').insert([
@@ -163,11 +167,57 @@ export default function GuestChat() {
         status: 'sent',
       },
     ]);
+    setIsUploading(false);
     fetchMessages();
   };
 
-  const toggleBlur = (messageId) => {
-    setUnblurredImages(prev => ({ ...prev, [messageId]: !prev[messageId] }));
+  const finalDeleteImage = async (messageId, imageUrl) => {
+    try {
+      // 1. Extract file path from URL (assuming standard Supabase URL structure)
+      // URL looks like: .../storage/v1/object/public/chat-images/senderId/filename.jpg
+      const pathParts = imageUrl.split('chat-images/');
+      const filePath = pathParts[1];
+
+      if (filePath) {
+        await supabaseChat.storage.from('chat-images').remove([filePath]);
+      }
+
+      // 2. Delete from Database
+      await supabaseChat.from('chats').delete().eq('id', messageId);
+
+      // 3. Update UI
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      setDeletingMessages((prev) => {
+        const updated = { ...prev };
+        delete updated[messageId];
+        return updated;
+      });
+    } catch (err) {
+      console.error('Delete failed:', err);
+    }
+  };
+
+  const toggleBlur = (msg) => {
+    const messageId = msg.id;
+    setUnblurredImages((prev) => {
+      const currentStatus = prev[messageId] || 0;
+      const newStatus = currentStatus + 1;
+
+      // Trigger auto-delete when it becomes fully visible (status reaches 2)
+      if (newStatus === 2) {
+        setTimeout(() => {
+          // Start "Disappearing" animation 10 seconds later
+          setDeletingMessages((prev) => ({ ...prev, [messageId]: true }));
+
+          // After animation (500ms), remove from DB/Storage
+          setTimeout(() => {
+            finalDeleteImage(messageId, msg.image_url);
+          }, 500);
+        }, 10000); // 10 second delay
+      }
+
+      return { ...prev, [messageId]: newStatus };
+    });
   };
 
   // 3. Send Message with IDs
@@ -208,7 +258,17 @@ export default function GuestChat() {
         showBlock={false}
         showVideo={false}
       />
-
+      {selectedImage && (
+        <div
+          className="fullscreen-overlay"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button className="close-fullscreen">
+            <FaTimes />
+          </button>
+          <img src={selectedImage} alt="Fullscreen" />
+        </div>
+      )}
       {showTelegramModal && (
         <div className="chat-room-modal-overlay telegram-popup-overlay">
           <div className="chat-room-modal-content telegram-popup-content">
@@ -219,7 +279,10 @@ export default function GuestChat() {
             </div>
             <h3>Chat More on Telegram!</h3>
             <p>You've already chatted so much here.</p>
-            <p>To keep the conversation going, join us on our official Telegram app!</p>
+            <p>
+              To keep the conversation going, join us on our official Telegram
+              app!
+            </p>
             <button onClick={handleTelegramRedirect} className="telegram-btn">
               Chat on Telegram (Free)
             </button>
@@ -250,45 +313,67 @@ export default function GuestChat() {
         ) : (
           messages.map((msg) => {
             const isOwn = msg.sender_id === currentUserId;
-            const isRevealed = unblurredImages[msg.id];
-           return(
-             <div
-              key={msg.id}
-              // Check sender_id to determine if it's the current user's message
-              className={`chat-room-message-row ${
-                msg.sender_id === currentUserId ? 'chat-room-own' : ''
-              }`}
-            >
-              <div className="chat-room-bubble">
-                {msg.image_url ? (
+            const revealStatus = unblurredImages[msg.id] || 0;
+            const isDisappearing = deletingMessages[msg.id];
+            return (
+              <div
+                key={msg.id}
+                // Check sender_id to determine if it's the current user's message
+                className={
+                  `chat-room-message-row 
+        ${isOwn ? 'chat-room-own' : ''} 
+        ${isDisappearing ? 'message-disappearing' : ''}` // Animation class
+                }
+              >
+                <div className="chat-room-bubble">
+                  {msg.image_url ? (
                     <div className="guest-image-message-container">
-                      {!isOwn && !isRevealed ? (
-                        <button className="guest-reveal-btn" onClick={() => toggleBlur(msg.id)}>
-                          Click to reveal image
+                      {!isOwn && revealStatus === 0 ? (
+                        <button
+                          className="guest-reveal-btn"
+                          onClick={() => toggleBlur(msg)}
+                        >
+                          CLICK TO REVEAL IMAGE
                         </button>
                       ) : (
                         <div className="guest-image-wrapper">
-                          <img 
-                            src={msg.image_url} 
-                            alt="Sent" 
-                            className={!isRevealed && !isOwn ? 'guest-blurred-img' : ''} 
+                          <img
+                            src={msg.image_url}
+                            alt="Sent"
+                            className={
+                              !isOwn && revealStatus === 1
+                                ? 'guest-blurred-img'
+                                : ''
+                            }
+                            onClick={() => {
+                              // Only allow fullscreen if revealed or own image
+                              if (isOwn || revealStatus >= 2)
+                                setSelectedImage(msg.image_url);
+                            }}
                           />
-                          {!isRevealed && !isOwn && (
-                            <button className="guest-unblur-overlay-btn" onClick={() => toggleBlur(msg.id)}>
+                          {!isOwn && revealStatus === 1 && (
+                            <button
+                              className="guest-unblur-overlay-btn"
+                              onClick={() => toggleBlur(msg)}
+                            >
                               Unblur
                             </button>
                           )}
+                          {revealStatus >= 2 && !isOwn && (
+                            <div className="self-destruct-badge">
+                              Deletes in 10s
+                            </div>
+                          )}
                         </div>
                       )}
-                      
                     </div>
                   ) : (
                     <p className="chat-room-bubble-text">{msg.message}</p>
                   )}
+                </div>
               </div>
-            </div>
-           )
-})
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </main>
@@ -304,17 +389,21 @@ export default function GuestChat() {
               <FaBan />
             </button>
             {/* Hidden File Input */}
-            <input 
-              type="file" 
-              accept="image/*" 
-              ref={fileInputRef} 
-              style={{ display: 'none' }} 
-              onChange={handleImageUpload} 
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handleImageUpload}
             />
-            
+
             {/* Image Icon Button */}
-            <button type="button" className="guest-image-upload-btn" onClick={() => fileInputRef.current.click()}>
-              <FaImage />
+            <button
+              type="button"
+              className="guest-image-upload-btn"
+              onClick={() => !isUploading && fileInputRef.current.click()}
+            >
+              {isUploading ? <div className="mini-spinner"></div> : <FaImage />}
             </button>
             <input
               type="text"

@@ -1,3 +1,144 @@
+/* Disappearing Animation */
+.message-disappearing {
+  animation: telegramDisappear 0.6s ease forwards;
+  pointer-events: none;
+}
+
+@keyframes telegramDisappear {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0px);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+    filter: blur(10px);
+    max-height: 0;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+/* Self Destruct Badge */
+.self-destruct-badge {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  backdrop-filter: blur(2px);
+}/* 1. Mini Loading Spinner */
+.mini-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top: 3px solid #128c7e;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 2. Fullscreen Modal */
+.fullscreen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  cursor: zoom-out;
+}
+
+.fullscreen-overlay img {
+  max-width: 95%;
+  max-height: 95%;
+  object-fit: contain;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  animation: zoomIn 0.2s ease-out;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.close-fullscreen {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+/* 3. Image Hover Utility */
+.clickable-img {
+  cursor: zoom-in;
+  transition: transform 0.2s;
+}
+
+.clickable-img:hover {
+  transform: scale(1.02);
+}
+
+.guest-image-wrapper {
+  position: relative;
+  display: inline-block;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.guest-image-wrapper img {
+  display: block;
+  max-width: 200px;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* The actual blur effect */
+.guest-blurred-img {
+  filter: blur(20px) brightness(0.8);
+  pointer-events: none; /* Prevents right-click/saving while blurred */
+}
+
+/* The 'Unblur' button sitting on top of the blurred image */
+.guest-unblur-overlay-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+
 /* Image Container Styles */
 .guest-image-message-container {
   display: flex;
@@ -18,9 +159,6 @@
   transition: filter 0.3s ease;
 }
 
-.guest-blurred-img {
-  filter: blur(15px);
-}
 
 /* Buttons */
 .guest-reveal-btn {
@@ -30,22 +168,12 @@
   border-radius: 5px;
   cursor: pointer;
   border: none;
+  font-weight: bold;
   font-size: 0.8rem;
+  font-family: 'winky rough', serif;
 }
 
-.guest-unblur-overlay-btn {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border: 1px solid white;
-  padding: 5px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  z-index: 2;
-}
+
 
 .guest-image-caption {
   font-size: 0.75rem;
