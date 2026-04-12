@@ -166,7 +166,19 @@ const Login = () => {
   return (
     <div>
       <Header />
-      
+       <div
+               style={{
+                 display: 'flex',
+                 justifyContent: 'center', // Centers horizontally
+                 alignItems: 'center', // Centers vertically
+                 marginTop: '20%'
+                 // Ensures no scrollbars if the ad is slightly off
+               }}
+             >
+               <div style={{ maxWidth: '100%' }}>
+                 <AdsterraBanner />
+               </div>
+             </div>
       <div className="login-container">
         <form className="login-form" onSubmit={handleSubmit}>
           <h2>{i18n.t("logIN")}</h2>
@@ -205,9 +217,7 @@ const Login = () => {
           </p>
         </form>
       </div>
-  {/*  <div className="login-banner">
-          <AdsterraBanner />
-        </div>*/}
+ 
     </div>
   );
 };

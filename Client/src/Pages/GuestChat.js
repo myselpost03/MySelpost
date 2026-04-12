@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   FaBan,
@@ -7,11 +7,13 @@ import {
   FaCoins,
   FaGift,
   FaPlayCircle,
-  FaInbox,
 } from 'react-icons/fa';
 import { supabaseChat } from '../Utils/supabaseGroupChat';
 import '../Styles/ChatRoom.css';
 import ChatHeader from '../Components/ChatHeader';
+import AdsterraNativeBanner from '../Components/AdsterraNativeBanner';
+import AdsterraBanner from '../Components/AdsterraBanner';
+import Gift from '../Assets/gift-2.png';
 
 // Mock Gift Data
 const GIFTS = [
@@ -29,6 +31,9 @@ export default function GuestChat() {
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const [showTelegramModal, setShowTelegramModal] = useState(false);
+  const [showImageTelegramModal, setShowImageTelegramModal] = useState(false);
+  const [showGiftTelegramModal, setShowGiftTelegramModal] = useState(false);
+
   const [isBlocked, setIsBlocked] = useState(false); // Am I blocked by them?
   const [hasBlockedThem, setHasBlockedThem] = useState(false); // Did I block them?
   const [unblurredImages, setUnblurredImages] = useState({});
@@ -100,8 +105,21 @@ export default function GuestChat() {
     }
   }, [adCooldown]);
 
+  const handleGiftClick = () => {
+    if (!isTelegram) {
+      setShowGiftPalette(false);
+      setShowGiftTelegramModal(true); // Show the redirect modal
+      return;
+    }
+    setShowGiftPalette(true);
+  };
+
   // Send Gift Function
   const sendGift = async (gift) => {
+    if (!isTelegram) {
+      setShowTelegramModal(true); // Show the redirect modal
+      return;
+    }
     if (userCoins < gift.cost) {
       setShowGiftPalette(false);
       setShowCoinModal(true);
@@ -143,7 +161,7 @@ export default function GuestChat() {
       (m) => m.sender_id === currentUserId
     ).length;
 
-    if (sentCount >= 1) {
+    if (sentCount >= 50) {
       setShowTelegramModal(true);
       return false;
     }
@@ -251,12 +269,16 @@ export default function GuestChat() {
       .order('created_at', { ascending: true });
 
     if (error) console.error('Error fetching:', error);
-    else setMessages(data || []);
+    else
+      setMessages((prev) => {
+        const ads = prev.filter((m) => m.isAd); // keep old ads
+        return [...(data || []), ...ads];
+      });
   };
 
   useEffect(() => {
     fetchMessages();
-    const interval = setInterval(() => fetchMessages(), 3000);
+    const interval = setInterval(() => fetchMessages(), 2000);
     return () => clearInterval(interval);
   }, [receiverId, currentUserId, isBlocked, hasBlockedThem]);
 
@@ -340,6 +362,10 @@ export default function GuestChat() {
   };
 
   const toggleBlur = (msg) => {
+    if (!isTelegram) {
+      setShowImageTelegramModal(true);
+      return;
+    }
     const messageId = msg.id;
     setUnblurredImages((prev) => {
       const currentStatus = prev[messageId] || 0;
@@ -399,27 +425,27 @@ export default function GuestChat() {
         showBlock={false}
         showVideo={false}
       />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center', // Centers horizontally
+          alignItems: 'center', // Centers vertically
+          minHeight: '30vh', // Provides space without using padding
+          width: '100%',
+          overflow: 'hidden',
+          paddingTop: '30%',
+          // Ensures no scrollbars if the ad is slightly off
+        }}
+      >
+        <div style={{ maxWidth: '100%' }}>
+          <AdsterraBanner />
+        </div>
+      </div>
       <button
         className="fixed-gifts-btn"
         onClick={() => setShowReceivedGifts(true)}
-        style={{
-          position: 'fixed',
-          right: '20px',
-          top: '80px',
-          zIndex: 100,
-          backgroundColor: '#ff4757',
-          color: 'white',
-          border: 'none',
-          borderRadius: '20px',
-          padding: '10px 15px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-          cursor: 'pointer',
-        }}
       >
-        <FaInbox /> Gifts Received
+        <img src={Gift} alt="Gift Box" className="gift-img" />
       </button>
       {showReceivedGifts && (
         <div
@@ -566,7 +592,56 @@ export default function GuestChat() {
           </div>
         </div>
       )}
-
+      {showImageTelegramModal && (
+        <div className="chat-room-modal-overlay telegram-popup-overlay">
+          <div className="chat-room-modal-content telegram-popup-content">
+            <div className="telegram-icon-wrapper">
+              <svg viewBox="0 0 24 24" width="50" height="50" fill="#0088cc">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
+              </svg>
+            </div>
+            <h3>View Image on Telegram</h3>
+            <p>
+              For privacy and security, full-resolution images can only be
+              revealed within the official Telegram app.
+            </p>
+            <button onClick={handleTelegramRedirect} className="telegram-btn">
+              Open Telegram to Reveal
+            </button>
+            <button
+              className="close-limit-btn"
+              onClick={() => setShowImageTelegramModal(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+      {showGiftTelegramModal && (
+        <div className="chat-room-modal-overlay telegram-popup-overlay">
+          <div className="chat-room-modal-content telegram-popup-content">
+            <div className="telegram-icon-wrapper">
+              <svg viewBox="0 0 24 24" width="50" height="50" fill="#0088cc">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
+              </svg>
+            </div>
+            <h3>Send Gift on our Telegram App</h3>
+            <p>
+              For privacy and security, gifts can only be send within our
+              official Telegram app myselpost.
+            </p>
+            <button onClick={handleTelegramRedirect} className="telegram-btn">
+              Open Telegram to Reveal
+            </button>
+            <button
+              className="close-limit-btn"
+              onClick={() => setShowGiftTelegramModal(false)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       <main className="chat-room-messages-container">
         {isBlocked || hasBlockedThem ? (
           <div className="blocked-notice-container">
@@ -582,150 +657,181 @@ export default function GuestChat() {
             </div>
           </div>
         ) : (
-          messages.map((msg) => {
+          messages.map((msg, index) => {
             const isOwn = msg.sender_id === currentUserId;
             const revealStatus = unblurredImages[msg.id] || 0;
             const isDisappearing = deletingMessages[msg.id];
+            // Logical message position (1-based index)
+            const msgPos = index + 1;
+
+            /** * Ad Logic:
+             * 1. Show after the 5th message (msgPos === 5)
+             * 2. Show after 30 more messages (msgPos === 35, 65, 95...)
+             * Formula: (msgPos - 5) % 30 === 0
+             */
+            const shouldShowAd =
+              msgPos === 5 || (msgPos > 5 && (msgPos - 5) % 15 === 0);
             return (
-              <div
-                key={msg.id}
-                // Check sender_id to determine if it's the current user's message
-                className={
-                  `chat-room-message-row 
+              <React.Fragment key={msg.id}>
+                {shouldShowAd && (
+                  <div className="chat-room-message-row" key={`ad-${index}`}>
+                    <div
+                      className="chat-room-bubble"
+                      style={{
+                        textAlign: 'center',
+                        background: 'transparent',
+                        boxShadow: 'none',
+                        width: '100%',
+                      }}
+                    >
+                      <AdsterraNativeBanner />
+                    </div>
+                  </div>
+                )}
+                <div
+                  // Check sender_id to determine if it's the current user's message
+                  className={
+                    `chat-room-message-row 
         ${isOwn ? 'chat-room-own' : ''} 
         ${isDisappearing ? 'message-disappearing' : ''}` // Animation class
-                }
-              >
-                <div className="chat-room-bubble">
-                  {msg.image_url ? (
-                    <div className="guest-image-message-container">
-                      {!isOwn && revealStatus === 0 ? (
-                        <button
-                          className="guest-reveal-btn"
-                          onClick={() => toggleBlur(msg)}
-                        >
-                          CLICK TO REVEAL IMAGE
-                        </button>
-                      ) : (
-                        <div className="guest-image-wrapper">
-                          <img
-                            src={msg.image_url}
-                            alt="Sent"
-                            className={
-                              !isOwn && revealStatus === 1
-                                ? 'guest-blurred-img'
-                                : ''
-                            }
-                            onClick={() => {
-                              // Only allow fullscreen if revealed or own image
-                              if (isOwn || revealStatus >= 2)
-                                setSelectedImage(msg.image_url);
-                            }}
-                          />
-                          {!isOwn && revealStatus === 1 && (
-                            <button
-                              className="guest-unblur-overlay-btn"
-                              onClick={() => toggleBlur(msg)}
-                            >
-                              Unblur
-                            </button>
-                          )}
-                          {revealStatus >= 2 && !isOwn && (
-                            <div className="self-destruct-badge">
-                              Deletes in 10s
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="chat-room-bubble-text">{msg.message}</p>
-                  )}
+                  }
+                >
+                  <div className="chat-room-bubble">
+                    {msg.image_url ? (
+                      <div className="guest-image-message-container">
+                        {!isOwn && revealStatus === 0 ? (
+                          <button
+                            className="guest-reveal-btn"
+                            onClick={() => toggleBlur(msg)}
+                          >
+                            CLICK TO REVEAL IMAGE
+                          </button>
+                        ) : (
+                          <div className="guest-image-wrapper">
+                            <img
+                              src={msg.image_url}
+                              alt="Sent"
+                              className={
+                                !isOwn && revealStatus === 1
+                                  ? 'guest-blurred-img'
+                                  : ''
+                              }
+                              onClick={() => {
+                                // Only allow fullscreen if revealed or own image
+                                if (isOwn || revealStatus >= 2)
+                                  setSelectedImage(msg.image_url);
+                              }}
+                            />
+                            {!isOwn && revealStatus === 1 && (
+                              <button
+                                className="guest-unblur-overlay-btn"
+                                onClick={() => toggleBlur(msg)}
+                              >
+                                Unblur
+                              </button>
+                            )}
+                            {revealStatus >= 2 && !isOwn && (
+                              <div className="self-destruct-badge">
+                                Deletes in 10s
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="chat-room-bubble-text">{msg.message}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </React.Fragment>
             );
           })
         )}
         <div ref={messagesEndRef} />
       </main>
-      {!isBlocked && !hasBlockedThem && (
-        <footer className="chat-room-footer-input-bar">
-          <form className="chat-room-input-form" onSubmit={sendMessage}>
-            <button
-              type="button"
-              className="block-action-btn"
-              onClick={handleBlockUser}
-              title="Block User"
-            >
-              <FaBan />
-            </button>
-            {/* Hidden File Input */}
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-              onChange={handleImageUpload}
-            />
 
-            {/* Image Icon Button */}
-            <button
-              type="button"
-              className={`guest-image-upload-btn ${
-                cooldownRemaining > 0 ? 'cooldown-active' : ''
-              }`}
-              onClick={() =>
-                !isUploading &&
-                cooldownRemaining === 0 &&
-                fileInputRef.current.click()
-              }
-              disabled={cooldownRemaining > 0}
-            >
-              {isUploading ? (
-                <div className="mini-spinner"></div>
-              ) : cooldownRemaining > 0 ? (
-                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>
-                  {cooldownRemaining}s
-                </span>
-              ) : (
-                <FaImage />
-              )}
-            </button>
-            <button
-              type="button"
-              className="gift-trigger-btn"
-              onClick={() => setShowGiftPalette(true)}
-              style={{
-                color: '#111',
-                fontSize: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '0 5px',
-              }}
-            >
-              <FaGift />
-            </button>
-            <input
-              type="text"
-              placeholder="Type a message..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-            />
-            <button type="submit">
-              <svg
-                viewBox="0 0 24 24"
-                width="24"
-                height="24"
-                fill="currentColor"
+      {!isBlocked && !hasBlockedThem && (
+        <>
+          <footer className="chat-room-footer-input-bar">
+            <form className="chat-room-input-form" onSubmit={sendMessage}>
+              <button
+                type="button"
+                className="block-action-btn"
+                onClick={handleBlockUser}
+                title="Block User"
               >
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-              </svg>
-            </button>
-          </form>
-        </footer>
+                <FaBan />
+              </button>
+              {/* Hidden File Input */}
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                onChange={handleImageUpload}
+              />
+
+              {/* Image Icon Button */}
+              <button
+                type="button"
+                className={`guest-image-upload-btn ${
+                  cooldownRemaining > 0 ? 'cooldown-active' : ''
+                }`}
+                onClick={() =>
+                  !isUploading &&
+                  cooldownRemaining === 0 &&
+                  fileInputRef.current.click()
+                }
+                disabled={cooldownRemaining > 0}
+              >
+                {isUploading ? (
+                  <div className="mini-spinner"></div>
+                ) : cooldownRemaining > 0 ? (
+                  <span style={{ fontSize: '12px', fontWeight: 'bold' }}>
+                    {cooldownRemaining}s
+                  </span>
+                ) : (
+                  <FaImage />
+                )}
+              </button>
+              <button
+                type="button"
+                className="gift-trigger-btn"
+                onClick={handleGiftClick}
+                style={{
+                  color: '#111',
+                  fontSize: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0 5px',
+                }}
+              >
+                <FaGift />
+              </button>
+              <input
+                type="text"
+                placeholder="Type a message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+              />
+              <button type="submit">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="24"
+                  height="24"
+                  fill="currentColor"
+                >
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                </svg>
+              </button>
+            </form>
+          </footer>
+        </>
       )}
     </div>
   );

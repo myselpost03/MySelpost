@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabaseChat } from '../Utils/supabaseGroupChat';
 import '../Styles/ChatRoom.css';
 import ChatHeader from '../Components/ChatHeader';
+import AdsterraBanner from '../Components/AdsterraBanner';
+import AdsterraNativeBanner from '../Components/AdsterraNativeBanner';
 
 export default function ChatRoom() {
   const [messages, setMessages] = useState([]);
@@ -17,6 +19,7 @@ export default function ChatRoom() {
   const [userId, setUserId] = useState(() => {
     return localStorage.getItem('chat_user_id') || null;
   });
+  const [hasSentFirstMessage, setHasSentFirstMessage] = useState(false); // Track first message
   const messagesEndRef = useRef(null);
   const [messageCount, setMessageCount] = useState(0); // Track sent messages
   const [showTelegramModal, setShowTelegramModal] = useState(false); // Telegram limit modal
@@ -91,6 +94,7 @@ export default function ChatRoom() {
     } else {
       setNewMessage('');
       setMessageCount((prev) => prev + 1);
+      setHasSentFirstMessage(true);
       fetchMessages();
     }
   };
@@ -104,6 +108,22 @@ export default function ChatRoom() {
         showBlock={false}
         showVideo={false}
       />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center', // Centers horizontally
+          alignItems: 'center', // Centers vertically
+          minHeight: '22vh', // Provides space without using padding
+          width: '100%',
+          overflow: 'hidden',
+          paddingTop: '30%',
+          // Ensures no scrollbars if the ad is slightly off
+        }}
+      >
+        <div style={{ maxWidth: '100%' }}>
+          <AdsterraBanner />
+        </div>
+      </div>
       {showModal && (
         <div className="chat-room-modal-overlay">
           <div className="chat-room-modal-content">
@@ -151,23 +171,39 @@ export default function ChatRoom() {
       )}
       {/* Full Screen Scrollable Area */}
       <main className="chat-room-messages-container">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`chat-room-message-row ${
-              msg.user_id === userId ? 'chat-room-own' : ''
-            }`}
-          >
-            <div className="chat-room-bubble">
-              {msg.user_id !== userId && (
-                <span className="chat-room-bubble-user">{msg.username}</span>
-              )}
-              <p className="chat-room-bubble-text" style={{ color: '#111' }}>
-                {msg.message}
-              </p>
+        {messages.map((msg, index) => {
+          const items = [];
+          const globalIndex = index + 1;
+
+          // 1. Show Native Banner after the user's first message
+          if (hasSentFirstMessage && index === 0) {
+            items.push(<AdsterraNativeBanner key="banner-first" />);
+          }
+          items.push(
+            <div
+              key={msg.id}
+              className={`chat-room-message-row ${
+                msg.user_id === userId ? 'chat-room-own' : ''
+              }`}
+            >
+              <div className="chat-room-bubble">
+                {msg.user_id !== userId && (
+                  <span className="chat-room-bubble-user">{msg.username}</span>
+                )}
+                <p className="chat-room-bubble-text" style={{ color: '#111' }}>
+                  {msg.message}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+
+          // 3. Show Native Banner after every 30 messages
+          if (globalIndex % 30 === 0) {
+            items.push(<AdsterraNativeBanner key={`banner-${globalIndex}`} />);
+          }
+
+          return items;
+        })}
         <div ref={messagesEndRef} />
       </main>
 

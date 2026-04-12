@@ -468,6 +468,10 @@ box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
   color: white;
 }
 
+.sketchy-list-scrollable::-webkit-scrollbar {
+  display: none;
+}
+
 .sketchy-list-scrollable {
   display: flex;
   flex-direction: column;

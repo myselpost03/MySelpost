@@ -7,6 +7,7 @@ import toast, { Toaster } from "react-hot-toast";
 import confetti from "canvas-confetti"; // ✅ Import confettiimport { Toaster } from 'react-hot-toast';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import i18n from "../i18n";
+import AdsterraBanner from "../Components/AdsterraBanner";
 
 export default function ResetPassword() {
   const [email, setEmail] = useState("");
@@ -73,6 +74,19 @@ export default function ResetPassword() {
   return (
     <>
       <Header />
+       <div
+                     style={{
+                       display: 'flex',
+                       justifyContent: 'center', // Centers horizontally
+                       alignItems: 'center', // Centers vertically
+                       marginTop: '20%'
+                       // Ensures no scrollbars if the ad is slightly off
+                     }}
+                   >
+                     <div style={{ maxWidth: '100%' }}>
+                       <AdsterraBanner />
+                     </div>
+                   </div>
       <div className="reset-wrapper">
         <div className="reset-card">
           <h2 className="reset-title">🔑 {i18n.t("resetPassword")}</h2>

@@ -618,6 +618,19 @@ useEffect(() => {
   return (
     <div>
       <Header />
+      <div
+                     style={{
+                       display: 'flex',
+                       justifyContent: 'center', // Centers horizontally
+                       alignItems: 'center', // Centers vertically
+                       marginTop: '20%'
+                       // Ensures no scrollbars if the ad is slightly off
+                     }}
+                   >
+                     <div style={{ maxWidth: '100%' }}>
+                       <AdsterraBanner />
+                     </div>
+                   </div>
       <div className="register-container">
         <form
           className="register-form"

@@ -62,6 +62,7 @@ import {
   PaymentPage,
   Demo,
   LiveSupport,
+  Dating,
 } from './Pages/index';
 import LoadingSpinner from './Components/LoadingSpinner';
 import { supabase } from './Utils/supabaseClient';
@@ -98,10 +99,9 @@ const publicRoutes = [
   { path: '/home-page', component: GuestProfiles },
   { path: '/login', component: Login },
   { path: '/register', component: Register },
-  { path: '/community', component: Adult },
+ 
 { path: '/dashboard', component: EarningDashboard },
   
-  { path: '/game', component: MorningSprint },
   { path: '/chat-room', component: ChatRoom },
   { path: '/group-chat', component: GroupChat },
   { path: '/guest-profiles', component: GuestProfiles },
@@ -111,6 +111,7 @@ const publicRoutes = [
   { path: '/videos', component: Videos },
 
   { path: '/roast', component: Roast },
+  { path: '/date', component: Dating },
 
   { path: '/about', component: About },
   { path: '/terms', component: Terms },
@@ -119,11 +120,14 @@ const publicRoutes = [
   { path: '/contact-us', component: Contact },
 
   { path: '/reset-password', component: ResetPassword },
-
+ 
+  { path: '/demo', component: Demo },
+  {/* 
+     { path: '/community', component: Adult },
+  path: '/game', component: MorningSprint },
   { path: '/demo', component: Demo },
 
-  {
-    /* 
+     
   { path: '/viewer', component: Private },
   { path: '/fact-pins', component: FactPins },
   { path: '/fact-videos', component: FactVideos },

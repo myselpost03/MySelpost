@@ -1,7 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Caveat&display=swap');
 @import url('https://fonts.googleapis.com/css?family=Patrick+Hand:regular');
 @import url(https://fonts.googleapis.com/css?family=Signika:regular,500,600,700);
+/* Animation for the FAB when it appears */
 
+
+/* Ensure the button doesn't cover the very last message */
+.chat-room-messages-container {
+  padding-bottom: 100px; /* Extra padding so messages aren't hidden behind the FAB */
+}
+
+/* Funky Cartoonish hover for the gifts */
+.gift-item:hover {
+  transform: translateY(-5px) rotate(3deg);
+  border: 2px solid #ff4757 !important;
+  background-color: #fff1f2;
+}
 .chat-room-input-form {
   display: flex;
   align-items: center;

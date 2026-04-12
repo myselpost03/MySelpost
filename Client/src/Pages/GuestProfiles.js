@@ -16,7 +16,7 @@ import LoadingSpinner from '../Components/LoadingSpinner';
 import ReactCountryFlag from 'react-country-flag';
 import i18n from '../i18n';
 import CommunityPopup from '../Components/CommunityPopup';
-import QuizPopup from '../Components/QuizPopup';
+import AdVignette from "../Components/AdVignette";
 
 const countryNameToCode = {
   AF: 'AF',
@@ -440,7 +440,8 @@ const GuestProfiles = () => {
   const [tempUsername, setTempUsername] = useState('');
   const [showModal, setShowModal] = useState(true); // Show popup on entry
   const [unreadCounts, setUnreadCounts] = useState({});
-
+  const [latestMessageTime, setLatestMessageTime] = useState({});
+  const [showVignette, setShowVignette] = useState(false);
   useEffect(() => {
     const savedGuest = JSON.parse(localStorage.getItem('guestUser'));
     if (!savedGuest) return;
@@ -449,17 +450,50 @@ const GuestProfiles = () => {
       // Fetch all messages sent TO me that are still marked as 'sent'
       const { data, error } = await supabaseChat
         .from('chats')
-        .select('sender_id')
+        .select('sender_id, created_at')
         .eq('receiver_id', savedGuest.id)
         .eq('status', 'sent');
 
       if (!error && data) {
-        // Create a map of sender_id -> unread_count
-        const counts = data.reduce((acc, msg) => {
-          acc[msg.sender_id] = (acc[msg.sender_id] || 0) + 1;
-          return acc;
-        }, {});
+        // First build latestMsgTime properly
+        const counts = {};
+        const latestMsgTime = {};
+
+        data.forEach((msg) => {
+          counts[msg.sender_id] = (counts[msg.sender_id] || 0) + 1;
+
+          if (
+            !latestMsgTime[msg.sender_id] ||
+            new Date(msg.created_at) > new Date(latestMsgTime[msg.sender_id])
+          ) {
+            latestMsgTime[msg.sender_id] = msg.created_at;
+          }
+        });
+
         setUnreadCounts(counts);
+        setLatestMessageTime(latestMsgTime);
+
+        // ✅ Fetch missing users ONCE and merge safely
+        const missingIds = Object.keys(latestMsgTime);
+
+        if (missingIds.length > 0) {
+          const { data: newUsersData } = await supabaseChat
+            .from('users')
+            .select('*')
+            .in('id', missingIds);
+
+          if (newUsersData) {
+            setUsers((prev) => {
+              const existingIds = new Set(prev.map((u) => u.id));
+
+              const uniqueNewUsers = newUsersData.filter(
+                (u) => !existingIds.has(u.id)
+              );
+
+              return [...uniqueNewUsers, ...prev]; // add on top safely
+            });
+          }
+        }
       }
     };
 
@@ -668,18 +702,34 @@ const GuestProfiles = () => {
 
     // 2. Sort: Users with unread messages (unreadCounts[id] > 0) come first
     return [...filtered].sort((a, b) => {
-      const countA = unreadCounts[a.id] || 0;
-      const countB = unreadCounts[b.id] || 0;
+      const unreadA = unreadCounts[a.id] || 0;
+      const unreadB = unreadCounts[b.id] || 0;
 
-      if (countA > 0 && countB === 0) return -1; // a has notifications, move up
-      if (countA === 0 && countB > 0) return 1; // b has notifications, move up
+      const timeA = latestMessageTime[a.id]
+        ? new Date(latestMessageTime[a.id]).getTime()
+        : 0;
 
-      return 0; // Keep their original order (created_at) if both or neither have unread
+      const timeB = latestMessageTime[b.id]
+        ? new Date(latestMessageTime[b.id]).getTime()
+        : 0;
+
+      // 1. Users with unread messages first
+      if (unreadA > 0 && unreadB === 0) return -1;
+      if (unreadA === 0 && unreadB > 0) return 1;
+
+      // 2. If both have unread → sort by latest message
+      if (unreadA > 0 && unreadB > 0) {
+        return timeB - timeA;
+      }
+
+      // 3. If no unread → fallback to created_at (optional)
+      return new Date(b.created_at) - new Date(a.created_at);
     });
-  }, [users, activeTab, searchTerm, unreadCounts]); // Added unreadCounts as a dependency
+  }, [users, activeTab, searchTerm, unreadCounts, latestMessageTime]); // Added unreadCounts as a dependency
 
   // Add this or update your existing handleUserClick
   const handleUserClick = (receiverId) => {
+    setShowVignette(true);
     // Optional: Prevent users from chatting with themselves
     const savedGuest = JSON.parse(localStorage.getItem('guestUser'));
     if (savedGuest && savedGuest.id === receiverId) {
@@ -1082,6 +1132,9 @@ const GuestProfiles = () => {
             }}
           />
         </div>
+      )*/}
+      {/*showVignette && (
+        <AdVignette />
       )*/}
       {!isTelegram && (
         <CommunityPopup

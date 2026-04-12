@@ -14,8 +14,8 @@ const AdVignette = () => {
     sessionStorage.setItem(key, 'true');
 
     const script = document.createElement('script');
-    script.dataset.zone = '10376740';
-    script.src = 'https://gizokraijaw.net/vignette.min.js';
+    script.dataset.zone = '10376766';
+    script.src = 'https://n6wxm.com/vignette.min.js';
     script.async = true;
 
     document.body.appendChild(script);

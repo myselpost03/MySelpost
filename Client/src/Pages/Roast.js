@@ -116,10 +116,9 @@ function Roast() {
         // Parallel blob conversion
         const imagesWithBlob = await Promise.allSettled(
           data.map(async (img) => {
-            const blob = await toBlob(img.image_url).catch(() => null);
             return {
               id: img.id,
-              roast_pic: blob || img.image_url,
+              roast_pic: img.image_url,
               created_at: img.created_at,
             };
           })

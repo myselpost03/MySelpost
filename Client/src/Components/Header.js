@@ -29,13 +29,13 @@ const Header = () => {
 
   const [adVisible, setAdVisible] = useState(false);
   const [closeAdCountdown, setCloseAdCountdown] = useState(5); // 5 seconds countdown
-   const [showCommunityPopup, setShowCommunityPopup] = useState(false);
- 
-   const isTelegram =
-     typeof window !== 'undefined' &&
-     window.Telegram?.WebApp &&
-     window.Telegram.WebApp.initData !== '';
- 
+  const [showCommunityPopup, setShowCommunityPopup] = useState(false);
+
+  const isTelegram =
+    typeof window !== 'undefined' &&
+    window.Telegram?.WebApp &&
+    window.Telegram.WebApp.initData !== '';
+
   // Fetch user location on mount
   useEffect(() => {
     const detectLocation = async () => {
@@ -217,11 +217,7 @@ const Header = () => {
   };
 
   const handleChat = () => {
-    if (isTelegram){
-      navigate('/register')
-    } else {
-      setShowCommunityPopup(true);
-    }
+    navigate('/register');
   };
 
   const handleRoast = () => {
@@ -234,11 +230,7 @@ const Header = () => {
   };
 
   const handleMobileRedirect = (path) => {
-   if (isTelegram){
-     if (isMobile) navigate(path);
-   } else {
-    setShowCommunityPopup(true)
-   }
+    navigate(path);
   };
 
   return (
@@ -309,8 +301,7 @@ const Header = () => {
                 </nav>
               </>
             ) : (
-              
-            <nav className="nav">
+              <nav className="nav">
                 <button
                   type="button"
                   onClick={() => handleMobileRedirect('/login')}
@@ -426,12 +417,12 @@ const Header = () => {
       ) : (
         <AdultPopup isOpen={showPopup} onClose={() => setShowPopup(false)} />
       )}
-       {!isTelegram && (
-              <CommunityPopup
-                isOpen={showCommunityPopup}
-                onClose={() => setShowCommunityPopup(false)}
-              />
-            )}
+      {!isTelegram && (
+        <CommunityPopup
+          isOpen={showCommunityPopup}
+          onClose={() => setShowCommunityPopup(false)}
+        />
+      )}
     </header>
   );
 };

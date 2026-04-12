@@ -16,14 +16,14 @@ const AdsterraBanner = () => {
     if (isMobile) {
       // Mobile 320x50 Script
       script.setAttribute('data-cfasync', 'false');
-      script.src = 'https://www.highperformanceformat.com/f6e6d42e307215e194d6d045ca825845/invoke.js'; 
+      script.src = 'https://www.highperformanceformat.com/f81726d4889225ca5cb2d872ae5e7544/invoke.js'; 
       // Note: You usually need the config variable for Adsterra as well:
       window.atOptions = {
-        'key' : 'f6e6d42e307215e194d6d045ca825845',
-        'format' : 'iframe',
-        'height' : 50,
-        'width' : 320,
-        'params' : {}
+         'key' : 'f81726d4889225ca5cb2d872ae5e7544',
+    'format' : 'iframe',
+    'height' : 60,
+    'width' : 468,
+    'params' : {}
       };
     } else {
       // Desktop 728x90 Script

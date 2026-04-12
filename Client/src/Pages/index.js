@@ -50,4 +50,6 @@ export { default as GuestChat } from "./GuestChat";
 export { default as Videos } from "./Videos";
 export {default as EarningDashboard} from './EarningDashboard';
 export {default as MorningSprint} from './MorningSprint';
+export { default as Dating } from "./Dating";
+
 export { default as Demo } from "./Demo";

@@ -71,7 +71,7 @@ const DatingNavbar = () => {
 
   const tabs = [
     { id: 'home', icon: '🏠', label: 'Home', path: '/' }, // Replaced Matches with Home
-    { id: 'roast', icon: '🔥', label: 'Roast', path: '/roast' },
+    { id: 'roast', icon: '🔥', label: 'Date', path: '/date' },
     { id: 'earn', icon: '🎮', label: 'Earn', path: '/dashboard' },
     { id: 'messages', icon: '💬', label: 'Chat Room', path: '/chat-room' },
     { id: 'videos', icon: '🎥', label: 'Videos', path: '/videos' },
@@ -87,8 +87,8 @@ const DatingNavbar = () => {
       return; // stop navigation
     }*/}
 
-    if (tabId === 'roast') {
-      navigate('/roast');
+    if (tabId === 'date') {
+      navigate('/date');
     } else {
       navigate(path);
     }
