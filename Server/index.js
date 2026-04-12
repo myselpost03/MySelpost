@@ -1,23 +1,26 @@
 import "dotenv/config";
+import axios from "axios";
 import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import cors from "cors";
-import axios from "axios";
-import { DodoPayments } from 'dodopayments';
+import { DodoPayments } from "dodopayments";
+import { supabaseChat } from "../Client/src/Utils/supabaseGroupChat";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000"    ],
+    origin: ["https://myselpost.com"],
     credentials: true,
-     methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
   })
 );
 app.use(express.json());
+
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -314,8 +317,9 @@ app.delete("/delete-player", async (req, res) => {
 });
 
 const client = new DodoPayments({
-  bearerToken: '5Or_EagdmyanaWRl.2RD2jj_1ska6VUlJvs48Y4sMsrl4bwHDhyJnsSEiIk-QbGR8',
-  environment: 'test_mode', // for test environment
+  bearerToken:
+    "5Or_EagdmyanaWRl.2RD2jj_1ska6VUlJvs48Y4sMsrl4bwHDhyJnsSEiIk-QbGR8",
+  environment: "test_mode", // for test environment
 });
 
 // In-memory coins
@@ -325,7 +329,8 @@ app.post("/create-checkout-session", async (req, res) => {
   try {
     const { quantity, userId } = req.body;
 
-    if (!quantity) return res.status(400).json({ error: "Quantity is required" });
+    if (!quantity)
+      return res.status(400).json({ error: "Quantity is required" });
 
     const sessionResponse = await client.checkoutSessions.create({
       product_cart: [{ product_id: "pdt_hGntim2Yociijw5zJEWo2", quantity }],
@@ -346,7 +351,8 @@ app.post("/create-checkout-session", async (req, res) => {
 app.post("/confirm-payment", async (req, res) => {
   try {
     const { sessionId, userId } = req.body;
-    if (!sessionId || !userId) return res.status(400).json({ error: "Missing sessionId or userId" });
+    if (!sessionId || !userId)
+      return res.status(400).json({ error: "Missing sessionId or userId" });
 
     const session = await client.checkoutSessions.retrieve(sessionId);
 
@@ -355,9 +361,14 @@ app.post("/confirm-payment", async (req, res) => {
     if (session.status === "succeeded") {
       // Increment coins
       userCoins[userId] = (userCoins[userId] || 0) + 100;
-      res.json({ coins: userCoins[userId], message: "Coins added successfully" });
+      res.json({
+        coins: userCoins[userId],
+        message: "Coins added successfully",
+      });
     } else {
-      res.status(400).json({ message: "Payment not successful", status: session.status });
+      res
+        .status(400)
+        .json({ message: "Payment not successful", status: session.status });
     }
   } catch (err) {
     console.error(err);
@@ -366,8 +377,81 @@ app.post("/confirm-payment", async (req, res) => {
 });
 
 app.get("/coins/:userId", (req, res) => {
-  res.json({ userId: req.params.userId, coins: userCoins[req.params.userId] || 0 });
+  res.json({
+    userId: req.params.userId,
+    coins: userCoins[req.params.userId] || 0,
+  });
 });
+
+app.post("/create-access-invoice", async (req, res) => {
+  // Now we accept the feature type from the frontend
+  const { telegram_user_id, feature_type, title, amount } = req.body;
+
+  try {
+    const payload = JSON.stringify({
+      feature: feature_type,
+      timestamp: Date.now()
+    });
+
+    const response = await axios.post(`${TELEGRAM_API}/createInvoiceLink`, {
+      title: title, // e.g., "Unlock Gift Sending"
+      description: `Purchase access to ${feature_type}`,
+      payload: payload, 
+      currency: "XTR",
+      prices: [{ label: title, amount: amount }],
+    });
+
+    res.json({ success: true, invoice_url: response.data.result });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Error creating invoice");
+  }
+});
+
+// Webhook to handle successful payment
+app.post("/webhook", async (req, res) => {
+  const update = req.body;
+
+  try {
+    if (update.pre_checkout_query) {
+      await axios.post(`${TELEGRAM_API}/answerPreCheckoutQuery`, {
+        pre_checkout_query_id: update.pre_checkout_query.id,
+        ok: true,
+      });
+      return res.sendStatus(200);
+    }
+
+    if (update.message?.successful_payment) {
+      const payment = update.message.successful_payment;
+      const telegramUserId = update.message.from.id;
+      
+      // Parse the JSON payload we sent earlier
+      const payload = JSON.parse(payment.invoice_payload);
+
+      // Save to the universal permissions table
+      const { error } = await supabaseChat
+        .from('user_permissions')
+        .upsert({ 
+          telegram_user_id: telegramUserId,
+          feature_key: payload.feature, // e.g., "image_access"
+          payment_id: payment.telegram_payment_charge_id
+        });
+
+      if (error) throw error;
+
+      // Notify User
+      await axios.post(`${TELEGRAM_API}/sendMessage`, {
+        chat_id: update.message.chat.id,
+        text: `✅ Success! Access granted for: ${payload.feature}`,
+      });
+    }
+    res.sendStatus(200);
+  } catch (err) {
+    console.error("Webhook Error:", err.message);
+    res.sendStatus(500);
+  }
+});
+
 
 app._router.stack.forEach((r) => {
   if (r.route && r.route.path) {

@@ -5,6 +5,9 @@ import '../Styles/ChatRoom.css';
 import ChatHeader from '../Components/ChatHeader';
 import AdsterraBanner from '../Components/AdsterraBanner';
 import AdsterraNativeBanner from '../Components/AdsterraNativeBanner';
+import { FaImage } from 'react-icons/fa';
+import axios from 'axios';
+import StarModal from '../Components/StarModal';
 
 export default function ChatRoom() {
   const [messages, setMessages] = useState([]);
@@ -19,14 +22,20 @@ export default function ChatRoom() {
   const [userId, setUserId] = useState(() => {
     return localStorage.getItem('chat_user_id') || null;
   });
+  const [hasPaidAccess, setHasPaidAccess] = useState(false);
+  const [isStarModalOpen, setIsStarModalOpen] = useState(false);
   const [hasSentFirstMessage, setHasSentFirstMessage] = useState(false); // Track first message
   const messagesEndRef = useRef(null);
   const [messageCount, setMessageCount] = useState(0); // Track sent messages
   const [showTelegramModal, setShowTelegramModal] = useState(false); // Telegram limit modal
+  const [showImageModal, setShowImageModal] = useState(false); // Telegram limit modal
+  const fileInputRef = useRef(null); // Add this near other refs
   const navigate = useNavigate();
   const handleTelegramRedirect = () => {
     window.open('https://t.me/myselpost_bot/myselpost', '_blank'); // Replace with your actual link
   };
+  const tg = window.Telegram?.WebApp;
+  const tgUser = tg?.initDataUnsafe?.user;
   const isTelegram =
     typeof window !== 'undefined' &&
     window.Telegram?.WebApp &&
@@ -35,6 +44,21 @@ export default function ChatRoom() {
   const handleBack = () => {
     navigate(-1);
   };
+ useEffect(() => {
+  const checkAccess = async () => {
+    if (tgUser) {
+      const { data } = await supabaseChat
+        .from('user_permissions') // Use your unified permissions table
+        .select('*')
+        .eq('telegram_user_id', tgUser.id)
+        .eq('feature_key', 'group_chat_image_access')
+        .single();
+
+      if (data) setHasPaidAccess(true);
+    }
+  };
+  checkAccess();
+}, [tgUser]);
   useEffect(() => {
     const savedName = localStorage.getItem('chat_username');
     if (savedName) {
@@ -97,6 +121,83 @@ export default function ChatRoom() {
       setHasSentFirstMessage(true);
       fetchMessages();
     }
+  };
+  const handleSendImage = async () => {
+    
+    const tg = window.Telegram?.WebApp;
+    const tgUser = tg?.initDataUnsafe?.user;
+
+    if (!tgUser) {
+      console.log('Open inside Telegram');
+      return;
+    }
+
+    try {
+      // 1. Get the invoice URL from your backend
+      const response = await axios.post(
+        'https://bot-1hr9.onrender.com/create-access-invoice',
+        {
+          telegram_user_id: tgUser.id,
+          feature_type: 'group_chat_image_access', // Dynamic key
+          title: 'Unlock Group Image',
+          amount: 10, // Price in Stars
+        }
+      );
+
+      const { invoice_url } = response.data;
+
+      if (invoice_url) {
+        tg.openInvoice(invoice_url, (status) => {
+          // Statuses: 'paid', 'failed', 'pending', 'cancelled'
+          if (status === 'paid') {
+            setHasPaidAccess(true);
+            alert('Payment successful! You can now send images.');
+          } else if (status === 'failed') {
+            alert('Payment failed. Please try again.');
+          }
+        });
+
+        setIsStarModalOpen(false);
+      }
+    } catch (err) {
+      console.error('Error initiating payment:', err);
+      alert('Could not create invoice. Please try again later.');
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // 1. Upload to Supabase Storage
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${userId}/${Date.now()}.${fileExt}`;
+
+    const { data: uploadData, error: uploadError } = await supabaseChat.storage
+      .from('chat-images') // Ensure you have this bucket created
+      .upload(fileName, file);
+
+    if (uploadError) {
+      console.error('Upload failed:', uploadError);
+      return;
+    }
+
+    // 2. Get Public URL
+    const { data: urlData } = supabaseChat.storage
+      .from('chat-images')
+      .getPublicUrl(fileName);
+
+    // 3. Save message with image URL
+    await supabaseChat.from('group_chat').insert([
+      {
+        username,
+        user_id: userId,
+        message: '',
+        image_url: urlData.publicUrl,
+      },
+    ]);
+
+    fetchMessages();
   };
 
   return (
@@ -169,6 +270,29 @@ export default function ChatRoom() {
           </div>
         </div>
       )}
+      {showImageModal && (
+        <div className="chat-room-modal-overlay telegram-popup-overlay">
+          <div className="chat-room-modal-content telegram-popup-content">
+            <div className="telegram-icon-wrapper">
+              <svg viewBox="0 0 24 24" width="50" height="50" fill="#0088cc">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
+              </svg>
+            </div>
+            <h3>Send Image on Telegram!</h3>
+            <p>You have to use our telegram app 'myselpost' to send images.</p>
+
+            <button onClick={handleTelegramRedirect} className="telegram-btn">
+              Open App on Telegram (Free)
+            </button>
+            <button
+              className="close-limit-btn"
+              onClick={() => setShowImageModal(false)}
+            >
+              Maybe Later
+            </button>
+          </div>
+        </div>
+      )}
       {/* Full Screen Scrollable Area */}
       <main className="chat-room-messages-container">
         {messages.map((msg, index) => {
@@ -190,9 +314,20 @@ export default function ChatRoom() {
                 {msg.user_id !== userId && (
                   <span className="chat-room-bubble-user">{msg.username}</span>
                 )}
-                <p className="chat-room-bubble-text" style={{ color: '#111' }}>
-                  {msg.message}
-                </p>
+                {msg.image_url ? (
+                  <img
+                    src={msg.image_url}
+                    alt="chat"
+                    style={{ maxWidth: '200px', borderRadius: '8px' }}
+                  />
+                ) : (
+                  <p
+                    className="chat-room-bubble-text"
+                    style={{ color: '#111' }}
+                  >
+                    {msg.message}
+                  </p>
+                )}
               </div>
             </div>
           );
@@ -210,6 +345,32 @@ export default function ChatRoom() {
       {/* Fixed Bottom Input Area */}
       <footer className="chat-room-footer-input-bar">
         <form className="chat-room-input-form" onSubmit={sendMessage}>
+          <div
+            style={{
+              cursor: 'pointer',
+              paddingRight: '10px',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+            onClick={() => {
+              if (!isTelegram) {
+                setShowImageModal(true);
+              } else if (!hasPaidAccess) {
+                setIsStarModalOpen(true);
+              } else {
+                fileInputRef.current.click(); // Trigger file input
+              }
+            }}
+          >
+            <FaImage size={24} color="#888" />
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              accept="image/*"
+              onChange={handleFileUpload}
+            />
+          </div>
           <input
             type="text"
             placeholder="Type a message..."
@@ -223,6 +384,12 @@ export default function ChatRoom() {
           </button>
         </form>
       </footer>
+
+      <StarModal
+        isOpen={isStarModalOpen}
+        onClose={() => setIsStarModalOpen(false)}
+        onConfirm={handleSendImage}
+      />
     </div>
   );
 }

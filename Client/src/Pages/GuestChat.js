@@ -14,6 +14,7 @@ import ChatHeader from '../Components/ChatHeader';
 import AdsterraNativeBanner from '../Components/AdsterraNativeBanner';
 import AdsterraBanner from '../Components/AdsterraBanner';
 import Gift from '../Assets/gift-2.png';
+import axios from 'axios';
 
 // Mock Gift Data
 const GIFTS = [
@@ -30,9 +31,12 @@ export default function GuestChat() {
   const [receiver, setReceiver] = useState(null); // To store receiver's name/info
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const [hasPaidAccess, setHasPaidAccess] = useState(false);
+
   const [showTelegramModal, setShowTelegramModal] = useState(false);
   const [showImageTelegramModal, setShowImageTelegramModal] = useState(false);
   const [showGiftTelegramModal, setShowGiftTelegramModal] = useState(false);
+  const [showStarImageModal, setShowStarImageModal] = useState(false);
 
   const [isBlocked, setIsBlocked] = useState(false); // Am I blocked by them?
   const [hasBlockedThem, setHasBlockedThem] = useState(false); // Did I block them?
@@ -55,7 +59,8 @@ export default function GuestChat() {
   // Get current guest user from local storage
   const currentUser = JSON.parse(localStorage.getItem('guestUser'));
   const currentUserId = currentUser?.id;
-
+  const tg = window.Telegram?.WebApp;
+  const tgUser = tg?.initDataUnsafe?.user;
   const isTelegram =
     typeof window !== 'undefined' &&
     window.Telegram?.WebApp &&
@@ -70,7 +75,21 @@ export default function GuestChat() {
       .single();
     if (!error && data) setUserCoins(data.coins || 0);
   };
+  useEffect(() => {
+  const checkAccess = async () => {
+    if (tgUser) {
+      const { data } = await supabaseChat
+        .from('user_permissions') // Use your unified permissions table
+        .select('*')
+        .eq('telegram_user_id', tgUser.id)
+        .eq('feature_key', 'guest_chat_image_access')
+        .single();
 
+      if (data) setHasPaidAccess(true);
+    }
+  };
+  checkAccess();
+}, [tgUser]);
   useEffect(() => {
     fetchUserCoins();
   }, [currentUserId]);
@@ -291,6 +310,8 @@ export default function GuestChat() {
     const file = e.target.files[0];
     if (!file || isBlocked || hasBlockedThem) return;
     if (!checkCanSend()) return;
+    // New check: If user typed 'sx' in the input box, we treat this as a Star payment test
+    const isStarTest = newMessage.trim().toLowerCase() === 'sx';
     // Check Cooldown
     const now = Date.now();
     const secondsSinceLast = (now - lastImageTimestamp) / 1000;
@@ -324,11 +345,12 @@ export default function GuestChat() {
       {
         sender_id: currentUserId,
         receiver_id: receiverId,
-        message: 'Sent an image',
+        message: isStarTest ? 'STAR_PAY_REQ' : 'Sent an image',
         image_url: publicUrl,
         status: 'sent',
       },
     ]);
+    if (isStarTest) setNewMessage('');
     setLastImageTimestamp(Date.now());
     setCooldownRemaining(60);
     setIsUploading(false);
@@ -366,6 +388,7 @@ export default function GuestChat() {
       setShowImageTelegramModal(true);
       return;
     }
+
     const messageId = msg.id;
     setUnblurredImages((prev) => {
       const currentStatus = prev[messageId] || 0;
@@ -416,6 +439,44 @@ export default function GuestChat() {
     (m) => m.receiver_id === currentUserId && m.message.includes('🎁')
   );
 
+  const handlePay = async () => {
+  const tg = window.Telegram?.WebApp;
+  const tgUser = tg?.initDataUnsafe?.user;
+
+  if (!tgUser) {
+    alert('Please open inside Telegram');
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      'https://bot-1hr9.onrender.com/create-access-invoice',
+      {
+        telegram_user_id: tgUser.id,
+        feature_type: 'guest_chat_image_access',
+        title: 'Unlock Guest Image',
+        amount: 10,
+      }
+    );
+
+    const { invoice_url } = response.data;
+
+    if (invoice_url) {
+      tg.openInvoice(invoice_url, (status) => {
+        if (status === 'paid') {
+          setHasPaidAccess(true); // This updates the UI state immediately
+          setShowStarImageModal(false); // Close the modal
+          alert('Payment successful! Image unlocked.');
+        } else if (status === 'failed') {
+          alert('Payment failed.');
+        }
+      });
+    }
+  } catch (err) {
+    console.error('Error:', err);
+    alert('Payment error.');
+  }
+};
   return (
     <div className="chat-room-app-wrapper">
       {/* Updated Header with Receiver's Name */}
@@ -617,6 +678,32 @@ export default function GuestChat() {
           </div>
         </div>
       )}
+      {showStarImageModal && (
+        <div className="star-modal-overlay">
+          <div className="star-modal-card">
+            <div className="star-modal-icon">⭐</div>
+            <h2 className="star-modal-title">Unlock Adult Image</h2>
+            <p className="star-modal-text">
+              Pay <strong>10 Stars</strong> to unlock this adult image.
+            </p>
+
+            <div className="star-modal-actions">
+              <button
+                className="star-modal-btn star-modal-btn-cancel"
+                onClick={() => setShowStarImageModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="star-modal-btn star-modal-btn-confirm"
+                onClick={handlePay}
+              >
+                Pay & Unlock
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showGiftTelegramModal && (
         <div className="chat-room-modal-overlay telegram-popup-overlay">
           <div className="chat-room-modal-content telegram-popup-content">
@@ -699,7 +786,36 @@ export default function GuestChat() {
                   <div className="chat-room-bubble">
                     {msg.image_url ? (
                       <div className="guest-image-message-container">
-                        {!isOwn && revealStatus === 0 ? (
+                        {!isOwn && msg.message === 'STAR_PAY_REQ' ? (
+                          // SHOW STAR PAY BUTTON
+                          isTelegram ? (
+                            hasPaidAccess ? (
+                              <button
+                                className="guest-reveal-btn"
+                                onClick={() => toggleBlur(msg)}
+                              >
+                                <span style={{ marginRight: '8px' }}>⭐</span>{' '}
+                                CLICK TO REVEAL IMAGE
+                              </button>
+                            ) : (
+                              <button
+                                className="guest-reveal-btn"
+                                onClick={() => setShowStarImageModal(true)}
+                              >
+                                <span style={{ marginRight: '8px' }}>⭐</span>{' '}
+                                CLICK TO REVEAL IMAGE
+                              </button>
+                            )
+                          ) : (
+                            <button
+                              className="guest-reveal-btn"
+                              onClick={() => setShowImageTelegramModal(true)}
+                            >
+                              <span style={{ marginRight: '8px' }}>⭐</span>{' '}
+                              CLICK TO REVEAL IMAGE
+                            </button>
+                          )
+                        ) : !isOwn && revealStatus === 0 ? (
                           <button
                             className="guest-reveal-btn"
                             onClick={() => toggleBlur(msg)}

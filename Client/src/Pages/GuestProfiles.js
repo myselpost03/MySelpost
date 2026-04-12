@@ -16,7 +16,6 @@ import LoadingSpinner from '../Components/LoadingSpinner';
 import ReactCountryFlag from 'react-country-flag';
 import i18n from '../i18n';
 import CommunityPopup from '../Components/CommunityPopup';
-import AdVignette from "../Components/AdVignette";
 
 const countryNameToCode = {
   AF: 'AF',
@@ -441,6 +440,8 @@ const GuestProfiles = () => {
   const [showModal, setShowModal] = useState(true); // Show popup on entry
   const [unreadCounts, setUnreadCounts] = useState({});
   const [latestMessageTime, setLatestMessageTime] = useState({});
+  const [showLimitModal, setShowLimitModal] = useState(false);
+
   const [showVignette, setShowVignette] = useState(false);
   useEffect(() => {
     const savedGuest = JSON.parse(localStorage.getItem('guestUser'));
@@ -728,16 +729,48 @@ const GuestProfiles = () => {
   }, [users, activeTab, searchTerm, unreadCounts, latestMessageTime]); // Added unreadCounts as a dependency
 
   // Add this or update your existing handleUserClick
-  const handleUserClick = (receiverId) => {
-    setShowVignette(true);
-    // Optional: Prevent users from chatting with themselves
+  const handleUserClick = (receiverId, receiverGender) => {
     const savedGuest = JSON.parse(localStorage.getItem('guestUser'));
     if (savedGuest && savedGuest.id === receiverId) {
       alert('You cannot chat with yourself!');
       return;
     }
 
-    // Navigate to the chat page with the receiver's ID
+    if (receiverGender === 'female') {
+      const now = Date.now();
+      const FIVE_HOURS = 5 * 60 * 60 * 1000;
+
+      // Get the stored data (or default structure)
+      const storedData = JSON.parse(
+        localStorage.getItem('clickedFemalesData') ||
+          '{"list": [], "lastReset": null}'
+      );
+
+      let { list, lastReset } = storedData;
+
+      // Check if 5 hours have passed since the last reset
+      if (!lastReset || now - lastReset > FIVE_HOURS) {
+        list = [];
+        lastReset = now;
+      }
+
+      // Check if this specific user is already in the list
+      if (!list.includes(receiverId)) {
+        if (list.length >= 5) {
+          setShowLimitModal(true);
+          return;
+        }
+
+        // Add new female ID to the list and save updated data
+        list.push(receiverId);
+        localStorage.setItem(
+          'clickedFemalesData',
+          JSON.stringify({ list, lastReset })
+        );
+      }
+    }
+
+    // Navigate to the chat page
     navigate(`/guest-chat/${receiverId}`);
   };
 
@@ -890,7 +923,7 @@ const GuestProfiles = () => {
                   <>
                     <div
                       className="user-card"
-                      onClick={() => handleUserClick(user.id)}
+                      onClick={() => handleUserClick(user.id, user.gender)}
                     >
                       <div className="user-avatar-wrapper">
                         <img
@@ -979,7 +1012,7 @@ const GuestProfiles = () => {
                             className="dm-envelope"
                             onClick={(e) => {
                               e.stopPropagation(); // Prevent double trigger
-                              handleUserClick(user.id);
+                              handleUserClick(user.id, user.gender);
                             }}
                           />
                         </div>
@@ -1141,6 +1174,21 @@ const GuestProfiles = () => {
           isOpen={showCommunityPopup}
           onClose={() => setShowCommunityPopup(false)}
         />
+      )}
+      {showLimitModal && (
+        <div className="chat-room-modal-overlay telegram-popup-overlay">
+          <div className="chat-room-modal-content telegram-popup-content">
+            <div className="people-icon-wrapper">
+              <svg viewBox="0 0 24 24" width="50" height="50" fill="#0088cc">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+              </svg>
+            </div>
+            <h3>Limit Reached!</h3>
+            <p>The limit for free accounts is 5 chats every 5 hours.</p>
+
+            <button className="telegram-btn">Okay</button>
+          </div>
+        </div>
       )}
     </div>
   );
