@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import AdsterraNativeBanner from '../Components/AdsterraNativeBanner';
 
 // --- Sub-Component for Individual Posts ---
-const TelegramPost = ({ channel, postId }) => {
+const TelegramPost = ({ channel, postId, onSeen }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -14,8 +14,11 @@ const TelegramPost = ({ channel, postId }) => {
       script.setAttribute('data-telegram-post', `${channel}/${postId}`);
       script.setAttribute('data-width', '100%');
       containerRef.current.appendChild(script);
+
+      // Mark post as seen after render
+      onSeen(postId);
     }
-  }, [channel, postId]);
+  }, [channel, postId, onSeen]);
 
   return (
     <div style={{ position: 'relative', marginBottom: '25px' }}>
@@ -35,25 +38,47 @@ const TelegramPost = ({ channel, postId }) => {
 
 // --- Main Application Component ---
 export default function MemeFeed() {
-  const channelName = 'eng_vids_funny';
-  const TOTAL_POSTS = 30;
+  const channelName = 'ind_meme_feed';
+  const TOTAL_POSTS = 200;
   const INITIAL_LOAD = 6;
-  
-  // Initialize state with the first 6 IDs: [200, 199, 198, 197, 196, 195]
-  const [postIds, setPostIds] = useState(
-    Array.from({ length: INITIAL_LOAD }, (_, i) => TOTAL_POSTS - i)
-  );
 
-  const loadMore = () => {
-    const lastId = postIds[postIds.length - 1];
-    if (lastId > 1) {
-      const nextPosts = Array.from(
-        { length: Math.min(6, lastId - 1) }, 
-        (_, i) => lastId - 1 - i
-      );
-      setPostIds([...postIds, ...nextPosts]);
+  const getSeenPosts = () => {
+    return JSON.parse(localStorage.getItem('seenPosts') || '[]');
+  };
+
+  const saveSeenPosts = (posts) => {
+    localStorage.setItem('seenPosts', JSON.stringify(posts));
+  };
+
+  const [seenPosts, setSeenPosts] = useState(getSeenPosts());
+
+  const getUnseenPosts = () => {
+    const allPosts = Array.from({ length: TOTAL_POSTS }, (_, i) => TOTAL_POSTS - i);
+    return allPosts.filter((id) => !seenPosts.includes(id));
+  };
+
+  const [postIds, setPostIds] = useState(() => {
+    return getUnseenPosts().slice(0, INITIAL_LOAD);
+  });
+
+  const markAsSeen = (id) => {
+    if (!seenPosts.includes(id)) {
+      const updated = [...seenPosts, id];
+      setSeenPosts(updated);
+      saveSeenPosts(updated);
     }
   };
+
+  const loadMore = () => {
+    const unseen = getUnseenPosts();
+    const currentCount = postIds.length;
+
+    const nextPosts = unseen.slice(currentCount, currentCount + 6);
+    setPostIds([...postIds, ...nextPosts]);
+  };
+
+  const unseenRemaining = getUnseenPosts().length;
+  const isEndOfFeed = postIds.length >= unseenRemaining;
 
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif', backgroundColor: '#f0f2f5' }}>
@@ -66,13 +91,13 @@ export default function MemeFeed() {
         <main style={{ position: 'relative', zIndex: 1 }}>
           {postIds.map((id, index) => (
             <React.Fragment key={id}>
-              <TelegramPost channel={channelName} postId={id} />
+              <TelegramPost channel={channelName} postId={id} onSeen={markAsSeen} />
               {(index + 1) % 3 === 0 && <AdsterraNativeBanner />}
             </React.Fragment>
           ))}
         </main>
 
-        {postIds.length < TOTAL_POSTS && (
+        {!isEndOfFeed && postIds.length > 0 && (
           <button
             onClick={loadMore}
             style={{
@@ -91,6 +116,21 @@ export default function MemeFeed() {
           >
             Load Older Posts
           </button>
+        )}
+
+        {isEndOfFeed && (
+          <div
+            style={{
+              textAlign: 'center',
+              marginTop: '30px',
+              padding: '20px',
+              color: '#777',
+              fontSize: '16px',
+              fontWeight: 'bold',
+            }}
+          >
+            🎉 You're all caught up!
+          </div>
         )}
       </div>
     </div>
