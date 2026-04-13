@@ -5,21 +5,35 @@ import { supabaseChat } from '../Utils/supabaseGroupChat';
 import { users } from '../Data/users';
 import SketchyAlert from '../Components/SketchyAlert';
 import toast, { Toaster } from 'react-hot-toast';
-// 1. Add this to your Card component
+
 function Card({ user, isActionable, onAction, onUploadClick, onMessage }) {
   const [isLoaded, setIsLoaded] = useState(false);
   return (
     <div style={cardStyle}>
       {/* Container for image + upload button */}
-      <div style={{ shimmer, position: 'relative', width: '300px', height: '300px' }}>
+      <div
+        style={{
+          shimmer,
+          position: 'relative',
+          width: '300px',
+          height: '300px',
+        }}
+      >
         {!isLoaded && (
-          <div className="shimmer" style={{ width: '300px', height: '300px' }} />
+          <div
+            className="shimmer"
+            style={{ width: '300px', height: '300px' }}
+          />
         )}
-        <img src={user.image} alt={user.name} style={{ 
-            ...imageStyle, 
-            display: isLoaded ? 'block' : 'none' 
-          }} 
-          onLoad={() => setIsLoaded(true)} />
+        <img
+          src={user.image}
+          alt={user.name}
+          style={{
+            ...imageStyle,
+            display: isLoaded ? 'block' : 'none',
+          }}
+          onLoad={() => setIsLoaded(true)}
+        />
 
         {/* The "Cool" Upload Button */}
         <div style={rectUploadBtnStyle} onClick={onUploadClick}>
@@ -59,10 +73,10 @@ function Card({ user, isActionable, onAction, onUploadClick, onMessage }) {
     </div>
   );
 }
+
 export default function Dating() {
   const [showModal, setShowModal] = useState(false);
   const [showTelegramModal, setShowTelegramModal] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [animationClass, setAnimationClass] = useState('');
   const [showFreeLimitModal, setShowFreeLimitModal] = useState(false);
@@ -72,14 +86,35 @@ export default function Dating() {
   const [showChatModal, setShowChatModal] = useState(false); // NEW
   const [selectedTarget, setSelectedTarget] = useState(null); // NEW
   const [chatMessage, setChatMessage] = useState(''); // NEW
+  // Add this in your Dating component
+  const [messagedUsers, setMessagedUsers] = useState([]); // Array to store IDs/names
+
+  const [datingLastAdTime, setDatingLastAdTime] = useState(0);
+  const [showAdModal, setShowAdModal] = useState(false);
+
   const navigate = useNavigate();
+
   const isTelegram =
     typeof window !== 'undefined' &&
     window.Telegram?.WebApp &&
     window.Telegram.WebApp.initData !== '';
+
   const swipeLimit = isTelegram ? 40 : 10;
+
   const handleTelegramRedirect = () => {
     window.open('https://t.me/myselpost_bot/myselpost', '_blank');
+  };
+
+  const handleAdAction = (direction) => {
+    if (direction === 'like' && isTelegram) {
+      const now = Date.now();
+      // Check if 60 seconds have passed since last ad
+      if (datingLastAdTime === 0 || now - datingLastAdTime >= 60000) {
+        setShowAdModal(true);
+        return;
+      }
+    }
+    handleAction(direction);
   };
 
   const handleAction = (direction) => {
@@ -107,13 +142,30 @@ export default function Dating() {
   const nextIndex = (currentIndex + 1) % users.length;
 
   const handleOpenChat = (targetUser) => {
-   if (!isTelegram) {
-      setShowTelegramModal(true);
+    if (!isTelegram) {
+      setShowMessageModal(true);
+      return;
+    }
+    // Check if already messaged
+    if (messagedUsers.includes(targetUser.name)) {
+      toast.error("You've already sent a message to this person!");
+      return;
+    }
+
+    // Check if limit reached
+    if (messagedUsers.length >= 2) {
+      setAlertMessage({
+        text: 'You can only message 2 people per day!',
+        withButton: true,
+      });
       return;
     }
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) {
-      setAlertMessage({ text: "Please login to send a message.", withButton: true });
+      setAlertMessage({
+        text: 'Please login to send a message.',
+        withButton: true,
+      });
       return;
     }
     setSelectedTarget(targetUser);
@@ -132,6 +184,7 @@ export default function Dating() {
         },
       ]);
       if (error) throw error;
+      setMessagedUsers((prev) => [...prev, selectedTarget.name]);
       toast.success('Message sent successfully!', {
         duration: 4000,
         position: 'top-right',
@@ -155,29 +208,27 @@ export default function Dating() {
         .btn-action:active { transform: scale(0.9); }
       `}</style>
       {showChatModal && (
-        <div style={modalOverlayStyle}>
-          <div style={modalContentStyle}>
-            <h3>Message {selectedTarget?.name}</h3>
+        <div className="chat-modal-overlay">
+          <div className="chat-modal-container">
+            <h3 className="chat-modal-title">Message {selectedTarget?.name}</h3>
+
             <textarea
+              className="chat-modal-input"
               value={chatMessage}
               onChange={(e) => setChatMessage(e.target.value)}
               placeholder="Type something special to get her attention..."
-              style={{
-                width: '90%',
-                height: '80px',
-                margin: '10px 0',
-                padding: '10px',
-              }}
             />
-            <div
-              style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}
-            >
-              <button onClick={submitMessage} style={closeBtnStyle}>
+
+            <div className="chat-modal-actions">
+              <button
+                className="chat-modal-btn chat-modal-btn--primary"
+                onClick={submitMessage}
+              >
                 Send
               </button>
               <button
+                className="chat-modal-btn chat-modal-btn--secondary"
                 onClick={() => setShowChatModal(false)}
-                style={{ ...closeBtnStyle, background: '#ccc' }}
               >
                 Cancel
               </button>
@@ -186,13 +237,32 @@ export default function Dating() {
         </div>
       )}
       {showFreeLimitModal && (
-        <div style={modalOverlayStyle}>
-          <div style={modalContentStyle}>
-            <h3>Limit Reached</h3>
-            <p>Free users can only swipe 40 cards per day.</p>
+        <div className="limit-modal-overlay">
+          <div className="limit-modal-content">
+            <div className="limit-modal-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <h3 className="limit-modal-title">Limit Reached</h3>
+            <p className="limit-modal-message">
+              Free users can only swipe 40 cards per day.
+            </p>
             <button
+              className="limit-modal-close-btn"
               onClick={() => setShowFreeLimitModal(false)}
-              style={closeBtnStyle}
             >
               Close
             </button>
@@ -200,104 +270,166 @@ export default function Dating() {
         </div>
       )}
       {showModal && (
-        <div style={modalOverlayStyle}>
-          <div style={modalContentStyle}>
-            <h2 style={{ color: '#333' }}>Verification Pending</h2>
-            <p style={{ color: '#666', lineHeight: '1.6' }}>
-              Your account is currently undergoing an automated security review.
-              Uploads will be <b>automatically enabled in 30 days</b> once your
-              human presence is verified.
+        <div className="security-modal-overlay">
+          <div className="security-modal-content">
+          
+            <h2>🛡️ Verification Pending</h2>
+            <p>
+              Your account is currently undergoing an{' '}
+              <strong>automated security review</strong>. Uploads will be{' '}
+              <strong>automatically enabled in 30 days</strong> once your human
+              presence is verified.
             </p>
-            <button onClick={() => setShowModal(false)} style={closeBtnStyle}>
+
+            <button
+              className="security-btn"
+              onClick={() => setShowModal(false)}
+            >
               Got it
             </button>
           </div>
         </div>
       )}
-
+      {showAdModal && (
+        <div className="dating-modal-overlay">
+          <div className="dating-ad-modal">
+            <h3 className="modal-title">
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 24 24"
+                fill="#ff4757"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{
+                  filter: 'drop-shadow(0px 4px 6px rgba(255, 71, 87, 0.3))',
+                }}
+              >
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+              <span>Get More Swipes</span>
+            </h3>
+            <p className="modal-description">
+              Watch an ad to continue, or go Premium for an
+              <span className="highlight-adfree"> ad-free </span>
+              experience.
+            </p>
+            <div className="dating-button-group">
+              <button
+                onClick={() => {
+                  setDatingLastAdTime(Date.now());
+                  setShowAdModal(false);
+                  handleAction('like');
+                }}
+                className="dating-btn-primary"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ marginRight: '10px', verticalAlign: 'middle' }}
+                >
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                Watch Ad
+              </button>
+              <button
+                className="dating-btn-secondary"
+                onClick={() => setShowAdModal(false)}
+              >
+                Upgrade (Stars)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div style={{ position: 'relative', width: '300px', height: '450px' }}>
         <div style={{ position: 'absolute', zIndex: 1 }}>
           <Card
             user={users[nextIndex]}
             onMessage={() => handleOpenChat(users[currentIndex])}
             onUploadClick={() => setShowModal(true)}
+            
           />
         </div>
         <div className={`card-wrapper ${animationClass}`} style={{ zIndex: 2 }}>
           <Card
             user={users[currentIndex]}
             isActionable
-            onAction={handleAction}
+            onAction={handleAdAction}
             onMessage={() => handleOpenChat(users[currentIndex])}
+              onUploadClick={() => setShowModal(true)} 
+
           />
         </div>
       </div>
       {showTelegramModal && (
-        <div className="chat-room-modal-overlay telegram-popup-overlay">
-          <div className="chat-room-modal-content telegram-popup-content">
-            <div className="telegram-icon-wrapper">
+        <div className="tg-modal-overlay">
+          <div className="tg-modal-card">
+            <div className="tg-modal-icon">
               <svg viewBox="0 0 24 24" width="50" height="50" fill="#0088cc">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
               </svg>
             </div>
-            <h3>Swipe More on Telegram!</h3>
-            <p>You've already swiped many cards here.</p>
-            <p>
-              To keep swiping the dating cards, join us on our official Telegram
-              app!
+
+            <h3 className="tg-modal-title">Swipe More on Telegram!</h3>
+
+            <p className="tg-modal-desc">
+              <strong>Swipe more</strong> and chat with your matches directly on
+              our Telegram community.
             </p>
-            <button onClick={handleTelegramRedirect} className="telegram-btn">
-              Find Your Match on Telegram (Free)
-            </button>
-            <button
-              className="close-limit-btn"
-              onClick={() => setShowTelegramModal(false)}
-            >
-              Maybe Later
-            </button>
+
+            <div className="tg-modal-actions">
+              <button
+                className="tg-modal-btn tg-modal-btn--primary"
+                onClick={handleTelegramRedirect}
+              >
+                Open App on Telegram (Free)
+              </button>
+              <button
+                className="tg-modal-btn tg-modal-btn--secondary"
+                onClick={() => setShowTelegramModal(false)}
+              >
+                Maybe Later
+              </button>
+            </div>
           </div>
         </div>
       )}
       {showMessageModal && (
-        <div className="chat-room-modal-overlay telegram-popup-overlay">
-          <div className="chat-room-modal-content telegram-popup-content">
-            <div className="telegram-icon-wrapper">
+        <div className="tg-modal-overlay">
+          <div className="tg-modal-card">
+            <div className="tg-modal-icon">
               <svg viewBox="0 0 24 24" width="50" height="50" fill="#0088cc">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
               </svg>
             </div>
-            <h3>Send Message on Telegram!</h3>
-            <p>You can only send message via our official telegram app.</p>
-            <p>
-              Join our growing community on telegram and find suitable matches
-              for you via messaging!
+
+            <h3 className="tg-modal-title">Send Message on Telegram!</h3>
+
+            <p className="tg-modal-desc">
+              You can only send message via our official telegram app.
             </p>
-            <button onClick={handleTelegramRedirect} className="telegram-btn">
-              Open App on Telegram (Free)
-            </button>
-            <button
-              className="close-limit-btn"
-              onClick={() => setShowMessageModal(false)}
-            >
-              Maybe Later
-            </button>
-          </div>
-        </div>
-      )}
-      {showAuthModal && (
-        <div style={modalOverlayStyle}>
-          <div style={modalContentStyle}>
-            <h3>Message via Telegram</h3>
-            <p>To send a message, please continue on our Telegram app.</p>
-            <button onClick={handleTelegramRedirect} style={closeBtnStyle}>
-              Join Telegram
-            </button>
-            <button
-              onClick={() => setShowAuthModal(false)}
-              style={{ ...closeBtnStyle, background: '#ccc' }}
-            >
-              Cancel
-            </button>
+            
+
+            <div className="tg-modal-actions">
+              <button
+                className="tg-modal-btn tg-modal-btn--primary"
+                onClick={handleTelegramRedirect}
+              >
+                Open App on Telegram (Free)
+              </button>
+              <button
+                className="tg-modal-btn tg-modal-btn--secondary"
+                onClick={() => setShowMessageModal(false)}
+              >
+                Maybe Later
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -356,7 +488,8 @@ const imageStyle = { width: '300px', height: '300px', objectFit: 'cover' };
 
 const shimmer = {
   background: '#f6f7f8',
-  backgroundImage: 'linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%)',
+  backgroundImage:
+    'linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%)',
   backgroundRepeat: 'no-repeat',
   backgroundSize: '800px 300px',
   display: 'inline-block',
@@ -447,4 +580,3 @@ const closeBtnStyle = {
   boxShadow: '4px 4px 0px #000',
   transition: 'transform 0.1s',
 };
-

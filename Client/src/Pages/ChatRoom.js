@@ -245,51 +245,68 @@ export default function ChatRoom() {
         </div>
       )}
       {showTelegramModal && (
-        <div className="chat-room-modal-overlay telegram-popup-overlay">
-          <div className="chat-room-modal-content telegram-popup-content">
-            <div className="telegram-icon-wrapper">
+       <div className="tg-modal-overlay">
+          <div className="tg-modal-card">
+            <div className="tg-modal-icon">
               <svg viewBox="0 0 24 24" width="50" height="50" fill="#0088cc">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
               </svg>
             </div>
-            <h3>Chat More on Telegram!</h3>
-            <p>You've already chatted so much here.</p>
-            <p>
-              To keep the conversation going, join us on our official Telegram
-              app!
+
+            <h3 className="tg-modal-title">Chat More on Telegram!</h3>
+
+            <p className="tg-modal-desc">
+              You've chatted a lot here! Continue the conversation in our
+              Telegram community.
             </p>
-            <button onClick={handleTelegramRedirect} className="telegram-btn">
-              Chat on Telegram (Free)
-            </button>
-            <button
-              className="close-limit-btn"
-              onClick={() => setShowTelegramModal(false)}
-            >
-              Maybe Later
-            </button>
+
+            <div className="tg-modal-actions">
+              <button
+                className="tg-modal-btn tg-modal-btn--primary"
+                onClick={handleTelegramRedirect}
+              >
+                Chat on Telegram (Free)
+              </button>
+              <button
+                className="tg-modal-btn tg-modal-btn--secondary"
+                onClick={() => setShowTelegramModal(false)}
+              >
+                Maybe Later
+              </button>
+            </div>
           </div>
         </div>
       )}
       {showImageModal && (
-        <div className="chat-room-modal-overlay telegram-popup-overlay">
-          <div className="chat-room-modal-content telegram-popup-content">
-            <div className="telegram-icon-wrapper">
+        <div className="tg-modal-overlay">
+          <div className="tg-modal-card">
+            <div className="tg-modal-icon">
               <svg viewBox="0 0 24 24" width="50" height="50" fill="#0088cc">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
               </svg>
             </div>
-            <h3>Send Image on Telegram!</h3>
-            <p>You have to use our telegram app 'myselpost' to send images.</p>
 
-            <button onClick={handleTelegramRedirect} className="telegram-btn">
-              Open App on Telegram (Free)
-            </button>
-            <button
-              className="close-limit-btn"
-              onClick={() => setShowImageModal(false)}
-            >
-              Maybe Later
-            </button>
+            <h3 className="tg-modal-title">Send Image on Telegram</h3>
+
+            <p className="tg-modal-desc">
+              For privacy and security, full-resolution images can only be
+              send within the official Telegram app.
+            </p>
+
+            <div className="tg-modal-actions">
+              <button
+                className="tg-modal-btn tg-modal-btn--primary"
+                onClick={handleTelegramRedirect}
+              >
+                Open Telegram to Send Image
+              </button>
+              <button
+                className="tg-modal-btn tg-modal-btn--secondary"
+                onClick={() => setShowImageModal(false)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

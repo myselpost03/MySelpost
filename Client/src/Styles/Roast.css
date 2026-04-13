@@ -2,6 +2,129 @@
 @import url(https://fonts.googleapis.com/css?family=Concert+One:regular);
 @import url(https://fonts.googleapis.com/css?family=Schoolbell:regular);
 @import url(https://fonts.googleapis.com/css?family=RocknRoll+One:regular);
+
+/* Overlay to darken the background */
+.dating-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px); /* Modern frosted glass effect */
+}
+
+/* The Modal Card */
+.dating-ad-modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-title {
+  display: flex;         /* Enables flexbox */
+  align-items: center;   /* Vertically aligns icon and text */
+  justify-content: center; /* Horizontally centers content */
+  gap: 12px;             /* Adds space between the icon and text */
+  margin: 0;             /* Reset default margins */
+  font-size: 1.5rem;     /* Adjust font size as needed */
+  color: #333;
+}
+
+/* Optional: Ensure the SVG doesn't shrink or stretch */
+.modal-title svg {
+  flex-shrink: 0;
+  display: block;        /* Removes extra bottom space common with inline elements */
+}
+
+.modal-description {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+/* Style for "Premium" */
+.highlight-premium {
+  color: #ffb703; /* Matches your gold star icon */
+  font-weight: 700;
+}
+
+/* Style for "ad-free" */
+.highlight-adfree {
+  background: #fff0f1; /* Very light pink background */
+  color: #ff4757;      /* Primary brand color */
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.dating-ad-modal h3 {
+  margin-top: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.dating-ad-modal p {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+/* Button Group */
+.dating-button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Primary Button (Watch Ad) */
+.dating-btn-primary {
+  background: linear-gradient(135deg, #ff4757, #ff6b81);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 50px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.dating-btn-primary:hover {
+  transform: scale(1.03);
+  background: #ff4757;
+}
+
+/* Secondary Button (Upgrade) */
+.dating-btn-secondary {
+  background: transparent;
+  color: #ff4757;
+  border: 2px solid #ff4757;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dating-btn-secondary:hover {
+  background: #fff5f5;
+}
+
+/* Simple Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* Container needs perspective for 3D effects */
 .roast-card-container {
   perspective: 1000px;

@@ -1,5 +1,5 @@
 import React from "react";
-import "../Styles/TelegramPopup.css";
+import "../Styles/AlertBoxes.css";
 
 const TelegramPopup = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
