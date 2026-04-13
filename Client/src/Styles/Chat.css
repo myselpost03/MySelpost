@@ -2,7 +2,41 @@
 @import url('https://fonts.googleapis.com/css?family=Patrick+Hand:regular');
 @import url(https://fonts.googleapis.com/css?family=Signika:regular,500,600,700);
 /* Animation for the FAB when it appears */
+.notify-float-btn {
+ position: fixed;
+  right: 80px;
+  bottom: 85px;
+  z-index: 100;
+  
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  outline: none;
+  padding: 16px;
+  font-family: 'Luckiest Guy', cursive, sans-serif; /* Your preferred font */
+  font-size: 15px;
+  text-transform: uppercase;
+  color: #fff;
+  letter-spacing: 1px;
+  
+  /* Funky Gradient & 3D Border */
+  background: linear-gradient(180deg, #ff7f50 0%, #ff4757 100%);
+  border-radius: 15px;
+  
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
 
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+}
+
+.notify-float-btn:hover {
+  transform: scale(1.1);
+}
 
 /* Ensure the button doesn't cover the very last message */
 .chat-room-messages-container {

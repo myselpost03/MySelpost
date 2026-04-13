@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import OneSignal from 'react-onesignal';
 import {
   FaBan,
   FaImage,
@@ -32,7 +33,9 @@ export default function GuestChat() {
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const [hasPaidAccess, setHasPaidAccess] = useState(false);
-
+ const [checkingPermission, setCheckingPermission] = useState(true);
+   const [notificationAllowed, setNotificationAllowed] = useState(false);
+   
   const [showTelegramModal, setShowTelegramModal] = useState(false);
   const [showImageTelegramModal, setShowImageTelegramModal] = useState(false);
   const [showGiftTelegramModal, setShowGiftTelegramModal] = useState(false);
@@ -93,6 +96,53 @@ export default function GuestChat() {
   useEffect(() => {
     fetchUserCoins();
   }, [currentUserId]);
+
+   // --- OneSignal Permission Check ---
+   useEffect(() => {
+  const checkPermission = async () => {
+    try {
+      const saved = localStorage.getItem('notifSubscribed');
+
+      if (Notification.permission === 'granted' || saved === 'true') {
+        setNotificationAllowed(true);
+        alert("🔔 Notifications enabled!");
+        await OneSignal.User.PushSubscription.optIn();
+      } else {
+        setNotificationAllowed(false);
+      }
+    } catch (err) {
+      console.error(err);
+      setNotificationAllowed(false);
+    } finally {
+      setCheckingPermission(false);
+    }
+  };
+
+  checkPermission();
+}, []);
+  
+    const handleSubscribe = async () => {
+      try {
+        const permission = await OneSignal.Notifications.requestPermission();
+  
+        if (permission === true || Notification.permission === 'granted') {
+          await OneSignal.User.PushSubscription.optIn();
+  
+          const playerId = OneSignal.User.PushSubscription.id;
+          //console.log('✅ Player ID:', playerId);
+  
+          setNotificationAllowed(true);
+        localStorage.setItem('notifSubscribed', 'true');
+
+        } else {
+          console.log('❌ Permission denied');
+          setNotificationAllowed(false);
+        }
+      } catch (err) {
+        console.error('❌ Error subscribing:', err);
+        setNotificationAllowed(false);
+      }
+    };
 
   // Handle Ad Watch (10 coins + 30s cooldown)
   const handleWatchAd = async () => {
@@ -477,6 +527,7 @@ export default function GuestChat() {
       alert('Payment error.');
     }
   };
+
   return (
     <div className="chat-room-app-wrapper">
       {/* Updated Header with Receiver's Name */}
@@ -502,12 +553,22 @@ export default function GuestChat() {
           <AdsterraBanner />
         </div>
       </div>
-      <button
+      <div style={{display: 'flex', flexDirection: 'row'}}>
+        <button
         className="fixed-gifts-btn"
         onClick={() => setShowReceivedGifts(true)}
       >
         <img src={Gift} alt="Gift Box" className="gift-img" />
       </button>
+       {!notificationAllowed && !checkingPermission && (
+  <button
+    onClick={handleSubscribe}
+    className="notify-float-btn"
+  >
+    🔔
+  </button>
+)}
+      </div>
       {showReceivedGifts && (
         <div
           className="gift-palette-overlay"
@@ -616,12 +677,7 @@ export default function GuestChat() {
                     <FaPlayCircle /> Watch Ad (+10 Coins)
                   </>
                 )}
-              </button>
-
-              <button className="coin-modal-btn coin-modal-btn--highlight">
-                <span style={{ marginRight: '8px' }}>⭐</span> Buy Telegram
-                Stars
-              </button>
+              </button>/
 
               <button
                 className="coin-modal-btn coin-modal-btn--secondary"
@@ -968,6 +1024,7 @@ export default function GuestChat() {
               >
                 <FaGift />
               </button>
+              
               <input
                 type="text"
                 placeholder="Type a message..."
@@ -988,6 +1045,7 @@ export default function GuestChat() {
           </footer>
         </>
       )}
+     
     </div>
   );
 }

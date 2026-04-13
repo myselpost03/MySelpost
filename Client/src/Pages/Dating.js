@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SketchyHeader from '../Components/SketchyHeader';
 import { supabaseChat } from '../Utils/supabaseGroupChat';
 import { users } from '../Data/users';
 import SketchyAlert from '../Components/SketchyAlert';
 import toast, { Toaster } from 'react-hot-toast';
+import axios from 'axios';
 
 function Card({ user, isActionable, onAction, onUploadClick, onMessage }) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -91,9 +92,10 @@ export default function Dating() {
 
   const [datingLastAdTime, setDatingLastAdTime] = useState(0);
   const [showAdModal, setShowAdModal] = useState(false);
-
+  const [hasPaidAccess, setHasPaidAccess] = useState(false);
   const navigate = useNavigate();
-
+  const tg = window.Telegram?.WebApp;
+  const tgUser = tg?.initDataUnsafe?.user;
   const isTelegram =
     typeof window !== 'undefined' &&
     window.Telegram?.WebApp &&
@@ -101,11 +103,31 @@ export default function Dating() {
 
   const swipeLimit = isTelegram ? 40 : 10;
 
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (tgUser) {
+        const { data } = await supabaseChat
+          .from('user_permissions') // Use your unified permissions table
+          .select('*')
+          .eq('telegram_user_id', tgUser.id)
+          .eq('feature_key', 'dating_upgrade_no_ads')
+          .single();
+
+        if (data) setHasPaidAccess(true);
+      }
+    };
+    checkAccess();
+  }, [tgUser]);
+
   const handleTelegramRedirect = () => {
     window.open('https://t.me/myselpost_bot/myselpost', '_blank');
   };
 
   const handleAdAction = (direction) => {
+    if (hasPaidAccess) {
+      handleAction(direction);
+      return;
+    }
     if (direction === 'like' && isTelegram) {
       const now = Date.now();
       // Check if 60 seconds have passed since last ad
@@ -121,7 +143,7 @@ export default function Dating() {
     if (animationClass) return;
 
     // NEW: Check limit before processing swipe
-    if (swipeCount >= swipeLimit) {
+    if (!hasPaidAccess && swipeCount >= swipeLimit) {
       if (isTelegram) {
         setShowFreeLimitModal(true);
       } else {
@@ -193,6 +215,47 @@ export default function Dating() {
       setChatMessage('');
     } catch (err) {
       console.error('Error:', err);
+    }
+  };
+
+  const handleUpgrade = async () => {
+    const tg = window.Telegram?.WebApp;
+    const tgUser = tg?.initDataUnsafe?.user;
+
+    if (!tgUser) {
+      console.log('Open inside Telegram');
+      return;
+    }
+    try {
+      // 1. Get the invoice URL from your backend
+      const response = await axios.post(
+        'https://bot-1hr9.onrender.com/create-access-invoice',
+        {
+          telegram_user_id: tgUser.id,
+          feature_type: 'dating_upgrade_no_ads', // Dynamic key
+          title: 'Dating Upgraded',
+          amount: 30, // Price in Stars
+        }
+      );
+
+      const { invoice_url } = response.data;
+
+      if (invoice_url) {
+        tg.openInvoice(invoice_url, (status) => {
+          // Statuses: 'paid', 'failed', 'pending', 'cancelled'
+          if (status === 'paid') {
+            setHasPaidAccess(true);
+            alert('Payment successful! You can now swipe without any ads.');
+          } else if (status === 'failed') {
+            alert('Payment failed. Please try again.');
+          }
+        });
+
+        setShowAdModal(false);
+      }
+    } catch (err) {
+      console.error('Error initiating payment:', err);
+      alert('Could not create invoice. Please try again later.');
     }
   };
 
@@ -272,7 +335,6 @@ export default function Dating() {
       {showModal && (
         <div className="security-modal-overlay">
           <div className="security-modal-content">
-          
             <h2>🛡️ Verification Pending</h2>
             <p>
               Your account is currently undergoing an{' '}
@@ -337,10 +399,7 @@ export default function Dating() {
                 </svg>
                 Watch Ad
               </button>
-              <button
-                className="dating-btn-secondary"
-                onClick={() => setShowAdModal(false)}
-              >
+              <button className="dating-btn-secondary" onClick={handleUpgrade}>
                 Upgrade (Stars)
               </button>
             </div>
@@ -353,7 +412,6 @@ export default function Dating() {
             user={users[nextIndex]}
             onMessage={() => handleOpenChat(users[currentIndex])}
             onUploadClick={() => setShowModal(true)}
-            
           />
         </div>
         <div className={`card-wrapper ${animationClass}`} style={{ zIndex: 2 }}>
@@ -362,8 +420,7 @@ export default function Dating() {
             isActionable
             onAction={handleAdAction}
             onMessage={() => handleOpenChat(users[currentIndex])}
-              onUploadClick={() => setShowModal(true)} 
-
+            onUploadClick={() => setShowModal(true)}
           />
         </div>
       </div>
@@ -414,7 +471,6 @@ export default function Dating() {
             <p className="tg-modal-desc">
               You can only send message via our official telegram app.
             </p>
-            
 
             <div className="tg-modal-actions">
               <button

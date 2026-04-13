@@ -1,6 +1,6 @@
 .gift-img {
-  width: 35px;
-  height: 35px;
+  width: 25px;
+  height: 25px;
   object-fit: contain;
   /* Gives the image itself a shadow, not the square box around it */
   filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
@@ -20,7 +20,7 @@
   outline: none;
   padding: 12px;
   font-family: 'Luckiest Guy', cursive, sans-serif; /* Your preferred font */
-  font-size: 14px;
+  font-size: 15px;
   text-transform: uppercase;
   color: #fff;
   letter-spacing: 1px;
