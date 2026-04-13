@@ -38,7 +38,7 @@ const TelegramPost = ({ channel, postId }) => {
 };
 
 // --- Main Application Component ---
-export default function Demo() {
+export default function MemeFeed() {
   const channelName = 'eng_vids_funny';
   const [postIds, setPostIds] = useState([5, 4, 3, 2, 1]);
 

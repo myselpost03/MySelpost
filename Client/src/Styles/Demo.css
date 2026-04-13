@@ -1,3 +1,109 @@
+
+.container {
+  background: #000;
+  color: #fff;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  border-bottom: 1px solid #222;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.nav-links a {
+  margin-left: 20px;
+  text-decoration: none;
+  color: #ccc;
+}
+
+.nav-links a:hover {
+  color: #fff;
+}
+
+.hero {
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.hero-title {
+  font-size: 56px;
+  font-weight: 800;
+}
+
+.hero-sub {
+  margin-top: 20px;
+  color: #aaa;
+}
+
+.hero-buttons {
+  margin-top: 30px;
+}
+
+.btn {
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  margin: 0 10px;
+}
+
+.primary {
+  background: #fff;
+  color: #000;
+}
+
+.secondary {
+  background: transparent;
+  border: 1px solid #555;
+  color: #fff;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 60px;
+}
+
+.feature-card {
+  border: 1px solid #222;
+  padding: 20px;
+  border-radius: 16px;
+  transition: 0.3s;
+}
+
+.feature-card:hover {
+  border-color: #fff;
+}
+
+.icon {
+  margin-bottom: 10px;
+}
+
+.cta {
+  text-align: center;
+  padding: 80px 20px;
+  border-top: 1px solid #222;
+}
+
+.footer {
+  text-align: center;
+  padding: 20px;
+  color: #777;
+  border-top: 1px solid #222;
+}
+
+
+
 .card-image {
   width: 100%;
   height: 250px; /* Reduced from 350px */

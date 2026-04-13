@@ -11,7 +11,40 @@ body {
   touch-action: pan-x pan-y;
   overflow-x: hidden;
 }
+.meme-fab {
+  position: fixed;
+  bottom: 85px;
+  right: 30px;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 20% 30%, #ff9a9e 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, #fad0c4 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, #fbc2eb 0%, #fbc2eb 100%);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  transition: all 0.2s ease-in-out;
+  z-index: 1000;
+  border: none;
+  outline: none;
+}
 
+.meme-fab:hover {
+  transform: scale(1.1) rotate(10deg);
+  box-shadow: 8px 8px 0px #000000;
+}
+
+.meme-fab:active {
+  transform: scale(0.95) rotate(0deg);
+  box-shadow: 2px 2px 0px #000000;
+}
+
+.fab-icon {
+  user-select: none;
+}
 .compact-modal {
   max-width: 300px;
   padding: 20px;

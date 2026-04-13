@@ -15,6 +15,7 @@ import {
   ChatRoom,
   Private,
   Lifehacks,
+  MemeFeed,
   EarningDashboard,
   MorningSprint,
   FactAbout,
@@ -99,9 +100,10 @@ const publicRoutes = [
   { path: '/home-page', component: GuestProfiles },
   { path: '/login', component: Login },
   { path: '/register', component: Register },
- 
-{ path: '/dashboard', component: EarningDashboard },
-  
+
+  { path: '/dashboard', component: EarningDashboard },
+  { path: '/meme-feed', component: MemeFeed },
+
   { path: '/chat-room', component: ChatRoom },
   { path: '/group-chat', component: GroupChat },
   { path: '/guest-profiles', component: GuestProfiles },
@@ -120,9 +122,10 @@ const publicRoutes = [
   { path: '/contact-us', component: Contact },
 
   { path: '/reset-password', component: ResetPassword },
- 
+
   { path: '/demo', component: Demo },
-  {/* 
+  {
+    /* 
      { path: '/community', component: Adult },
   path: '/game', component: MorningSprint },
   { path: '/demo', component: Demo },
