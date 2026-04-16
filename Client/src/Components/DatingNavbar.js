@@ -71,7 +71,7 @@ const DatingNavbar = () => {
 
   const tabs = [
     { id: 'home', icon: '🏠', label: 'Home', path: '/' }, // Replaced Matches with Home
-    { id: 'roast', icon: '🔥', label: 'Date', path: '/date' },
+    { id: 'date', icon: '🔥', label: 'Date', path: '/date' },
     { id: 'earn', icon: '🎮', label: 'Earn', path: '/dashboard' },
     { id: 'messages', icon: '💬', label: 'Chat Room', path: '/chat-room' },
     { id: 'videos', icon: '🎥', label: 'Videos', path: '/videos' },
@@ -81,11 +81,13 @@ const DatingNavbar = () => {
     setActiveTab(tabId);
 
     // Show Telegram modal when Profile is clicked (only if NOT Telegram)
-  { /* if (tabId === 'videos' && !isTelegram) {
+    {
+      /* if (tabId === 'videos' && !isTelegram) {
       console.log("🚀 ~ handleTabClick ~ videos:")
      setShowCommunityPopup(true);
       return; // stop navigation
-    }*/}
+    }*/
+    }
 
     if (tabId === 'date') {
       navigate('/date');
@@ -95,28 +97,29 @@ const DatingNavbar = () => {
   };
 
   return (
-    <> {!isTelegram && (
+    <>
+      {!isTelegram && (
         <CommunityPopup
           isOpen={showCommunityPopup}
           onClose={() => setShowCommunityPopup(false)}
         />
-      )}<nav style={navBarStyle}>
-      {tabs.map((tab) => {
-        const isActive = activeTab === tab.id;
-        return (
-          <div
-            key={tab.id}
-            style={tabButtonStyle(isActive)}
-            onClick={() => handleTabClick(tab.id, tab.path)}
-          >
-            <span style={iconStyle(isActive)}>{tab.icon}</span>
-            <span style={labelStyle(isActive)}>{tab.label}</span>
-          </div>
-        );
-      })}
-     
-    </nav></>
-    
+      )}
+      <nav style={navBarStyle}>
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <div
+              key={tab.id}
+              style={tabButtonStyle(isActive)}
+              onClick={() => handleTabClick(tab.id, tab.path)}
+            >
+              <span style={iconStyle(isActive)}>{tab.icon}</span>
+              <span style={labelStyle(isActive)}>{tab.label}</span>
+            </div>
+          );
+        })}
+      </nav>
+    </>
   );
 };
 

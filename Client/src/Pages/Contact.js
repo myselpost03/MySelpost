@@ -4,6 +4,7 @@ import SketchyHeader from '../Components/SketchyHeader';
 import '../Styles/Contact.css';
 import i18n from '../i18n';
 import { supabase } from '../Utils/supabaseClient';
+import toast, { Toaster } from 'react-hot-toast';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -34,7 +35,7 @@ const Contact = () => {
     setLoading(false);
 
     if (error) {
-      alert('Failed to submit: ' + error.message);
+      toast.error('Failed to submit: ' + error.message, { duration: 4000 });
     } else {
       setSubmitted(true);
     }
@@ -101,6 +102,7 @@ const Contact = () => {
           )}
         </div>
       </div>
+      <Toaster />
     </div>
   );
 };

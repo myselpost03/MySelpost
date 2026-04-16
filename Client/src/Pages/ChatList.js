@@ -16,7 +16,6 @@ import {
   FaEnvelope,
   FaComments,
   FaSearch,
-  FaFilter,
   FaThumbtack,
   FaHeart,
   FaBolt,
@@ -34,7 +33,6 @@ import SketchyAlert from '../Components/SketchyAlert';
 import { trackEvent } from '../Utils/analytics';
 import { dbPromise } from '../Utils/db';
 import LoadingSpinner from '../Components/LoadingSpinner';
-import Maps from '../Components/Maps';
 import toast, { Toaster } from 'react-hot-toast';
 import i18n from '../i18n';
 import DatingNavbar from '../Components/DatingNavbar';
@@ -250,22 +248,18 @@ const ChatList = () => {
   });
   const [isAdLoading, setIsAdLoading] = useState(false);
   const adShowRef = useRef(null);
-  const [clickedUserId, setClickedUserId] = useState(null);
   const [firstLoad, setFirstLoad] = useState(true);
   const [loading, setLoading] = useState(true); // tab/filter loading
   const [hasFetched, setHasFetched] = useState(false); // 👈 new flag
   const [searchLoading, setSearchLoading] = useState(false); // dedicated search loader
   const [countries, setCountries] = useState([]);
-  const [hasPaidPremium, setHasPaidPremium] = useState(false);
   const [page, setPage] = useState(0); // pagination page
   const [hasMore, setHasMore] = useState(true); // track if more users exist
   const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAllTabs, setShowAllTabs] = useState(false);
-  const [allFilter, setAllFilter] = useState('all'); // 'all' or 'online'
   const [alertMessage, setAlertMessage] = useState(null);
   const [unreadCounts, setUnreadCounts] = useState({});
-  const [badgeSeen, setBadgeSeen] = useState('true'); // assume no badge unless told otherwise
   const [inboxUserIds, setInboxUserIds] = useState(new Set());
   const [notificationCount, setNotificationCount] = useState(0);
 
@@ -282,14 +276,7 @@ const ChatList = () => {
   const [dataChanged, setDataChanged] = useState(false); // ✅ Track if data changed
   const [submitting, setSubmitting] = useState(false); // ✅ Show "Submitting..."
 
-  const isForeignerChat = (targetUser) => {
-    if (!user?.country || !targetUser?.country) return false;
-    return user.country !== targetUser.country;
-  };
   const [pushAllowed, setPushAllowed] = useState(false);
-  const [showPushPrompt, setShowPushPrompt] = useState(false);
-  const [pushStatus, setPushStatus] = useState('idle');
-  // idle | requesting | granted | denied
 
   useEffect(() => {
     let isMounted = true;
@@ -1297,7 +1284,7 @@ const ChatList = () => {
     }
   };
 
-useEffect(() => {
+  useEffect(() => {
     if (window.initCdTma) {
       window
         .initCdTma({ id: '6115107' }) // Using your specific ID
@@ -1331,7 +1318,7 @@ useEffect(() => {
     } finally {
       setIsAdLoading(false);
     }
-  };  
+  };
 
   const checkChatLimit = (targetUser) => {
     if (targetUser.gender !== 'female') return true;
@@ -1378,12 +1365,14 @@ useEffect(() => {
 
   return (
     <>
-    {isAdLoading && (
+      {isAdLoading && (
         <div className="glass-modal-overlay">
           <div className="glass-modal-card">
             <LoadingSpinner />
             <h3 style={{ marginTop: '15px' }}>Unlocking Profile...</h3>
-            <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>Video ad is loading</p>
+            <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+              Video ad is loading
+            </p>
           </div>
         </div>
       )}
@@ -1591,53 +1580,9 @@ useEffect(() => {
                   <FaCheck size={20} color="white" />
                 </button>
               )}
-        
-
-            {/*  <button
-              className={`sketchy-tab ${
-                activeTab === 'online' ? 'active' : ''
-              }`}
-           
-  onClick={() => {
-    const newTab = activeTab === 'online' ? 'all' : 'online';
-    setActiveTab(newTab);
-    setAllFilter(newTab === 'online' ? 'online' : 'all');
-    localStorage.setItem('activeTab', newTab);
-  }} 
-  
-              onClick={handleRoast}
-            >
-              {i18n.t('online')}
-            </button>*/}
-
-            {/* <button
-              className={`sketchy-tab ${activeTab === 'maps' ? 'active' : ''}`}
-              onClick={() => {
-                const newTab = activeTab === 'maps' ? 'all' : 'maps';
-                setActiveTab(newTab);
-                setAllFilter(newTab === 'maps' ? 'maps' : 'all');
-                localStorage.setItem('activeTab', newTab);
-              }}
-            >
-              <FaMapMarkerAlt style={{ marginRight: '6px' }} />
-            </button>
-
-            <button className="sketchy-tab" onClick={handleRoast}>
-             
-              <FaFilter style={{ marginRight: '6px' }} />
-            </button>*/}
 
             {activeTab === 'all' && (
               <>
-                {/* <button
-                  className="fab-camera-button"
-                  onClick={handleScratch}
-                  title="Open camera"
-                >
-                  <FaMagic />
-                </button>
- */}
-                {/* Filter FAB */}
                 <button
                   className="fab-heart-button"
                   onClick={handleNotification}
@@ -1662,9 +1607,7 @@ useEffect(() => {
               activeTab === 'maps' ? 'maps-active' : 'sketchy-list-scrollable '
             }`}
           >
-            {activeTab === 'maps' ? (
-              <Maps />
-            ) : searchLoading || loading ? ( // ✅ show spinner if either search or tab is loading
+            {searchLoading || loading ? ( // ✅ show spinner if either search or tab is loading
               <LoadingSpinner />
             ) : filteredUsers.length > 0 ? (
               <>
@@ -1696,17 +1639,17 @@ useEffect(() => {
                       }}
                     >
                       <div className="user-avatar-wrapper">
-                       <Link
-  to={`/profile/${user.id}`}
-  onClick={(e) => handleProfileClick(e, user.id)}
->
-  <img
-    src={user.avatar}
-    alt="avatar"
-    onContextMenu={handleContextMenu}
-    className="user-avatar"
-  />
-</Link>
+                        <Link
+                          to={`/profile/${user.id}`}
+                          onClick={(e) => handleProfileClick(e, user.id)}
+                        >
+                          <img
+                            src={user.avatar}
+                            alt="avatar"
+                            onContextMenu={handleContextMenu}
+                            className="user-avatar"
+                          />
+                        </Link>
 
                         {unreadCounts[user.id] > 0 && (
                           <span className="sketchy-badge">
@@ -1880,8 +1823,6 @@ useEffect(() => {
                     </button>
                   </>
                 )}
-
-                {activeTab === 'maps' && <Maps />}
               </div>
             ) : null}
           </div>
@@ -2055,7 +1996,7 @@ useEffect(() => {
           </div>
         )*/}
       </div>
-<DatingNavbar />
+      <DatingNavbar />
       <Toaster />
     </>
   );

@@ -1,19 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import ChatHeader from '../Components/ChatHeader';
 import { supabase, supabaseStorage } from '../Utils/supabaseClient';
 import { FaImage, FaCrown, FaEnvelope, FaCheck } from 'react-icons/fa';
 import bannedData from '../JSON/bannedWords.json';
-import SketchyAlert from '../Components/SketchyAlert';
 import { trackEvent } from '../Utils/analytics';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import imageCompression from 'browser-image-compression';
 import i18n from '../i18n';
-import AudioTermsSlider from '../Components/AudioTermsSlider';
-import ChatLocker from './ChatLocker';
 import UnblockPopup from '../Components/UnblockPopup';
-import RevealNumberPopup from '../Components/RevealNumberPopup';
 import '../Styles/Chat.css';
 
 const countryDialCodes = {
@@ -1916,14 +1912,7 @@ const CONTENT_LOCKER_URL = 'https://rapid-links.com/s?QzH2N7V2'
             </div>
           </div>
 
-          {/*
-        <div className="icon-wrapper">
-          <FaGift
-            onClick={handleMicClick}
-            className="icon-btn"
-            style={{ cursor: "pointer", color: isRecording ? "#ff6f61" : "#444" }}
-          />
-        </div>*/}
+      
 
           <input
             type="text"
@@ -1944,7 +1933,65 @@ const CONTENT_LOCKER_URL = 'https://rapid-links.com/s?QzH2N7V2'
           </button>
         </div>
       ) : (
-        <ChatLocker isOpen={showPopup} onClose={() => setShowPopup(false)} />
+     <div className="input-area mobile-only">
+          <div className="icon-wrapper">
+            <label htmlFor="image-upload" className="icon-btn">
+              {isSendingImage ? (
+                <span className="dotting-indicator">...</span>
+              ) : (
+                <FaImage />
+              )}
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              id="image-upload"
+              style={{ display: 'none' }}
+              onClick={handleFileInputClick}
+              onChange={handleImageUpload}
+            />
+          </div>
+          <div className="icon-wrapper plus-wrapper">
+            <button
+              style={{ background: 'none', color: '#111', fontSize: '22px' }}
+              onClick={() => setShowPlusMenu((prev) => !prev)}
+            >
+              +
+            </button>
+
+            <div className={`plus-menu ${showPlusMenu ? 'open' : ''}`}>
+              <button
+                className="plus-item"
+                onClick={() => {
+                  setShowGifSearch(true);
+                  setShowPlusMenu(false);
+                }}
+              >
+                🎞️ <span>GIF</span>
+              </button>
+            </div>
+          </div>
+
+      
+
+          <input
+            type="text"
+            value={input}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyPress}
+            onPaste={handlePaste}
+            placeholder={i18n.t('typeMessage')}
+          />
+
+          <button
+            onClick={sendMessage}
+            disabled={
+              isSending || isSendingImage || isSendingGif || !input.trim()
+            }
+          >
+            {isSending ? '➤' : '➤'}
+          </button>
+        </div>
       )}
 
       {/* Show full view image on click */}
@@ -2093,14 +2140,9 @@ const CONTENT_LOCKER_URL = 'https://rapid-links.com/s?QzH2N7V2'
           </div>
         </div>
       )}
-      {showAudioTerms && <AudioTermsSlider onAccept={handleAudioTermsAccept} />}
       <UnblockPopup
         isOpen={showUnblockPopup}
         onClose={() => setShowUnblockPopup(false)}
-      />
-      <RevealNumberPopup
-        isOpen={showRevealNumberPopup}
-        onClose={() => setShowRevealNumberPopup(false)}
       />
       <Toaster />
     </div>

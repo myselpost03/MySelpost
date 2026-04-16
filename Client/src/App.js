@@ -9,151 +9,81 @@ import {
 } from 'react-router-dom';
 import ProtectedRoute from './Utils/ProtectedRoute';
 import {
-  Home,
   Register,
   Login,
   ChatRoom,
-  Private,
-  Lifehacks,
   MemeFeed,
   EarningDashboard,
-  MorningSprint,
-  FactAbout,
-  FactTerms,
   GuestProfiles,
   GuestChat,
-  FactPrivacy,
-  FactPins,
-  FactDate,
-  FactProfile,
-  GroupChat,
   Videos,
-  FactVideos,
   ResetPassword,
-  Sketch,
-  AppSketch,
-  WebSketch,
-  OptionsPage,
-  Refund,
-  Updates,
-  Results,
-  Media,
-  EnterPage,
   Notifications,
-  Prompt,
-  Pricing,
-  Secret,
-  Adult,
-  MissScratch,
   Settings,
-  Roast,
   About,
   Contact,
   Terms,
   Privacy,
+  Updates,
   NotFound,
-  AppDoodle,
-  WebDoodle,
   Chat,
-  ChatEntrance,
   GuestUser,
   ChatList,
   Profile,
-  Coins,
-  PaymentPage,
-  Demo,
-  LiveSupport,
-  Dating,
+  Dating
 } from './Pages/index';
 import LoadingSpinner from './Components/LoadingSpinner';
 import { supabase } from './Utils/supabaseClient';
 import SketchyAlert from './Components/SketchyAlert';
 import InternetStatusAlert from './Components/InternetStatusAlert';
-import FeedbackPopup from './Components/FeedbackPopup';
 import { isRunningAsPWA } from './CheckPWA';
 import { trackEvent } from './Utils/analytics';
 import i18n from './i18n';
 import { isWebView } from './Utils/isWebView';
-import { isTelegram } from './Utils/useIsTelegram';
 import DatingNavbar from './Components/DatingNavbar';
 
-const HomeComponent = isTelegram ? GuestUser : Adult;
-
 const protectedRoutes = [
-  { path: '/notifications', component: Notifications },
   { path: '/chat/:id', component: Chat },
   { path: '/profile/:id', component: Profile },
+  { path: '/notifications', component: Notifications },
   { path: '/settings', component: Settings },
-  {
-    /*
-  { path: '/prompt', component: Prompt },
-  { path: '/app-doodle', component: AppDoodle },
-  { path: '/payments/:id', component: PaymentPage },
-  { path: '/web-doodle', component: WebDoodle },
-  { path: '/coins/:id', component: Coins 
-  */
-  },
 ];
 
 const publicRoutes = [
-  { path: '/', component: GuestProfiles }, // FactPins, Home, Sketch
+  { path: '/', component: GuestProfiles }, 
   { path: '/home-page', component: GuestProfiles },
+
   { path: '/login', component: Login },
   { path: '/register', component: Register },
 
   { path: '/dashboard', component: EarningDashboard },
+
   { path: '/meme-feed', component: MemeFeed },
+  { path: '/videos', component: Videos },
 
   { path: '/chat-room', component: ChatRoom },
-  { path: '/group-chat', component: GroupChat },
+
   { path: '/guest-profiles', component: GuestProfiles },
   { path: '/guest-chat/:receiverId', component: GuestChat },
   { path: '/guest-user', component: GuestUser },
-  { path: '/chat-list', component: ChatList },
-  { path: '/videos', component: Videos },
 
-  { path: '/roast', component: Roast },
+  { path: '/chat-list', component: ChatList },
+
   { path: '/date', component: Dating },
 
   { path: '/about', component: About },
   { path: '/terms', component: Terms },
-  { path: '/privacy-policy', component: Privacy },
   { path: '/updates', component: Updates },
   { path: '/contact-us', component: Contact },
+  { path: '/privacy-policy', component: Privacy },
 
   { path: '/reset-password', component: ResetPassword },
 
+  {/* 
+  {path: '/game', component: MorningSprint },
   { path: '/demo', component: Demo },
-  {
-    /* 
-     { path: '/community', component: Adult },
-  path: '/game', component: MorningSprint },
-  { path: '/demo', component: Demo },
+  */},
 
-     
-  { path: '/viewer', component: Private },
-  { path: '/fact-pins', component: FactPins },
-  { path: '/fact-videos', component: FactVideos },
-  { path: '/private', component: Private },
-  { path: '/fact-profile', component: FactProfile },
-  { path: '/fact-about', component: FactAbout },
-  { path: '/fact-terms', component: FactTerms },
-  { path: '/fact-privacy', component: FactPrivacy },
-  { path: '/results', component: Results },
-  { path: '/refund', component: Refund },
-  { path: '/chat-entrance', component: ChatEntrance },
-  { path: '/media', component: Media },
-  { path: '/fact-date', component: FactDate }, 
-  { path: '/life-hacks', component: Lifehacks },
-  { path: '/live-support', component: LiveSupport },
-  { path: '/options', component: OptionsPage },
-  { path: '/pricing', component: Pricing },
-  { path: '/app-sketch', component: AppSketch },
-  { path: '/web-sketch', component: WebSketch },
-  { path: '/share-secret', component: Secret },
-  { path: '/miss-scratch', component: MissScratch 
-  */
-  },
 ];
 
 // Detect mobile

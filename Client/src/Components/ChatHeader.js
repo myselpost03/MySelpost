@@ -3,13 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import OneSignal from 'react-onesignal';
 import {
   FaVideo,
-  FaRegBell,
-  FaRegBellSlash,
   FaBan,
   FaCrown,
-  FaEnvelope,
   FaTimes,
-  FaCheck,
 } from 'react-icons/fa';
 import { supabase } from '../Utils/supabaseClient';
 import { isWebView } from '../Utils/isWebView';
@@ -24,7 +20,7 @@ const ChatHeader = ({
   showVideo = true,
 }) => {
   const [subscribed, setSubscribed] = useState(false);
-  const showButton = !isWebView();
+
   const [showPremiumPopup, setShowPremiumPopup] = useState(false);
   const [countryCode, setCountryCode] = useState(null);
 

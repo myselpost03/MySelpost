@@ -14,8 +14,16 @@ import '../Styles/ChatRoom.css';
 import ChatHeader from '../Components/ChatHeader';
 import AdsterraNativeBanner from '../Components/AdsterraNativeBanner';
 import AdsterraBanner from '../Components/AdsterraBanner';
-import Gift from '../Assets/gift-2.png';
+import Gift from '../Assets/gift.png';
 import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
+import createAdHandler from 'monetag-tg-sdk';
+import { useAdController } from '../Hooks/useAdController';
+import { useAdManager } from '../Hooks/useAdManager';
+import { useImageAdFlow } from '../Hooks/useImageAdFlow';
+
+const REWARDED_INTERSTITIAL_ZONE_ID = '10796508';
+const adHandler = createAdHandler(REWARDED_INTERSTITIAL_ZONE_ID);
 
 // Mock Gift Data
 const GIFTS = [
@@ -33,30 +41,31 @@ export default function GuestChat() {
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const [hasPaidAccess, setHasPaidAccess] = useState(false);
- const [checkingPermission, setCheckingPermission] = useState(true);
-   const [notificationAllowed, setNotificationAllowed] = useState(false);
-   
+  const [checkingPermission, setCheckingPermission] = useState(true);
+  const [notificationAllowed, setNotificationAllowed] = useState(false);
   const [showTelegramModal, setShowTelegramModal] = useState(false);
   const [showImageTelegramModal, setShowImageTelegramModal] = useState(false);
   const [showGiftTelegramModal, setShowGiftTelegramModal] = useState(false);
   const [showStarImageModal, setShowStarImageModal] = useState(false);
-
   const [isBlocked, setIsBlocked] = useState(false); // Am I blocked by them?
   const [hasBlockedThem, setHasBlockedThem] = useState(false); // Did I block them?
   const [unblurredImages, setUnblurredImages] = useState({});
   const [deletingMessages, setDeletingMessages] = useState({});
   const [isUploading, setIsUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-
   const [lastImageTimestamp, setLastImageTimestamp] = useState(0);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const [userCoins, setUserCoins] = useState(0); // Track user coins
-
+  const [adReady, setAdReady] = useState(false);
   // UI State
   const [showGiftPalette, setShowGiftPalette] = useState(false);
   const [showCoinModal, setShowCoinModal] = useState(false);
   const [showReceivedGifts, setShowReceivedGifts] = useState(false); // New state for Gifts View
   const [adCooldown, setAdCooldown] = useState(0);
+  const [id] = useState(6115107);
+
+  const showAd = useRef();
+
   const navigate = useNavigate();
 
   // Get current guest user from local storage
@@ -69,6 +78,11 @@ export default function GuestChat() {
     window.Telegram?.WebApp &&
     window.Telegram.WebApp.initData !== '';
 
+  const { canShowAd, registerAdView, getCooldownRemaining } = useAdController();
+  const { getNextNetwork, registerAd: registerImageAd } = useImageAdFlow();
+
+  const { triggerAd } = useAdManager(6115107, currentUserId);
+
   const fetchUserCoins = async () => {
     if (!currentUserId) return;
     const { data, error } = await supabaseChat
@@ -78,6 +92,63 @@ export default function GuestChat() {
       .single();
     if (!error && data) setUserCoins(data.coins || 0);
   };
+
+  useEffect(() => {
+    // Initialize the ad engine and get the SHOW method to display ads
+    // @ts-expect-error admanager
+    window
+      .initCdTma?.({ id })
+      .then((show) => (showAd.current = show))
+      .catch((e) => console.log(e));
+  }, [id]);
+
+  useEffect(() => {
+    const preload = async () => {
+      try {
+        await adHandler({ type: 'preload', ymid: currentUserId });
+        setAdReady(true);
+      } catch (e) {
+        console.error('Ad preload failed', e);
+      }
+    };
+    if (currentUserId) preload();
+  }, [currentUserId]);
+
+  // 3. New Ad logic with Fallback
+  const handleMonetagAd = async () => {
+    const check = canShowAd('monetag');
+    if (!check.allowed) {
+      console.log('Blocked:', check.reason);
+      return;
+    }
+
+    try {
+      // Attempt to show Monetag Ad
+      await adHandler({ ymid: currentUserId });
+
+      registerAdView('monetag');
+
+      // On success: Add Coins
+      const newCoinCount = userCoins + 10;
+      await supabaseChat
+        .from('users')
+        .update({ coins: newCoinCount })
+        .eq('id', currentUserId);
+      setUserCoins(newCoinCount);
+      setAdCooldown(30);
+      toast.success('Ad watched! +10 coins');
+
+      // Re-preload after successful view
+      setAdReady(false);
+      adHandler({ type: 'preload', ymid: currentUserId }).then(() =>
+        setAdReady(true)
+      );
+    } catch (err) {
+      console.warn('Monetag ad failed, falling back to Adsterra/Other');
+      // Fallback logic (your existing Adsterra or another ad source)
+    }
+  };
+
   useEffect(() => {
     const checkAccess = async () => {
       if (tgUser) {
@@ -93,76 +164,54 @@ export default function GuestChat() {
     };
     checkAccess();
   }, [tgUser]);
+
   useEffect(() => {
     fetchUserCoins();
   }, [currentUserId]);
 
-   // --- OneSignal Permission Check ---
-   useEffect(() => {
-  const checkPermission = async () => {
-    try {
-      const saved = localStorage.getItem('notifSubscribed');
-
-      if (Notification.permission === 'granted' || saved === 'true') {
-        setNotificationAllowed(true);
-        alert("🔔 Notifications enabled!");
-        await OneSignal.User.PushSubscription.optIn();
-      } else {
-        setNotificationAllowed(false);
-      }
-    } catch (err) {
-      console.error(err);
-      setNotificationAllowed(false);
-    } finally {
-      setCheckingPermission(false);
-    }
-  };
-
-  checkPermission();
-}, []);
-  
-    const handleSubscribe = async () => {
+  // --- OneSignal Permission Check ---
+  useEffect(() => {
+    const checkPermission = async () => {
       try {
-        const permission = await OneSignal.Notifications.requestPermission();
-  
-        if (permission === true || Notification.permission === 'granted') {
-          await OneSignal.User.PushSubscription.optIn();
-  
-          const playerId = OneSignal.User.PushSubscription.id;
-          //console.log('✅ Player ID:', playerId);
-  
-          setNotificationAllowed(true);
-        localStorage.setItem('notifSubscribed', 'true');
+        const saved = localStorage.getItem('notifSubscribed');
 
+        if (Notification.permission === 'granted' || saved === 'true') {
+          setNotificationAllowed(true);
+          toast.success('🔔 Notifications enabled!');
+          await OneSignal.User.PushSubscription.optIn();
         } else {
-          console.log('❌ Permission denied');
           setNotificationAllowed(false);
         }
       } catch (err) {
-        console.error('❌ Error subscribing:', err);
+        console.error(err);
         setNotificationAllowed(false);
+      } finally {
+        setCheckingPermission(false);
       }
     };
 
-  // Handle Ad Watch (10 coins + 30s cooldown)
-  const handleWatchAd = async () => {
-    if (adCooldown > 0) return;
+    checkPermission();
+  }, []);
 
-    alert('Watching Ad... You earned 10 coins!');
+  const handleSubscribe = async () => {
+    try {
+      const permission = await OneSignal.Notifications.requestPermission();
 
-    const newCoinCount = userCoins + 10;
+      if (permission === true || Notification.permission === 'granted') {
+        await OneSignal.User.PushSubscription.optIn();
 
-    // Update Database
-    const { error } = await supabaseChat
-      .from('users')
-      .update({ coins: newCoinCount })
-      .eq('id', currentUserId);
+        const playerId = OneSignal.User.PushSubscription.id;
+        //console.log('✅ Player ID:', playerId);
 
-    if (!error) {
-      setUserCoins(newCoinCount);
-      setAdCooldown(30);
-    } else {
-      console.error('Coin update failed:', error);
+        setNotificationAllowed(true);
+        localStorage.setItem('notifSubscribed', 'true');
+      } else {
+        console.log('❌ Permission denied');
+        setNotificationAllowed(false);
+      }
+    } catch (err) {
+      console.error('❌ Error subscribing:', err);
+      setNotificationAllowed(false);
     }
   };
 
@@ -230,7 +279,7 @@ export default function GuestChat() {
       (m) => m.sender_id === currentUserId
     ).length;
 
-    if (sentCount >= 50) {
+    if (sentCount >= 12) {
       setShowTelegramModal(true);
       return false;
     }
@@ -278,7 +327,7 @@ export default function GuestChat() {
 
       if (!error) {
         setHasBlockedThem(true);
-        alert('User blocked.');
+        toast.success('User blocked.');
       }
     }
   };
@@ -366,10 +415,18 @@ export default function GuestChat() {
     const now = Date.now();
     const secondsSinceLast = (now - lastImageTimestamp) / 1000;
     if (secondsSinceLast < 60) {
-      alert(
+      toast.error(
         `Please wait ${Math.ceil(
           60 - secondsSinceLast
-        )} seconds before sending another image.`
+        )}s before sending another image.`,
+        {
+          style: {
+            borderRadius: '10px',
+            background: '#333',
+            color: '#fff',
+          },
+          icon: '⏳',
+        }
       );
       return;
     }
@@ -383,7 +440,7 @@ export default function GuestChat() {
       .from('chat-images')
       .upload(filePath, file);
 
-    if (uploadError) return alert('Upload failed');
+    if (uploadError) return toast.error('Upload failed');
 
     // 2. Get Public URL
     const {
@@ -433,28 +490,115 @@ export default function GuestChat() {
     }
   };
 
-  const toggleBlur = (msg) => {
+  const toggleBlur = async (msg) => {
     if (!isTelegram) {
       setShowImageTelegramModal(true);
       return;
     }
 
     const messageId = msg.id;
+    const currentStatus = unblurredImages[messageId] || 0;
+
+    // 🚨 Only trigger ad on FIRST reveal click
+    if (currentStatus === 0) {
+      const network = getNextNetwork();
+
+      if (network) {
+        let success = false;
+
+        // 🔒 Check global cooldown + caps
+        const check = canShowAd(network);
+
+        if (!check.allowed) {
+          if (check.reason === 'cooldown') {
+            const remaining = Math.ceil(getCooldownRemaining() / 1000);
+            toast.error(`Wait ${remaining}s before next image`);
+            return; // 🚫 BLOCK unblur
+          }
+
+          if (check.reason === 'limit') {
+            console.log('Network limit reached → skipping ad');
+          }
+        } else {
+          try {
+            // 🟡 ONCLICKA
+            if (network === 'onclicka') {
+              if (showAd.current) {
+                await showAd.current();
+                registerAdView('onclicka');
+                success = true;
+              }
+            }
+
+            // 🔵 ADRADAR
+            else if (network === 'adradar') {
+              if (window.AdRadar) {
+                await new Promise((resolve, reject) => {
+                  window.AdRadar.showAd({
+                    adUnitId: '69c8e7b3e13ff2415d0a7b9b',
+                    onReward: () => {
+                      registerAdView('adradar');
+                      success = true;
+                      resolve(true);
+                    },
+                  });
+
+                  // fallback timeout (important)
+                  setTimeout(() => reject('AdRadar timeout'), 7000);
+                });
+              }
+            }
+
+            // 🟣 GIGAPUB
+            else if (network === 'gigapub') {
+              if (typeof window.showGiga === 'function') {
+                await window.showGiga();
+                registerAdView('gigapub');
+                success = true;
+              }
+            }
+
+            // 🟢 MONETAG
+            else if (network === 'monetag') {
+              await adHandler({ ymid: currentUserId });
+              registerAdView('monetag');
+              success = true;
+            }
+          } catch (err) {
+            console.warn(`${network} ad failed:`, err);
+          }
+        }
+
+        // ✅ Count ONLY if ad actually shown
+        if (success) {
+          registerImageAd();
+        } else {
+          console.log('Ad skipped or failed → user still proceeds');
+        }
+      } else {
+        console.log('🎯 Daily image ad limit reached (10) → skipping ads');
+      }
+    }
+
+    // ✅ EXISTING LOGIC (UNCHANGED)
     setUnblurredImages((prev) => {
       const currentStatus = prev[messageId] || 0;
       const newStatus = currentStatus + 1;
 
-      // Trigger auto-delete when it becomes fully visible (status reaches 2)
+      // Trigger auto-delete when fully visible
       if (newStatus === 2) {
         setTimeout(() => {
-          // Start "Disappearing" animation 10 seconds later
-          setDeletingMessages((prev) => ({ ...prev, [messageId]: true }));
+          // Start disappearing animation
+          setDeletingMessages((prev) => ({
+            ...prev,
+            [messageId]: true,
+          }));
 
-          // After animation (500ms), remove from DB/Storage
+          // Remove after animation
           setTimeout(() => {
             finalDeleteImage(messageId, msg.image_url);
           }, 500);
-        }, 10000); // 10 second delay
+        }, 10000); // 10 sec delay
       }
 
       return { ...prev, [messageId]: newStatus };
@@ -494,7 +638,7 @@ export default function GuestChat() {
     const tgUser = tg?.initDataUnsafe?.user;
 
     if (!tgUser) {
-      alert('Please open inside Telegram');
+      toast.error('Please open app inside Telegram');
       return;
     }
 
@@ -516,15 +660,119 @@ export default function GuestChat() {
           if (status === 'paid') {
             setHasPaidAccess(true); // This updates the UI state immediately
             setShowStarImageModal(false); // Close the modal
-            alert('Payment successful! Image unlocked.');
+            toast.success('Payment successful! Image unlocked.');
           } else if (status === 'failed') {
-            alert('Payment failed.');
+            toast.error('Payment failed.');
           }
         });
       }
     } catch (err) {
       console.error('Error:', err);
-      alert('Payment error.');
+      toast.error('Payment error.');
+    }
+  };
+
+  const handleOnClickaAd = async () => {
+    const check = canShowAd('onclicka');
+
+    if (!check.allowed) return;
+    if (showAd.current) {
+      showAd
+        .current()
+        .then(async () => {
+          registerAdView('onclicka'); // ✅
+
+          console.log('success'); // Trigger your local state update (e.g., add 10 coins)
+        })
+        .catch((err) => {
+          console.error('Ad display failed or closed:', err);
+        });
+    }
+  };
+
+  const handleGigaPubAd = async () => {
+    const check = canShowAd('gigapub');
+
+    if (!check.allowed) return;
+    if (typeof window.showGiga === 'function') {
+      window
+        .showGiga()
+        .then(() => {
+          registerAdView('gigapub'); // ✅
+
+          console.log('success');
+        })
+        .catch((err) => {
+          // Handle errors (e.g., user closed early, ad failed)
+          console.error('GigaPub Ad error:', err);
+        });
+    } else {
+      console.warn('GigaPub script not loaded yet.');
+    }
+  };
+
+  // Inside your component:
+  const handleAdradarAd = () => {
+    const check = canShowAd('adradar');
+
+    if (!check.allowed) return;
+    // Use window.AdRadar to safely access the global object
+    if (window.AdRadar) {
+      window.AdRadar.showAd({
+        adUnitId: '69c8e7b3e13ff2415d0a7b9b',
+        onReward: () => {
+          registerAdView('adradar'); // ✅
+
+          console.log('success');
+          // Trigger your existing cooldown function here if needed
+          // startAdCooldown();
+        },
+      });
+    } else {
+      console.error('AdRadar SDK is still loading or not found.');
+      toast.error('Ad is loading, please wait a moment.', { duration: 4000 });
+    }
+  };
+
+  const handleWatchAd = async () => {
+    if (adCooldown > 0) return;
+
+    // 🎯 Try rewarded first (onclicka)
+    let result = await triggerAd({
+      type: 'rewarded',
+      networks: ['onclicka'], // 🎥 priority
+    });
+
+    // 🔁 If onclicka failed (limit / no fill), fallback to interstitial
+    if (!result.success) {
+      result = await triggerAd({
+        type: 'interstitial',
+        networks: ['monetag', 'gigapub', 'adradar'],
+      });
+    }
+
+    // ❌ ALL FAILED
+    if (!result.success) {
+      toast.error('No ads available right now. Try later.');
+      return;
+    }
+
+    // ✅ SUCCESS → REWARD USER
+    try {
+      const newCoinCount = userCoins + 10;
+
+      await supabaseChat
+        .from('users')
+        .update({ coins: newCoinCount })
+        .eq('id', currentUserId);
+
+      setUserCoins(newCoinCount);
+      setAdCooldown(30);
+
+      toast.success(`Ad watched! +10 coins`);
+    } catch (err) {
+      console.error('Reward update failed:', err);
+      toast.error('Reward failed, try again.');
     }
   };
 
@@ -553,21 +801,18 @@ export default function GuestChat() {
           <AdsterraBanner />
         </div>
       </div>
-      <div style={{display: 'flex', flexDirection: 'row'}}>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
         <button
-        className="fixed-gifts-btn"
-        onClick={() => setShowReceivedGifts(true)}
-      >
-        <img src={Gift} alt="Gift Box" className="gift-img" />
-      </button>
-       {!notificationAllowed && !checkingPermission && (
-  <button
-    onClick={handleSubscribe}
-    className="notify-float-btn"
-  >
-    🔔
-  </button>
-)}
+          className="fixed-gifts-btn"
+          onClick={() => setShowReceivedGifts(true)}
+        >
+          <img src={Gift} alt="Gift Box" className="gift-img" />
+        </button>
+        {!notificationAllowed && !checkingPermission && !isTelegram && (
+          <button onClick={handleSubscribe} className="notify-float-btn">
+            🔔
+          </button>
+        )}
       </div>
       {showReceivedGifts && (
         <div
@@ -650,42 +895,29 @@ export default function GuestChat() {
       {/* Insufficient Coins / Ad Modal */}
       {showCoinModal && (
         <div className="coin-modal-overlay">
-          <div className="coin-modal-card">
-            <div className="coin-modal-icon">
-              <FaCoins size={40} color="gold" />
-            </div>
-
-            <h3 className="coin-modal-title">Not Enough Coins!</h3>
-            <p className="coin-modal-desc">
-              You need more coins to send this gift.
-            </p>
-
-            <div className="coin-modal-actions">
-              <button
-                className={`coin-modal-btn ${
-                  adCooldown > 0
-                    ? 'coin-modal-btn--disabled'
-                    : 'coin-modal-btn--primary'
-                }`}
-                onClick={handleWatchAd}
-                disabled={adCooldown > 0}
-              >
-                {adCooldown > 0 ? (
-                  `Wait ${adCooldown}s`
-                ) : (
-                  <>
-                    <FaPlayCircle /> Watch Ad (+10 Coins)
-                  </>
-                )}
-              </button>/
-
-              <button
-                className="coin-modal-btn coin-modal-btn--secondary"
-                onClick={() => setShowCoinModal(false)}
-              >
-                Close
-              </button>
-            </div>
+          <div className="coin-modal-content">
+            <FaCoins size={40} color="gold" />
+            <h3>Not Enough Coins!</h3>
+            <p>You need more coins to send this gift.</p>
+            <button
+              className="ad-btn"
+              onClick={handleWatchAd}
+              disabled={adCooldown > 0}
+            >
+              {adCooldown > 0 ? (
+                `Wait ${adCooldown}s`
+              ) : (
+                <>
+                  <FaPlayCircle /> Watch Ad (+10 Coins)
+                </>
+              )}
+            </button>
+            <button
+              className="close-limit-btn"
+              onClick={() => setShowCoinModal(false)}
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
@@ -1024,7 +1256,7 @@ export default function GuestChat() {
               >
                 <FaGift />
               </button>
-              
+
               <input
                 type="text"
                 placeholder="Type a message..."
@@ -1045,7 +1277,7 @@ export default function GuestChat() {
           </footer>
         </>
       )}
-     
+      <Toaster />
     </div>
   );
 }

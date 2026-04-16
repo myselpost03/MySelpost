@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import AdsterraBanner from '../Components/AdsterraBanner';
+import { useAdManager } from '../Hooks/useAdManager';
+import { useAdController } from '../Hooks/useAdController';
+
 // --- Sub-Component for individual Reels ---
 const TelegramReel = ({ postId, onSeen }) => {
   const containerRef = useRef(null);
@@ -104,6 +107,15 @@ const Videos = () => {
 
   const VIEW_LIMIT = isTelegram ? 50 : 10;
 
+  const currentUserId = JSON.parse(localStorage.getItem('user'))?.id;
+
+const { triggerAd } = useAdManager(6115107, currentUserId);
+const { canShowAd, getCooldownRemaining } = useAdController();
+
+const adRotationRef = useRef(0);
+
+const interstitialOrder = ["monetag", "adradar", "gigapub"];
+
   useEffect(() => {
     const today = new Date().toDateString();
     const storedData = JSON.parse(localStorage.getItem('user_stats') || '{}');
@@ -189,23 +201,76 @@ const Videos = () => {
     return () => observer.disconnect();
   }, [isLoading, viewCount]);
 
-  const handleReelSeen = (postId) => {
-    const seenPosts = JSON.parse(localStorage.getItem('seen_vids') || '[]');
-    if (!seenPosts.includes(postId)) {
-      const updatedSeen = [...seenPosts, postId];
-      localStorage.setItem('seen_vids', JSON.stringify(updatedSeen));
+ const handleReelSeen = async (postId) => {
+  const seenPosts = JSON.parse(localStorage.getItem('seen_vids') || '[]');
 
-      setViewCount((prev) => {
-        const newCount = prev + 1;
-        const today = new Date().toDateString();
-        localStorage.setItem(
-          'user_stats',
-          JSON.stringify({ count: newCount, lastDate: today })
-        );
-        return newCount;
-      });
+  if (!seenPosts.includes(postId)) {
+    const updatedSeen = [...seenPosts, postId];
+    localStorage.setItem('seen_vids', JSON.stringify(updatedSeen));
+
+    setViewCount((prev) => {
+      const newCount = prev + 1;
+
+      const today = new Date().toDateString();
+      localStorage.setItem(
+        'user_stats',
+        JSON.stringify({ count: newCount, lastDate: today })
+      );
+
+      // 🎯 🚨 AD LOGIC START
+      handleInterstitialAd(newCount);
+
+      return newCount;
+    });
+  }
+};
+
+const handleInterstitialAd = async (newCount) => {
+  // 🎯 Only every 10 videos
+  if (!isTelegram || newCount % 10 !== 0) return;
+
+  // 🔁 Pick next network in loop
+  const network = interstitialOrder[adRotationRef.current];
+
+  // 🔒 Check cooldown / cap BEFORE calling trigger
+  const check = canShowAd(network);
+
+  if (!check.allowed) {
+    if (check.reason === "cooldown") {
+      const remaining = Math.ceil(getCooldownRemaining() / 1000);
+      console.log(`Cooldown active: wait ${remaining}s`);
+      return; // ❌ skip ad, don't block user
     }
-  };
+
+    if (check.reason === "limit") {
+      console.log(`${network} cap reached → will fallback`);
+    }
+  }
+
+  // 🚀 Try showing ONLY selected network first
+  let result = await triggerAd({
+    type: "interstitial",
+    networks: [network], // 🎯 strict rotation
+  });
+
+  // 🔁 If failed → fallback to others
+  if (!result.success) {
+    result = await triggerAd({
+      type: "interstitial",
+      networks: interstitialOrder, // full fallback
+    });
+  }
+
+  if (result.success) {
+    console.log("Ad shown via:", result.network);
+  } else {
+    console.log("All interstitial networks exhausted → skipping ad");
+  }
+
+  // 🔄 Move rotation forward (ALWAYS)
+  adRotationRef.current =
+    (adRotationRef.current + 1) % interstitialOrder.length;
+};
 
   const isLocked = viewCount >= VIEW_LIMIT;
 

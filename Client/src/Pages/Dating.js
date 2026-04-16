@@ -6,9 +6,14 @@ import { users } from '../Data/users';
 import SketchyAlert from '../Components/SketchyAlert';
 import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
+import { useMessageAdFlow } from '../Hooks/useMessageAdFlow';
+import { useAdController } from '../Hooks/useAdController';
+import { useAdManager } from '../Hooks/useAdManager';
+import '../Styles/AlertBoxes.css';
 
 function Card({ user, isActionable, onAction, onUploadClick, onMessage }) {
   const [isLoaded, setIsLoaded] = useState(false);
+
   return (
     <div style={cardStyle}>
       {/* Container for image + upload button */}
@@ -103,6 +108,14 @@ export default function Dating() {
 
   const swipeLimit = isTelegram ? 40 : 10;
 
+  const { canShowAd, getCooldownRemaining } = useAdController();
+
+  const [id] = useState(6115107);
+
+  const { triggerAd } = useAdManager(id);
+
+  const { canShowMessageAd, registerMessageAd } = useMessageAdFlow();
+
   useEffect(() => {
     const checkAccess = async () => {
       if (tgUser) {
@@ -123,21 +136,44 @@ export default function Dating() {
     window.open('https://t.me/myselpost_bot/myselpost', '_blank');
   };
 
-  const handleAdAction = (direction) => {
-    if (hasPaidAccess) {
-      handleAction(direction);
-      return;
-    }
-    if (direction === 'like' && isTelegram) {
-      const now = Date.now();
-      // Check if 60 seconds have passed since last ad
-      if (datingLastAdTime === 0 || now - datingLastAdTime >= 60000) {
-        setShowAdModal(true);
-        return;
+const handleAdAction = async (direction) => {
+  if (!isTelegram || hasPaidAccess) {
+    handleAction(direction);
+    return;
+  }
+
+  if (direction === 'like') {
+    const nextSwipe = swipeCount + 1;
+    const shouldShowAd = nextSwipe % 5 === 0;
+
+    if (shouldShowAd) {
+      const result = await triggerAd({
+        type: "interstitial",
+        networks: ["monetag", "adradar", "gigapub"], // ✅ correct
+      });
+
+      if (!result.success) {
+        const check = canShowAd(result.network || "monetag");
+
+        if (check?.reason === "cooldown") {
+          const remaining = Math.ceil((getCooldownRemaining?.() || 0) / 1000);
+          toast.error(`Wait ${remaining}s before next swipe ad`);
+
+          // ✅ STILL ALLOW SWIPE
+          handleAction(direction);
+          return;
+        }
+
+        // ✅ fallback exhausted → free swipe
+        console.log("All interstitial networks exhausted → skipping ad");
+      } else {
+        console.log("Interstitial shown via:", result.network);
       }
     }
-    handleAction(direction);
-  };
+  }
+
+  handleAction(direction);
+};
 
   const handleAction = (direction) => {
     if (animationClass) return;
@@ -196,6 +232,31 @@ export default function Dating() {
 
   const submitMessage = async () => {
     const sender = JSON.parse(localStorage.getItem('user'));
+
+    // 🚨 STEP 1: Ad Flow
+    if (isTelegram && canShowMessageAd()) {
+      const result = await triggerAd();
+
+      if (!result.success) {
+        // ❗ Check cooldown specifically (from primary network)
+        const check = canShowAd('onclicka');
+
+        if (check.reason === 'cooldown') {
+          const remaining = Math.ceil((getCooldownRemaining?.() || 0) / 1000);
+          toast.error(`Wait ${remaining}s before sending message`);
+          return; // ⛔ block
+        }
+
+        // ✅ ALL NETWORKS FAILED → allow free message
+        console.log('All ad networks exhausted → allowing free message');
+      } else {
+        // ✅ Ad success → count it
+        registerMessageAd();
+        console.log('Ad shown via:', result.network);
+      }
+    }
+
+    // 🚀 STEP 2: Send message
     try {
       const { error } = await supabaseChat.from('dating_messages').insert([
         {
@@ -205,19 +266,20 @@ export default function Dating() {
           created_at: new Date(),
         },
       ]);
+
       if (error) throw error;
+
       setMessagedUsers((prev) => [...prev, selectedTarget.name]);
-      toast.success('Message sent successfully!', {
-        duration: 4000,
-        position: 'top-right',
-      });
+
+      toast.success('Message sent successfully!', { duration: 4000 });
+
       setShowChatModal(false);
       setChatMessage('');
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Error sending message:', err);
+      toast.error('Failed to send message.');
     }
   };
-
   const handleUpgrade = async () => {
     const tg = window.Telegram?.WebApp;
     const tgUser = tg?.initDataUnsafe?.user;
@@ -245,9 +307,9 @@ export default function Dating() {
           // Statuses: 'paid', 'failed', 'pending', 'cancelled'
           if (status === 'paid') {
             setHasPaidAccess(true);
-            alert('Payment successful! You can now swipe without any ads.');
+            toast.success('Payment successful! You can now swipe without any ads.', { duration: 4000 });
           } else if (status === 'failed') {
-            alert('Payment failed. Please try again.');
+            toast.error('Payment failed. Please try again.', { duration: 4000 });
           }
         });
 
@@ -255,7 +317,7 @@ export default function Dating() {
       }
     } catch (err) {
       console.error('Error initiating payment:', err);
-      alert('Could not create invoice. Please try again later.');
+      toast.error('Could not create invoice. Please try again later.', { duration: 4000 });
     }
   };
 
@@ -596,43 +658,4 @@ const msgBtn = {
   fontSize: '20px',
   color: 'white',
   boxShadow: '0 4px 10px rgba(79, 172, 254, 0.3)',
-};
-
-const modalOverlayStyle = {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: 'rgba(0,0,0,0.7)',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  zIndex: 1000,
-  backdropFilter: 'blur(5px)',
-};
-
-const modalContentStyle = {
-  background: '#fff',
-  padding: '30px',
-  borderRadius: '15px',
-  width: '80%',
-  maxWidth: '300px',
-  textAlign: 'center',
-  border: '4px solid #000', // Sticker aesthetic
-  boxShadow: '8px 8px 0px #000', // Bold shadow
-  fontFamily: "'poppins', cursive",
-};
-const closeBtnStyle = {
-  marginTop: '20px',
-  padding: '12px 30px',
-  background: '#fbc2eb',
-  border: '3px solid #000',
-  borderRadius: '10px',
-  color: '#000',
-  fontWeight: 'bold',
-  fontSize: '16px',
-  cursor: 'pointer',
-  boxShadow: '4px 4px 0px #000',
-  transition: 'transform 0.1s',
 };

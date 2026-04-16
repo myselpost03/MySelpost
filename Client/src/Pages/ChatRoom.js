@@ -8,6 +8,7 @@ import AdsterraNativeBanner from '../Components/AdsterraNativeBanner';
 import { FaImage } from 'react-icons/fa';
 import axios from 'axios';
 import StarModal from '../Components/StarModal';
+import toast, {Toaster} from 'react-hot-toast'
 
 export default function ChatRoom() {
   const [messages, setMessages] = useState([]);
@@ -151,9 +152,9 @@ export default function ChatRoom() {
           // Statuses: 'paid', 'failed', 'pending', 'cancelled'
           if (status === 'paid') {
             setHasPaidAccess(true);
-            alert('Payment successful! You can now send images.');
+            toast.success('Payment successful! You can now send images.', { duration: 4000 });
           } else if (status === 'failed') {
-            alert('Payment failed. Please try again.');
+            toast.error('Payment failed. Please try again.', { duration: 4000 });
           }
         });
 
@@ -161,7 +162,7 @@ export default function ChatRoom() {
       }
     } catch (err) {
       console.error('Error initiating payment:', err);
-      alert('Could not create invoice. Please try again later.');
+      toast.error('Could not create invoice. Please try again later.', { duration: 4000 });
     }
   };
 
@@ -407,6 +408,7 @@ export default function ChatRoom() {
         onClose={() => setIsStarModalOpen(false)}
         onConfirm={handleSendImage}
       />
+      <Toaster />
     </div>
   );
 }

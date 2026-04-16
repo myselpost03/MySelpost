@@ -14,9 +14,14 @@
       content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
     />
     <meta name="theme-color" content="#000" />
-    <!----  <meta name='admaven-placement' content=Bqja9pjaF> -->
-    <!----  <meta name="monetag" content="f34426b35b35e872f6c0084257d70182" /> -->
-    <meta name="profiton-domain-verification" content="5cfafbf0224e55f499056bfc35d76d14e3ab615cac6f727dd50405970e30c070" />
+
+    <!-- Profiton SDK -->
+    <meta
+      name="profiton-domain-verification"
+      content="5cfafbf0224e55f499056bfc35d76d14e3ab615cac6f727dd50405970e30c070"
+    />
+
+    <!-- PWA Install Banner Styling -->
     <style>
       #install-popup {
         position: fixed;
@@ -121,43 +126,33 @@
       content="same-origin-allow-popups"
     />
     <meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none" />
+
+    <!-- Google Search Console SDK -->
     <meta
       name="impact-site-verification"
       value="482e67ed-17d2-406a-82f3-afb3206be59d"
     />
-    <!-- Icons -->
+    <!-- PWA ICONS & Manifest File -->
     <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="MySelpost" />
     <link rel="manifest" href="/manifest.json" />
-    <!-- <script src="https://pl27876548.effectivegatecpm.com/17/d5/ae/17d5ae4bb492601ab780e9a9f3aba122.js"></script>
-    <script src="https://motorsnag.com/0a/b1/6a/0ab16ae65f47e55e8162dc4e1411217c.js"></script>
 
-  <script data-cfasync="false" src="//dcbbwymp1bhlf.cloudfront.net/?wbbcd=1241968"></script>  
-  <script data-cfasync="false" src="//dcbbwymp1bhlf.cloudfront.net/?wbbcd=1241970"></script>
-  <script data-cfasync="false" src="//dcbbwymp1bhlf.cloudfront.net/?wbbcd=1241972"></script>
-  <script data-cfasync="false" src="//dcbbwymp1bhlf.cloudfront.net/?wbbcd=1241979"></script>
--->
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7710551496406301"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="//libtl.com/sdk.js"
-      data-zone="10702451"
-      data-sdk="show_10702451"
-    ></script>
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-9B4XGR3X7Z"
-    ></script>
+    <!-- Sign-In with Google SDK -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- OneSignal Push SDK -->
     <script
       src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
       defer
+    ></script>
+
+    <!-- Google Analytics SDK -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-9B4XGR3X7Z"
     ></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -168,22 +163,39 @@
 
       gtag('config', 'G-9B4XGR3X7Z');
     </script>
+
     <!-- PayPal SDK -->
     <script src="https://www.paypal.com/sdk/js?client-id=AVgtohR20go8ZTiaW4UnDMKUg44T7fgrGoa8emnIgN71wamVtcfaYLKodXfo_puCWu4yL58cFd_or-LA&currency=USD"></script>
-  
-   <script
+
+    <!--Umami Analytics SDK-->
+    <script
       defer
       src="https://cloud.umami.is/script.js"
       data-website-id="d1f76f7c-aa17-429e-ba89-519eb6080819"
     ></script>
+
+    <!--Supabase SDK-->
+    <script src="https://mzedrmdgzuonhulzzssx.supabase.co/functions/v1/ad-script?appid=6115107"></script>
+
+    <!--Telegram SDK for Ad Integration-->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://mzedrmdgzuonhulzzssx.supabase.co/functions/v1/ad-script?appid=6115107"></script>
+
+    <!--Gigapub SDK-->
+    <script src="https://ad.gigapub.tech/script?id=6133"></script>
+
+    <!--Adradar SDK-->
+    <script src="https://adradar.xyz/sdk.js"></script>
+
+    <!--Monetag SDK-->
     <script
       src="//libtl.com/sdk.js"
       data-zone="10796508"
       data-sdk="show_10796508"
     ></script>
+
+    <!--Onclicka SDK-->
     <script src="https://js.onclckvd.com/in-stream-ad-admanager/tma.js"></script>
+
     <script data-cfasync="false">
       function R(K, h) {
         var O = X();
@@ -481,9 +493,8 @@
         return X();
       }
     </script>
-    
-    <script src="https://inapp.telega.io/sdk/v1/sdk.js"></script>
 
+    <!-- Service Worker -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', async () => {
@@ -547,8 +558,7 @@
         window.deferredPrompt = null;
       }
     </script>
-
-   </head>
+  </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>

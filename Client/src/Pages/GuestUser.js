@@ -18,10 +18,7 @@ import { supabase } from '../Utils/supabaseClient';
 import LoadingSpinner from '../Components/LoadingSpinner';
 import ReactCountryFlag from 'react-country-flag';
 import SketchyAlert from '../Components/SketchyAlert';
-import QuizPopup from '../Components/QuizPopup';
-import WelcomePopup from '../Components/WelcomePopup';
 import CommunityPopup from '../Components/CommunityPopup';
-import DatingNavbar from '../Components/DatingNavbar';
 import i18n from '../i18n';
 
 const countryNameToCode = {
@@ -224,8 +221,6 @@ const countryNameToCode = {
 
 const GuestUser = () => {
   const [users, setUsers] = useState([]);
-  const [genderFilter, setGenderFilter] = useState('all');
-  const [countryFilter, setCountryFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showGenderTabs, setShowGenderTabs] = useState(false);
   const [showCountryTabs, setShowCountryTabs] = useState(false);
@@ -237,7 +232,6 @@ const GuestUser = () => {
     'Anon' + Math.floor(Math.random() * 1000)
   );
   const [searchLoading, setSearchLoading] = useState(false);
-  const [isQuizOpen, setIsQuizOpen] = useState(false); // For Telegram (QuizPopup)
 
   const [alertMessage, setAlertMessage] = useState(null);
 
@@ -246,12 +240,7 @@ const GuestUser = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
-  const [showBanner, setShowBanner] = useState(true);
-  const [showWelcome, setShowWelcome] = useState(false);
   const [showCommunityPopup, setShowCommunityPopup] = useState(false);
-
-  const [tempUsername, setTempUsername] = useState('');
-  const [showModal, setShowModal] = useState(true); // Show popup on entry
 
   const isTelegram =
     typeof window !== 'undefined' &&
@@ -762,29 +751,7 @@ const GuestUser = () => {
         />
       )}
 
-      {/* <button onClick={handleNavigate} className="fab-roast-btn" title="Roast">
-        <FaFire />
-      </button>*/}
-      {/*isQuizOpen && (
-        <div
-          className="modal-overlay"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'rgba(0,0,0,0.9)',
-            zIndex: 10000,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <QuizPopup onClose={() => setIsQuizOpen(false)} />
-        </div>
-      )*/}
-      {/*showWelcome && <WelcomePopup onClose={handleCloseWelcome} />*/}
+   
       {!isTelegram && (
         <CommunityPopup
           isOpen={showCommunityPopup}

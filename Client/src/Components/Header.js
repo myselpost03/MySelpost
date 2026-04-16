@@ -6,8 +6,6 @@ import bcrypt from 'bcryptjs';
 import SketchyAlert from '../Components/SketchyAlert';
 import { trackEvent } from '../Utils/analytics';
 import { useTranslation } from 'react-i18next';
-import AdultPopup from '../Components/AdultPopup';
-import Tip from '../Pages/Tip';
 import CommunityPopup from './CommunityPopup';
 
 const Header = () => {
@@ -19,8 +17,6 @@ const Header = () => {
   const [checking, setChecking] = useState(false);
   const [loading, setLoading] = useState(true);
   const [alertMessage, setAlertMessage] = useState(null);
-  const [showZoomed, setShowZoomed] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const { t, i18n } = useTranslation();
@@ -53,10 +49,6 @@ const Header = () => {
     };
     detectLocation();
   }, []);
-  const handleUpgrade = (e) => {
-    e.preventDefault();
-    setShowPopup(true);
-  };
 
   useEffect(() => {
     if (adVisible) {
@@ -412,11 +404,7 @@ const Header = () => {
           </div>
         </div>
       )}
-      {countryCode === 'IN' ? (
-        <AdultPopup isOpen={showPopup} onClose={() => setShowPopup(false)} />
-      ) : (
-        <AdultPopup isOpen={showPopup} onClose={() => setShowPopup(false)} />
-      )}
+      
       {!isTelegram && (
         <CommunityPopup
           isOpen={showCommunityPopup}

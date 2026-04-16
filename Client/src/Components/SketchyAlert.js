@@ -4,7 +4,6 @@ import OneSignal from "react-onesignal";
 import { supabase } from "../Utils/supabaseClient";
 import i18n from "../i18n";
 import "../Styles/SketchyAlert.css";
-import AdsterraBanner from "./AdsterraBanner";
 
 const SketchyAlert = ({ message, buttons = ["close"], onClose, onGuest, onNews, onPay }) => {
   const [subscribed, setSubscribed] = useState(false);

@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+z-index: 9999999;
   animation: fadeIn 0.3s ease;
 }
 
@@ -26,6 +26,8 @@
   position: relative;
   animation: floatUp 0.35s ease;
   overflow: hidden;
+    z-index: 10000000;
+
 }
 
 /* Glow effect */

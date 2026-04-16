@@ -1,5 +1,5 @@
-import React from "react";
-import "../Styles/AlertBoxes.css";
+import React from 'react';
+import '../Styles/AlertBoxes.css';
 
 const TelegramPopup = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
@@ -7,7 +7,6 @@ const TelegramPopup = ({ isOpen, onClose }) => {
   return (
     <div className="tg-overlay">
       <div className="tg-popup">
-
         <div className="tg-icon">🔒</div>
 
         <h2>Feature Locked</h2>
@@ -29,7 +28,6 @@ const TelegramPopup = ({ isOpen, onClose }) => {
         <button className="tg-close-btn" onClick={onClose}>
           Maybe Later
         </button>
-
       </div>
     </div>
   );

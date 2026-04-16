@@ -1,52 +1,32 @@
-export { default as Home } from "./Home";
+// Auth
 export { default as Register } from "./Register";
 export { default as Login } from "./Login";
-export { default as Sketch } from "./Sketch";
+export { default as ResetPassword } from "./ResetPassword";
+
+// Not Found
 export { default as NotFound } from "./NotFound";
+
+// Web Info
 export { default as About } from "./About";
-export { default as AppDoodle } from "./AppDoodle";
-export { default as WebDoodle } from "./WebDoodle";
 export { default as Contact } from "./Contact";
-export { default as AppSketch } from "./AppSketch";
-export { default as WebSketch } from "./WebSketch";
-export { default as Pricing } from "./Pricing";
 export { default as Privacy } from "./Privacy";
-export { default as Prompt } from "./Prompt";
 export { default as Terms } from "./Terms";
-export { default as Chat } from "./Chat";
-export { default as ChatList } from "./ChatList";
-export { default as Profile } from "./Profile";
-export { default as Coins } from "./Coins";
-export { default as PaymentPage } from "./PaymentPage";
-export { default as ChatEntrance } from "./ChatEntrance";
-export { default as GuestUser } from "./GuestUser";
-export { default as Roast } from "./Roast";
 export { default as Settings } from "./Settings";
 export { default as Updates } from "./Updates";
-export { default as ResetPassword } from "./ResetPassword";
+
+// Chat for auth user
+export { default as Chat } from "./Chat";
+export { default as ChatList } from "./ChatList";
+
+// Profile for auth user
+export { default as Profile } from "./Profile";
 export { default as Notifications } from "./Notifications";
-export { default as Secret } from "./Secret";
-export { default as MissScratch } from "./MissScratch";
-export { default as Private } from "./Private";
-export { default as EnterPage } from "./EnterPage";
-export { default as OptionsPage } from "./OptionsPage";
-export { default as Adult } from "./Adult";
-export { default as Media } from "./Media";
-export { default as Refund } from "./Refund";
-export { default as LiveSupport } from "./LiveSupport";
-export { default as Results } from "./Results";
-export { default as FactProfile } from "./FactProfile";
-export { default as FactAbout } from "./FactAbout";
-export { default as FactTerms } from "./FactTerms";
-export { default as FactPrivacy } from "./FactPrivacy";
-export { default as FactPins } from "./FactPins";
-export { default as FactDate } from "./FactDate";
-export { default as FactVideos } from "./FactVideos";
-export { default as Lifehacks } from "./Lifehacks";
-export { default as GroupChat } from "./GroupChat";
-export { default as ChatRoom } from "./ChatRoom";
+
+// Guest User
+export { default as GuestUser } from "./GuestUser";
 export { default as GuestProfiles } from "./GuestProfiles";
 export { default as GuestChat } from "./GuestChat";
+export { default as ChatRoom } from "./ChatRoom";
 export { default as Videos } from "./Videos";
 export {default as EarningDashboard} from './EarningDashboard';
 export {default as MorningSprint} from './MorningSprint';

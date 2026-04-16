@@ -16,6 +16,7 @@ import LoadingSpinner from '../Components/LoadingSpinner';
 import ReactCountryFlag from 'react-country-flag';
 import i18n from '../i18n';
 import CommunityPopup from '../Components/CommunityPopup';
+import toast, { Toaster } from 'react-hot-toast';
 
 const countryNameToCode = {
   AF: 'AF',
@@ -427,7 +428,6 @@ const GuestProfiles = () => {
   );
   const [isJoining, setIsJoining] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [isQuizOpen, setIsQuizOpen] = useState(false); // For Telegram (QuizPopup)
 
   const [page, setPage] = useState(0); // pagination page
   const [hasMore, setHasMore] = useState(true); // track if more users exist
@@ -601,27 +601,16 @@ const GuestProfiles = () => {
   // 1. Check if user is already logged in
   useEffect(() => {
     const savedGuest = localStorage.getItem('guestUser');
+
     if (savedGuest) {
       const parsed = JSON.parse(savedGuest);
       setUsername(parsed.name);
       setShowModal(false);
     } else {
-      // 2. If NOT logged in, decide which popup to show first
-      if (isTelegram) {
-        const hasVisitedQuiz = localStorage.getItem('quizShown');
-        if (!hasVisitedQuiz) {
-          setIsQuizOpen(true);
-          // showModal remains false for now
-        } else {
-          // Quiz was already seen in a past session, but user is not logged in
-          setShowModal(true);
-        }
-      } else {
-        // Not on Telegram, show guest modal immediately
-        setShowModal(true);
-      }
+      // Not on Telegram, show guest modal immediately
+      setShowModal(true);
     }
-  }, [isTelegram]);
+  }, []);
   const fetchUsers = async () => {
     setLoading(true);
     const savedGuest = JSON.parse(localStorage.getItem('guestUser'));
@@ -732,7 +721,7 @@ const GuestProfiles = () => {
   const handleUserClick = (receiverId, receiverGender) => {
     const savedGuest = JSON.parse(localStorage.getItem('guestUser'));
     if (savedGuest && savedGuest.id === receiverId) {
-      alert('You cannot chat with yourself!');
+      toast.error('You cannot chat with yourself!', { duration: 4000 });
       return;
     }
 
@@ -1073,6 +1062,7 @@ const GuestProfiles = () => {
               <div></div>
             )}
           </div>
+          <Toaster />
         </>
       )}
 
@@ -1136,39 +1126,7 @@ const GuestProfiles = () => {
           </div>
         </div>
       )}
-      {/*isQuizOpen && (
-        <div
-          className="modal-overlay"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'rgba(0,0,0,0.9)',
-            zIndex: 10000,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <QuizPopup
-            onClose={() => {
-              setIsQuizOpen(false);
-              localStorage.setItem('quizShown', 'true');
 
-              // TRIGGER GUEST MODAL NOW
-              const savedGuest = localStorage.getItem('guestUser');
-              if (!savedGuest) {
-                setShowModal(true);
-              }
-            }}
-          />
-        </div>
-      )*/}
-      {/*showVignette && (
-        <AdVignette />
-      )*/}
       {!isTelegram && (
         <CommunityPopup
           isOpen={showCommunityPopup}
@@ -1190,13 +1148,15 @@ const GuestProfiles = () => {
           </div>
         </div>
       )}
-      <button 
-      className="meme-fab" 
-      onClick={() => navigate('/meme-feed')}
-      aria-label="Create or view memes"
-    >
-      <span className="fab-icon" role="img" aria-label="popcorn">🍿</span>
-    </button>
+      <button
+        className="meme-fab"
+        onClick={() => navigate('/meme-feed')}
+        aria-label="Create or view memes"
+      >
+        <span className="fab-icon" role="img" aria-label="popcorn">
+          🍿
+        </span>
+      </button>
     </div>
   );
 };
