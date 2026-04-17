@@ -4,7 +4,6 @@ import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import cors from "cors";
 import { DodoPayments } from "dodopayments";
-import { supabaseChat } from "../Client/src/Utils/supabaseGroupChat.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,6 +21,11 @@ const BOT_TOKEN = process.env.BOT_TOKEN;
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+const supabaseGuest = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
@@ -470,7 +474,7 @@ app.post("/webhook", async (req, res) => {
       const payload = JSON.parse(payment.invoice_payload);
 
       // Save to the universal permissions table
-      const { error } = await supabaseChat.from("user_permissions").upsert({
+      const { error } = await supabaseGuest.from("user_permissions").upsert({
         telegram_user_id: telegramUserId,
         feature_key: payload.feature, // e.g., "image_access"
         payment_id: payment.telegram_payment_charge_id,
