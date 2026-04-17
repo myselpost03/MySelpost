@@ -390,25 +390,52 @@ app.post("/create-access-invoice", async (req, res) => {
   try {
     const payload = JSON.stringify({
       feature: feature_type,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
-    const response = await axios.post(`${TELEGRAM_API}/createInvoiceLink`, {
-      title: title, // e.g., "Unlock Gift Sending"
-      description: `Purchase access to ${feature_type}`,
-      payload: payload, 
-      currency: "XTR",
-      provider_token: "",
-      prices: [{ label: title, amount: amount }],
-    });
+   const response = await axios.post(`${TELEGRAM_API}/createInvoiceLink`, {
+  title: title,
+  description: `Purchase access to ${feature_type}`,
+  payload: feature_type, // simplified
+  provider_token: "",
+  currency: "XTR",
+  prices: [{ label: title, amount: amount }],
+  start_parameter: "test_invoice",
+
+  need_name: false,
+  need_phone_number: false,
+  need_email: false,
+  need_shipping_address: false,
+});
 
     res.json({ success: true, invoice_url: response.data.result });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Error creating invoice");
+    console.error("FULL ERROR:");
+    console.error("status:", err.response?.status);
+    console.error("data:", JSON.stringify(err.response?.data, null, 2));
+    console.error("headers:", err.response?.headers);
+
+    res.status(500).json({
+      error: err.response?.data || err.message,
+    });
   }
 });
+app.get("/test-invoice", async (req, res) => {
+  try {
+    const response = await axios.post(`${TELEGRAM_API}/createInvoiceLink`, {
+      title: "Test",
+      description: "Test payment",
+      payload: "test",
+      provider_token: "",
+      currency: "XTR",
+      prices: [{ label: "Test", amount: 1 }],
+    });
 
+    res.json(response.data);
+  } catch (err) {
+    res.json(err.response?.data || err.message);
+  }
+});
 // Webhook to handle successful payment
 app.post("/webhook", async (req, res) => {
   const update = req.body;
@@ -425,18 +452,16 @@ app.post("/webhook", async (req, res) => {
     if (update.message?.successful_payment) {
       const payment = update.message.successful_payment;
       const telegramUserId = update.message.from.id;
-      
+
       // Parse the JSON payload we sent earlier
       const payload = JSON.parse(payment.invoice_payload);
 
       // Save to the universal permissions table
-      const { error } = await supabaseChat
-        .from('user_permissions')
-        .upsert({ 
-          telegram_user_id: telegramUserId,
-          feature_key: payload.feature, // e.g., "image_access"
-          payment_id: payment.telegram_payment_charge_id
-        });
+      const { error } = await supabaseChat.from("user_permissions").upsert({
+        telegram_user_id: telegramUserId,
+        feature_key: payload.feature, // e.g., "image_access"
+        payment_id: payment.telegram_payment_charge_id,
+      });
 
       if (error) throw error;
 
@@ -452,7 +477,6 @@ app.post("/webhook", async (req, res) => {
     res.sendStatus(500);
   }
 });
-
 
 app._router.stack.forEach((r) => {
   if (r.route && r.route.path) {

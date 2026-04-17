@@ -161,9 +161,15 @@ export default function ChatRoom() {
         setIsStarModalOpen(false);
       }
     } catch (err) {
-      console.error('Error initiating payment:', err);
-      toast.error('Could not create invoice. Please try again later.', { duration: 4000 });
-    }
+  console.error('Error initiating payment:', err);
+
+  const backendError = err.response?.data?.error;
+
+  toast.error(
+    backendError?.description || 'Could not create invoice',
+    { duration: 5000 }
+  );
+}
   };
 
   const handleFileUpload = async (e) => {
