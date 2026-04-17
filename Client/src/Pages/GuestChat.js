@@ -58,6 +58,7 @@ export default function GuestChat() {
   const [userCoins, setUserCoins] = useState(0); // Track user coins
   const [adReady, setAdReady] = useState(false);
   // UI State
+  const [showTelegramWarning, setShowTelegramWarning] = useState(false);
   const [showGiftPalette, setShowGiftPalette] = useState(false);
   const [showCoinModal, setShowCoinModal] = useState(false);
   const [showReceivedGifts, setShowReceivedGifts] = useState(false); // New state for Gifts View
@@ -295,11 +296,16 @@ export default function GuestChat() {
       (m) => m.sender_id === currentUserId
     ).length;
 
-    if (sentCount >= 12) {
+    if (sentCount >= 20) {
       setShowTelegramModal(true);
       return false;
     }
-
+    if (sentCount === 10) {
+      setShowTelegramWarning(true);
+      // Return true so the 11th message still goes through,
+      // but the user sees the warning.
+      return true;
+    }
     return true;
   };
   useEffect(() => {
@@ -688,6 +694,48 @@ export default function GuestChat() {
     }
   };
 
+  const handleWatchAd = async () => {
+    if (adCooldown > 0) return;
+
+    // 🎯 Try rewarded first (onclicka)
+    let result = await triggerAd({
+      type: 'rewarded',
+      networks: ['onclicka'], // 🎥 priority
+    });
+
+    // 🔁 If onclicka failed (limit / no fill), fallback to interstitial
+    if (!result.success) {
+      result = await triggerAd({
+        type: 'interstitial',
+        networks: ['monetag', 'gigapub', 'adradar'],
+      });
+    }
+
+    // ❌ ALL FAILED
+    if (!result.success) {
+      toast.error('No ads available right now. Try later.');
+      return;
+    }
+
+    // ✅ SUCCESS → REWARD USER
+    try {
+      const newCoinCount = userCoins + 10;
+
+      await supabaseChat
+        .from('users')
+        .update({ coins: newCoinCount })
+        .eq('id', currentUserId);
+
+      setUserCoins(newCoinCount);
+      setAdCooldown(30);
+
+      toast.success(`Ad watched! +10 coins`);
+    } catch (err) {
+      console.error('Reward update failed:', err);
+      toast.error('Reward failed, try again.');
+    }
+  };
+
   const handleOnClickaAd = async () => {
     const check = canShowAd('onclicka');
 
@@ -747,48 +795,6 @@ export default function GuestChat() {
     } else {
       console.error('AdRadar SDK is still loading or not found.');
       toast.error('Ad is loading, please wait a moment.', { duration: 4000 });
-    }
-  };
-
-  const handleWatchAd = async () => {
-    if (adCooldown > 0) return;
-
-    // 🎯 Try rewarded first (onclicka)
-    let result = await triggerAd({
-      type: 'rewarded',
-      networks: ['onclicka'], // 🎥 priority
-    });
-
-    // 🔁 If onclicka failed (limit / no fill), fallback to interstitial
-    if (!result.success) {
-      result = await triggerAd({
-        type: 'interstitial',
-        networks: ['monetag', 'gigapub', 'adradar'],
-      });
-    }
-
-    // ❌ ALL FAILED
-    if (!result.success) {
-      toast.error('No ads available right now. Try later.');
-      return;
-    }
-
-    // ✅ SUCCESS → REWARD USER
-    try {
-      const newCoinCount = userCoins + 10;
-
-      await supabaseChat
-        .from('users')
-        .update({ coins: newCoinCount })
-        .eq('id', currentUserId);
-
-      setUserCoins(newCoinCount);
-      setAdCooldown(30);
-
-      toast.success(`Ad watched! +10 coins`);
-    } catch (err) {
-      console.error('Reward update failed:', err);
-      toast.error('Reward failed, try again.');
     }
   };
 
@@ -1067,6 +1073,31 @@ export default function GuestChat() {
                 onClick={() => setShowGiftTelegramModal(false)}
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showTelegramWarning && (
+        <div className="tg-modal-overlay">
+          <div className="tg-modal-card">
+            <h3 className="tg-modal-title">Almost there!</h3>
+            <p className="tg-modal-desc">
+              Daily limit almost reached! Switch to Telegram now for unlimited
+              free chatting.
+            </p>
+            <div className="tg-modal-actions">
+              <button
+                className="tg-modal-btn tg-modal-btn--primary"
+                onClick={handleTelegramRedirect}
+              >
+                Join Telegram
+              </button>
+              <button
+                className="tg-modal-btn tg-modal-btn--secondary"
+                onClick={() => setShowTelegramWarning(false)}
+              >
+                Chat until limit
               </button>
             </div>
           </div>
