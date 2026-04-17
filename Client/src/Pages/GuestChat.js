@@ -174,10 +174,17 @@ export default function GuestChat() {
     const checkPermission = async () => {
       try {
         const saved = localStorage.getItem('notifSubscribed');
+        const toastShown = localStorage.getItem('notifToastShown');
 
         if (Notification.permission === 'granted' || saved === 'true') {
           setNotificationAllowed(true);
-          toast.success('🔔 Notifications enabled!');
+
+          // ✅ Only show toast once
+          if (!toastShown) {
+            toast.success('🔔 Notifications enabled!');
+            localStorage.setItem('notifToastShown', 'true');
+          }
+
           await OneSignal.User.PushSubscription.optIn();
         } else {
           setNotificationAllowed(false);
@@ -271,10 +278,19 @@ export default function GuestChat() {
   };
 
   // Helper to check if the user is allowed to send another message
-  const checkCanSend = () => {
-    if (isTelegram) return true; // Inside Telegram? No restrictions.
+  const DEVELOPER_IDS = ['c57e5697-3ee6-4735-a2a8-f71f6c2780b6'];
 
-    // Count how many messages the current user has sent in this conversation
+  const checkCanSend = () => {
+    // ✅ Allow Telegram users
+    if (isTelegram) return true;
+
+    // ✅ Allow developers (Arpita)
+    if (DEVELOPER_IDS.includes(currentUserId)) return true;
+
+    // Optional: if you store role in DB/localStorage
+    if (currentUser?.role === 'developer') return true;
+
+    // ❌ Normal limit logic
     const sentCount = messages.filter(
       (m) => m.sender_id === currentUserId
     ).length;
@@ -283,9 +299,9 @@ export default function GuestChat() {
       setShowTelegramModal(true);
       return false;
     }
+
     return true;
   };
-
   useEffect(() => {
     let timer;
     if (cooldownRemaining > 0) {
