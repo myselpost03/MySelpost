@@ -142,10 +142,7 @@ export default function ChatRoom() {
           feature_type: 'group_chat_image_access', // Dynamic key
           title: 'Unlock Group Image',
           amount: 10, // Price in Stars
-        },
-        {
-    withCredentials: true,
-  }
+        }
       );
 
       const { invoice_url } = response.data;

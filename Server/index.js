@@ -4,12 +4,18 @@ import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import cors from "cors";
 import { DodoPayments } from "dodopayments";
-import { supabaseChat } from "../Client/src/Utils/supabaseGroupChat";
+import { supabaseChat } from "../Client/src/Utils/supabaseGroupChat.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: true, credentials: true }));
+app.use(
+  cors({
+    origin: "*", // IMPORTANT: allow all for now
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
 app.use(express.json());
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
