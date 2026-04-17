@@ -11,10 +11,21 @@ const PORT = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: ["https://myselpost.com"],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // allow Telegram / mobile apps
+
+      const allowed = [
+        "https://myselpost.com",
+        "https://www.myselpost.com",
+      ];
+
+      if (allowed.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(null, true); // TEMP: allow all for debugging
+      }
+    },
     credentials: true,
-    methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type"],
   })
 );
 app.use(express.json());
