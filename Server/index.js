@@ -9,25 +9,7 @@ import { supabaseChat } from "../Client/src/Utils/supabaseGroupChat";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // allow Telegram / mobile apps
-
-      const allowed = [
-        "https://myselpost.com",
-        "https://www.myselpost.com",
-      ];
-
-      if (allowed.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(null, true); // TEMP: allow all for debugging
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
