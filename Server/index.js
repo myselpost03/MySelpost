@@ -396,11 +396,20 @@ app.post("/create-access-invoice", async (req, res) => {
    const response = await axios.post(`${TELEGRAM_API}/createInvoiceLink`, {
   title: title,
   description: `Purchase access to ${feature_type}`,
-  payload: feature_type, // simplified
-  provider_token: "",
+
+  payload: feature_type, // keep simple
+
+  provider_token: "", // REQUIRED for Stars
   currency: "XTR",
-  prices: [{ label: title, amount: amount }],
-  start_parameter: "test_invoice",
+
+  prices: [
+    {
+      label: title,
+      amount: amount, // e.g. 10
+    },
+  ],
+
+  start_parameter: "access_payment",
 
   need_name: false,
   need_phone_number: false,
@@ -433,8 +442,13 @@ app.get("/test-invoice", async (req, res) => {
 
     res.json(response.data);
   } catch (err) {
-    res.json(err.response?.data || err.message);
-  }
+  console.error("FULL ERROR:", err.response?.data || err.message);
+
+  res.status(500).json({
+    success: false,
+    error: err.response?.data || err.message
+  });
+}
 });
 // Webhook to handle successful payment
 app.post("/webhook", async (req, res) => {

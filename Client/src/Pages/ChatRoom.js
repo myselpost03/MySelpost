@@ -163,12 +163,12 @@ export default function ChatRoom() {
     } catch (err) {
   console.error('Error initiating payment:', err);
 
-  const backendError = err.response?.data?.error;
+  const msg =
+    err.response?.data?.error?.description ||
+    err.response?.data?.error ||
+    err.message;
 
-  toast.error(
-    backendError?.description || 'Could not create invoice',
-    { duration: 5000 }
-  );
+  toast.error(msg || 'Could not create invoice', { duration: 6000 });
 }
   };
 
