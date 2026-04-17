@@ -398,6 +398,7 @@ app.post("/create-access-invoice", async (req, res) => {
       description: `Purchase access to ${feature_type}`,
       payload: payload, 
       currency: "XTR",
+      provider_token: "",
       prices: [{ label: title, amount: amount }],
     });
 

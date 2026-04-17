@@ -40,7 +40,7 @@ const TelegramPost = ({ channel, postId, onSeen }) => {
 export default function MemeFeed() {
   const [memeSeenCount, setMemeSeenCount] = useState(0);
   const [interstitialIndex, setInterstitialIndex] = useState(0);
-
+const [cursor, setCursor] = useState(0);
   const { triggerAd } = useAdManager(6115107); // pass userId if you have
   const { canShowAd, getCooldownRemaining } = useAdController();
 
@@ -62,6 +62,16 @@ export default function MemeFeed() {
   const saveSeenPosts = (posts) => {
     localStorage.setItem('seenPosts', JSON.stringify(posts));
   };
+
+  const unseenPosts = getUnseenPosts();
+
+const [postIds, setPostIds] = useState(() => {
+  return unseenPosts.slice(0, INITIAL_LOAD);
+});
+
+useEffect(() => {
+  setCursor(INITIAL_LOAD);
+}, []);
   const [isLoading, setIsLoading] = useState(false);
   const [seenPosts, setSeenPosts] = useState(getSeenPosts());
   const loadMoreRef = useRef(null);
@@ -73,9 +83,7 @@ export default function MemeFeed() {
     return allPosts.filter((id) => !seenPosts.includes(id));
   };
 
-  const [postIds, setPostIds] = useState(() => {
-    return getUnseenPosts().slice(0, INITIAL_LOAD);
-  });
+ 
 
   const markAsSeen = async (id) => {
     if (!seenPosts.includes(id)) {
@@ -119,20 +127,20 @@ export default function MemeFeed() {
       }
     }
   };
-  const loadMore = useCallback(() => {
-    if (isLoading) return;
+ const loadMore = useCallback(() => {
+  if (isLoading) return;
 
-    setIsLoading(true);
+  setIsLoading(true);
 
-    const unseen = getUnseenPosts();
-    const currentCount = postIds.length;
-    const nextPosts = unseen.slice(currentCount, currentCount + 6);
+  const unseen = getUnseenPosts();
+  const nextPosts = unseen.slice(cursor, cursor + 6);
 
-    setTimeout(() => {
-      setPostIds((prev) => [...prev, ...nextPosts]);
-      setIsLoading(false);
-    }, 300);
-  }, [isLoading, postIds, seenPosts]);
+  setTimeout(() => {
+    setPostIds((prev) => [...prev, ...nextPosts]);
+    setCursor((prev) => prev + 6);
+    setIsLoading(false);
+  }, 300);
+}, [isLoading, cursor, seenPosts]);
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {

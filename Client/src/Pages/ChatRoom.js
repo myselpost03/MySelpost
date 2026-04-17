@@ -363,7 +363,7 @@ export default function ChatRoom() {
       {/* Fixed Bottom Input Area */}
       <footer className="chat-room-footer-input-bar">
         <form className="chat-room-input-form" onSubmit={sendMessage}>
-          <div
+       <div
             style={{
               cursor: 'pointer',
               paddingRight: '10px',

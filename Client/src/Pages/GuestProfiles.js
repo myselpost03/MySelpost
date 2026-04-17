@@ -1148,7 +1148,7 @@ const GuestProfiles = () => {
           </div>
         </div>
       )}
-      <button
+     {/* <button
         className="meme-fab"
         onClick={() => navigate('/meme-feed')}
         aria-label="Create or view memes"
@@ -1156,7 +1156,7 @@ const GuestProfiles = () => {
         <span className="fab-icon" role="img" aria-label="popcorn">
           🍿
         </span>
-      </button>
+      </button>*/}
     </div>
   );
 };
