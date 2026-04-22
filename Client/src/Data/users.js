@@ -2,6 +2,56 @@ const BASE_URL = 'https://cdn.jsdelivr.net/gh/myselpost03/my-images';
 
 export const users = [
   {
+    name: 'Emily, 25',
+    location: 'Phillipines',
+    image: `${BASE_URL}/110.jpg`,
+  },
+  {
+    name: 'Nishu, 20',
+    location: 'India',
+    image: `${BASE_URL}/101.jpg`,
+  },
+  {
+    name: 'Amy, 22',
+    location: 'USA',
+    image: `${BASE_URL}/102.jpg`,
+  },
+  {
+    name: 'Shivangi Sharma, 24',
+    location: 'India',
+    image: `${BASE_URL}/103.jpg`,
+  },
+  {
+    name: 'Simran, 23',
+    location: 'India',
+    image: `${BASE_URL}/104.jpg`,
+  },
+  {
+    name: 'Vampire, 24',
+    location: 'India',
+    image: `${BASE_URL}/105.jpg`,
+  },
+  {
+    name: 'Rinki, 23',
+    location: 'India',
+    image: `${BASE_URL}/106.jpg`,
+  },
+  {
+    name: 'Yirinuma, 23',
+    location: 'Nigeria',
+    image: `${BASE_URL}/107.jpg`,
+  },
+  {
+    name: 'Shilpa, 19',
+    location: 'India',
+    image: `${BASE_URL}/108.jpg`,
+  },
+  {
+    name: 'Benedicta, 20',
+    location: 'UK',
+    image: `${BASE_URL}/109.jpg`,
+  },
+  {
     name: 'Siya, 24',
     location: 'India',
     image: `${BASE_URL}/6053109637931798351.jpg`,

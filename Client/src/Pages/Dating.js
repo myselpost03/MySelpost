@@ -136,44 +136,44 @@ export default function Dating() {
     window.open('https://t.me/myselpost_bot/myselpost', '_blank');
   };
 
-const handleAdAction = async (direction) => {
-  if (!isTelegram || hasPaidAccess) {
-    handleAction(direction);
-    return;
-  }
+  const handleAdAction = async (direction) => {
+    if (!isTelegram || hasPaidAccess) {
+      handleAction(direction);
+      return;
+    }
 
-  if (direction === 'like') {
-    const nextSwipe = swipeCount + 1;
-    const shouldShowAd = nextSwipe % 5 === 0;
+    if (direction === 'like') {
+      const nextSwipe = swipeCount + 1;
+      const shouldShowAd = nextSwipe % 5 === 0;
 
-    if (shouldShowAd) {
-      const result = await triggerAd({
-        type: "interstitial",
-        networks: ["monetag", "adradar", "gigapub"], // ✅ correct
-      });
+      if (shouldShowAd) {
+        const result = await triggerAd({
+          type: 'interstitial',
+          networks: ['monetag', 'adradar', 'gigapub'], // ✅ correct
+        });
 
-      if (!result.success) {
-        const check = canShowAd(result.network || "monetag");
+        if (!result.success) {
+          const check = canShowAd(result.network || 'monetag');
 
-        if (check?.reason === "cooldown") {
-          const remaining = Math.ceil((getCooldownRemaining?.() || 0) / 1000);
-          toast.error(`Wait ${remaining}s before next swipe ad`);
+          if (check?.reason === 'cooldown') {
+            const remaining = Math.ceil((getCooldownRemaining?.() || 0) / 1000);
+            toast.error(`Wait ${remaining}s before next swipe ad`);
 
-          // ✅ STILL ALLOW SWIPE
-          handleAction(direction);
-          return;
+            // ✅ STILL ALLOW SWIPE
+            handleAction(direction);
+            return;
+          }
+
+          // ✅ fallback exhausted → free swipe
+          console.log('All interstitial networks exhausted → skipping ad');
+        } else {
+          console.log('Interstitial shown via:', result.network);
         }
-
-        // ✅ fallback exhausted → free swipe
-        console.log("All interstitial networks exhausted → skipping ad");
-      } else {
-        console.log("Interstitial shown via:", result.network);
       }
     }
-  }
 
-  handleAction(direction);
-};
+    handleAction(direction);
+  };
 
   const handleAction = (direction) => {
     if (animationClass) return;
@@ -280,6 +280,7 @@ const handleAdAction = async (direction) => {
       toast.error('Failed to send message.');
     }
   };
+
   const handleUpgrade = async () => {
     const tg = window.Telegram?.WebApp;
     const tgUser = tg?.initDataUnsafe?.user;
@@ -307,9 +308,14 @@ const handleAdAction = async (direction) => {
           // Statuses: 'paid', 'failed', 'pending', 'cancelled'
           if (status === 'paid') {
             setHasPaidAccess(true);
-            toast.success('Payment successful! You can now swipe without any ads.', { duration: 4000 });
+            toast.success(
+              'Payment successful! You can now swipe without any ads.',
+              { duration: 4000 }
+            );
           } else if (status === 'failed') {
-            toast.error('Payment failed. Please try again.', { duration: 4000 });
+            toast.error('Payment failed. Please try again.', {
+              duration: 4000,
+            });
           }
         });
 
@@ -317,7 +323,9 @@ const handleAdAction = async (direction) => {
       }
     } catch (err) {
       console.error('Error initiating payment:', err);
-      toast.error('Could not create invoice. Please try again later.', { duration: 4000 });
+      toast.error('Could not create invoice. Please try again later.', {
+        duration: 4000,
+      });
     }
   };
 
