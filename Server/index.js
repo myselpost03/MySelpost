@@ -4,7 +4,9 @@ import express from "express";
 import { createClient } from "@supabase/supabase-js";
 import cors from "cors";
 import { DodoPayments } from "dodopayments";
+import { Telegraf, Markup } from "telegraf";
 
+const bot = new Telegraf(process.env.BOT_TOKEN);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -19,6 +21,13 @@ app.use(express.json());
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
+const WEBHOOK_PATH = `/telegraf/${bot.secretPathComponent()}`;
+
+// ✅ Set webhook ONLY here
+bot.telegram.setWebhook(`https://bot-1hr9.onrender.com${WEBHOOK_PATH}`);
+app.use(bot.webhookCallback(WEBHOOK_PATH));
+
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -458,41 +467,6 @@ app.post("/webhook", async (req, res) => {
   const update = req.body;
 
   try {
-    // ✅ Handle normal messages
-    if (update.message) {
-      const chatId = update.message.chat.id;
-      const text = update.message.text;
-
-      // 👋 /start command
-      if (text === "/start") {
-        await axios.post(`${TELEGRAM_API}/sendMessage`, {
-          chat_id: chatId,
-          text: "Welcome! Type /view",
-        });
-      }
-
-      // 👀 /view command
-      if (text === "/view") {
-        await axios.post(`${TELEGRAM_API}/sendMessage`, {
-          chat_id: chatId,
-          text: "Open the app below 👇",
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: "Open App 🚀",
-                  web_app: {
-                    url: "https://myselpost.com", // 🔥 replace with your app
-                  },
-                },
-              ],
-            ],
-          },
-        });
-      }
-    }
-
-    // 💳 Handle payment pre-checkout
     if (update.pre_checkout_query) {
       await axios.post(`${TELEGRAM_API}/answerPreCheckoutQuery`, {
         pre_checkout_query_id: update.pre_checkout_query.id,
@@ -501,33 +475,85 @@ app.post("/webhook", async (req, res) => {
       return res.sendStatus(200);
     }
 
-    // 💰 Handle successful payment
     if (update.message?.successful_payment) {
       const payment = update.message.successful_payment;
       const telegramUserId = update.message.from.id;
 
+      // Parse the JSON payload we sent earlier
       const payload = JSON.parse(payment.invoice_payload);
 
+      // Save to the universal permissions table
       const { error } = await supabaseGuest.from("user_permissions").upsert({
         telegram_user_id: telegramUserId,
-        feature_key: payload.feature,
+        feature_key: payload.feature, // e.g., "image_access"
         payment_id: payment.telegram_payment_charge_id,
       });
 
       if (error) throw error;
 
+      // Notify User
       await axios.post(`${TELEGRAM_API}/sendMessage`, {
         chat_id: update.message.chat.id,
         text: `✅ Success! Access granted for: ${payload.feature}`,
       });
     }
-
     res.sendStatus(200);
   } catch (err) {
     console.error("Webhook Error:", err.message);
     res.sendStatus(500);
   }
 });
+
+bot.start((ctx) => {
+  ctx.reply("Welcome! Type /view");
+});
+
+bot.command("view", (ctx) => {
+  ctx.reply("Open the app below 👇", {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          Markup.button.webApp(
+            "Open App 🚀",
+            "https://myselpost.com"
+          ),
+        ],
+      ],
+    },
+  });
+});
+
+/* ---------------- PAYMENT HANDLING ---------------- */
+
+bot.on("pre_checkout_query", async (ctx) => {
+  await ctx.answerPreCheckoutQuery(true);
+});
+
+bot.on("successful_payment", async (ctx) => {
+  try {
+    const payment = ctx.message.successful_payment;
+    const telegramUserId = ctx.from.id;
+
+    // ✅ Parse payload (same as your code)
+    const payload = JSON.parse(payment.invoice_payload);
+
+    // ✅ Save to Supabase
+    const { error } = await supabaseGuest.from("user_permissions").upsert({
+      telegram_user_id: telegramUserId,
+      feature_key: payload.feature,
+      payment_id: payment.telegram_payment_charge_id,
+    });
+
+    if (error) throw error;
+
+    // ✅ Notify user
+    await ctx.reply(`✅ Success! Access granted for: ${payload.feature}`);
+  } catch (err) {
+    console.error("Payment Error:", err.message);
+  }
+});
+
+
 app._router.stack.forEach((r) => {
   if (r.route && r.route.path) {
     console.log("Route registered:", r.route.path);
