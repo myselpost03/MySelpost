@@ -39,6 +39,44 @@ const supabaseGuest = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+async function broadcastMessage(text) {
+  const { data: users, error } = await supabaseGuest
+    .from("telegram_users")
+    .select("telegram_user_id");
+
+  if (error) {
+    console.error("Error fetching users:", error);
+    return;
+  }
+
+  for (const user of users) {
+    try {
+      await axios.post(`${TELEGRAM_API}/sendMessage`, {
+        chat_id: user.telegram_user_id,
+        text: text,
+      });
+
+      console.log(`Sent to ${user.telegram_user_id}`);
+
+      await new Promise((res) => setTimeout(res, 80));
+    } catch (err) {
+      const errorCode = err.response?.data?.error_code;
+
+      // ❌ USER BLOCKED BOT → DELETE
+      if (errorCode === 403) {
+        console.log(`❌ Removing blocked user: ${user.telegram_user_id}`);
+
+        await supabaseGuest
+          .from("telegram_users")
+          .delete()
+          .eq("telegram_user_id", user.telegram_user_id);
+      } else {
+        console.error(`Failed for ${user.telegram_user_id}`, err.message);
+      }
+    }
+  }
+}
+
 const ONE_SIGNAL_APP_ID = process.env.ONE_SIGNAL_APP_ID;
 const ONE_SIGNAL_API_KEY = process.env.ONE_SIGNAL_API_KEY;
 
@@ -504,7 +542,28 @@ app.post("/webhook", async (req, res) => {
   }
 });
 
-bot.start((ctx) => {
+app.post("/broadcast", async (req, res) => {
+  const { message, secret } = req.body;
+
+  if (secret !== process.env.ADMIN_SECRET) {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+
+  await broadcastMessage(message);
+  res.json({ success: true });
+});
+
+bot.start(async (ctx) => {
+  const user = ctx.from;
+
+  // 💾 Save user in DB
+  await supabaseGuest.from("telegram_users").upsert({
+    telegram_user_id: user.id,
+    username: user.username,
+    first_name: user.first_name,
+    last_name: user.last_name,
+  });
+
   ctx.reply("Welcome! Type /view");
 });
 
@@ -521,6 +580,24 @@ bot.command("view", (ctx) => {
       ],
     },
   });
+});
+
+const ADMIN_ID = 5186436167;
+
+bot.command("broadcast", async (ctx) => {
+  if (ctx.from.id !== ADMIN_ID) {
+    return ctx.reply("❌ Not authorized");
+  }
+
+  const text = ctx.message.text.replace("/broadcast ", "");
+
+  if (!text) {
+    return ctx.reply("⚠️ Please provide a message");
+  }
+
+  await broadcastMessage(text);
+
+  ctx.reply("✅ Broadcast sent");
 });
 
 /* ---------------- PAYMENT HANDLING ---------------- */
@@ -552,7 +629,6 @@ bot.on("successful_payment", async (ctx) => {
     console.error("Payment Error:", err.message);
   }
 });
-
 
 app._router.stack.forEach((r) => {
   if (r.route && r.route.path) {
