@@ -315,7 +315,7 @@ const ChatList = () => {
 
         // 2. Clean up logic: Boolean coercion is faster and cleaner
         const isMobile = window.innerWidth < 768;
-        const needsProfileUpdate = (!data.gender || !data.age) && isMobile;
+        const needsProfileUpdate = (!data.gender || !data.age);
         setShowProfileModal(needsProfileUpdate);
       }
     };

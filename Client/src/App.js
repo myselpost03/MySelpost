@@ -202,7 +202,7 @@ function AppContent() {
 
     try {
       const storedUser = JSON.parse(localStorage.getItem('user'));
-      if (storedUser?.name === 'Shivani' || 'Madison') {
+    if (storedUser?.name === 'Shivani' || storedUser?.name === 'Madison') {
         isDeveloper = true;
       }
     } catch (e) {
@@ -369,11 +369,16 @@ function AppContent() {
       return;
     }
 
-    const protectedRoutes = ['/chat-list', '/chat/:id', '/profile/:id'];
-    if (!storedUser?.id && protectedRoutes.includes(location.pathname)) {
-      navigate('/home-page', { replace: true }); //guest-user
-      return;
-    }
+   const protectedRoutes = ['/chat-list', '/chat/:id', '/profile/:id'];
+
+const isProtected = protectedRoutes.some((path) =>
+  matchPath(path, location.pathname)
+);
+
+if (!storedUser?.id && isProtected) {
+  navigate('/home-page', { replace: true });
+  return;
+}
 
     setReady(true); // safe to render routes
   }, [navigate, location.pathname]);

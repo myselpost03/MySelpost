@@ -46,9 +46,7 @@ export default function MemeFeed() {
   const [memeSeenCount, setMemeSeenCount] = useState(0);
   const [interstitialIndex, setInterstitialIndex] = useState(0);
   const [cursor, setCursor] = useState(0);
-const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [timer, setTimer] = useState(6);
-  const { triggerAd } = useAdManager(6115107);
+const { triggerAd } = useAdManager(6115107);
   const { canShowAd, getCooldownRemaining } = useAdController();
 
   const INTERSTITIAL_ORDER = ['monetag', 'gigapub', 'adradar'];
@@ -81,17 +79,7 @@ const [isInitialLoading, setIsInitialLoading] = useState(true);
     return allPosts.filter((id) => !seenPosts.includes(id));
   };
 
- useEffect(() => {
-    if (timer > 0) {
-      const interval = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
-      return () => clearInterval(interval);
-    } else {
-      setIsInitialLoading(false);
-    }
-  }, [timer]);
-
+ 
   useEffect(() => {
     setCursor(INITIAL_LOAD);
   }, []);
@@ -183,21 +171,7 @@ const [postIds, setPostIds] = useState(() => {
 
   const unseenRemaining = getUnseenPosts().length;
   const isEndOfFeed = postIds.length >= unseenRemaining;
-if (isInitialLoading) {
-    return (
-      <div style={{ 
-        display: 'flex', flexDirection: 'column', alignItems: 'center', 
-        justifyContent: 'center', height: '100vh', fontFamily: 'sans-serif',
-        backgroundColor: '#f0f2f5' 
-      }}>
-        <h2 style={{ color: '#2481cc' }}>Preparing your feed...</h2>
-        <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#2481cc', margin: '20px' }}>
-          {timer}s
-        </div>
-        <p>Please wait a moment while we fetch the latest content.</p>
-      </div>
-    );
-  }
+
   return (
     <div
       style={{

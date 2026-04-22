@@ -74,7 +74,7 @@ const DatingNavbar = () => {
     { id: 'date', icon: '🔥', label: 'Date', path: '/date' },
     { id: 'earn', icon: '🎮', label: 'Earn', path: '/dashboard' },
     { id: 'messages', icon: '💬', label: 'Chat Room', path: '/chat-room' },
-    { id: 'videos', icon: '🎥', label: 'Videos', path: '/videos' },
+    { id: 'memes', icon: '🍿', label: 'Memes', path: '/meme-feed' },
   ];
 
   const handleTabClick = (tabId, path) => {
