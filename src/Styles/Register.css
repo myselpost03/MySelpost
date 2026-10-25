@@ -1,0 +1,190 @@
+@import url(https://fonts.googleapis.com/css?family=Gabriela:regular);
+@import url(https://fonts.googleapis.com/css?family=Mystery+Quest:regular);
+
+
+/* Container */
+.register-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f5f6fa; /* Light gray background */
+  padding: 20px;
+  margin-top: -120px;
+}
+
+/* Form */
+.register-form {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  padding: 35px;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  color: #333;
+  position: relative;
+  animation: fadeIn 0.6s ease;
+}
+
+/* Title */
+.acct-text {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 2px solid #333;
+  padding-bottom: 8px;
+  color: #111;
+}
+
+/* Inputs */
+.register-form input[type="text"],
+.register-form input[type="email"],
+.register-form input[type="password"],
+.register-form input[type="tel"] {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 10px;
+  border: 2px solid #ddd;
+  background: #fafafa;
+  color: #111;
+  font-size: 1rem;
+  transition: all 0.25s ease;
+}
+
+.register-form input:focus {
+  border-color: #111;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(0,0,0,0.15);
+  outline: none;
+}
+
+/* Invalid states */
+.invalid {
+  border-color: #e63946 !important;
+  background: #ffeaea;
+}
+
+/* Error messages */
+.error-msg {
+  color: #e63946;
+  font-size: 0.85rem;
+  margin-top: -10px;
+  margin-bottom: 5px;
+  text-align: left;
+  font-family: 'stylish', serif;
+}
+
+/* Step indicator */
+.step-indicator {
+  font-size: 0.9rem;
+  color: #555;
+  text-align: center;
+  margin-top: 5px;
+  font-family: 'patrick hand', serif;
+}
+
+
+
+/* File upload */
+.profile-pic-selector {
+  display: flex;
+  justify-content: center;
+}
+
+.profile-pic-card {
+  background: #fafafa;
+  border: 2px dashed #bbb;
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.profile-pic-card:hover {
+  border-color: #111;
+  background: #f0f0f0;
+}
+
+.profile-pic-text {
+  display: block;
+  font-size: 0.8rem;
+  color: #555;
+  font-family: 'schoolbell', serif;
+}
+
+.profile-pic-input {
+  display: none;
+}
+
+/* Button */
+.register-form button {
+  padding: 12px;
+  border-radius: 30px;
+  border: none;
+  background: #111;
+  color: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.register-form button:hover:not(:disabled) {
+  background: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+.register-form button:disabled {
+  background: #ccc;
+  color: #777;
+  cursor: not-allowed;
+}
+
+/* Link to login */
+.link-to-login {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #555;
+  font-family: 'gabriela', serif;
+}
+
+.link-to-login a {
+  color: #111;
+  font-weight: bold;
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+  transition: all 0.3s ease;
+}
+
+.link-to-login a:hover {
+  border-bottom: 1px dashed #111;
+}
+
+.register-btn{
+font-family: 'mystery quest', serif
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.input-error {
+  border: 1px solid red;
+}
+
+.error-text {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
