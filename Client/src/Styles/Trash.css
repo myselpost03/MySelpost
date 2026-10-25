@@ -1,0 +1,466 @@
+/* General Theme Variables */
+:root {
+  --yellow: #FFC107;
+  --dark-bg: #121212;
+  --card-bg: #1E1E1E;
+  --text-primary: #FFFFFF;
+  --text-secondary: #B0B0B0;
+}
+
+body {
+  background-color: var(--dark-bg);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  margin: 0;
+}
+
+.dashboard-app {
+  padding: 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.game-logo { height: 40px; }
+
+.stats-badge {
+  background: var(--yellow);
+  color: black;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.wallet-card {
+  background: linear-gradient(145deg, #1f1f1f, #000);
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 30px;
+  border: 1px solid #333;
+}
+
+.wallet-label { color: #888; margin-bottom: 5px; font-size: 0.9rem; }
+
+.balance-display {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #FFC107;
+  margin: 10px 0;
+}
+
+.btn-withdraw {
+  background: #FFC107;
+  color: #000;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+}
+/* Overlay with a blur effect */
+.alert-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px); /* Modern blur effect */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Premium Card Design */
+.alert-card {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 40px 30px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Icon Styling */
+.alert-icon {
+  font-size: 50px;
+  margin-bottom: 20px;
+  display: inline-block;
+  filter: drop-shadow(0 0 10px rgba(255, 193, 7, 0.5));
+  animation: pulse 2s infinite;
+}
+
+.alert-card h3 {
+  color: #fff;
+  font-size: 24px;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.alert-card p {
+  color: #a0a0a0;
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+/* Sleek Button Styling */
+.btn-confirm {
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+  color: #000;
+  border: none;
+  padding: 14px 40px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+}
+
+.btn-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.5);
+  filter: brightness(1.1);
+}
+
+.btn-confirm:active {
+  transform: translateY(0);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Roadmap/Task Section */
+.section-title { margin-bottom: 15px; font-size: 1.1rem; }
+
+.roadmap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tier-card {
+  background: var(--card-bg);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #333;
+  transition: 0.3s;
+}
+
+.tier-card:hover { border-color: var(--yellow); }
+
+.tier-prize { color: var(--yellow); font-weight: bold; margin-top: 5px; }
+
+/* Active Task */
+.active-task-container {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.btn-watch-ad {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-top: 15px;
+  cursor: pointer;
+}
+
+
+
+/* Animations */
+@keyframes popIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-pop-in { animation: popIn 0.4s ease-out forwards; }
+
+.completed-card {
+  background: #1a1a1a;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  border: 2px dashed var(--yellow);
+}
+
+.status-badge-glow {
+  background: rgba(255, 193, 7, 0.1);
+  color: var(--yellow);
+  padding: 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin: 15px 0;
+}/* Fullscreen overlay */
+.feedback-alert-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.82);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+/* Card */
+.alert-card {
+  width: 100%;
+  max-width: 420px;
+  background: linear-gradient(145deg, #1a1a1a, #111111);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  border-radius: 22px;
+  padding: 32px 26px;
+  text-align: center;
+  box-shadow:
+    0 0 30px rgba(255, 215, 0, 0.08),
+    0 10px 40px rgba(0, 0, 0, 0.6);
+  color: #f5e9a9;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Golden top glow */
+.alert-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  width: 80%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #ffd700,
+    transparent
+  );
+}
+
+/* Icon */
+.alert-icon {
+  font-size: 54px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.4));
+}
+
+/* Heading */
+.alert-card h3 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffd54a;
+  letter-spacing: 0.5px;
+}
+
+/* Text */
+.alert-card p {
+  margin-top: 14px;
+  margin-bottom: 28px;
+  color: #d6c88f;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Buttons container */
+.modal-actions {
+  display: flex;
+}
+
+/* Primary button */
+.btn-confirm {
+  width: 100%;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ffd700, #ffb800);
+  color: #111;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 18px rgba(255, 215, 0, 0.22);
+}
+
+.btn-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(255, 215, 0, 0.35);
+}
+
+/* Secondary button */
+.btn-cancel {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 215, 0, 0.18);
+  border-radius: 14px;
+  background: #232323;
+  color: #f3d96b;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-cancel:hover {
+  background: #2d2d2d;
+  border-color: rgba(255, 215, 0, 0.35);
+  transform: translateY(-2px);
+}
+
+/* Pop animation */
+.animate-pop-in {
+  animation: popIn 0.35s ease;
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.88) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}/* Professional Game Feed */
+.game-feed-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.game-card {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 15px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.game-card:hover {
+  border-color: #FFC107;
+  transform: translateY(-4px);
+  background: #252525;
+}
+
+.game-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.game-card-icon { font-size: 1.8rem; }
+
+.difficulty-label {
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.difficulty-label.easy { background: rgba(76, 175, 80, 0.1); color: #4caf50; }
+.difficulty-label.medium { background: rgba(255, 152, 0, 0.1); color: #ff9800; }
+.difficulty-label.hard { background: rgba(244, 67, 54, 0.1); color: #f44336; }
+
+.game-card h4 { margin: 8px 0; font-size: 0.95rem; }
+
+.game-card-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.reward-text { color: #FFC107; font-weight: bold; }
+
+/* Active Task Card */
+.active-task-container {
+  background: linear-gradient(145deg, #1e1e1e, #141414);
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid #FFC107;
+  text-align: center;
+}
+
+.task-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.task-icon { font-size: 3rem; }
+
+.reward-tag {
+  background: rgba(255, 193, 7, 0.1);
+  color: #FFC107;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.btn-primary-action {
+  width: 100%;
+  padding: 16px;
+  background: #FFC107;
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-cancel-small {
+  background: transparent;
+  border: none;
+  color: #666;
+  text-decoration: underline;
+  margin-top: 15px;
+  cursor: pointer;
+}
+
+.withdraw-info {
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 15px;
+}

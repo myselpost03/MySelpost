@@ -603,7 +603,7 @@ const GuestUser = () => {
 
                       <div className="user-info">
                         <div className="user-top-row">
-                          <span className="user-name">{user.name}</span>
+                          <span className="user-name" style={{color:'#000', fontWeight:'bold'}}>{user.name}</span>
                           {user.decency_rating !== null &&
                             user.decency_rating !== undefined && (
                               <div className="decency-label">

@@ -70,10 +70,10 @@ const DatingNavbar = () => {
   });
 
   const tabs = [
-    { id: 'home', icon: '🏠', label: 'Home', path: '/' }, // Replaced Matches with Home
-    { id: 'date', icon: '🔥', label: 'Date', path: '/date' },
-    { id: 'earn', icon: '🎮', label: 'Earn', path: '/dashboard' },
-    { id: 'messages', icon: '💬', label: 'Chat Room', path: '/chat-room' },
+    {/* id: 'home', icon: '🏠', label: 'Home', path: '/' */}, // Replaced Matches with Home
+   
+    { id: 'earn', icon: '💲', label: 'Earn', path: '/dashboard' },
+    {/* id: 'messages', icon: '💬', label: 'Chat Room', path: '/chat-room' */},
     { id: 'memes', icon: '🍿', label: 'Memes', path: '/meme-feed' },
   ];
 

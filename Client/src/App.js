@@ -13,8 +13,14 @@ import {
   Login,
   ChatRoom,
   MemeFeed,
+  PrivateContact,
+  Private,
+  Demo,
   EarningDashboard,
+  MorningSprint,
+  Tasks,
   GuestProfiles,
+  FAQ,
   GuestChat,
   Videos,
   ResetPassword,
@@ -28,9 +34,12 @@ import {
   NotFound,
   Chat,
   GuestUser,
+  RewardPlatform,
   ChatList,
   Profile,
-  Dating
+  Dating,
+  Trash,
+  Refund
 } from './Pages/index';
 import LoadingSpinner from './Components/LoadingSpinner';
 import { supabase } from './Utils/supabaseClient';
@@ -50,8 +59,12 @@ const protectedRoutes = [
 ];
 
 const publicRoutes = [
-  { path: '/', component: GuestProfiles }, 
-  { path: '/home-page', component: GuestProfiles },
+  { path: '/', component: Private }, //RewardPlatform OR //Private
+  { path: '/home-page', component: Private }, //RewardPlatform OR // Private
+  { path: '/Refund', component: Refund },
+  { path: '/FAQ', component: FAQ },
+  { path: '/contact', component: PrivateContact },
+  { path: '/tasks', component: Tasks },
 
   { path: '/login', component: Login },
   { path: '/register', component: Register },
@@ -79,9 +92,14 @@ const publicRoutes = [
 
   { path: '/reset-password', component: ResetPassword },
 
-  {/* 
   {path: '/game', component: MorningSprint },
-  { path: '/demo', component: Demo },
+ { path: '/demo', component: Demo },
+ { path: '/trash', component: Trash },
+ { path: '/reward', component: RewardPlatform },
+   
+ {/* 
+  
+  
   */},
 
 ];
@@ -382,10 +400,12 @@ if (!storedUser?.id && isProtected) {
 
     setReady(true); // safe to render routes
   }, [navigate, location.pathname]);
+
   const hideNavbarRoutes = [
     '/chat/:id',
     '/guest-chat/:receiverId',
     '/chat-room',
+    '/game'
   ];
 
   const shouldHideNavbar = hideNavbarRoutes.some((pattern) =>
@@ -417,7 +437,7 @@ if (!storedUser?.id && isProtected) {
         ))}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {!shouldHideNavbar && <DatingNavbar />}
+      {/*!shouldHideNavbar && <DatingNavbar />*/}
 
       <InternetStatusAlert />
       {/*showInstallBanner && <InstallBanner />*/}

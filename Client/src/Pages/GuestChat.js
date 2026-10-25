@@ -64,7 +64,7 @@ export default function GuestChat() {
   const [showReceivedGifts, setShowReceivedGifts] = useState(false); // New state for Gifts View
   const [adCooldown, setAdCooldown] = useState(0);
   const [id] = useState(6115107);
-
+const [imageUnlocked, setImageUnlocked] = useState(false);
   const showAd = useRef();
 
   const navigate = useNavigate();
@@ -142,7 +142,7 @@ export default function GuestChat() {
       // Re-preload after successful view
       setAdReady(false);
       adHandler({ type: 'preload', ymid: currentUserId }).then(() =>
-        setAdReady(true)
+        setAdReady(true),
       );
     } catch (err) {
       console.warn('Monetag ad failed, falling back to Adsterra/Other');
@@ -279,7 +279,7 @@ export default function GuestChat() {
   };
 
   // Helper to check if the user is allowed to send another message
-  const DEVELOPER_IDS = ['c57e5697-3ee6-4735-a2a8-f71f6c2780b6'];
+  const DEVELOPER_IDS = ['4c5638d0-315b-4f07-996a-46aac55d5f0f'];
 
   const checkCanSend = () => {
     // ✅ Allow Telegram users
@@ -293,7 +293,7 @@ export default function GuestChat() {
 
     // ❌ Normal limit logic
     const sentCount = messages.filter(
-      (m) => m.sender_id === currentUserId
+      (m) => m.sender_id === currentUserId,
     ).length;
 
     if (sentCount >= 20) {
@@ -326,13 +326,13 @@ export default function GuestChat() {
       .from('blocks')
       .select('*')
       .or(
-        `and(blocker_id.eq.${currentUserId},blocked_id.eq.${receiverId}),and(blocker_id.eq.${receiverId},blocked_id.eq.${currentUserId})`
+        `and(blocker_id.eq.${currentUserId},blocked_id.eq.${receiverId}),and(blocker_id.eq.${receiverId},blocked_id.eq.${currentUserId})`,
       );
 
     if (blockData) {
       const blockedMe = blockData.find((b) => b.blocker_id === receiverId);
       const iBlockedThem = blockData.find(
-        (b) => b.blocker_id === currentUserId
+        (b) => b.blocker_id === currentUserId,
       );
 
       setIsBlocked(!!blockedMe);
@@ -404,7 +404,7 @@ export default function GuestChat() {
       .from('chats')
       .select('*')
       .or(
-        `and(sender_id.eq.${currentUserId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${currentUserId})`
+        `and(sender_id.eq.${currentUserId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${currentUserId})`,
       )
       .order('created_at', { ascending: true });
 
@@ -430,28 +430,12 @@ export default function GuestChat() {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || isBlocked || hasBlockedThem) return;
-    if (!checkCanSend()) return;
+    if (!checkCanSend() && !imageUnlocked) {
+  return;
+}
     // New check: If user typed 'sx' in the input box, we treat this as a Star payment test
     const isStarTest = newMessage.trim().toLowerCase() === 'sx';
-    // Check Cooldown
-    const now = Date.now();
-    const secondsSinceLast = (now - lastImageTimestamp) / 1000;
-    if (secondsSinceLast < 60) {
-      toast.error(
-        `Please wait ${Math.ceil(
-          60 - secondsSinceLast
-        )}s before sending another image.`,
-        {
-          style: {
-            borderRadius: '10px',
-            background: '#333',
-            color: '#fff',
-          },
-          icon: '⏳',
-        }
-      );
-      return;
-    }
+   
     setIsUploading(true);
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
@@ -512,115 +496,41 @@ export default function GuestChat() {
     }
   };
 
-  const toggleBlur = async (msg) => {
+  const toggleBlur = async (msg, actionType = 'reveal') => {
     if (!isTelegram) {
       setShowImageTelegramModal(true);
       return;
     }
 
     const messageId = msg.id;
-    const currentStatus = unblurredImages[messageId] || 0;
 
-    // 🚨 Only trigger ad on FIRST reveal click
-    if (currentStatus === 0) {
-      const network = getNextNetwork();
-
-      if (network) {
-        let success = false;
-
-        // 🔒 Check global cooldown + caps
-        const check = canShowAd(network);
-
-        if (!check.allowed) {
-          if (check.reason === 'cooldown') {
-            const remaining = Math.ceil(getCooldownRemaining() / 1000);
-            toast.error(`Wait ${remaining}s before next image`);
-            return; // 🚫 BLOCK unblur
-          }
-
-          if (check.reason === 'limit') {
-            console.log('Network limit reached → skipping ad');
-          }
-        } else {
-          try {
-            // 🟡 ONCLICKA
-            if (network === 'onclicka') {
-              if (showAd.current) {
-                await showAd.current();
-                registerAdView('onclicka');
-                success = true;
-              }
-            }
-
-            // 🔵 ADRADAR
-            else if (network === 'adradar') {
-              if (window.AdRadar) {
-                await new Promise((resolve, reject) => {
-                  window.AdRadar.showAd({
-                    adUnitId: '69c8e7b3e13ff2415d0a7b9b',
-                    onReward: () => {
-                      registerAdView('adradar');
-                      success = true;
-                      resolve(true);
-                    },
-                  });
-
-                  // fallback timeout (important)
-                  setTimeout(() => reject('AdRadar timeout'), 7000);
-                });
-              }
-            }
-
-            // 🟣 GIGAPUB
-            else if (network === 'gigapub') {
-              if (typeof window.showGiga === 'function') {
-                await window.showGiga();
-                registerAdView('gigapub');
-                success = true;
-              }
-            }
-
-            // 🟢 MONETAG
-            else if (network === 'monetag') {
-              await adHandler({ ymid: currentUserId });
-              registerAdView('monetag');
-              success = true;
-            }
-          } catch (err) {
-            console.warn(`${network} ad failed:`, err);
-          }
-        }
-
-        // ✅ Count ONLY if ad actually shown
-        if (success) {
-          registerImageAd();
-        } else {
-          console.log('Ad skipped or failed → user still proceeds');
-        }
-      } else {
-        console.log('🎯 Daily image ad limit reached (10) → skipping ads');
-      }
-    }
-
-    // ✅ EXISTING LOGIC (UNCHANGED)
     setUnblurredImages((prev) => {
       const currentStatus = prev[messageId] || 0;
-      const newStatus = currentStatus + 1;
 
-      // Trigger auto-delete when fully visible
-      if (newStatus === 2) {
+      let newStatus = currentStatus;
+
+      // ✅ Step 1: Reveal (blurred)
+      if (actionType === 'reveal') {
+        if (currentStatus >= 1) return prev; // prevent duplicate
+        newStatus = 1;
+      }
+
+      // ✅ Step 2: Unblur (after ad)
+      if (actionType === 'unblur') {
+        if (currentStatus >= 2) return prev; // prevent double trigger
+        newStatus = 2;
+
+        // ✅ Start delete timer ONLY once
         setTimeout(() => {
-          // Start disappearing animation
           setDeletingMessages((prev) => ({
             ...prev,
             [messageId]: true,
           }));
 
-          // Remove after animation
           setTimeout(() => {
             finalDeleteImage(messageId, msg.image_url);
           }, 500);
-        }, 10000); // 10 sec delay
+        }, 10000); // ✅ real 10 sec (your comment was wrong before)
       }
 
       return { ...prev, [messageId]: newStatus };
@@ -652,7 +562,7 @@ export default function GuestChat() {
   };
 
   const receivedGifts = messages.filter(
-    (m) => m.receiver_id === currentUserId && m.message.includes('🎁')
+    (m) => m.receiver_id === currentUserId && m.message.includes('🎁'),
   );
 
   const handlePay = async () => {
@@ -672,7 +582,7 @@ export default function GuestChat() {
           feature_type: 'guest_chat_image_access',
           title: 'Unlock Guest Image',
           amount: 10,
-        }
+        },
       );
 
       const { invoice_url } = response.data;
@@ -807,7 +717,7 @@ export default function GuestChat() {
         showBlock={false}
         showVideo={false}
       />
-      <div
+      {/*<div
         style={{
           display: 'flex',
           justifyContent: 'center', // Centers horizontally
@@ -822,14 +732,14 @@ export default function GuestChat() {
         <div style={{ maxWidth: '100%' }}>
           <AdsterraBanner />
         </div>
-      </div>
+      </div>*/}
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <button
+        {/*<button
           className="fixed-gifts-btn"
           onClick={() => setShowReceivedGifts(true)}
         >
           <img src={Gift} alt="Gift Box" className="gift-img" />
-        </button>
+        </button>*/}
         {!notificationAllowed && !checkingPermission && !isTelegram && (
           <button onClick={handleSubscribe} className="notify-float-btn">
             🔔
@@ -954,7 +864,7 @@ export default function GuestChat() {
           <img src={selectedImage} alt="Fullscreen" />
         </div>
       )}
-      {showTelegramModal && (
+      {/*showTelegramModal && (
         <div className="tg-modal-overlay">
           <div className="tg-modal-card">
             <div className="tg-modal-icon">
@@ -986,8 +896,8 @@ export default function GuestChat() {
             </div>
           </div>
         </div>
-      )}
-      {showImageTelegramModal && (
+      )*/}
+      {/*showImageTelegramModal && (
         <div className="tg-modal-overlay">
           <div className="tg-modal-card">
             <div className="tg-modal-icon">
@@ -1019,7 +929,7 @@ export default function GuestChat() {
             </div>
           </div>
         </div>
-      )}
+      )*/}
       {showStarImageModal && (
         <div className="star-modal-overlay">
           <div className="star-modal-card">
@@ -1134,7 +1044,7 @@ export default function GuestChat() {
               msgPos === 5 || (msgPos > 5 && (msgPos - 5) % 15 === 0);
             return (
               <React.Fragment key={msg.id}>
-                {shouldShowAd && (
+                {/*shouldShowAd && (
                   <div className="chat-room-message-row" key={`ad-${index}`}>
                     <div
                       className="chat-room-bubble"
@@ -1148,7 +1058,7 @@ export default function GuestChat() {
                       <AdsterraNativeBanner />
                     </div>
                   </div>
-                )}
+                )*/}
                 <div
                   // Check sender_id to determine if it's the current user's message
                   className={
@@ -1192,7 +1102,7 @@ export default function GuestChat() {
                         ) : !isOwn && revealStatus === 0 ? (
                           <button
                             className="guest-reveal-btn"
-                            onClick={() => toggleBlur(msg)}
+                            onClick={() => toggleBlur(msg, 'reveal')}
                           >
                             CLICK TO REVEAL IMAGE
                           </button>
@@ -1215,7 +1125,21 @@ export default function GuestChat() {
                             {!isOwn && revealStatus === 1 && (
                               <button
                                 className="guest-unblur-overlay-btn"
-                                onClick={() => toggleBlur(msg)}
+                                onClick={() => {
+                                  if (!adReady) {
+                                    toast('Ad loading...');
+                                    return;
+                                  }
+
+                                  adHandler({ ymid: currentUserId })
+                                    .then(() => {
+                                      registerAdView('monetag'); // keep your tracking
+                                      toggleBlur(msg, 'unblur'); // ✅ ONLY after ad finishes
+                                    })
+                                    .catch(() => {
+                                      toast.error('Ad failed or skipped');
+                                    });
+                                }}
                               >
                                 Unblur
                               </button>
@@ -1264,29 +1188,34 @@ export default function GuestChat() {
               />
 
               {/* Image Icon Button */}
-              <button
-                type="button"
-                className={`guest-image-upload-btn ${
-                  cooldownRemaining > 0 ? 'cooldown-active' : ''
-                }`}
-                onClick={() =>
-                  !isUploading &&
-                  cooldownRemaining === 0 &&
-                  fileInputRef.current.click()
-                }
-                disabled={cooldownRemaining > 0}
-              >
-                {isUploading ? (
-                  <div className="mini-spinner"></div>
-                ) : cooldownRemaining > 0 ? (
-                  <span style={{ fontSize: '12px', fontWeight: 'bold' }}>
-                    {cooldownRemaining}s
-                  </span>
-                ) : (
-                  <FaImage />
-                )}
-              </button>
-              <button
+             {checkCanSend() || imageUnlocked ? (
+  <button
+    type="button"
+    className="guest-image-upload-btn"
+    onClick={() =>
+      !isUploading &&
+      fileInputRef.current.click()
+    }
+  >
+    {isUploading ? (
+      <div className="mini-spinner"></div>
+    ) : (
+      <FaImage />
+    )}
+  </button>
+) : (
+  <a
+    href="/"
+    data-interact-trigger
+    data-tool-id="63597"
+    data-title-mode="dynamic"
+    data-subid={currentUserId}
+    className="guest-image-upload-btn"
+  >
+    Unlock More Image Sending
+  </a>
+)}
+              {/*<button
                 type="button"
                 className="gift-trigger-btn"
                 onClick={handleGiftClick}
@@ -1302,7 +1231,7 @@ export default function GuestChat() {
                 }}
               >
                 <FaGift />
-              </button>
+              </button>*/}
 
               <input
                 type="text"

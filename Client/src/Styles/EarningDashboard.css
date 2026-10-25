@@ -291,3 +291,522 @@
   from { transform: translateY(50px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+
+
+/* Container Background */
+.dashboard-container {
+  background: #121212;
+  min-height: 100vh;
+  padding: 20px;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  /*margin-bottom: 20%;*/
+}
+
+/* Header */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.game-logo { width: 50px; height: 50px; border-radius: 10px; border: 2px solid #eee }
+
+.distance-badge {
+  background: #1e1e1e;
+  padding: 8px 15px;
+  border-radius: 20px;
+  border: 1px solid #FFC107;
+  color: #FFC107;
+  font-size: 0.85rem;
+}
+
+/* Wallet Card */
+.wallet-card {
+  background: linear-gradient(145deg, #1f1f1f, #000);
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 30px;
+  border: 1px solid #333;
+}
+
+.wallet-label { color: #888; margin-bottom: 5px; font-size: 0.9rem; }
+
+.balance-display {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #FFC107;
+  margin: 10px 0;
+}
+
+.btn-withdraw {
+  background: #FFC107;
+  color: #000;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Roadmap Grid */
+.section-title { margin-bottom: 15px; color: #aaa; }
+
+.roadmap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tier-card {
+  background: #1e1e1e;
+  padding: 15px 10px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid #333;
+}
+
+.tier-requirement {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+.plus { color: #FFC107; font-weight: 800; }
+
+.tier-prize {
+  font-weight: 700;
+  color: #FFC107;
+  font-size: 0.8rem;
+  background: rgba(255, 193, 7, 0.1);
+  padding: 4px;
+  border-radius: 5px;
+}
+
+.modal-overlay, .alert-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-card, .alert-card {
+  background: #1e1e1e;
+  padding: 25px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 350px;
+  text-align: center;
+  border: 1px solid #333;
+}
+
+.alert-card { border: 1px solid #FFC107; box-shadow: 0 0 20px rgba(255, 193, 7, 0.2); }
+
+.modal-subtext { color: #888; font-size: 0.85rem; margin-bottom: 20px; }
+
+.upi-input {
+  width: 100%; padding: 12px; border-radius: 10px;
+  border: 1px solid #444; background: #000; color: #fff;
+  margin-bottom: 20px; box-sizing: border-box;
+}
+
+.modal-actions { display: flex; gap: 10px; }
+
+.btn-confirm {
+  flex: 2; background: #FFC107; color: #000; border: none;
+  padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;
+}
+
+.btn-cancel {
+  flex: 1; background: #333; color: #fff; border: none;
+  padding: 12px; border-radius: 10px; cursor: pointer;
+}
+
+.alert-icon { font-size: 3rem; margin-bottom: 15px; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}.info-section { text-align: center; margin: 15px 0; }
+.conveying-message { color: #888; font-size: 0.9rem; }
+
+.active-task-card {
+  background: #1e1e1e;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  border: 2px solid #FFC107;
+}
+
+.btn-watch {
+  background: #FFC107;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.btn-watch:disabled {
+  background: #555;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.leaderboard-access-card {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 15px;
+  padding: 15px;
+  margin: 20px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.leaderboard-access-card:hover {
+  border-color: #FFC107;
+  background: #252525;
+}
+
+.leaderboard-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.leaderboard-icon {
+  font-size: 1.5rem;
+  background: rgba(255, 193, 7, 0.1);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.leaderboard-text h4 {
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.leaderboard-text p {
+  margin: 0;
+  color: #888;
+  font-size: 0.8rem;
+}
+
+.arrow-icon {
+  color: #FFC107;
+  font-weight: bold;
+}/* Leaderboard Modal Enhancements */
+.modal-card h3 {
+  color: #fff;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  text-align: center;
+}
+
+.leaderboard-list {
+  background: #121212;
+  border-radius: 12px;
+  padding: 5px;
+  border: 1px solid #333;
+  max-height: 350px; /* Limits height so it doesn't overflow */
+  overflow-y: auto;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 10px;
+  border-bottom: 1px solid #222;
+  transition: background 0.2s;
+}
+
+/* Rank Styling */
+.rank {
+  font-weight: 800;
+  width: 40px;
+  color: #888;
+  text-align: center;
+}
+
+/* Give top 3 ranks a special color */
+.leaderboard-item:nth-child(1) .rank { color: #FFD700; font-size: 1.2rem; } /* Gold */
+.leaderboard-item:nth-child(2) .rank { color: #C0C0C0; font-size: 1.1rem; } /* Silver */
+.leaderboard-item:nth-child(3) .rank { color: #CD7F32; font-size: 1.1rem; } /* Bronze */
+
+.user-name {
+  flex-grow: 1;
+  color: #eee;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-left: 10px;
+}
+
+.user-earnings {
+  font-weight: 700;
+  color: #4CAF50; /* Green for money */
+  font-size: 0.9rem;
+}
+
+/* Highlight your own row */
+.highlight-user {
+  background: rgba(255, 193, 7, 0.15);
+  border: 1px solid #FFC107;
+  border-radius: 8px;
+}
+
+/* Close Button Styling */
+.btn-cancel {
+  background: #333;
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #444;
+}
+
+/* Chat Button Styling */
+.chat-icon-btn {
+  background: transparent;
+  border: none;
+  color: #FFC107; /* Matches your gold theme */
+  cursor: pointer;
+  padding: 5px;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+/* Stack items vertically and center them */
+.wallet-vertical-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px; /* Space between label, balance, and button */
+  padding: 10px 0;
+}
+
+/* Make the balance stand out */
+.balance-display {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 5px 0;
+}
+
+/* Make the button span a good width or full width */
+.btn-withdraw-full {
+  width: 100%;
+  max-width: 300px;
+  padding: 14px;
+  background: #FFC107;
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.btn-withdraw-full:active {
+  transform: scale(0.98);
+}
+
+/* Clean up header if stats-badge is hidden */
+.header-section {
+  display: flex;
+  justify-content: bween;
+  align-items: center;
+  min-height: 60px; /* Prevents layout jump when badge appears */
+}.brand-group {
+  display: flex;
+  align-items: center; /* Vertically centers title with logo */
+  gap: 12px;           /* Space between logo and text */
+}
+
+.game-logo {
+  width: 40px;         /* Adjust based on your logo size */
+  height: 40px;
+  object-fit: contain;
+}
+
+.brand-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;           /* Removes default h1 margins */
+  letter-spacing: 0.5px;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: #121212; /* Or your specific background */
+}
+.chat-icon-btn:hover {
+  background: rgba(255, 193, 7, 0.2);
+  transform: scale(1.1);
+}
+
+/* Adjust Leaderboard Item to ensure everything fits */
+.leaderboard-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 10px;
+  border-bottom: 1px solid #222;
+}
+
+.user-name {
+  flex-grow: 1;
+  color: #eee;
+  font-size: 0.95rem;
+  margin-left: 10px;
+  /* Prevent name from squishing the button */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px; 
+}/* Authenticity & Polish */
+.welcome-hero {
+  padding: 30px 20px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(255, 193, 7, 0.1) 0%, transparent 100%);
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+.welcome-hero h1 {
+  font-size: 1.5rem;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.trust-pills {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.pill {
+  background: #2a2a2a;
+  padding: 5px 12px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  color: #4CAF50; /* Green for trust */
+  border: 1px solid #333;
+}
+
+.how-it-works {
+  margin: 20px 0;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.step-item {
+  background: #1e1e1e;
+  padding: 15px 10px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.step-number {
+  width: 24px;
+  height: 24px;
+  background: #FFC107;
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+  font-weight: bold;
+}
+
+.wallet-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wallet-footer {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: #888;
+}.completed-card {
+  background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+  border: 1px solid #FFC107;
+  padding: 40px 20px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.completed-icon {
+  font-size: 50px;
+  margin-bottom: 15px;
+  filter: drop-shadow(0 0 10px #FFC107);
+}
+
+.status-badge-glow {
+  display: inline-block;
+  margin: 20px 0;
+  padding: 10px 25px;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid #FFC107;
+  border-radius: 50px;
+  color: #FFC107;
+  font-size: 1.1rem;
+  box-shadow: 0 0 15px rgba(255, 193, 7, 0.2);
+}
+
+.sub-text {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-pop-in {
+  animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}

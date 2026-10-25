@@ -1,7 +1,13 @@
-import React, { useState, Suspense, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { PerspectiveCamera, Sky, useFBX, useProgress } from '@react-three/drei';
+import {
+  PerspectiveCamera,
+  Sky,
+  useFBX,
+  useGLTF,
+  useProgress,
+} from '@react-three/drei';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import * as THREE from 'three';
 import '../Styles/MorningSprint.css';
@@ -19,70 +25,70 @@ const CHARACTER_MODELS = {
   'cigar-man': {
     id: 'cigar-man',
     name: 'Cigar Man',
-    path: '/models/Cigar-man.fbx',
+    path: '/models/Cigar-man.glb',
     image: '/Characters/Cigar-man.png',
     price: 0,
   },
   'jenny': {
     id: 'jenny',
     name: 'Jenny',
-    path: '/models/Jenny.fbx',
+    path: '/models/Jenny.glb',
     image: '/Characters/Jenny.png',
     price: 5000,
   },
   'remy': {
     id: 'remy',
     name: 'Remy',
-    path: '/models/Remy.fbx',
+    path: '/models/Remy.glb',
     image: '/Characters/Remy.png',
     price: 18000,
   },
   'big-vegus': {
     id: 'big-vegus',
     name: 'Big Vegus',
-    path: '/models/Big-vegus.fbx',
+    path: '/models/Big-vegus.glb',
     image: '/Characters/Big-vegus.png',
     price: 25000,
   },
   'vanguard': {
     id: 'vanguard',
     name: 'Vanguard',
-    path: '/models/Vanguard.fbx',
+    path: '/models/Vanguard.glb',
     image: '/Characters/Vanguard.png',
     price: 50000,
   },
   'kachujin': {
     id: 'kachujin',
     name: 'Kachujin',
-    path: '/models/Kachujin.fbx',
+    path: '/models/Kachujin.glb',
     image: '/Characters/Kachujin.png',
     price: 12000,
   },
   'swat-guy': {
     id: 'swat-guy',
     name: 'Swat Guy',
-    path: '/models/Swat-guy.fbx',
+    path: '/models/Swat-guy.glb',
     image: '/Characters/Swat-guy.png',
     price: 150000,
   },
   'rabbit': {
     id: 'rabbit',
     name: 'Rabbit',
-    path: '/models/Rabbit.fbx',
+    path: '/models/Rabbit.glb',
     image: '/Characters/Rabbit.png',
     price: 200000,
   },
   'mutant': {
     id: 'mutant',
     name: 'Mutant',
-    path: '/models/Mutant.fbx',
+    path: '/models/Mutant.glb',
     image: '/Characters/Mutant.png',
     price: 500000,
   },
   'zombie': {
     id: 'zombie',
     name: 'Zombie',
-    path: '/models/Zombie.fbx',
+    path: '/models/Zombie.glb',
     image: '/Characters/Zombie.png',
     price: 550000,
   },
@@ -291,10 +297,10 @@ function ThemeShop({
         {isComingSoon
           ? 'UPCOMING'
           : isUnlocked
-          ? selectedTheme === current.id
-            ? 'SELECTED'
-            : 'SELECT'
-          : `BUY ${current.price}`}
+            ? selectedTheme === current.id
+              ? 'SELECTED'
+              : 'SELECT'
+            : `BUY ${current.price}`}
       </button>
 
       <div>
@@ -348,7 +354,7 @@ function Shop({
   const prevChar = () => {
     sound.play('click');
     setCurrentIndex(
-      (prev) => (prev - 1 + characters.length) % characters.length
+      (prev) => (prev - 1 + characters.length) % characters.length,
     );
   };
   const [showAlert, setShowAlert] = useState(false);
@@ -445,20 +451,20 @@ function Shop({
                   isComingSoon
                     ? 'btn-locked'
                     : isEquipped
-                    ? 'btn-equipped'
-                    : isUnlocked
-                    ? 'btn-select'
-                    : 'btn-buy'
+                      ? 'btn-equipped'
+                      : isUnlocked
+                        ? 'btn-select'
+                        : 'btn-buy'
                 }`}
                 onClick={handleAction}
               >
                 {isComingSoon
                   ? 'LOCKED'
                   : isEquipped
-                  ? 'SELECTED'
-                  : isUnlocked
-                  ? 'SELECT'
-                  : `BUY: ${currentChar.price} 🟡`}
+                    ? 'SELECTED'
+                    : isUnlocked
+                      ? 'SELECT'
+                      : `BUY: ${currentChar.price} 🟡`}
               </button>
             </div>
           </div>
@@ -506,36 +512,57 @@ function Shop({
 function Loader({ onLoaded }) {
   const { progress } = useProgress();
   const sound = useRef(null);
-
   const [displayProgress, setDisplayProgress] = useState(0);
 
-  // 🎵 sound
+  // 1. Define your custom timing splits (Time in ms : Percentage %)
+  // This gives you total control over the "feel" of the loading
+  const progressMap = [
+    { time: 0, percent: 15 },    // Instant jump to 15%
+    { time: 2000, percent: 40 }, // Reach 40% at 2 seconds
+    { time: 5000, percent: 70 }, // Reach 70% at 5 seconds
+    { time: 8000, percent: 90 }, // Slow down to 90% at 8 seconds
+    { time: 11000, percent: 100 } // Final hit at 11 seconds
+  ];
+
   useEffect(() => {
     sound.current = new Audio('/Sounds/Loading.mp3');
     sound.current.loop = true;
     sound.current.play().catch(() => {});
-  }, []);
+    
+    let startTime = Date.now();
 
-  // 🎮 Smooth fake progress (always nice)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDisplayProgress((prev) => {
-        // slow near end → feels real
-        const speed = prev < 70 ? 4 : prev < 90 ? 2 : 0.5;
-        return Math.min(prev + speed, 100);
-      });
-    }, 100);
+    const updateProgress = () => {
+      const elapsed = Date.now() - startTime;
 
+      // Find the two splits we are currently between
+      const nextSplitIndex = progressMap.findIndex(s => s.time > elapsed);
+      
+      if (nextSplitIndex === -1) {
+        // We've passed 11 seconds
+        setDisplayProgress(100);
+      } else {
+        const prevSplit = progressMap[nextSplitIndex - 1] || { time: 0, percent: 0 };
+        const nextSplit = progressMap[nextSplitIndex];
+        
+        // Linear interpolation between the two custom points
+        const segmentProgress = (elapsed - prevSplit.time) / (nextSplit.time - prevSplit.time);
+        const interpolatedValue = prevSplit.percent + (nextSplit.percent - prevSplit.percent) * segmentProgress;
+        
+        setDisplayProgress(interpolatedValue);
+      }
+    };
+
+    const interval = setInterval(updateProgress, 50); // High frequency for buttery smooth motion
     return () => clearInterval(interval);
   }, []);
 
-  // ✅ Only finish when BOTH are done
+  // Completion Sync
   useEffect(() => {
     if (progress === 100 && displayProgress >= 100) {
-      sound.current.pause();
+      sound.current?.pause();
       setTimeout(() => onLoaded(), 400);
     }
-  }, [progress, displayProgress, onLoaded]);
+  }, [progress, displayProgress]);
 
   return (
     <div className="game-loading-overlay">
@@ -543,16 +570,33 @@ function Loader({ onLoaded }) {
         <h1 className="loading-title-funky">MORNING SPRINT...</h1>
 
         <div className="loader-energy-bar-container">
-          <div className="sprint-icon">🏃‍♂️</div>
+          {/* Progress Bar Fill */}
           <div
             className="loader-energy-bar-fill"
-            style={{ width: `${displayProgress}%` }}
+            style={{ 
+              width: `${displayProgress}%`,
+              background: 'linear-gradient(90deg, #ff8a00, #e52e71)',
+              height: '100%',
+              transition: 'width 0.05s linear' 
+            }}
           />
+          
+          {/* The Runner */}
+          <div 
+            className="sprint-icon" 
+            style={{ 
+              left: `${displayProgress}%`, 
+              position: 'absolute',
+              transform: 'translateX(-50%)',
+              transition: 'left 0.05s linear'
+            }}
+          >
+            🏃‍♂️
+          </div>
         </div>
 
-        {/* 🔥 CLEAN TEXT (no confusion) */}
-        <div className="loading-percentage">
-          Loading...
+        <div className="loading-percentage" style={{ marginTop: '10px', fontWeight: 'bold' }}>
+          {Math.round(displayProgress)}%
         </div>
       </div>
     </div>
@@ -921,14 +965,12 @@ function Player({ isGameOver, onCollide, selectedCharacter, isPaused }) {
   const group = useRef();
   const swipeProcessed = useRef(false);
 
-  // --- ROBUST INVULNERABILITY ---
+  // --- INVULNERABILITY ---
   const [isInvulnerable, setIsInvulnerable] = useState(false);
   const blinkRef = useRef(0);
   const lastGameOverState = useRef(isGameOver);
 
-  // Detect the EXACT moment of revival
   useEffect(() => {
-    // If it WAS game over, and now it is NOT (Revived)
     if (lastGameOverState.current === true && isGameOver === false) {
       setIsInvulnerable(true);
       blinkRef.current = 0;
@@ -936,66 +978,78 @@ function Player({ isGameOver, onCollide, selectedCharacter, isPaused }) {
       const timer = setTimeout(() => {
         setIsInvulnerable(false);
         if (group.current) group.current.visible = true;
-      }, 3000); // Increased to 3s to give the player time to move past the obstacle
+      }, 3000);
 
       return () => clearTimeout(timer);
     }
     lastGameOverState.current = isGameOver;
   }, [isGameOver]);
-  // Inside Player component
-  const modelPath =
-    selectedCharacter && CHARACTER_MODELS[selectedCharacter]
-      ? CHARACTER_MODELS[selectedCharacter].path
-      : CHARACTER_MODELS['cigar-man'].path; // Use 'cigar-man' as the specific fallback key
-  const animationSource = useLoader(FBXLoader, '/models/Cigar-man.fbx');
-  const runAnimation = animationSource.animations[0];
-  const runFbx = useLoader(FBXLoader, modelPath);
-  const jumpFbx = useLoader(FBXLoader, '/models/jump.fbx');
-  const slideFbx = useLoader(FBXLoader, '/models/running-slide.fbx');
-  const deathFbx = useLoader(FBXLoader, '/models/death.fbx');
+
+  // ---------------- MODEL SELECTION ----------------
+  const currentCharacter =
+    CHARACTER_MODELS?.[selectedCharacter] ?? CHARACTER_MODELS?.['cigar-man'];
+
+  const modelPath = currentCharacter?.path ?? '/models/Cigar-man.glb';
+
+  const { scene: runModel, animations: runAnimations } = useGLTF(modelPath);
+  // ACTION GLBs
+  const { animations: jumpAnimations } = useGLTF('/models/jump.glb');
+  const { animations: slideAnimations } = useGLTF('/models/running-slide.glb');
+  const { animations: deathAnimations } = useGLTF('/models/death.glb');
+
+  // ---------------- STATE ----------------
   const mixer = useRef();
   const actions = useRef({});
+
   const [isJumping, setIsJumping] = useState(false);
   const [isSliding, setIsSliding] = useState(false);
 
   const [lane, setLane] = useState(0);
   const laneWidth = 2.5;
+
   const velocity = useRef(0);
   const touchStart = useRef({ x: 0, y: 0 });
-  // 2. Define Actions (Outside useEffect so they are accessible)
+
+  // ---------------- ACTION SETUP ----------------
+  const setupGLBAction = (animationsArray, name, loop = true) => {
+    if (!animationsArray?.length) return;
+
+    const clip = animationsArray[0].clone();
+    clip.tracks = clip.tracks.filter((t) => !t.name.includes('position'));
+
+    actions.current[name] = mixer.current.clipAction(clip);
+
+    if (!loop) {
+      actions.current[name].setLoop(THREE.LoopOnce);
+      actions.current[name].clampWhenFinished = true;
+    }
+  };
+
+  // ---------------- ACTION TRIGGERS ----------------
   const triggerJump = () => {
-    // Check if on ground and not already sliding/jumping
     if (group.current.position.y <= 0.51 && !isSliding && !isJumping) {
       velocity.current = SETTINGS.jumpForce;
       setIsJumping(true);
 
-      // Snappy transition: stop slide immediately, fade out run quickly
       actions.current.run?.fadeOut(0.05);
       actions.current.slide?.stop();
 
-      // Play jump immediately
-      const jumpAction = actions.current.jump;
-      if (jumpAction) {
-        jumpAction.reset().setEffectiveTimeScale(1.2).fadeIn(0.05).play();
-        // Note: setEffectiveTimeScale(1.2) makes the animation 20% faster
-        // to match the "force" of a quick jump.
+      const jump = actions.current.jump;
+      if (jump) {
+        jump.reset().setEffectiveTimeScale(1.2).fadeIn(0.05).play();
       }
     }
   };
 
   const triggerSlide = () => {
-    // REMOVE the "!isSliding" check to allow "re-sliding"
     if (group.current.position.y <= 0.51) {
       setIsSliding(true);
 
-      // Stop other actions immediately
       actions.current.run?.fadeOut(0.05);
       actions.current.jump?.stop();
 
-      // Reset and play slide from the beginning
       actions.current.slide?.reset().fadeIn(0.05).play();
 
-      // Clear any existing timer so they don't stack
       if (window.slideTimer) clearTimeout(window.slideTimer);
 
       window.slideTimer = setTimeout(() => {
@@ -1006,32 +1060,37 @@ function Player({ isGameOver, onCollide, selectedCharacter, isPaused }) {
     }
   };
 
+  // ---------------- INIT ANIMATION MIXER ----------------
   useEffect(() => {
-    mixer.current = new THREE.AnimationMixer(runFbx);
-    const setupAction = (fbx, name, loop = true) => {
-      if (fbx.animations.length > 0) {
-        const clip = fbx.animations[0];
-        clip.tracks = clip.tracks.filter((t) => !t.name.includes('position'));
-        actions.current[name] = mixer.current.clipAction(clip);
-        if (!loop) {
-          actions.current[name].setLoop(THREE.LoopOnce);
-          actions.current[name].clampWhenFinished = true;
-        }
-      }
-    };
-    const clip = runAnimation.clone();
+    mixer.current = new THREE.AnimationMixer(runModel);
 
-    // remove root motion (good you already do this)
-    clip.tracks = clip.tracks.filter((t) => !t.name.includes('position'));
+    // RUN animation from GLB
+    const runClip = runAnimations[0]?.clone();
 
-    actions.current.run = mixer.current.clipAction(clip);
-    actions.current.run.play();
-    setupAction(jumpFbx, 'jump', false);
-    setupAction(slideFbx, 'slide', false);
-    setupAction(deathFbx, 'death', false);
+    if (runClip) {
+      runClip.tracks = runClip.tracks.filter(
+        (t) => !t.name.includes('position'),
+      );
+
+      actions.current.run = mixer.current.clipAction(runClip);
+      actions.current.run.play();
+    }
+
+    // OTHER actions
+    setupGLBAction(jumpAnimations, 'jump', false);
+    setupGLBAction(slideAnimations, 'slide', false);
+    setupGLBAction(deathAnimations, 'death', false);
+
     actions.current.run?.play();
-  }, [runFbx, jumpFbx, slideFbx, deathFbx]);
+  }, [
+    runModel,
+    runAnimations,
+    jumpAnimations,
+    slideAnimations,
+    deathAnimations,
+  ]);
 
+  // ---------------- GAME OVER STATE ----------------
   useEffect(() => {
     if (isGameOver) {
       actions.current.run?.fadeOut(0.2);
@@ -1041,35 +1100,41 @@ function Player({ isGameOver, onCollide, selectedCharacter, isPaused }) {
       actions.current.run?.reset().fadeIn(0.2).play();
     }
   }, [isGameOver]);
-  // 4. Input Listeners
+
+  // ---------------- INPUT ----------------
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.code === 'ArrowLeft' || e.code === 'KeyA')
-        setLane((prev) => Math.max(prev - 1, -1));
+        setLane((p) => Math.max(p - 1, -1));
+
       if (e.code === 'ArrowRight' || e.code === 'KeyD')
-        setLane((prev) => Math.min(prev + 1, 1));
+        setLane((p) => Math.min(p + 1, 1));
+
       if (e.code === 'Space' || e.code === 'ArrowUp') triggerJump();
+
       if (e.code === 'ArrowDown' || e.code === 'KeyS') triggerSlide();
     };
 
     const handleTouchStart = (e) => {
-      touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      touchStart.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
       swipeProcessed.current = false;
     };
 
     const handleTouchMove = (e) => {
       if (swipeProcessed.current) return;
+
       const dx = e.touches[0].clientX - touchStart.current.x;
       const dy = e.touches[0].clientY - touchStart.current.y;
 
       if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
-        setLane((prev) =>
-          dx > 0 ? Math.min(prev + 1, 1) : Math.max(prev - 1, -1)
-        );
+        setLane((p) => (dx > 0 ? Math.min(p + 1, 1) : Math.max(p - 1, -1)));
         swipeProcessed.current = true;
       } else if (Math.abs(dy) > 30) {
-        if (dy < -30) triggerJump();
-        else if (dy > 30) triggerSlide();
+        if (dy < 0) triggerJump();
+        else triggerSlide();
         swipeProcessed.current = true;
       }
     };
@@ -1077,22 +1142,25 @@ function Player({ isGameOver, onCollide, selectedCharacter, isPaused }) {
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('touchstart', handleTouchStart);
     window.addEventListener('touchmove', handleTouchMove);
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [isSliding, isJumping]); // Dependencies ensure latest state for triggers
+  }, [isJumping, isSliding]);
 
-  // 5. Physics & Frame Loop
+  // ---------------- FRAME LOOP ----------------
   useFrame((state, delta) => {
     if (!group.current) return;
+
     if (!isPaused) {
       mixer.current?.update(delta);
     }
-    // --- Visual Blinking Logic ---
+
+    // BLINK
     if (isInvulnerable) {
-      blinkRef.current += delta * 15; // Faster blink for better feedback
+      blinkRef.current += delta * 15;
       group.current.visible = Math.floor(blinkRef.current) % 2 === 0;
     } else {
       if (!isGameOver) group.current.visible = true;
@@ -1102,18 +1170,20 @@ function Player({ isGameOver, onCollide, selectedCharacter, isPaused }) {
 
     const player = group.current;
 
-    // 1. Movement
+    // MOVE
     player.position.x = THREE.MathUtils.lerp(
       player.position.x,
       lane * laneWidth,
-      0.15
+      0.15,
     );
+
     velocity.current += SETTINGS.gravity;
     player.position.y += velocity.current;
 
     if (player.position.y <= 0.5) {
       player.position.y = 0.5;
       velocity.current = 0;
+
       if (isJumping) {
         setIsJumping(false);
         actions.current.jump?.fadeOut(0.1);
@@ -1121,11 +1191,9 @@ function Player({ isGameOver, onCollide, selectedCharacter, isPaused }) {
       }
     }
 
-    // 2. COLLISION DETECTION
-    // STAGE 1: Check invulnerability first
+    // COLLISION
     if (isInvulnerable) return;
 
-    // STAGE 2: If not invulnerable, run collision
     const obstacles = [];
     state.scene.traverse((obj) => {
       if (['bus', 'car', 'cone', 'barrel'].includes(obj.userData?.type)) {
@@ -1137,17 +1205,22 @@ function Player({ isGameOver, onCollide, selectedCharacter, isPaused }) {
       const dz = Math.abs(player.position.z - obs.position.z);
       const dx = Math.abs(player.position.x - obs.position.x);
 
-      // Wider detection for heavy vehicles, tighter for cones
       if (dz < 1.5 && dx < 1.4) {
         const type = obs.userData.type;
 
-        if (type === 'bus' || type === 'car') {
+        if (type === 'bus') {
           onCollide();
           break;
         }
-
+        if (type === 'car') {
+          // If player's Y is below 1.8, they hit the car.
+          // Adjust 1.8 based on your jump height and car model size.
+          if (!(isJumping || player.position.y > 1.1)) {
+            onCollide();
+            break;
+          }
+        }
         if (type === 'cone' || type === 'barrel') {
-          // If we aren't high enough or jumping, we die
           if (!(isJumping || player.position.y > 1.1)) {
             onCollide();
             break;
@@ -1156,13 +1229,15 @@ function Player({ isGameOver, onCollide, selectedCharacter, isPaused }) {
       }
     }
   });
+
+  // ---------------- RENDER ----------------
   return (
     <group ref={group} name="playerGroup" position={[0, 0.5, -2]}>
       <group position={[0, isSliding ? -0.2 : 0, 0]}>
         <primitive
-          key={modelPath}
-          object={runFbx}
-          scale={0.01}
+          object={runModel}
+          scale={1}
+          position={[0, -0.5, 0]}
           rotation={[0, Math.PI, 0]}
           castShadow
         />
@@ -1354,11 +1429,9 @@ function StreetLight({
 }) {
   const group = useRef();
 
-  const fbx = useLoader(FBXLoader, '/models/Lamp.fbx');
-
-  // 🔥 Clone ONCE and reuse efficiently
+  const { scene } = useGLTF('/models/Lamp.glb'); // 🔥 Clone ONCE and reuse efficiently
   const modelClone = useMemo(() => {
-    const clone = fbx.clone();
+    const clone = scene.clone();
 
     // Optional: optimize meshes inside model
     clone.traverse((child) => {
@@ -1375,7 +1448,7 @@ function StreetLight({
     });
 
     return clone;
-  }, [fbx]);
+  }, [scene]);
 
   // 🧹 Cleanup to prevent memory leaks
   useEffect(() => {
@@ -1409,11 +1482,13 @@ function StreetLight({
 
   return (
     <group ref={group} position={[side * 5.5, 0, initialZ]}>
-      <primitive
-        object={modelClone}
-        scale={0.01}
-        rotation={[0, side === 1 ? 0 : Math.PI, 0]}
-      />
+      <group position={[side * 1.5, 0, 0]}>
+        <primitive
+          object={modelClone}
+          scale={1}
+          rotation={[0, side === 1 ? 0 : Math.PI, 0]}
+        />
+      </group>
     </group>
   );
 }
@@ -1427,34 +1502,77 @@ function RacingTrack({ isGameOver, speedMultiplier, isPaused }) {
     canvas.height = 1024;
     const ctx = canvas.getContext('2d');
 
-    // 1. Asphalt Base
-    ctx.fillStyle = '#333333';
+    // 🎨 1. Base asphalt gradient (adds depth)
+    const gradient = ctx.createLinearGradient(0, 0, 0, 1024);
+    gradient.addColorStop(0, '#2a2a2a');
+    gradient.addColorStop(0.5, '#3a3a3a');
+    gradient.addColorStop(1, '#1f1f1f');
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 512, 1024);
 
-    // 2. White Side Lines
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 15, 1024); // Left edge
-    ctx.fillRect(497, 0, 15, 1024); // Right edge
+    // 🌫️ 2. Noise / grain (gives realism)
+    for (let i = 0; i < 8000; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 1024;
+      const alpha = Math.random() * 0.08;
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+      ctx.fillRect(x, y, 1, 1);
+    }
 
-    // 3. Yellow Dashed Center Line
-    ctx.strokeStyle = '#ffcc00';
-    ctx.lineWidth = 20;
-    ctx.setLineDash([80, 80]);
+    // 🟡 3. Bright glowing side lanes
+    const laneGlow = ctx.createLinearGradient(0, 0, 512, 0);
+    laneGlow.addColorStop(0, 'rgba(0,255,255,0.2)');
+    laneGlow.addColorStop(0.5, 'rgba(255,255,255,0)');
+    laneGlow.addColorStop(1, 'rgba(255,0,255,0.2)');
+
+    ctx.fillStyle = laneGlow;
+    ctx.fillRect(0, 0, 512, 1024);
+
+    // ⚪ 4. Side borders (thicker + shadow)
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 10;
+
+    ctx.fillRect(0, 0, 20, 1024);
+    ctx.fillRect(492, 0, 20, 1024);
+
+    ctx.shadowBlur = 0;
+
+    // 🟨 5. Center dashed line (more dynamic)
+    ctx.strokeStyle = '#ffd000';
+    ctx.lineWidth = 10;
+    ctx.setLineDash([40, 40]);
     ctx.lineDashOffset = 0;
+
+    ctx.shadowColor = '#ffcc00';
+    ctx.shadowBlur = 15;
+
     ctx.beginPath();
     ctx.moveTo(256, 0);
     ctx.lineTo(256, 1024);
     ctx.stroke();
 
+    ctx.shadowBlur = 0;
+
+    // 🔺 6. Arrow markings (adds “game feel”)
+    ctx.fillStyle = 'rgba(0,255,200,0.2)';
+    for (let y = 0; y < 1024; y += 120) {
+      ctx.beginPath();
+      ctx.moveTo(240, y);
+      ctx.lineTo(256, y + 30);
+      ctx.lineTo(272, y);
+      ctx.lineTo(256, y + 10);
+      ctx.closePath();
+      ctx.fill();
+    }
+
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(1, 10);
+    tex.repeat.set(1, 8);
 
-    // 🔧 PERFORMANCE OPTIMIZATION
     tex.generateMipmaps = false;
     tex.minFilter = THREE.LinearFilter;
     tex.magFilter = THREE.LinearFilter;
-    tex.needsUpdate = true;
 
     return tex;
   }, []);
@@ -1591,8 +1709,6 @@ const useSoundManager = () => {
   useEffect(() => {
     sounds.current = {
       bg: new Audio('/Sounds/Background.mp3'),
-      gameOverBg: new Audio('/Sounds/Game-over.mp3'),
-      shopBg: new Audio('/Sounds/shop-background.mp3'),
 
       coin: new Audio('/Sounds/coin.mp3'),
       burger: new Audio('/Sounds/Burger.mp3'),
@@ -1603,27 +1719,26 @@ const useSoundManager = () => {
       purchase: new Audio('/Sounds/Purchase.mp3'),
       loading: new Audio('/Sounds/Loading.mp3'),
     };
-
-    // Loop background music
     sounds.current.bg.loop = true;
-    sounds.current.gameOverBg.loop = false;
+    sounds.current.bg.volume = 0.4;
+
+    {/*/ Loop background music
     sounds.current.shopBg.loop = true;
 
     // Volume tuning
     sounds.current.bg.volume = 0.4;
-    sounds.current.shopBg.volume = 0.4;
-    sounds.current.gameOverBg.volume = 0.5;
+    sounds.current.shopBg.volume = 0.4;*/}
 
     Object.values(sounds.current).forEach((audio) => {
       audio.preload = 'auto';
     });
 
     return () => {
-    Object.values(sounds.current).forEach((audio) => {
-      audio.pause();
-      audio.src = ""; // 🔥 force release
-    });
-  };
+      Object.values(sounds.current).forEach((audio) => {
+        audio.pause();
+        audio.src = ''; // 🔥 force release
+      });
+    };
   }, []);
 
   const play = (name) => {
@@ -1633,14 +1748,14 @@ const useSoundManager = () => {
     if (!sound.paused) sound.currentTime = 0;
     sound.play().catch(() => {});
   };
-const loop = (name) => {
-  const sound = sounds.current[name];
-  if (!sound) return;
+  const loop = (name) => {
+    const sound = sounds.current[name];
+    if (!sound) return;
 
-  sound.loop = true;
-  sound.currentTime = 0;
-  sound.play().catch(() => {});
-};
+    sound.loop = true;
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
+  };
 
   const stop = (name) => {
     const sound = sounds.current[name];
@@ -1672,8 +1787,8 @@ export default function Demo() {
   const [reviveCount, setReviveCount] = useState(3);
   const [distance, setDistance] = useState(0);
   const [bestDistance, setBestDistance] = useState(() => {
-  return parseFloat(localStorage.getItem('BEST_DISTANCE')) || 0;
-});
+    return parseFloat(localStorage.getItem('BEST_DISTANCE')) || 0;
+  });
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
   const [energy, setEnergy] = useState(100);
   const energyBoostRef = useRef(0);
@@ -1696,17 +1811,17 @@ export default function Demo() {
 
     if (removeObj) {
       obstaclesRef.current = obstaclesRef.current.filter(
-        (o) => o !== removeObj
+        (o) => o !== removeObj,
       );
     }
   };
 
   const [totalCoins, setTotalCoins] = useState(
-    () => parseInt(localStorage.getItem(STORAGE_KEYS.COINS)) || 0
+    () => parseInt(localStorage.getItem(STORAGE_KEYS.COINS)) || 0,
   );
 
   const [selectedCharacter, setSelectedCharacter] = useState(
-    () => localStorage.getItem(STORAGE_KEYS.SELECTED) || 'default'
+    () => localStorage.getItem(STORAGE_KEYS.SELECTED) || 'default',
   );
 
   const sound = useSoundManager();
@@ -1714,18 +1829,18 @@ export default function Demo() {
   const navigate = useNavigate();
 
   useEffect(() => {
-  const handleUnload = () => {
-    sound.stopAll();
-  };
+    const handleUnload = () => {
+      sound.stopAll();
+    };
 
-  window.addEventListener('beforeunload', handleUnload);
-  window.addEventListener('pagehide', handleUnload); // 🔥 better for mobile
+    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('pagehide', handleUnload); // 🔥 better for mobile
 
-  return () => {
-    window.removeEventListener('beforeunload', handleUnload);
-    window.removeEventListener('pagehide', handleUnload);
-  };
-}, []);
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      window.removeEventListener('pagehide', handleUnload);
+    };
+  }, []);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -1736,8 +1851,6 @@ export default function Demo() {
         // 🔊 App is back
         if (!isGameOver && !isShopOpen) {
           sound.loop('bg');
-        } else if (isGameOver) {
-          sound.play('gameOverBg');
         } else if (isShopOpen) {
           sound.loop('shopBg');
         }
@@ -1757,12 +1870,12 @@ export default function Demo() {
       setTotalCoins(newTotal);
       localStorage.setItem(STORAGE_KEYS.COINS, newTotal);
       setBestDistance((prevBest) => {
-      if (distance > prevBest) {
-        localStorage.setItem('BEST_DISTANCE', distance);
-        return distance;
-      }
-      return prevBest;
-    });
+        if (distance > prevBest) {
+          localStorage.setItem('BEST_DISTANCE', distance);
+          return distance;
+        }
+        return prevBest;
+      });
     }
   }, [isGameOver]);
 
@@ -1780,7 +1893,6 @@ export default function Demo() {
       sound.stopAll();
 
       sound.play('dead');
-      sound.loop('gameOverBg');
     }
   }, [isGameOver]);
 
@@ -1980,7 +2092,7 @@ export default function Demo() {
       [3, 0, -90],
       [-3, 0, -120],
     ],
-    []
+    [],
   );
   const burgerPositions = useMemo(() => {
     return Array.from({ length: 5 }).map((_, i) => [
@@ -2153,7 +2265,7 @@ export default function Demo() {
             className="subway-back-btn start-back"
             onClick={() => {
               sound.play('click');
-              navigate(-1)
+              navigate(-1);
             }}
           >
             ‹
@@ -2177,12 +2289,12 @@ export default function Demo() {
               >
                 START GAME
               </button>
-<p className="best-distance">
-  BEST:{" "}
-  {bestDistance < 1000
-    ? `${Math.floor(bestDistance)} m`
-    : `${(bestDistance / 1000).toFixed(1)} km`}
-</p>
+              <p className="best-distance">
+                BEST:{' '}
+                {bestDistance < 1000
+                  ? `${Math.floor(bestDistance)} m`
+                  : `${(bestDistance / 1000).toFixed(1)} km`}
+              </p>
               {/* Optional: Subtle sub-text to fill space */}
               <p className="start-subtitle">BEAT YOUR HIGH SCORE!</p>
             </div>

@@ -14,6 +14,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "@videojs/http-streaming": "^3.17.4",
     "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
     "browser-image-compression": "^2.0.2",
@@ -25,6 +26,7 @@
     "idb": "^8.0.3",
     "jszip": "^3.10.1",
     "jwt-decode": "^4.0.0",
+    "lucide-react": "^1.14.0",
     "monetag-tg-sdk": "^1.0.2",
     "react": "^19.1.0",
     "react-country-flag": "^3.1.0",
@@ -32,6 +34,7 @@
     "react-hot-toast": "^2.5.2",
     "react-i18next": "^15.7.3",
     "react-icons": "^5.5.0",
+    "react-mini-games": "^1.0.3",
     "react-onesignal": "^3.2.3",
     "react-router-dom": "^7.5.0",
     "react-scripts": "5.0.1",
@@ -42,6 +45,7 @@
     "tone": "^15.1.22",
     "ua-parser-js": "^2.0.5",
     "uuid": "^13.0.0",
+    "video.js": "^8.23.7",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

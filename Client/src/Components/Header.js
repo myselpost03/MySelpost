@@ -209,7 +209,7 @@ const Header = () => {
   };
 
   const handleChat = () => {
-    navigate('/register');
+    navigate('/contact');
   };
 
   const handleRoast = () => {
@@ -294,19 +294,19 @@ const Header = () => {
               </>
             ) : (
               <nav className="nav">
-                <button
+               <button
                   type="button"
-                  onClick={() => handleMobileRedirect('/login')}
+                  onClick={() => handleMobileRedirect('/faq')}
                   className="profile-button"
                 >
-                  {t('login')}
+                 FAQ
                 </button>
                 <button
                   type="button"
                   onClick={handleChat}
                   className="profile-button"
                 >
-                  {t('register')}
+                  Contact
                 </button>
               </nav>
             )

@@ -561,7 +561,10 @@ const GuestProfiles = () => {
         localStorage.setItem('guestUser', JSON.stringify(data));
 
         // Update local state
-        setUsers((prev) => [data, ...prev]);
+        setUsers([]);
+        setPage(0);
+        setHasMore(true);
+
         setShowModal(false);
         setActiveTab('guest');
 
@@ -572,7 +575,11 @@ const GuestProfiles = () => {
       setIsJoining(false); // 4. Unlock on catch
     }
   };
-
+  useEffect(() => {
+    if (!showModal) {
+      fetchUsers();
+    }
+  }, [showModal]);
   // 2. Add this useEffect to prevent the modal from showing if they already "logged in"
   useEffect(() => {
     const savedGuest = localStorage.getItem('guestUser');
@@ -618,7 +625,7 @@ const GuestProfiles = () => {
     // 1. Start the query
     let query = supabaseChat
       .from('users')
-      .select('id, name, gender, age, coins, country, status,   created_at');
+      .select('id, name, gender, age, coins, country, status, created_at');
     if (savedGuest?.id) {
       query = query.neq('id', savedGuest.id);
     }
@@ -935,7 +942,7 @@ const GuestProfiles = () => {
 
                       <div className="user-info">
                         <div className="user-top-row">
-                          <span className="user-name">{user.name}</span>
+                          <span className="user-name" style={{color: '#000', fontSize: '1rem', fontWeight: 'bold'}}>{user.name}</span>
                           {user.coins !== null && user.coins !== undefined && (
                             <div className="decency-label">
                               <span className="star">★</span>
@@ -1148,7 +1155,7 @@ const GuestProfiles = () => {
           </div>
         </div>
       )}
-    {/* <button
+      {/* <button
         className="meme-fab"
         onClick={() => navigate('/meme-feed')}
         aria-label="Create or view memes"

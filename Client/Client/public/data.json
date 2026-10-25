@@ -1,0 +1,36 @@
+{
+"imagesByCountry": {
+    "Russia": ["/Images/russia1.jpg", "/Images/russia2.jpg"],
+    "South Africa": ["/Images/africa.jpg", "/Images/sa2.jpg"],
+    "Canada": ["/Images/canada1.jpg", "/Images/canada2.jpg"],
+    "United States": ["/Images/us.jpg", "/Images/us2.jpg"],
+    "Brazil": ["/Images/brazil.jpg", "/Images/brazil2.jpg"],
+    "India": ["/Images/india.jpg", "/Images/india2.jpg"],
+    "Australia": ["/Images/australia1.jpg", "/Images/australia2.jpg"],
+    "China": ["/Images/china.jpg", "/Images/china2.jpg"],
+    "Germany": ["/Images/germany.jpg", "/Images/germany2.jpg"],
+    "France": ["/Images/france.jpg", "/Images/france2.jpg"],
+    "Japan": ["/Images/japan1.jpg", "/Images/japan2.jpg"],
+    "Mexico": ["/Images/mexico1.jpg", "/Images/mexico2.jpg"],
+    "Egypt": ["/Images/egypt.jpg", "/Images/egypt2.jpg"],
+    "Argentina": ["/Images/argentina1.jpg", "/Images/argentina2.jpg"],
+    "United Kingdom": ["/Images/uk.jpg", "/Images/uk2.jpg"]
+  },
+  "locations": [
+    { "name": "Russia", "coordinates": [61.5240, 105.3188] },
+    { "name": "South Africa", "coordinates": [-30.5595, 22.9375] },
+    { "name": "Canada", "coordinates": [56.1304, -106.3468] },
+    { "name": "United States", "coordinates": [37.0902, -95.7129] },
+    { "name": "Brazil", "coordinates": [-14.2350, -51.9253] },
+    { "name": "India", "coordinates": [20.5937, 78.9629] },
+    { "name": "Australia", "coordinates": [-25.2744, 133.7751] },
+    { "name": "China", "coordinates": [35.8617, 104.1954] },
+    { "name": "Germany", "coordinates": [51.1657, 10.4515] },
+    { "name": "France", "coordinates": [46.2276, 2.2137] },
+    { "name": "Japan", "coordinates": [36.2048, 138.2529] },
+    { "name": "Mexico", "coordinates": [23.6345, -102.5528] },
+    { "name": "Egypt", "coordinates": [26.8206, 30.8025] },
+    { "name": "Argentina", "coordinates": [-38.4161, -63.6167] },
+    { "name": "United Kingdom", "coordinates": [55.3781, -3.4360] }
+  ]
+}

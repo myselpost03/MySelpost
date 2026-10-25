@@ -1,0 +1,1417 @@
+@import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
+
+/* ANIMATED PREMIUM BEST DISTANCE WITH TWINKLING STAR */
+.best-distance {
+  display: inline-block;
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1.1rem;
+  color: #fff;
+  position: relative;
+  overflow: hidden; 
+  
+  /* Color: Epic Purple Gradient */
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe, #6c5ce7);
+  background-size: 200% 200%;
+  
+  padding: 8px 22px;
+  border: 4px solid #000;
+  border-radius: 15px;
+  box-shadow: 0 5px 0px #000;
+  text-shadow: 2px 2px 0px #000;
+  
+  /* Base Tilt */
+  transform: rotate(-2deg);
+  
+  /* Animations: Wobble + Background Shift */
+  animation: 
+    funky-wobble 3s infinite ease-in-out,
+    bg-shift 4s infinite linear;
+}
+
+/* THE STAR (Twinkling independently) */
+.best-distance::after {
+  content: " ★";
+  display: inline-block;
+  color: #ffca28;
+  margin-left: 5px;
+  text-shadow: 0 0 10px rgba(255, 202, 40, 0.8);
+  animation: star-twinkle 1.5s infinite ease-in-out;
+}
+
+/* THE HOLOGRAPHIC SHINE STREAK */
+.best-distance::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -150%;
+  width: 100%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(30deg);
+  animation: shine-sweep 5s infinite; /* Slower sweep for premium feel */
+}
+
+/* --- KEYFRAMES --- */
+
+@keyframes star-twinkle {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.3) rotate(20deg); filter: brightness(1.5); }
+}
+
+@keyframes funky-wobble {
+  0%, 100% { transform: rotate(-2deg) scale(1); }
+  25% { transform: rotate(2deg) scale(1.05); }
+  50% { transform: rotate(-4deg) scale(0.98); }
+  75% { transform: rotate(1deg) scale(1.02); }
+}
+
+@keyframes bg-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shine-sweep {
+  0% { left: -150%; }
+  15% { left: 150%; } 
+  100% { left: 150%; } 
+}
+/* 1. OVERLAY WITH PREMIUM BLUR */
+.pause-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Darkened translucent blue with a heavy blur */
+  background: rgba(0, 102, 255, 0.4);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+}
+
+/* 2. THE PAUSE CARD */
+.pause-card {
+  background: white;
+  padding: 40px;
+  border: 8px solid #000;
+  border-radius: 40px;
+  box-shadow: 0 20px 0px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  min-width: 320px;
+  transform: rotate(1deg); /* Slight tilt for that funky vibe */
+}
+
+/* 3. PAUSED TITLE (Sticker Style) */
+.pause-title {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 4rem;
+  color: #ffca28; /* Gold/Yellow matching your shop */
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  text-shadow: 
+    -4px -4px 0 #000,  
+     4px -4px 0 #000,
+    -4px  4px 0 #000,
+     4px  4px 0 #000,
+     0px 8px 0px #000;
+  transform: rotate(-3deg) scale(1.1);
+}
+
+/* 4. BUTTON CONTAINER */
+.pause-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* 5. FUNKY BUTTONS */
+.btn-funky {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1.8rem;
+  padding: 15px 30px;
+  border: 5px solid #000;
+  border-radius: 20px;
+  cursor: pointer;
+  color: white;
+  text-transform: uppercase;
+  transition: all 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  box-shadow: 0 6px 0px #000;
+}
+
+/* Different colors for different actions */
+/* Resume (Green) */
+.pause-buttons button:nth-child(1) {
+  background: linear-gradient(to bottom, #5eff00, #2ed573);
+}
+
+/* Restart (Orange/Yellow) */
+.pause-buttons button:nth-child(2) {
+  background: linear-gradient(to bottom, #ff9f43, #ee5253);
+}
+
+/* Exit (Red) */
+.pause-buttons button:nth-child(3) {
+  background: linear-gradient(to bottom, #ff4757, #ff6b6b);
+}
+
+/* Hover & Active States */
+.btn-funky:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 0px #000;
+}
+
+.btn-funky:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0px #000;
+}
+/* 1. THE SHOP OVERLAY */
+
+.theme-shop {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, rgba(0, 210, 255, 0.95) 0%, rgba(0, 102, 255, 0.98) 100%);
+  z-index: 20000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Luckiest Guy', cursive;
+  padding: 20px;
+  backdrop-filter: blur(8px);
+}
+
+/* 2. CLOSE BUTTON (Resonates with your Back Button) */
+.theme-shop > button:first-of-type {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  background: #ff4757;
+  border: 4px solid #fff;
+  border-radius: 15px;
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+  transition: transform 0.1s;
+}
+
+.theme-shop > button:first-of-type:hover {
+  transform: scale(1.1) rotate(10deg);
+}
+
+/* 3. TITLE (Sticker Effect) */
+.theme-shop h2 {
+  font-size: 3rem;
+  color: #ffca28;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  text-shadow: 
+    -3px -3px 0 #000,  
+     3px -3px 0 #000,
+    -3px  3px 0 #000,
+     3px  3px 0 #000,
+     0px 6px 0px #000;
+  transform: rotate(-2deg);
+}
+
+/* 4. THE PREVIEW CARD */
+.theme-preview {
+  position: relative;
+  width: 280px;
+  height: 380px;
+  background: #fff;
+  border: 8px solid #000;
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+  margin-bottom: 30px;
+}
+
+.theme-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.coming-soon-btn {
+  background: #999 !important;
+  color: #eee;
+  cursor: not-allowed;
+  opacity: 0.7;
+  font-size: 0.1rem;
+  white-space: nowrap;
+}
+
+.coming-soon-btn:hover {
+  transform: none;
+}
+
+/* 5. BUY / SELECT BUTTON (Massive Style) */
+.theme-shop > button:nth-of-type(2) {
+  font-family: 'Luckiest Guy', cursive;
+  background: linear-gradient(to bottom, #5eff00 0%, #2ed573 100%);
+  color: white;
+  font-size: 2.2rem;
+  padding: 15px 60px;
+  border: 5px solid #000;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 8px 0px #000;
+  margin-bottom: 25px;
+  transition: all 0.1s;
+}
+
+.theme-shop > button:nth-of-type(2):active {
+  transform: translateY(4px);
+  box-shadow: 0 4px 0px #000;
+}
+
+/* 6. NAVIGATION (Arrows) */
+.theme-shop div:last-of-type {
+  display: flex;
+  gap: 40px;
+}
+
+.theme-shop div:last-of-type button {
+  background: #fff;
+  border: 4px solid #000;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 1.8rem;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #000;
+  transition: all 0.1s;
+}
+
+.theme-shop div:last-of-type button:hover {
+  background: #eee;
+  transform: translateY(-2px);
+}
+
+.theme-shop div:last-of-type button:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #000;
+}
+
+/* 1. THE MAIN CONTAINER */
+.start-screen {
+  position: fixed;
+  inset: 0; /* Shortcut for top:0, left:0, right:0, bottom:0 */
+  width: 100vw;
+  height: 100vh;
+  
+  /* THE CENTERING MAGIC */
+  display: flex;
+  flex-direction: column;
+  align-items: center;    /* Horizontal centering */
+  justify-content: center; /* Vertical centering */
+  
+  background: radial-gradient(circle, #00d2ff 0%, #0066ff 100%);
+  z-index: 10000;
+  overflow: hidden;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* 2. THE CONTENT WRAPPER */
+.start-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;    /* Ensures children (H1, Button) stay centered */
+  justify-content: center;
+  width: 100%;
+  text-align: center;     /* Centers the text inside the tags */
+}
+
+/* 3. THE BACK BUTTON (Ensure it stays pinned top-left) */
+.subway-back-btn.start-back {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  z-index: 10001;
+  pointer-events: auto; /* Ensure it's clickable */
+  
+  /* Using your existing back button style */
+  background: #ff4757;
+  border: 4px solid #fff;
+  border-radius: 15px;
+  width: 55px;
+  height: 55px;
+  font-size: 2rem;
+  cursor: pointer;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+}
+
+/* 4. TITLE ADJUSTMENT */
+.game-title {
+  font-family: 'Luckiest Guy', cursive;
+  margin: 90px 0 40px 0; /* Bottom margin to separate from button */
+  line-height: 1.1;
+  /* Keep your existing shadow/color styles here */
+  transform: rotate(-5deg); 
+}
+
+/* 5. BUTTON CENTERING */
+.btn-start-massive {
+  display: block;      /* Takes up own line */
+  margin: 0 auto;      /* Standard centering fallback */
+  /* Keep your existing button styles here */
+}/* 1. THE LAYOUT & DYNAMIC BACKGROUND */
+.start-screen {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, #00d2ff 0%, #0066ff 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  overflow: hidden;
+}
+
+/* Moving blobs for background "life" */
+.bg-blob, .bg-blob-2 {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 45%;
+  z-index: -1;
+  animation: rotate-bg 20s linear infinite;
+}
+.bg-blob { top: -10%; left: -10%; }
+.bg-blob-2 { bottom: -10%; right: -10%; background: rgba(0, 0, 0, 0.1); }
+
+@keyframes rotate-bg {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 2. THE BACK BUTTON (Top Left) */
+.start-back {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  z-index: 10001;
+}
+
+/* 3. THE TITLE STICKER EFFECT */
+.title-container {
+  position: relative;
+  margin-bottom: 60px;
+}
+
+.game-title {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 5.5rem;
+  color: #FF5733;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 2;
+  /* Triple-layered shadow for "Sticker" look */
+  text-shadow: 
+    -4px -4px 0 #fff,  
+     4px -4px 0 #fff,
+    -4px  4px 0 #fff,
+     4px  4px 0 #fff,
+     0px 8px 0px #000,
+     12px 15px 25px rgba(0,0,0,0.3);
+  
+  animation: title-entrance 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes title-entrance {
+  0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+  100% { transform: scale(1) rotate(-5deg); opacity: 1; }
+}
+
+/* 4. THE MASSIVE START BUTTON */
+.btn-start-massive {
+  font-family: 'Luckiest Guy', cursive;
+  background: linear-gradient(to bottom, #5eff00 0%, #2ed573 100%);
+  color: white;
+  font-size: 3rem;
+  padding: 25px 80px;
+  border: 6px solid #000;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 12px 0px #000;
+  transition: all 0.1s;
+  text-shadow: 3px 3px 0px rgba(0,0,0,0.2);
+}
+
+.btn-start-massive:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 18px 0px #000;
+  filter: brightness(1.1);
+}
+
+.btn-start-massive:active {
+  transform: translateY(8px);
+  box-shadow: 0 4px 0px #000;
+}
+
+/* 5. SUBTITLE VIBE */
+.start-subtitle {
+  font-family: 'Luckiest Guy', cursive;
+  color: #fff;
+  margin-top: 20px;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  opacity: 0.8;
+  text-shadow: 2px 2px 0px #000;
+}
+
+/* MOBILE FIXES */
+@media (max-width: 500px) {
+  .game-title { font-size: 3.5rem; }
+  .btn-start-massive { font-size: 2rem; padding: 20px 50px; }
+}
+/* HEADER CONTAINER: The horizontal anchor */
+.game-stats-header {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around; /* Distributes Coins, Distance, and Button evenly */
+  align-items: center;
+  z-index: 100;
+  pointer-events: none; /* Allows clicking through the container... */
+}
+
+.stat-item {
+  pointer-events: auto; /* ...but re-enables clicking for the buttons */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* THE FUNKY PLAY/PAUSE BUTTON */
+.btn-pause-funky {
+  font-family: 'Luckiest Guy', cursive;
+  background: #ff4757; /* Hot Red/Pink */
+  color: white;
+  border: 3px solid #000;
+  border-radius: 15px;
+  padding: 8px 15px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 5px 0 #000; /* Chunky bottom shadow */
+  transform: rotate(-2deg);
+  transition: all 0.1s ease;
+  text-transform: uppercase;
+}
+
+.btn-pause-funky .pause-icon {
+  font-size: 1.4rem;
+  filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.3));
+  
+}
+
+.btn-pause-funky:hover {
+  transform: rotate(0deg) scale(1.1);
+  background: #ff6b81;
+}
+
+.btn-pause-funky:active {
+  transform: translateY(4px); /* Pushes down into the shadow */
+  box-shadow: 0 1px 0 #000;
+}
+
+/* Ensure existing elements play nice in the flexbox */
+.funky-coin-display, .distance-display {
+  margin: 0 !important; /* Remove old absolute margins */
+  white-space: nowrap;
+}
+
+/* Responsive adjustment for small screens */
+@media (max-width: 400px) {
+  .btn-pause-funky .text {
+    display: none; /* Show only icons on very small screens */
+  }
+  .game-stats-header {
+    padding: 0 10px;
+  }
+}
+/* ALERT OVERLAY - Matches your Game Over blur */
+.coin-alert-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20000; /* Higher than shop overlay */
+}
+
+/* THE CARD - Matches subway-card aesthetic */
+.coin-alert-card {
+  background: white;
+  border: 6px solid #000;
+  border-radius: 30px;
+  padding: 30px;
+  text-align: center;
+  max-width: 320px;
+  box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.5);
+  transform: rotate(1deg);
+  animation: squash 0.5s ease-out;
+}
+
+/* THE TITLE - Matches your "WASTED" and "CHAR NAME" style */
+.alert-title {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 2.5rem;
+  color: #ff4757; /* Bright Red/Pink */
+  margin: 0 0 15px 0;
+  text-transform: uppercase;
+  position: relative;
+  /* Thick Cartoon Outline */
+  text-shadow: 
+    -2px -2px 0 #fff,  
+     2px -2px 0 #fff,
+    -2px  2px 0 #fff,
+     2px  2px 0 #fff,
+     4px  4px 0px #000;
+}
+
+/* THE MESSAGE */
+.alert-msg {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1.2rem;
+  color: #333;
+  line-height: 1.4;
+  margin-bottom: 20px;
+}
+
+/* HIGHLIGHTED COIN COUNT */
+.needed-coins {
+  color: #ffcc00;
+  -webkit-text-stroke: 1px #000;
+  font-size: 1.5rem;
+}
+
+/* THE BUTTON - Reusing your btn-funky logic */
+.btn-grab-coins {
+  background: #ffcc00 !important; /* Gold */
+  width: 100%;
+  font-size: 1.5rem !important;
+  color: #000 !important;
+  border: 4px solid #000 !important;
+  box-shadow: 4px 4px 0px #000 !important;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.btn-grab-coins:hover {
+  transform: scale(1.05) rotate(-2deg);
+  background: #ffe000 !important;
+}
+
+.btn-grab-coins:active {
+  transform: scale(0.95);
+  box-shadow: 0px 0px 0px #000 !important;
+}
+/* THE FUNKY NAV ARROW */
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 65px;
+  height: 65px;
+  color: white;
+  border: 4px solid #fff;
+  border-radius: 18px; /* Slightly rounded corners for that "Toy" feel */
+  font-size: 32px;
+  cursor: pointer;
+  z-index: 100;
+  
+ 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s ease;
+  user-select: none;
+}
+
+/* Position them relative to the carousel */
+.nav-arrow.left {
+  left: 20px;
+}
+
+.nav-arrow.right {
+  right: 20px;
+}
+
+
+
+/* Arrow Symbol fix for Luckiest Guy font */
+.nav-arrow span {
+  filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.3));
+  margin-top: -4px; /* Tiny adjustment for visual centering */
+}
+/* REVIVE COUNTER DISPLAY */
+.revive-counter {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1.4rem;
+  color: #fff;
+  
+  /* Matches your 'subway-card' and 'distance' aesthetics */
+  background: rgba(0, 0, 0, 0.4);
+  padding: 8px 18px;
+  border-radius: 50px;
+  border: 3px solid #fff;
+  
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  
+  /* Chunky Shadow */
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+  margin-bottom: 15px;
+  
+  /* Jaunty tilt to match the game feel */
+  transform: rotate(-2deg);
+  text-shadow: 2px 2px 0px #000;
+  user-select: none;
+}
+
+/* Optional: Heart icon pop animation */
+.revive-icon {
+  color: #ff4757;
+  font-size: 1.6rem;
+  filter: drop-shadow(2px 2px 0px #000);
+  animation: pulse-heart 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-heart {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+.char-preview-img.grayscale {
+  filter: grayscale(1) brightness(0.5);
+}
+
+.coming-soon-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  background: #ff4757;
+  color: white;
+  padding: 10px 20px;
+  font-weight: bold;
+  border-radius: 5px;
+  border: 2px solid white;
+}
+
+.btn-locked {
+  background: #2f3542 !important;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.shop-carousel-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 70vh;
+  position: relative;
+}
+
+.canvas-wrapper {
+  width: 300px; /* Big enough for mobile */
+  height: 400px;
+  margin: 0 auto;
+}
+
+.nav-arrow {
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+
+.char-name {
+  /* Positioning Logic */
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%); /* Precisely centers the element */
+  margin-top: 120px;            /* Adjust this to push it down from the top edge */
+  z-index: 1000;               /* Ensures it stays above the game canvas */
+
+  /* Subway Surfers Style */
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 32px;
+  text-transform: uppercase;
+  white-space: nowrap;         /* Prevents the name from wrapping to two lines */
+  
+  /* Gradient Fill */
+  background: linear-gradient(to bottom, #FFFFFF 0%, #FFD700 50%, #FF8C00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  animation: 
+    stretch 2s ease-in-out infinite,
+    shine 3s linear infinite;
+  
+  /* Update background-size to make the shine movement visible */
+  background-size: 200% auto;
+  /* Depth Shadows */
+  filter: 
+    drop-shadow(0 2px 0px rgba(0,0,0,0.4)) 
+    drop-shadow(0 0 1px #000);
+}
+
+/* The Thick Outline */
+.char-name::before {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  -webkit-text-stroke: 6px #000000; 
+animation: tilt 4s ease-in-out infinite;
+}
+
+@keyframes tilt {
+  0%, 100% { clip-path: inset(0 0 0 0); }
+  50% { transform: translateY(2px) skewX(-2deg); }
+}
+
+@keyframes stretch {
+  0%, 100% {
+    transform: translateX(-50%) scaleX(1) scaleY(1);
+  }
+  25% {
+    transform: translateX(-50%) scaleX(1.15) scaleY(0.85); /* Squash */
+  }
+  50% {
+    transform: translateX(-50%) scaleX(0.95) scaleY(1.1); /* Stretch */
+  }
+  75% {
+    transform: translateX(-50%) scaleX(1.05) scaleY(0.95); /* Slight bounce */
+  }
+}
+
+/* The Metallic Shine: Cycles the gold gradient across the letters */
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* 2. The Idle: A gentle vertical bobbing to look "heroic" */
+@keyframes float {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0px);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-10px);
+  }
+}
+.dots-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: gray;
+}
+
+.dot.active {
+  background: #ffcc00;
+  transform: scale(1.2);
+}
+/* FULL SCREEN OVERLAY */
+.subway-shop-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, #00c3ff 0%, #0066ff 100%);
+  z-index: 10000;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Luckiest Guy', cursive;
+  overflow-y: auto;
+}
+
+/* TOP NAV */
+.subway-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.subway-back-btn {
+  background: #ff4757;
+  border: 4px solid #fff;
+  border-radius: 15px;
+  color: white;
+  padding: 10px 20px;
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1.5rem;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.2);
+  cursor: pointer;
+}
+
+.subway-coin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px); /* Modern frosted glass look */
+  color: #ffffff;
+  padding: 8px 20px 8px 10px; /* Less padding on left to offset coin */
+  border-radius: 50px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  font-size: 1.8rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.coin-wrapper {
+  perspective: 1000px;
+}
+
+.realistic-coin {
+  display: block;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #ffe000 0%, #ffb100 50%, #cca300 100%);
+  border-radius: 50%;
+  position: relative;
+  border: 2px solid #664400;
+  box-shadow: 
+    inset 0 0 4px rgba(255, 255, 255, 0.8), /* Inner highlight */
+    0 2px 4px rgba(0, 0, 0, 0.4); /* Drop shadow */
+  animation: coin-spin 3s infinite linear;
+}
+
+/* The inner "dollar" or star detail */
+.realistic-coin::after {
+  content: '$';
+  
+  font-family: 'Arial Black', sans-serif; /* Thick game-style font */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #664400;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.coin-count {
+  color: #ffcc00;
+  text-shadow: 2px 2px 0px #443300;
+  letter-spacing: 1px;
+}
+
+@keyframes coin-spin {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+.subway-title {
+  text-align: center;
+  color: white;
+  font-size: 3rem;
+  text-shadow: 0 6px 0 rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+}
+
+/* THE GRID */
+.subway-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 20px;
+  padding-bottom: 40px;
+}
+
+/* THE CARD */
+.subway-card {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 30px;
+  border: 4px solid rgba(255, 255, 255, 0.4);
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.subway-card.is-active {
+  background: #fff;
+  transform: scale(1.05);
+  border-color: #00ff88;
+}
+
+.subway-card.is-active h3 { color: #333; }
+
+/* CHARACTER ICON */
+.subway-char-circle {
+  width: 100px;
+  height: 100px;
+  background: white;
+  border-radius: 50%;
+  margin: 0 auto 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  border: 4px solid #00d2ff;
+}
+
+.subway-card h3 {
+  color: white;
+  margin: 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* BUTTONS */
+.subway-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 15px;
+  border: none;
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: 0.1s;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+}
+
+.btn-buy { background: #ffcc00; color: #000; }
+.btn-select { background: #00d2ff; color: #fff; }
+.btn-equipped { background: #00ff88; color: #fff; cursor: default; box-shadow: none; transform: translateY(4px); }
+
+.subway-btn:active:not(.btn-equipped) {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+/* BADGE */
+.owned-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #5eff00;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  transform: rotate(-10deg);
+  border: 2px solid #000;
+}
+.game-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85); /* Darker to match your game-over style */
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  overflow: hidden;
+}
+
+.loading-content {
+  width: 100%;
+  max-width: 350px; /* Constrained width so it doesn't go off-screen */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+/* SPRINT TITLE: Slightly smaller to fit mobile */
+.loading-title-funky {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 2.8rem; /* Scaled down from 4.5rem */
+  color: #FF5733; /* Matches your game-title-sprint orange */
+  text-transform: uppercase;
+  margin-bottom: 30px;
+  text-shadow: 
+    -2px -2px 0 #fff,  
+     2px -2px 0 #fff,
+    -2px  2px 0 #fff,
+     2px  2px 0 #fff,
+     6px  6px 0 #000;
+  animation: squash 1.2s ease-in-out infinite;
+}
+
+/* THE BAR: Scaled for the center container */
+.loader-energy-bar-container {
+  position: relative;
+  width: 100%;
+  height: 30px;
+  background: #2c3e50;
+  border: 4px solid #000;
+  border-radius: 20px;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.4);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.loader-energy-bar-fill {
+  height: 100%;
+  background: #00ff88;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+  transition: width 0.3s ease-out;
+}
+
+/* Candy Stripes matching your original CSS */
+.loader-energy-bar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.2) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.2) 75%,
+    transparent 75%
+  );
+  background-size: 30px 30px;
+  animation: move-stripes 1.5s linear infinite;
+}
+
+/* SPRINT ICON: Overhanging effect */
+.sprint-icon {
+  position: absolute;
+  left: -20px;
+  font-size: 35px;
+  filter: drop-shadow(3px 3px 0px #000);
+  z-index: 10;
+  animation: runner-bounce 0.4s ease-in-out infinite alternate;
+}
+
+/* PERCENTAGE: Match coin display style */
+.loading-percentage {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1.8rem;
+  margin-top: 25px;
+  background: linear-gradient(to bottom, #fff600 20%, #ffaa00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(2px 2px 0px #814e00);
+}
+
+/* ANIMATIONS */
+@keyframes runner-bounce {
+  from { transform: translateY(0) rotate(-5deg); }
+  to { transform: translateY(-5px) rotate(10deg); }
+}
+
+@keyframes squash {
+  0%, 100% { transform: rotate(-3deg) scale(1); }
+  50% { transform: rotate(1deg) scale(1.05, 0.95); }
+}
+
+@keyframes move-stripes {
+  from { background-position: 0 0; }
+  to { background-position: 60px 0; }
+}
+
+/* Container: Pinned but tucked away */
+.distance-container {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 50; 
+}
+
+.distance-display {
+  /* Use the funky font but smaller */
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 1.1rem; /* Reduced from 1.5rem */
+  
+  background-color: #ffde03; 
+  color: #222;
+  text-transform: uppercase;
+  
+  /* Slimmer Cartoon Border */
+  border: 3px solid #000;
+  border-radius: 8px; /* Slightly tighter corners */
+  
+  /* Smaller offset for the shadow */
+  box-shadow: 4px 4px 0px #000;
+  
+  /* Tighter padding for a "button" feel */
+  padding: 6px 14px;
+  display: inline-block;
+  text-align: center;
+  
+  /* Slight rotation for personality */
+  transform: rotate(2deg);
+  user-select: none;
+  
+  /* Subtle text pop */
+  text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.5);
+  
+  /* Smooth transition for interactions */
+  transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Make it slightly more subtle on hover/active */
+.distance-display:hover {
+  transform: rotate(0deg) scale(1.05);
+  background-color: #f1c40f;
+}
+/* The container of the bar */
+.energy-bar-container {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 35px; /* Thicker for a chunky feel */
+  background: #2c3e50;
+  border: 4px solid #000; /* Bold cartoon outline */
+  border-radius: 20px;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2); /* Bottom shadow for depth */
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+/* The actual filling bar */
+.energy-bar-fill {
+  height: 100%;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3); /* Inner shine */
+  transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy transition */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Candy stripe effect for movement */
+.energy-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.2) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.2) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 30px 30px;
+  animation: move-stripes 2s linear infinite;
+}
+
+@keyframes move-stripes {
+  from { background-position: 0 0; }
+  to { background-position: 60px 0; }
+}
+
+/* The Burger Icon Styling */
+.burger-icon {
+  position: absolute;
+  left: -25px; /* Overhangs the bar */
+  font-size: 40px;
+  filter: drop-shadow(3px 3px 0px #000); /* Sticker look */
+  z-index: 10;
+  transform: rotate(-10deg);
+}
+/* THE OVERLAY: Forces everything into the dead center of the screen */
+.game-over-container {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6); 
+  backdrop-filter: blur(8px) saturate(150%); 
+  
+  /* CRITICAL CENTER ALIGNMENT */
+  display: flex;
+  flex-direction: column;
+  align-items: center;    /* Horizontal Center */
+  justify-content: center; /* Vertical Center */
+  
+  z-index: 9999;
+  padding: 20px;
+  text-align: center;      /* Centers inline elements like text */
+}
+
+/* THE RED WASTED TEXT */
+.wasted-text {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 4rem; 
+  color: #e60000;
+  margin: 0 0 30px 0;
+  text-transform: uppercase;
+  
+  /* Cartoon Outline */
+  text-shadow: 
+    -3px -3px 0 #fff,  
+     3px -3px 0 #fff,
+    -3px  3px 0 #fff,
+     3px  3px 0 #fff,
+     6px 6px 0px #000;
+
+  display: inline-block;
+  transform: rotate(-4deg);
+  animation: cartoon-bounce 0.8s ease-in-out infinite alternate;
+}
+
+/* BUTTON ROW: Forced Centering */
+.button-row {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap; 
+  
+  /* FORCES BUTTONS TO CENTER */
+  justify-content: center; 
+  align-items: center;
+  
+  width: 100%;       /* Takes full width to allow centering */
+  max-width: 600px;  /* But stays within a reasonable box */
+  margin: 0 auto;    /* Extra safety for centering */
+}
+
+/* THE BUTTONS */
+.btn-funky {
+  font-family: 'Luckiest Guy', cursive;
+  padding: 12px 24px;
+  font-size: 1.2rem;
+  border: 3px solid #000;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #000;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0px #000;
+  transition: 0.1s;
+  
+  /* Prevents buttons from stretching weirdly */
+  flex-grow: 0; 
+}
+
+.try-again { background: #00ff88; }
+.revive { background: #5eff00; }
+.home      { background: #ffcc00; }
+.shop      { background: #00d2ff; }
+
+/* Interactive effects */
+.btn-funky:hover {
+  transform: scale(1.05) rotate(2deg);
+  box-shadow: 6px 6px 0px #000;
+}
+
+.btn-funky:active {
+  transform: scale(0.95);
+  box-shadow: 0px 0px 0px #000;
+}
+
+@keyframes cartoon-bounce {
+  from { transform: rotate(-4deg) scale(1); }
+  to { transform: rotate(2deg) scale(1.05); }
+}
+.game-title-sprint {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: 3rem;
+  color: #FF5733; /* Energetic Morning Orange */
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  
+  /* The "Cartoon Punch": 
+     Multiple shadows create a thick, solid black wrap-around 
+     plus a deep offset "3D" block */
+  text-shadow: 
+    -3px -3px 0 #000,  
+     3px -3px 0 #000,
+    -3px  3px 0 #000,
+     3px  3px 0 #000,
+     8px  8px 0 #222; /* The chunky depth */
+
+  /* Make it sit at a "funky" jaunty angle */
+  display: inline-block;
+  transform: rotate(-5deg) scale(1.1);
+  
+  /* A simple 'Squash and Stretch' animation */
+  animation: squash 1.5s ease-in-out infinite;
+}
+
+@keyframes squash {
+  0%, 100% { transform: rotate(-5deg) scale(1.1); }
+  50% { transform: rotate(-3deg) scale(1.15, 0.95); }
+}
+.funky-coin-display {
+  font-family: 'Luckiest Guy', cursive;
+  /* Smaller font size */
+  font-size: 1.8rem; 
+  
+  background: linear-gradient(to bottom, #fff600 20%, #ffaa00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  
+  /* Scaled down shadows for smaller text */
+  filter: drop-shadow(2px 2px 0px #814e00) 
+          drop-shadow(-1px -1px 0px #814e00)
+          drop-shadow(1px -1px 0px #814e00)
+          drop-shadow(-1px 1px 0px #814e00)
+          drop-shadow(3px 3px 6px rgba(0,0,0,0.4));
+
+  display: inline-block;
+  /* Keeping the tilt but making it subtle */
+  transform: rotate(-3deg);
+  
+  animation: cartoon-bounce 2s ease-in-out infinite;
+  letter-spacing: 1.5px;
+  user-select: none;
+  /* Add a little margin so the shadow doesn't get cut off by the parent */
+  margin: 10px; 
+}
+
+@keyframes cartoon-bounce {
+  0%, 100% { transform: rotate(-3deg) scale(1); }
+  50% { transform: rotate(-1deg) scale(1.08); }
+}

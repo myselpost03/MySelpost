@@ -33,4 +33,12 @@ export {default as MorningSprint} from './MorningSprint';
 export { default as Dating } from "./Dating";
 export { default as MemeFeed } from "./MemeFeed";
 
+
+export { default as Refund } from "./Refund";
+export { default as Private } from "./Private";
+export { default as RewardPlatform } from "./RewardPlatform";
 export { default as Demo } from "./Demo";
+export { default as Trash } from "./Trash";
+export { default as Tasks } from "./Tasks";
+export { default as PrivateContact } from "./PrivateContact";
+export { default as FAQ } from "./FAQ";

@@ -183,7 +183,7 @@ const [postIds, setPostIds] = useState(() => {
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
         <header style={{ textAlign: 'center', marginBottom: '30px' }}>
           <h2 style={{ color: '#2481cc' }}>MEME FEED</h2>
-          <p>Your daily escape from reality</p>
+          <p style={{color:'#000'}}>Your daily escape from reality</p>
         </header>
 
         <main style={{ position: 'relative', zIndex: 1 }}>

@@ -1,280 +1,197 @@
 import React, { useState, useEffect } from 'react';
-import logo from '../Assets/game-logo.png';
-import OneSignal from 'react-onesignal';
-import firstPoster from "../Assets/poster-1.png";
-import secondPoster from "../Assets/poster-2.png";
-import thirdPoster from "../Assets/poster-3.png";
-import '../Styles/EarningDashboard.css';
+import toast, { Toaster } from 'react-hot-toast';
+import '../Styles/Trash.css';
+import logo from '../Assets/Current.png';
+import { supabaseChat } from '../Utils/supabaseGroupChat';
 
 const EarningDashboard = () => {
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [notificationAllowed, setNotificationAllowed] = useState(false);
-  const [checkingPermission, setCheckingPermission] = useState(true);
-// Carousel State
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [balance, setBalance] = useState(() => {
+    const saved = localStorage.getItem('trust_balance');
+    return saved ? parseInt(saved) : 0;
+  });
 
-  // Placeholder images - Replace these with your actual imported assets
- const screenshots = [
-  { id: 1, url: firstPoster, alt: 'Gameplay Action' },
-  { id: 2, url: secondPoster, alt: 'Character Selection' },
-  { id: 3, url: thirdPoster, alt: 'Rewards Dashboard' },
-];
+  const [activeTask, setActiveTask] = useState(() => {
+    const saved = localStorage.getItem('trust_activeTask');
+    return saved ? JSON.parse(saved) : null;
+  });
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev === screenshots.length - 1 ? 0 : prev + 1));
-  };
+  const [isTaskCompletedToday, setIsTaskCompletedToday] = useState(() => {
+    const saved = localStorage.getItem('trust_isTaskCompletedToday');
+    return saved === 'true';
+  });
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev === 0 ? screenshots.length - 1 : prev - 1));
-  };
-  const highlightStyle = {
-    color: '#4d4dff', // Matches your theme's purple/blue
-    fontWeight: 'bold',
-  };
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
 
+  // 1. Professional Game Feed Data
+  const gameFeed = [
+    { id: 1, title: "Stickman", reward: 30, time: 30, icon: "🎲", difficulty: "Easy" },
+    { id: 2, title: "Gun Master", reward: 50, time: 45, icon: "🏏", difficulty: "Medium" },
+    { id: 3, title: "Bubble Shooter Rush", reward: 20, time: 20, icon: "🧼", difficulty: "Easy" },
+    { id: 4, title: "Cyber Strike Quest", reward: 100, time: 60, icon: "🔫", difficulty: "Hard" },
+  ];
+// Dummy function (replace with backend API call)
+const creditUserReward = async (userId, amount) => {
+  console.log(`Credit ${amount} to user ${userId}`);
+};
   useEffect(() => {
-    const checkPermission = async () => {
-      try {
-        // Check existing permission
-        if (Notification.permission === 'granted') {
-          setNotificationAllowed(true);
-          await OneSignal.User.PushSubscription.optIn();
-        } else {
-          setNotificationAllowed(false);
-        }
-      } catch (err) {
-        console.error(err);
-        setNotificationAllowed(false);
-      } finally {
-        setCheckingPermission(false);
-      }
-    };
+    const hasResponded = localStorage.getItem('trust_feedback_submitted');
+    if (!hasResponded) setShowFeedback(true);
+  }, []);
+ useEffect(() => {
+    // 1. Load SDK
+    if (!window.loadOfferWallSDK) {
+      const script = document.createElement("script");
+      script.src = "https://wall.giga.pub/api/v1/loader.js?projectId=6133";
+      script.async = true;
+      document.head.appendChild(script);
+    }
 
-    checkPermission();
+    // 2. Initialize SDK
+    (window.loadGigaSDKCallbacks || (window.loadGigaSDKCallbacks = [])).push(
+      () => {
+        window.loadOfferWallSDK({
+          projectId: "6133",
+        })
+          .then((sdk) => {
+            window.gigaOfferWallSDK = sdk;
+
+            // Listen for reward
+            sdk.on("rewardClaim", async (data) => {
+              console.log("Reward claim received:", data);
+
+              // ?? IMPORTANT: Replace with your backend logic
+              await creditUserReward(data.userId, data.amount);
+
+              sdk.confirmReward(data.rewardId, data.hash);
+            });
+          })
+          .catch((error) => {
+            console.error("Error loading SDK:", error);
+          });
+      }
+    );
   }, []);
 
-  const handleSubscribe = async () => {
-    try {
-      const permission = await OneSignal.Notifications.requestPermission();
+  // 3. Open Offerwall
+  const openOfferWall = () => {
+    if (window.gigaOfferWallSDK) {
+      window.gigaOfferWallSDK.open();
+    } else {
+      alert("Offerwall not loaded yet");
+    }
+  };
 
-      if (permission === true || Notification.permission === 'granted') {
-        await OneSignal.User.PushSubscription.optIn();
+  // 2. Data Persistence
+  useEffect(() => {
+    localStorage.setItem('trust_balance', balance);
+    localStorage.setItem('trust_isTaskCompletedToday', isTaskCompletedToday);
+    if (activeTask) localStorage.setItem('trust_activeTask', JSON.stringify(activeTask));
+  }, [balance, isTaskCompletedToday, activeTask]);
 
-        const playerId = OneSignal.User.PushSubscription.id;
-        console.log('✅ Player ID:', playerId);
+  const handleSelectGame = (game) => {
+    setActiveTask(game);
+    toast.success(`Task Started: ${game.title}`);
+  };
 
-        setNotificationAllowed(true);
-        setIsSubscribed(true);
-      } else {
-        console.log('❌ Permission denied');
-        setNotificationAllowed(false);
-      }
-    } catch (err) {
-      console.error('❌ Error subscribing:', err);
-      setNotificationAllowed(false);
+  const handleCompleteTask = () => {
+    if (!activeTask) return;
+    
+    // Simulate verification
+    const toastId = toast.loading('Verifying gameplay duration...');
+    
+    setTimeout(() => {
+      setBalance(prev => prev + activeTask.reward);
+      setIsTaskCompletedToday(true);
+      toast.success(`Success! ₹${activeTask.reward} added.`, { id: toastId });
+    }, 2000);
+  };
+
+  const checkWithdrawal = () => {
+    if (balance < 5000) {
+      setAlertMessage('Minimum payout is ₹5,000. Continue completing tasks to reach your goal!');
     }
   };
 
   return (
-    <div className="holographic-shell">
-      <div className="shape sphere-1"></div>
-      <div className="shape sphere-2"></div>
+    <div className="dashboard-app">
+      <header className="header-section">
+        <img src={logo} alt="Trusted Earning" className="game-logo" />
+        <div className="stats-badge">
+          {isTaskCompletedToday ? 'Daily Limit Reached' : 'Active Status: Ready'}
+        </div>
+      </header>
 
-      <div className="main-content">
-        {/* --- TESTER STATUS HEADER --- */}
-        <section
-          className="tester-status-card"
-          style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(15px)',
-            borderRadius: '20px',
-            padding: '25px',
-            textAlign: 'center',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            marginBottom: '0px',
-          }}
-        >
-          <div
-            style={{
-              display: 'inline-block',
-              padding: '5px 15px',
-              borderRadius: '20px',
-              background: 'rgba(77, 77, 255, 0.2)',
-              color: '#8080ff',
-              fontSize: '0.75rem',
-              fontWeight: 'bold',
-              marginBottom: '10px',
-            }}
-          >
-            VERIFIED BETA ACCESS
+      {/* Wallet Section */}
+      <section className="wallet-card">
+        <p className="wallet-label">Available Balance</p>
+        <div className="balance-display">₹{balance.toLocaleString()}</div>
+        <div className="withdraw-info">Withdrawal available via UPI / Amazon Pay</div>
+        <button className="btn-withdraw" onClick={checkWithdrawal}>Withdraw Funds</button>
+      </section>
+
+      {/* Main Task Area */}
+      <section className="roadmap-section">
+        <h4 className="section-title">
+          {isTaskCompletedToday ? 'Excellent Work!' : activeTask ? 'Current Active Mission' : 'Select a Game to Earn'}
+        </h4>
+
+        {isTaskCompletedToday ? (
+          <div className="completed-card animate-pop-in">
+            <div className="completed-icon">🏆</div>
+            <h3>Task Finished</h3>
+            <p>Your daily rewards have been credited.</p>
+            <div className="status-badge-glow">Next Games Available in 12h</div>
           </div>
-          <h2 style={{ fontSize: '1.8rem', margin: '5px 0', color: '#111' }}>
-            Welcome, Tester
-          </h2>
-          <p style={{ color: '#111', fontSize: '0.9rem' }}>
-            We are excited to announce that we will soon be launching Morning
-            Sprint <span style={highlightStyle}>play-to-earn game</span>.
-          </p>
-        </section>
-
-        {/* --- MAIN GAME PREVIEW --- */}
-        <section
-          className="game-promo-card"
-          style={{
-            background: 'linear-gradient(135deg, #161625 0%, #1c1c3c 100%)',
-            borderRadius: '16px',
-            padding: '30px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            border: '1px solid rgba(77, 77, 255, 0.3)',
-            marginBottom: '30px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-          }}
-        >
-          <img
-            src={logo}
-            alt="Morning Sprint Logo"
-            style={{
-              width: '100px',
-              marginBottom: '20px',
-              filter: 'drop-shadow(0 0 15px #4d4dff)',
-            }}
-          />
-          <h4
-            style={{ color: '#fff', fontSize: '1.5rem', margin: '0 0 12px 0' }}
-          >
-            Morning Sprint
-          </h4>
-          <p
-            style={{
-              color: 'rgba(255,255,255,0.7)',
-              fontSize: '0.95rem',
-              lineHeight: '1.5',
-            }}
-          >
-            The ultimate play-to-earn endless runner game experience is almost
-            here. We're currently working to launch the game soon.
-          </p>
-
-          <button
-            className="btn-primary"
-            onClick={handleSubscribe}
-            disabled={isSubscribed}
-            style={{
-              width: '100%',
-              padding: '15px',
-              marginTop: '25px',
-              fontSize: '1rem',
-              fontWeight: 'bold',
-              background: isSubscribed ? '#10b981' : '#4d4dff',
-              transition: 'all 0.3s ease',
-            }}
-          >
-            {isSubscribed ? '✓ You are on the list' : '🔔 Notify Me When Live'}
-          </button>
-        </section>
-       <section className="carousel-container" style={carouselContainerStyle}>
-          <div style={{
-            display: 'flex',
-            transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-            transform: `translateX(-${currentSlide * 100}%)`,
-          }}>
-            {screenshots.map((img) => (
-              <img 
-                key={img.id} 
-                src={img.url} 
-                alt={img.alt} 
-                style={{ width: '100%', flexShrink: 0, objectFit: 'cover', display: 'block' }} 
-              />
+        ) : activeTask ? (
+          <div className="active-task-container animate-pop-in">
+            <div className="task-header">
+              <span className="task-icon">{activeTask.icon}</span>
+              <div>
+                <h3>{activeTask.title}</h3>
+                <p>Objective: Play for {activeTask.time} minutes</p>
+              </div>
+            </div>
+            <div className="reward-tag">Potential Reward: ₹{activeTask.reward}</div>
+            <button className="btn-primary-action" onClick={handleCompleteTask}>
+              Launch Game Now
+            </button>
+            <button className="btn-cancel-small" onClick={() => setActiveTask(null)}>Choose different game</button>
+          </div>
+        ) : (
+          <div className="game-feed-grid">
+            {gameFeed.map((game) => (
+              <div key={game.id} className="game-card" onClick={() => handleSelectGame(game)}>
+                <div className="game-card-top">
+                  <span className="game-card-icon">{game.icon}</span>
+                  <span className={`difficulty-label ${game.difficulty.toLowerCase()}`}>{game.difficulty}</span>
+                </div>
+                <h4>{game.title}</h4>
+                <div className="game-card-footer">
+                  <span>⏱️ {game.time}m</span>
+                  <span className="reward-text">₹{game.reward}</span>
+                </div>
+              </div>
             ))}
           </div>
-          
-          {/* Controls - Separated Left and Right properly */}
-          <button onClick={prevSlide} style={leftArrowStyle}>❮</button>
-          <button onClick={nextSlide} style={rightArrowStyle}>❯</button>
-          
-          {/* Dots */}
-          <div style={dotContainerStyle}>
-            {screenshots.map((_, index) => (
-              <div 
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                style={{
-                  ...dotStyle,
-                  background: currentSlide === index ? '#4d4dff' : 'rgba(255,255,255,0.3)',
-                  width: currentSlide === index ? '20px' : '8px', // Visual cue for active slide
-                }}
-              />
-            ))}
-          </div>
-        </section>
-      </div>
+        )}
+      </section>
 
-      <footer
-        style={{
-          textAlign: 'center',
-          padding: '30px',
-          opacity: 0.4,
-          fontSize: '0.7rem',
-          color: '#fff',
-        }}
-      >
-        BUILD v0.0.1-BETA | STAGE: CLOSED TESTING
-      </footer>
+      {/* Alerts & Modals */}
+      {alertMessage && (
+        <div className="alert-overlay">
+          <div className="alert-card">
+            <div className="alert-icon">🔒</div>
+            <h3>Withdrawal Locked</h3>
+            <p>{alertMessage}</p>
+            <button className="btn-confirm" onClick={() => setAlertMessage(null)}>Understand</button>
+          </div>
+        </div>
+      )}
+
+      <Toaster position="bottom-center" />
     </div>
   );
-};
-
-const carouselContainerStyle = {
-  position: 'relative',
-  width: '100%',
-  borderRadius: '20px',
-  overflow: 'hidden',
-  marginBottom: '30px',
-  boxShadow: '0 15px 35px rgba(0,0,0,0.6)',
-  border: '1px solid rgba(255, 255, 255, 0.1)',
-  background: '#000' // Prevents white flicker during transitions
-};
-
-const commonArrowStyle = {
-  position: 'absolute',
-  top: '50%',
-  transform: 'translateY(-50%)',
-  background: 'rgba(255, 255, 255, 0.1)',
-  backdropFilter: 'blur(10px)',
-  color: 'white',
-  border: '1px solid rgba(255, 255, 255, 0.2)',
-  borderRadius: '50%',
-  width: '40px',
-  height: '40px',
-  cursor: 'pointer',
-  zIndex: 10,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'all 0.2s ease',
-};
-
-const leftArrowStyle = { ...commonArrowStyle, left: '15px' };
-const rightArrowStyle = { ...commonArrowStyle, right: '15px' };
-
-const dotContainerStyle = {
-  position: 'absolute',
-  bottom: '15px',
-  width: '100%',
-  display: 'flex',
-  justifyContent: 'center',
-  gap: '8px',
-  zIndex: 10
-};
-
-const dotStyle = {
-  height: '8px',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  transition: 'all 0.3s ease'
 };
 
 export default EarningDashboard;
