@@ -1,0 +1,110 @@
+.alert-banner{
+   width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.sketchy-alert-new {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff9f4;
+  border: 2px solid #222;
+  border-radius: 16px;
+  padding: 20px 24px;
+  width: 320px;
+  max-width: 90%;
+  box-shadow: 6px 6px 0px #222;
+  z-index: 1000;
+  animation: popInSmooth 0.35s cubic-bezier(0.25, 1.5, 0.5, 1);
+  font-family: "Patrick Hand", cursive; /* sketchy vibe */
+}
+
+.alert-content p {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  color: #333;
+  text-align: center;
+}
+
+.alert-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+
+.sketchy-alert-close-btn {
+  padding: 8px 20px;
+  border: 2px solid #222;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  box-shadow: 3px 3px 0px #222;
+}
+
+
+.sketchy-allow-btn {
+  padding: 8px 20px;
+  border: 2px solid #222;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  box-shadow: 3px 3px 0px #222;
+}
+
+.disabled-allow-btn{
+  padding: 8px 16px;
+  border: 2px solid #222;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  box-shadow: 3px 3px 0px #222;
+  opacity: 0.5
+}
+
+.pay-btn {
+  background: #ffeb3b;
+}
+
+.pay-btn:hover {
+  background: #ffd600;
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px #000;
+}
+
+.sketchy-close-btn {
+  background: #ffb3b3;
+}
+
+.sketchy-close-btn:hover {
+  background: #ff6b6b;
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px #000;
+}
+
+/* Animation */
+@keyframes popInSmooth {
+  0% {
+    transform: translate(-50%, -50%) scale(0.7);
+    opacity: 0;
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
