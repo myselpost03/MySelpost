@@ -1,0 +1,53 @@
+.gift-popup {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 250px;
+  background: #111; /* black theme */
+  color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 10px;
+}
+
+.gift-popup h3 {
+  margin-bottom: 12px;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.gift-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.gift-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.gift-item img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  margin-bottom: 4px;
+}
+
+.gift-item span {
+  font-size: 12px;
+}
+
+.gift-item:hover {
+  transform: scale(1.1);
+}

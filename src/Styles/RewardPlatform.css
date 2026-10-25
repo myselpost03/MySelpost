@@ -1,0 +1,472 @@
+:root {
+  --yellow: #FFD700;
+  --black: #121212;
+  --dark-grey: #1e1e1e;
+  --white: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.landing-container {
+  padding: 0 5%;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 2rem 0;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.logo span {
+  color: var(--yellow);
+}
+
+.hero {
+  text-align: center;
+  padding: 6rem 0;
+}
+
+.hero h1 {
+  font-size: 4rem;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+
+.highlight {
+  color: var(--yellow);
+}
+
+.hero p {
+  color: #a0a0a0;
+  font-size: 1.2rem;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+}
+
+.btn-primary {
+  background: var(--yellow);
+  color: var(--black);
+  padding: 1rem 2.5rem;
+  border: none;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+}
+
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: var(--dark-grey);
+  padding: 3rem;
+  border-radius: 15px;
+  text-align: center;
+  border-bottom: 4px solid var(--yellow);
+}
+
+.stat-item h3 {
+  font-size: 2.5rem;
+  color: var(--yellow);
+  margin: 0;
+}
+
+.how-to {
+  padding: 8rem 0;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.step-card {
+  background: #1a1a1a;
+  padding: 2.5rem;
+  border-radius: 10px;
+  position: relative;
+  border-left: 2px solid var(--yellow);
+}
+
+.step-num {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  font-size: 3rem;
+  opacity: 0.1;
+  font-weight: 900;
+}
+
+.testimonials {
+  padding-bottom: 8rem;
+}
+
+.testimonial-track {
+  display: flex;
+  gap: 2rem;
+  overflow-x: auto;
+}
+
+.t-card {
+  background: var(--dark-grey);
+  padding: 2rem;
+  border-radius: 10px;
+  min-width: 300px;
+}/* Variables & Reset */
+:root {
+  --yellow: #FFD700;
+  --black: #121212;
+  --dark-grey: #1e1e1e;
+  --white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--black);
+  color: var(--white);
+  line-height: 1.6;
+  overflow-x: hidden; /* Prevents horizontal scroll on mobile */
+}
+
+/* Container */
+.landing-container {
+  padding: 0 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Responsive Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 0;
+}
+
+.logo {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--white);
+}
+
+.logo span { color: var(--yellow); }
+
+.cta-nav {
+  background: var(--yellow);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-weight: bold;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+/* Responsive Hero Section */
+.hero {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.hero h1 {
+  font-size: 2.5rem; /* Smaller for mobile */
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.hero p {
+  color: #a0a0a0;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+.hero-btns {
+  display: flex;
+  flex-direction: column; /* Stacked on mobile */
+  gap: 1rem;
+}
+
+/* Stats Section */
+.stats-bar {
+  display: flex;
+  flex-direction: column; /* Stacked on mobile */
+  gap: 2rem;
+  background: var(--dark-grey);
+  padding: 2rem;
+  border-radius: 15px;
+  text-align: center;
+  border-bottom: 4px solid var(--yellow);
+}
+
+.stat-item h3 {
+  font-size: 2rem;
+  color: var(--yellow);
+}
+
+/* How to Section */
+.how-to { padding: 4rem 0; }
+.how-to h2 { text-align: center; margin-bottom: 2rem; }
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* Single column for mobile */
+  gap: 1.5rem;
+}
+
+.step-card {
+  background: #1a1a1a;
+  padding: 2rem;
+  border-radius: 10px;
+  border-left: 3px solid var(--yellow);
+}
+
+/* Testimonials */
+.testimonial-track {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Desktop Adjustments (Media Queries) */
+@media (min-width: 768px) {
+  .hero h1 { font-size: 4rem; }
+  
+  .hero-btns {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .stats-bar {
+    flex-direction: row;
+    justify-content: space-around;
+  }
+
+  .steps-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .testimonial-track {
+    flex-direction: row;
+  }
+
+  .t-card { flex: 1; }
+}/* New Badge Styling */
+.badge {
+  background: rgba(255, 215, 0, 0.1);
+  color: var(--yellow);
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border: 1px solid var(--yellow);
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+}
+
+.trust-note {
+  margin-top: 1.5rem;
+  opacity: 0.7;
+}
+
+/* Guest Flow Section */
+.guest-flow {
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.flow-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.flow-item .icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.flow-item h4 {
+  color: var(--yellow);
+  margin-bottom: 0.5rem;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--yellow);
+  color: var(--yellow);
+  padding: 1rem 2.5rem;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Desktop Fix for Guest Flow */
+@media (min-width: 768px) {
+  .flow-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}/* Update these specific parts in your Demo.css */
+
+:root {
+  --yellow: #FFD700;
+  --black: #121212;
+  --dark-grey: #1e1e1e;
+  --white: #ffffff;
+  --india-orange: #FF9933;
+  --india-green: #138808;
+}
+
+.landing-container {
+  padding: 0 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  /* Subtle tricolour line at the very top */
+  border-top: 5px solid;
+  border-image: linear-gradient(to right, var(--india-orange), #fff, var(--india-green)) 1;
+}
+
+.badge {
+  background: rgba(255, 215, 0, 0.1);
+  color: var(--yellow);
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: bold;
+  border: 1px solid var(--yellow);
+  margin-bottom: 2rem;
+}
+
+.highlight {
+  background: linear-gradient(120deg, var(--yellow) 0%, #f39c12 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-item h3 {
+  font-size: 2.5rem;
+  background: linear-gradient(to bottom, #fff, var(--yellow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900;
+}
+
+.footer {
+  text-align: center;
+  padding: 3rem 0;
+  border-top: 1px solid #333;
+  margin-top: 4rem;
+  font-size: 0.9rem;
+  color: #666;
+}/* Telegram Popup Styles */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  padding: 20px;
+}
+
+.popup-content {
+  background: var(--dark-grey);
+  padding: 2.5rem;
+  border-radius: 20px;
+  max-width: 450px;
+  width: 100%;
+  text-align: center;
+  border: 2px solid var(--yellow);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  animation: popupSlideUp 0.4s ease-out;
+}
+
+@keyframes popupSlideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.popup-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+}
+
+.popup-content h2 {
+  color: var(--yellow);
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.popup-content p {
+  color: #ccc;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.popup-features {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.popup-features span {
+  background: rgba(255, 215, 0, 0.1);
+  padding: 5px 12px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  color: var(--yellow);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.telegram-btn {
+  width: 100%;
+  padding: 1.2rem !important;
+  font-size: 1.1rem !important;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  color: #666;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btn-close:hover {
+  color: #fff;
+}

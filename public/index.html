@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta
+      name="google-site-verification"
+      content="6ZGoNO7jz6Jgfytq8oop04rxDs7Tlosnm8hdE1me66o"
+    />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="theme-color" content="#000" />
+
+    <!-- Profiton SDK -->
+    <meta
+      name="profiton-domain-verification"
+      content="5cfafbf0224e55f499056bfc35d76d14e3ab615cac6f727dd50405970e30c070"
+    />
+
+    <!-- PWA Install Banner Styling -->
+    <style>
+      #install-popup {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #ffffff;
+        padding: 20px;
+        text-align: center;
+        box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+        display: none;
+        z-index: 9999;
+      }
+
+      #install-popup-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      #install-popup-text {
+        flex-grow: 1;
+        font-family: 'IM Fell English', sans-serif;
+      }
+
+      #install-button {
+        background-color: #111;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: 'IM Fell English', sans-serif;
+      }
+
+      #cancel-button {
+        background-color: #f1f1f1;
+        color: #111;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: 'IM Fell English', sans-serif;
+      }
+    </style>
+    <title>MySelpost: Global Chat & Fun Photo Roasting Platform</title>
+
+    <meta
+      name="description"
+      content="Join MySelpost, the ultimate platform to chat with people from around the world and have fun roasting each other’s photos. Connect globally, share laughs, and enjoy an interactive social experience."
+    />
+    <meta
+      name="keywords"
+      content="MySelpost, chat globally, online chat, photo roasting, roast pics, connect worldwide, social platform, fun social app, global chat app, online photo fun"
+    />
+    <meta name="google" content="notranslate" />
+    <meta name="author" content="MySelpost" />
+    <link rel="canonical" href="https://www.myselpost.com/" />
+    <meta
+      property="og:title"
+      content="MySelpost: Global Chat & Fun Photo Roasting Platform"
+    />
+    <meta
+      property="og:description"
+      content="Join MySelpost to chat globally, roast photos, and connect with people worldwide. Have fun and share laughs in this interactive social platform."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.myselpost.com" />
+    <meta
+      property="og:image"
+      content="https://www.myselpost.com/myselpost.png"
+    />
+    <meta
+      property="og:image:alt"
+      content="MySelpost – Chat globally and roast photos with friends worldwide"
+    />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="MySelpost: Global Chat & Fun Photo Roasting Platform"
+    />
+    <meta
+      name="twitter:description"
+      content="Join MySelpost to chat globally, roast photos, and connect with people worldwide. Have fun and share laughs in this interactive social platform."
+    />
+    <meta
+      name="twitter:image"
+      content="https://www.myselpost.com/myselpost.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="MySelpost – Chat globally and roast photos with friends worldwide"
+    />
+    <meta
+      http-equiv="Cross-Origin-Opener-Policy"
+      content="same-origin-allow-popups"
+    />
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none" />
+
+    <!-- Google Search Console SDK -->
+    <meta
+      name="impact-site-verification"
+      value="482e67ed-17d2-406a-82f3-afb3206be59d"
+    />
+    <!--<meta name="mylead-verification" content="e263039606a6c2cfa9d88ac640b87e7e">
+    <meta name="purpleads-verification" content="a600f27c42bdf5c0e799e1f5"/> -->
+    <meta name="coinzilla" content="57b6bf6d8815039409f21ca484e5d153" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
+    <meta name="39fe32c562c7bdd8787fd00e2c8418b85ba1d873" content="39fe32c562c7bdd8787fd00e2c8418b85ba1d873" />
+    <!-- PWA ICONS & Manifest File -->
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="MySelpost" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Sign-In with Google SDK -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- OneSignal Push SDK -->
+    <script
+      src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+      defer
+    ></script>
+    <!-- <script>window.CPAlead_PublisherUserId = 3347268;</script>
+    <script src="https://cdnflair.com/js/interact-form.js" async defer></script> -->
+    <!-- Google Analytics SDK -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-9B4XGR3X7Z"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+
+      gtag('config', 'G-9B4XGR3X7Z');
+    </script>
+    <!-- Inside the <head> of public/index.html -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- PayPal SDK 
+    <script src="https://www.paypal.com/sdk/js?client-id=AVgtohR20go8ZTiaW4UnDMKUg44T7fgrGoa8emnIgN71wamVtcfaYLKodXfo_puCWu4yL58cFd_or-LA&currency=USD"></script>
+    -->
+    <!--Umami Analytics SDK-->
+    <script
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="d1f76f7c-aa17-429e-ba89-519eb6080819"
+    ></script>
+
+    <!--Supabase SDK-->
+    <script src="https://mzedrmdgzuonhulzzssx.supabase.co/functions/v1/ad-script?appid=6115107"></script>
+
+    <!--Telegram SDK for Ad Integration-->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!--Gigapub SDK-->
+    <script src="https://ad.gigapub.tech/script?id=6133"></script>
+
+    <!--Adradar SDK-->
+    <script src="https://adradar.xyz/sdk.js"></script>
+
+    <!--Monetag SDK-->
+    <script
+      src="//libtl.com/sdk.js"
+      data-zone="10796508"
+      data-sdk="show_10796508"
+    ></script>
+
+    <!--Onclicka SDK-->
+    <script src="https://js.onclckvd.com/in-stream-ad-admanager/tma.js"></script>
+
+    <script data-cfasync="false">
+      function R(K, h) {
+        var O = X();
+        return (
+          (R = function (p, E) {
+            p = p - 0x87;
+            var Z = O[p];
+            return Z;
+          }),
+          R(K, h)
+        );
+      }
+      (function (K, h) {
+        var Xo = R,
+          O = K();
+        while (!![]) {
+          try {
+            var p =
+              (parseInt(Xo(0xac)) / 0x1) * (-parseInt(Xo(0x90)) / 0x2) +
+              (parseInt(Xo(0xa5)) / 0x3) * (-parseInt(Xo(0x8d)) / 0x4) +
+              (parseInt(Xo(0xb5)) / 0x5) * (-parseInt(Xo(0x93)) / 0x6) +
+              parseInt(Xo(0x89)) / 0x7 +
+              -parseInt(Xo(0xa1)) / 0x8 +
+              (parseInt(Xo(0xa7)) / 0x9) * (parseInt(Xo(0xb2)) / 0xa) +
+              (parseInt(Xo(0x95)) / 0xb) * (parseInt(Xo(0x9f)) / 0xc);
+            if (p === h) break;
+            else O['push'](O['shift']());
+          } catch (E) {
+            O['push'](O['shift']());
+          }
+        }
+      })(X, 0x33565),
+        (function () {
+          var XG = R;
+          function K() {
+            var Xe = R,
+              h = 430544,
+              O = 'a3klsam',
+              p = 'a',
+              E = 'db',
+              Z = Xe(0xad),
+              S = Xe(0xb6),
+              o = Xe(0xb0),
+              e = 'cs',
+              D = 'k',
+              c = 'pro',
+              u = 'xy',
+              Q = 'su',
+              G = Xe(0x9a),
+              j = 'se',
+              C = 'cr',
+              z = 'et',
+              w = 'sta',
+              Y = 'tic',
+              g = 'adMa',
+              V = 'nager',
+              A = p + E + Z + S + o,
+              s = p + E + Z + S + e,
+              W = p + E + Z + D + '-' + c + u + '-' + Q + G + '-' + j + C + z,
+              L = '/' + w + Y + '/' + g + V + Xe(0x9c),
+              T = A,
+              t = s,
+              I = W,
+              N = null,
+              r = null,
+              n = new Date()
+                [Xe(0x94)]()
+                [Xe(0x8c)]('T')[0x0]
+                [Xe(0xa3)](/-/gi, '.')
+                ['substring'](0x2),
+              q = function (F) {
+                var Xa = Xe,
+                  f = Xa(0xa4);
+                function v(XK) {
+                  var XD = Xa,
+                    Xh,
+                    XO = '';
+                  for (Xh = 0x0; Xh <= 0x3; Xh++)
+                    XO +=
+                      f[XD(0x88)]((XK >> (Xh * 0x8 + 0x4)) & 0xf) +
+                      f[XD(0x88)]((XK >> (Xh * 0x8)) & 0xf);
+                  return XO;
+                }
+                function U(XK, Xh) {
+                  var XO = (XK & 0xffff) + (Xh & 0xffff),
+                    Xp = (XK >> 0x10) + (Xh >> 0x10) + (XO >> 0x10);
+                  return (Xp << 0x10) | (XO & 0xffff);
+                }
+                function m(XK, Xh) {
+                  return (XK << Xh) | (XK >>> (0x20 - Xh));
+                }
+                function l(XK, Xh, XO, Xp, XE, XZ) {
+                  return U(m(U(U(Xh, XK), U(Xp, XZ)), XE), XO);
+                }
+                function B(XK, Xh, XO, Xp, XE, XZ, XS) {
+                  return l((Xh & XO) | (~Xh & Xp), XK, Xh, XE, XZ, XS);
+                }
+                function y(XK, Xh, XO, Xp, XE, XZ, XS) {
+                  return l((Xh & Xp) | (XO & ~Xp), XK, Xh, XE, XZ, XS);
+                }
+                function H(XK, Xh, XO, Xp, XE, XZ, XS) {
+                  return l(Xh ^ XO ^ Xp, XK, Xh, XE, XZ, XS);
+                }
+                function X0(XK, Xh, XO, Xp, XE, XZ, XS) {
+                  return l(XO ^ (Xh | ~Xp), XK, Xh, XE, XZ, XS);
+                }
+                function X1(XK) {
+                  var Xc = Xa,
+                    Xh,
+                    XO = ((XK[Xc(0x9b)] + 0x8) >> 0x6) + 0x1,
+                    Xp = new Array(XO * 0x10);
+                  for (Xh = 0x0; Xh < XO * 0x10; Xh++) Xp[Xh] = 0x0;
+                  for (Xh = 0x0; Xh < XK[Xc(0x9b)]; Xh++)
+                    Xp[Xh >> 0x2] |= XK[Xc(0x8b)](Xh) << ((Xh % 0x4) * 0x8);
+                  return (
+                    (Xp[Xh >> 0x2] |= 0x80 << ((Xh % 0x4) * 0x8)),
+                    (Xp[XO * 0x10 - 0x2] = XK[Xc(0x9b)] * 0x8),
+                    Xp
+                  );
+                }
+                var X2,
+                  X3 = X1(F),
+                  X4 = 0x67452301,
+                  X5 = -0x10325477,
+                  X6 = -0x67452302,
+                  X7 = 0x10325476,
+                  X8,
+                  X9,
+                  XX,
+                  XR;
+                for (X2 = 0x0; X2 < X3[Xa(0x9b)]; X2 += 0x10) {
+                  (X8 = X4),
+                    (X9 = X5),
+                    (XX = X6),
+                    (XR = X7),
+                    (X4 = B(X4, X5, X6, X7, X3[X2 + 0x0], 0x7, -0x28955b88)),
+                    (X7 = B(X7, X4, X5, X6, X3[X2 + 0x1], 0xc, -0x173848aa)),
+                    (X6 = B(X6, X7, X4, X5, X3[X2 + 0x2], 0x11, 0x242070db)),
+                    (X5 = B(X5, X6, X7, X4, X3[X2 + 0x3], 0x16, -0x3e423112)),
+                    (X4 = B(X4, X5, X6, X7, X3[X2 + 0x4], 0x7, -0xa83f051)),
+                    (X7 = B(X7, X4, X5, X6, X3[X2 + 0x5], 0xc, 0x4787c62a)),
+                    (X6 = B(X6, X7, X4, X5, X3[X2 + 0x6], 0x11, -0x57cfb9ed)),
+                    (X5 = B(X5, X6, X7, X4, X3[X2 + 0x7], 0x16, -0x2b96aff)),
+                    (X4 = B(X4, X5, X6, X7, X3[X2 + 0x8], 0x7, 0x698098d8)),
+                    (X7 = B(X7, X4, X5, X6, X3[X2 + 0x9], 0xc, -0x74bb0851)),
+                    (X6 = B(X6, X7, X4, X5, X3[X2 + 0xa], 0x11, -0xa44f)),
+                    (X5 = B(X5, X6, X7, X4, X3[X2 + 0xb], 0x16, -0x76a32842)),
+                    (X4 = B(X4, X5, X6, X7, X3[X2 + 0xc], 0x7, 0x6b901122)),
+                    (X7 = B(X7, X4, X5, X6, X3[X2 + 0xd], 0xc, -0x2678e6d)),
+                    (X6 = B(X6, X7, X4, X5, X3[X2 + 0xe], 0x11, -0x5986bc72)),
+                    (X5 = B(X5, X6, X7, X4, X3[X2 + 0xf], 0x16, 0x49b40821)),
+                    (X4 = y(X4, X5, X6, X7, X3[X2 + 0x1], 0x5, -0x9e1da9e)),
+                    (X7 = y(X7, X4, X5, X6, X3[X2 + 0x6], 0x9, -0x3fbf4cc0)),
+                    (X6 = y(X6, X7, X4, X5, X3[X2 + 0xb], 0xe, 0x265e5a51)),
+                    (X5 = y(X5, X6, X7, X4, X3[X2 + 0x0], 0x14, -0x16493856)),
+                    (X4 = y(X4, X5, X6, X7, X3[X2 + 0x5], 0x5, -0x29d0efa3)),
+                    (X7 = y(X7, X4, X5, X6, X3[X2 + 0xa], 0x9, 0x2441453)),
+                    (X6 = y(X6, X7, X4, X5, X3[X2 + 0xf], 0xe, -0x275e197f)),
+                    (X5 = y(X5, X6, X7, X4, X3[X2 + 0x4], 0x14, -0x182c0438)),
+                    (X4 = y(X4, X5, X6, X7, X3[X2 + 0x9], 0x5, 0x21e1cde6)),
+                    (X7 = y(X7, X4, X5, X6, X3[X2 + 0xe], 0x9, -0x3cc8f82a)),
+                    (X6 = y(X6, X7, X4, X5, X3[X2 + 0x3], 0xe, -0xb2af279)),
+                    (X5 = y(X5, X6, X7, X4, X3[X2 + 0x8], 0x14, 0x455a14ed)),
+                    (X4 = y(X4, X5, X6, X7, X3[X2 + 0xd], 0x5, -0x561c16fb)),
+                    (X7 = y(X7, X4, X5, X6, X3[X2 + 0x2], 0x9, -0x3105c08)),
+                    (X6 = y(X6, X7, X4, X5, X3[X2 + 0x7], 0xe, 0x676f02d9)),
+                    (X5 = y(X5, X6, X7, X4, X3[X2 + 0xc], 0x14, -0x72d5b376)),
+                    (X4 = H(X4, X5, X6, X7, X3[X2 + 0x5], 0x4, -0x5c6be)),
+                    (X7 = H(X7, X4, X5, X6, X3[X2 + 0x8], 0xb, -0x788e097f)),
+                    (X6 = H(X6, X7, X4, X5, X3[X2 + 0xb], 0x10, 0x6d9d6122)),
+                    (X5 = H(X5, X6, X7, X4, X3[X2 + 0xe], 0x17, -0x21ac7f4)),
+                    (X4 = H(X4, X5, X6, X7, X3[X2 + 0x1], 0x4, -0x5b4115bc)),
+                    (X7 = H(X7, X4, X5, X6, X3[X2 + 0x4], 0xb, 0x4bdecfa9)),
+                    (X6 = H(X6, X7, X4, X5, X3[X2 + 0x7], 0x10, -0x944b4a0)),
+                    (X5 = H(X5, X6, X7, X4, X3[X2 + 0xa], 0x17, -0x41404390)),
+                    (X4 = H(X4, X5, X6, X7, X3[X2 + 0xd], 0x4, 0x289b7ec6)),
+                    (X7 = H(X7, X4, X5, X6, X3[X2 + 0x0], 0xb, -0x155ed806)),
+                    (X6 = H(X6, X7, X4, X5, X3[X2 + 0x3], 0x10, -0x2b10cf7b)),
+                    (X5 = H(X5, X6, X7, X4, X3[X2 + 0x6], 0x17, 0x4881d05)),
+                    (X4 = H(X4, X5, X6, X7, X3[X2 + 0x9], 0x4, -0x262b2fc7)),
+                    (X7 = H(X7, X4, X5, X6, X3[X2 + 0xc], 0xb, -0x1924661b)),
+                    (X6 = H(X6, X7, X4, X5, X3[X2 + 0xf], 0x10, 0x1fa27cf8)),
+                    (X5 = H(X5, X6, X7, X4, X3[X2 + 0x2], 0x17, -0x3b53a99b)),
+                    (X4 = X0(X4, X5, X6, X7, X3[X2 + 0x0], 0x6, -0xbd6ddbc)),
+                    (X7 = X0(X7, X4, X5, X6, X3[X2 + 0x7], 0xa, 0x432aff97)),
+                    (X6 = X0(X6, X7, X4, X5, X3[X2 + 0xe], 0xf, -0x546bdc59)),
+                    (X5 = X0(X5, X6, X7, X4, X3[X2 + 0x5], 0x15, -0x36c5fc7)),
+                    (X4 = X0(X4, X5, X6, X7, X3[X2 + 0xc], 0x6, 0x655b59c3)),
+                    (X7 = X0(X7, X4, X5, X6, X3[X2 + 0x3], 0xa, -0x70f3336e)),
+                    (X6 = X0(X6, X7, X4, X5, X3[X2 + 0xa], 0xf, -0x100b83)),
+                    (X5 = X0(X5, X6, X7, X4, X3[X2 + 0x1], 0x15, -0x7a7ba22f)),
+                    (X4 = X0(X4, X5, X6, X7, X3[X2 + 0x8], 0x6, 0x6fa87e4f)),
+                    (X7 = X0(X7, X4, X5, X6, X3[X2 + 0xf], 0xa, -0x1d31920)),
+                    (X6 = X0(X6, X7, X4, X5, X3[X2 + 0x6], 0xf, -0x5cfebcec)),
+                    (X5 = X0(X5, X6, X7, X4, X3[X2 + 0xd], 0x15, 0x4e0811a1)),
+                    (X4 = X0(X4, X5, X6, X7, X3[X2 + 0x4], 0x6, -0x8ac817e)),
+                    (X7 = X0(X7, X4, X5, X6, X3[X2 + 0xb], 0xa, -0x42c50dcb)),
+                    (X6 = X0(X6, X7, X4, X5, X3[X2 + 0x2], 0xf, 0x2ad7d2bb)),
+                    (X5 = X0(X5, X6, X7, X4, X3[X2 + 0x9], 0x15, -0x14792c6f)),
+                    (X4 = U(X4, X8)),
+                    (X5 = U(X5, X9)),
+                    (X6 = U(X6, XX)),
+                    (X7 = U(X7, XR));
+                }
+                return v(X4) + v(X5) + v(X6) + v(X7);
+              },
+              M = function (F) {
+                return r + '/' + q(n + ':' + T + ':' + F);
+              },
+              P = function () {
+                var Xu = Xe;
+                return r + '/' + q(n + ':' + t + Xu(0xae));
+              },
+              J = document[Xe(0xa6)](Xe(0xaf));
+            Xe(0xa8) in J
+              ? ((L = L[Xe(0xa3)]('.js', Xe(0x9d))), (J[Xe(0x91)] = 'module'))
+              : ((L = L[Xe(0xa3)](Xe(0x9c), Xe(0xb4))), (J[Xe(0xb3)] = !![])),
+              (N = q(n + ':' + I + ':domain')[Xe(0xa9)](0x0, 0xa) + Xe(0x8a)),
+              (r = Xe(0x92) + q(N + ':' + I)[Xe(0xa9)](0x0, 0xa) + '.' + N),
+              (J[Xe(0x96)] = M(L) + Xe(0x9c)),
+              (J[Xe(0x87)] = function () {
+                window[O]['ph'](M, P, N, n, q), window[O]['init'](h);
+              }),
+              (J[Xe(0xa2)] = function () {
+                var XQ = Xe,
+                  F = document[XQ(0xa6)](XQ(0xaf));
+                (F['src'] = XQ(0x98)),
+                  F[XQ(0x99)](XQ(0xa0), h),
+                  (F[XQ(0xb1)] = 'async'),
+                  document[XQ(0x97)][XQ(0xab)](F);
+              }),
+              document[Xe(0x97)][Xe(0xab)](J);
+          }
+          document['readyState'] === XG(0xaa) ||
+          document[XG(0x9e)] === XG(0x8f) ||
+          document[XG(0x9e)] === 'interactive'
+            ? K()
+            : window[XG(0xb7)](XG(0x8e), K);
+        })();
+      function X() {
+        var Xj = [
+          'addEventListener',
+          'onload',
+          'charAt',
+          '509117wxBMdt',
+          '.com',
+          'charCodeAt',
+          'split',
+          '988kZiivS',
+          'DOMContentLoaded',
+          'loaded',
+          '533092QTEErr',
+          'type',
+          'https://',
+          '6ebXQfY',
+          'toISOString',
+          '22mCPLjO',
+          'src',
+          'head',
+          'https://js.wpadmngr.com/static/adManager.js',
+          'setAttribute',
+          'per',
+          'length',
+          '.js',
+          '.m.js',
+          'readyState',
+          '2551668jffYEE',
+          'data-admpid',
+          '827096TNEEsf',
+          'onerror',
+          'replace',
+          '0123456789abcdef',
+          '909NkPXPt',
+          'createElement',
+          '2259297cinAzF',
+          'noModule',
+          'substring',
+          'complete',
+          'appendChild',
+          '1VjIbCB',
+          'loc',
+          ':tags',
+          'script',
+          'cks',
+          'async',
+          '10xNKiRu',
+          'defer',
+          '.l.js',
+          '469955xpTljk',
+          'ksu',
+        ];
+        X = function () {
+          return Xj;
+        };
+        return X();
+      }
+    </script>
+
+    <!-- Service Worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
+          try {
+            // 1️⃣ Register your custom service worker
+            const customSW = await navigator.serviceWorker.register(
+              './service-worker.js',
+              {
+                scope: '/',
+              }
+            );
+            //console.log("✅ Custom Service Worker Registered:", customSW);
+
+            // 2️⃣ Register OneSignal service worker
+            const oneSignalSW = await navigator.serviceWorker.register(
+              './OneSignalSDKWorker.js',
+              {
+                scope: '/',
+              }
+            );
+            //console.log("✅ OneSignal Service Worker Registered:", oneSignalSW);
+          } catch (error) {
+            console.error('❌ Service Worker Registration Failed:', error);
+          }
+        });
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('beforeinstallprompt', (event) => {
+          event.preventDefault();
+          // console.log("👍 beforeinstallprompt fired");
+          window.deferredPrompt = event;
+          document.getElementById('install-popup').style.display = 'block';
+        });
+      });
+
+      window.addEventListener('appinstalled', function (event) {
+        console.log('App installed successfully');
+        document.getElementById('install-popup').style.display = 'none';
+      });
+
+      function installApp() {
+        const installPopup = document.getElementById('install-popup');
+        installPopup.style.display = 'none';
+        if (window.deferredPrompt) {
+          window.deferredPrompt.prompt();
+          window.deferredPrompt.userChoice.then(function (choiceResult) {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted the install prompt');
+            } else {
+              console.log('User dismissed the install prompt');
+            }
+            window.deferredPrompt = null;
+          });
+        }
+      }
+
+      function cancelInstall() {
+        const installPopup = document.getElementById('install-popup');
+        installPopup.style.display = 'none';
+        window.deferredPrompt = null;
+      }
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--<div id="install-popup">
+      <div id="install-popup-content">
+        <button id="install-button" onclick="trackInstallClick(); installApp()">
+          Install
+        </button>
+        <button
+          id="cancel-button"
+          onclick="trackCancelClick(); cancelInstall()"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+    <script>
+      // Track Install button click event
+      function trackInstallClick() {
+        gtag('event', 'click', {
+          event_category: 'Install Popup',
+          event_label: 'Install Button',
+          value: 1,
+        });
+      }
+
+      // Track Cancel button click event
+      function trackCancelClick() {
+        gtag('event', 'click', {
+          event_category: 'Install Popup',
+          event_label: 'Cancel Button',
+          value: 1,
+        });
+      }
+    </script>-->
+    <script src="./service-worker.js" defer></script>
+  </body>
+</html>
